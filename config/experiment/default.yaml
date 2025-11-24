@@ -1,0 +1,30 @@
+model_name: google/gemma-2-2b-it
+dataset_name: wikitext
+dataset_config: wikitext-2-raw-v1
+
+device: cuda
+
+prompt: "How to sort a list?"
+steered_feature_idx: 0
+steering_strength: 15.0
+
+# steering 컨셉 정의용 프롬프트 (Python vs 일반 문장)
+positive_prompts:
+  - "def my_func(x): return x"
+  - "import numpy as np"
+  - "print('hello')"
+negative_prompts:
+  - "The weather is nice."
+  - "I like apples."
+  - "History of Rome"
+
+# plotting 시 steered feature 주변에서 시각화할 feature 수
+top_k_for_plot: 10
+
+# layer / strength sweep 설정
+layer_sweep: [12]              # 여러 레이어를 실험하고 싶을 때 목록으로 지정
+strength_sweep: [15.0]         # 여러 strength 값을 실험하고 싶을 때 목록으로 지정
+
+# feature 통계 (mean/std) 계산 시 사용할 배치 수 (너무 크게 잡으면 느려짐)
+num_batches_for_stats: 10
+

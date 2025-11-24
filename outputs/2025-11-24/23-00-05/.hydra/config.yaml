@@ -1,0 +1,35 @@
+sae:
+  input_dim: 2304
+  sae_dim: 9216
+  batch_size: 4
+  epochs: 1
+  lr: 0.0003
+  l1_coeff: 0.005
+  layer_idx: 12
+  max_steps: 1000
+  fixed_v_cnt: 1
+gnn:
+  use_gnn: true
+  top_k: 10
+experiment:
+  model_name: google/gemma-2-2b-it
+  dataset_name: wikitext
+  dataset_config: wikitext-2-raw-v1
+  device: cuda
+  prompt: How to sort a list?
+  steered_feature_idx: 0
+  steering_strength: 15.0
+  positive_prompts:
+  - 'def my_func(x): return x'
+  - import numpy as np
+  - print('hello')
+  negative_prompts:
+  - The weather is nice.
+  - I like apples.
+  - History of Rome
+  top_k_for_plot: 10
+  layer_sweep:
+  - 12
+  strength_sweep:
+  - 15.0
+  num_batches_for_stats: 10
