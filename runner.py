@@ -172,10 +172,10 @@ def run_experiment(cfg) -> None:
     # 2. 데이터로더 준비 (공통)
     data_loader = build_dataloader(cfg, tokenizer)
 
-    # 2-1. 실행 단위 timestamp 디렉토리 생성
+    # 2-1. 실행 단위 timestamp 디렉토리 생성 (config 기반)
     run_ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    log_root_dir = os.path.join("experimentLog", run_ts)
-    plots_dir = os.path.join("outputs", "plots", run_ts)
+    log_root_dir = os.path.join(cfg.paths.logs_root, run_ts)
+    plots_dir = os.path.join(cfg.paths.plots_root, run_ts)
     os.makedirs(log_root_dir, exist_ok=True)
     os.makedirs(plots_dir, exist_ok=True)
 
@@ -212,6 +212,9 @@ def run_experiment(cfg) -> None:
             "max_steps": cfg.sae.max_steps,
             "device": device,
             "c_vectors_norm": F.normalize(c_vectors.to(device), dim=1),
+            "concept_feature_indices": getattr(cfg.sae, "concept_feature_indices", {}),
+            "alpha_concept": getattr(cfg.sae, "alpha_concept", {}),
+            "positive_targets": getattr(cfg.sae, "positive_targets", None),
         }
 
         trained_sae, train_stats = train_model(

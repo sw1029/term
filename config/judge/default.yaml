@@ -1,0 +1,18 @@
+primary_model: google/gemma-2-2b-it
+device: cuda
+
+# label별 LLM 후보 (Gemma 제외, HF 공개 모델 기준)
+# 실제 라벨링/판정 시에는 primary_model만 쓰거나,
+# 아래 모델들을 활용해 앙상블하는 구조로 확장 가능.
+
+code_models:
+  - codellama/CodeLlama-7b-Instruct-hf
+  - bigcode/starcoder2-7b
+
+harm_models:
+  - meta-llama/Llama-Guard-3-8B
+  - mistralai/Mistral-7B-Instruct-v0.2
+
+struct_models:
+  - mistralai/Mistral-7B-Instruct-v0.2
+  - meta-llama/Llama-3-8b-instruct

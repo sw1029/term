@@ -1,6 +1,9 @@
 import torch.optim as optim
 from tqdm import tqdm
-from utils import *
+
+from utils import get_batch_activations
+from base_losses import reconstruction_loss, sparsity_loss
+from contrastive_losses import multi_concept_contrastive_loss
 
 
 def train_model(sae_model, llm_model, tokenizer, data_loader, config):
@@ -16,11 +19,14 @@ def train_model(sae_model, llm_model, tokenizer, data_loader, config):
     sae_model.to(device)
     llm_model.to(device)
 
-    optimizer = optim.Adam(sae_model.parameters(), lr=config["lr"])
-
     # 하이퍼파라미터 설정
     l1_coeff = config["l1_coeff"]
     layer_idx = config["layer_idx"]
+    concept_indices = config.get("concept_feature_indices", {})
+    alpha_concept = config.get("alpha_concept", {})
+    positive_targets = config.get("positive_targets", None)
+
+    optimizer = optim.Adam(sae_model.parameters(), lr=config["lr"])
 
     sae_model.train()
 
@@ -64,13 +70,22 @@ def train_model(sae_model, llm_model, tokenizer, data_loader, config):
                 x_reconst, f = out, None
 
             # 3. Loss 계산 (L2 Reconstruction + L1 Sparsity)
-            l2_loss = F.mse_loss(x_reconst, x)
-            if f is not None:
-                l1_loss = l1_coeff * f.abs().sum(dim=1).mean()
-            else:
-                l1_loss = 0.0 * l2_loss
+            l2_loss = reconstruction_loss(x_reconst, x)
+            l1_loss = sparsity_loss(f, l1_coeff)
 
             loss = l2_loss + l1_loss
+
+            # 3-1. Contrastive Learning 손실 (옵션)
+            if concept_indices and alpha_concept:
+                contrast_loss = multi_concept_contrastive_loss(
+                    f=f,
+                    batch=batch,
+                    concept_indices=concept_indices,
+                    alpha_concept=alpha_concept,
+                    device=device,
+                    positive_targets=positive_targets,
+                )
+                loss = loss + contrast_loss
 
             # 4. Backward
             loss.backward()
