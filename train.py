@@ -1,9 +1,11 @@
+import torch
 import torch.optim as optim
+import torch.nn.functional as F
+from importlib import import_module
+
 from tqdm import tqdm
 
 from utils import get_batch_activations
-from base_losses import reconstruction_loss, sparsity_loss
-from contrastive_losses import multi_concept_contrastive_loss
 
 
 def train_model(sae_model, llm_model, tokenizer, data_loader, config):
@@ -19,12 +21,10 @@ def train_model(sae_model, llm_model, tokenizer, data_loader, config):
     sae_model.to(device)
     llm_model.to(device)
 
-    # 하이퍼파라미터 설정
-    l1_coeff = config["l1_coeff"]
+    # 하이퍼파라미터 / 설정
     layer_idx = config["layer_idx"]
-    concept_indices = config.get("concept_feature_indices", {})
-    alpha_concept = config.get("alpha_concept", {})
-    positive_targets = config.get("positive_targets", None)
+    loss_module_name = config.get("loss_module", "option1_loss")
+    loss_mod = import_module(loss_module_name)
 
     optimizer = optim.Adam(sae_model.parameters(), lr=config["lr"])
 
@@ -69,23 +69,18 @@ def train_model(sae_model, llm_model, tokenizer, data_loader, config):
                 # 단일 출력 모듈이 들어온 경우를 대비한 방어적 처리
                 x_reconst, f = out, None
 
-            # 3. Loss 계산 (L2 Reconstruction + L1 Sparsity)
-            l2_loss = reconstruction_loss(x_reconst, x)
-            l1_loss = sparsity_loss(f, l1_coeff)
+            # 3. Loss 계산 (옵션별 모듈 호출)
+            loss, loss_items = loss_mod.compute_loss(
+                sae_model=sae_model,
+                x=x,
+                x_reconst=x_reconst,
+                f=f,
+                batch=batch,
+                config=config,
+            )
 
-            loss = l2_loss + l1_loss
-
-            # 3-1. Contrastive Learning 손실 (옵션)
-            if concept_indices and alpha_concept:
-                contrast_loss = multi_concept_contrastive_loss(
-                    f=f,
-                    batch=batch,
-                    concept_indices=concept_indices,
-                    alpha_concept=alpha_concept,
-                    device=device,
-                    positive_targets=positive_targets,
-                )
-                loss = loss + contrast_loss
+            l2_loss = loss_items.get("l2")
+            l1_loss = loss_items.get("l1")
 
             # 4. Backward
             loss.backward()
@@ -109,15 +104,19 @@ def train_model(sae_model, llm_model, tokenizer, data_loader, config):
                 # sae_model.decoder.data[:sae_model.fixed_v_cnt] = config['c_vectors_norm']
 
             total_loss_sum += float(loss.item())
-            total_l2_sum += float(l2_loss.item())
-            total_l1_sum += float(l1_loss.item())
+            if l2_loss is not None:
+                total_l2_sum += float(l2_loss.item())
+            if l1_loss is not None:
+                total_l1_sum += float(l1_loss.item())
             total_batches += 1
             step += 1
 
             if step % 100 == 0:
+                l2_val = l2_loss.item() if l2_loss is not None else 0.0
+                l1_val = l1_loss.item() if l1_loss is not None else 0.0
                 print(
                     f"Step {step}, Loss: {loss.item():.4f} "
-                    f"(L2: {l2_loss.item():.4f}, L1: {l1_loss.item():.4f})"
+                    f"(L2: {l2_val:.4f}, L1: {l1_val:.4f})"
                 )
 
             if step >= config["max_steps"]:

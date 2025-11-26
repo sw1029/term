@@ -15,7 +15,7 @@ import utils
 
 
 class H_SAE(nn.Module):
-    def __init__(self, input_dim, sae_dim, c_vectors, feature_gnn: nn.Module | None = None):
+    def __init__(self, input_dim, sae_dim, c_vectors=None, feature_gnn: nn.Module | None = None):
         super().__init__()
         self.input_dim = input_dim
         self.sae_dim = sae_dim
@@ -28,11 +28,14 @@ class H_SAE(nn.Module):
         self.decoder = nn.Parameter(torch.randn(sae_dim, input_dim))  # 출력 크기 = 입력 크기
         self.dec_bias = nn.Parameter(torch.zeros(input_dim))
 
-        self.fixed_v_cnt = len(c_vectors)
-
         # 컨셉 벡터 (디코더의 고정 구간)
-        with torch.no_grad():
-            self.decoder.data[: self.fixed_v_cnt] = c_vectors.clone()
+        if c_vectors is not None:
+            self.fixed_v_cnt = len(c_vectors)
+            with torch.no_grad():
+                self.decoder.data[: self.fixed_v_cnt] = c_vectors.clone()
+        else:
+            # concept-free 설정 (Option3 등)에서는 고정 벡터 없음
+            self.fixed_v_cnt = 0
 
         # 선택적으로 feature 상에서 동작하는 설명 전용 GNN 모듈
         self.feature_gnn = feature_gnn

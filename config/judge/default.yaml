@@ -1,5 +1,12 @@
+backend: openai # or hf
 primary_model: google/gemma-2-2b-it
 device: cuda
+
+openai_model: gpt-4o-mini
+openai_api_key: ""
+openai_max_chars: 8000
+openai_resume: true
+openai_max_qps: 2.0
 
 # label별 LLM 후보 (Gemma 제외, HF 공개 모델 기준)
 # 실제 라벨링/판정 시에는 primary_model만 쓰거나,
@@ -16,3 +23,7 @@ harm_models:
 struct_models:
   - mistralai/Mistral-7B-Instruct-v0.2
   - meta-llama/Llama-3-8b-instruct
+
+eval:
+  use_openai: true    # true면 backend=openai 우선
+  max_logs: null       # 평가할 로그 파일 수 제한 (선택)

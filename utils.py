@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import plotly.express as px
+from datasets import load_dataset
 
 """
 유틸 모듈
@@ -73,11 +74,9 @@ def get_batch_activations(model, tokenizer, text_batch, layer_idx, device):
     with torch.no_grad():
         outputs = model(**inputs, output_hidden_states=True)
 
-    hidden_states = outputs.hidden_states[layer_idx]
-
-    # [Batch, Seq_len, Dim] -> [Batch * Seq_len, Dim] (Flatten)
-    activations = hidden_states.reshape(-1, hidden_states.shape[-1])
-
+    hidden_states = outputs.hidden_states[layer_idx]  # [B, Seq, Dim]
+    # 시퀀스 차원 평균을 취해 문장 단위 표현으로 변환: [B, Dim]
+    activations = hidden_states.mean(dim=1)
     return activations
 
 
@@ -314,3 +313,69 @@ def plot_llm_std_curve(std_tensor: torch.Tensor, save_path: str):
 
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     fig.write_html(save_path)
+
+
+def compute_multilabel_concept_vectors_from_dataset(
+    model,
+    tokenizer,
+    dataset_path: str,
+    layer_idx: int,
+    device,
+    labels: list[str] | None = None,
+    max_samples_per_label: int = 1000,
+) -> torch.Tensor:
+    """
+    multi_contrast_final JSONL과 LLM hidden을 이용해
+    label별 concept_v를 계산한다.
+
+    Args:
+        model, tokenizer: 활성 추출에 사용할 LLM과 토크나이저
+        dataset_path: JSONL 경로 (예: cfg.paths.datasets.multi_contrast_final)
+        layer_idx: hidden을 추출할 LLM 레이어 인덱스
+        device: torch.device
+        labels: 사용할 라벨 이름 리스트 (기본: ["code", "harm", "struct"])
+        max_samples_per_label: 각 라벨별 positive/negative에서 사용할 최대 샘플 수
+
+    Returns:
+        c_vectors: (num_labels, hidden_dim) 텐서
+    """
+    if labels is None:
+        labels = ["code", "harm", "struct"]
+
+    # json 데이터셋 로드
+    ds = load_dataset("json", data_files={"train": dataset_path})["train"]
+
+    model.to(device)
+    model.eval()
+
+    concept_vecs = []
+
+    for name in labels:
+        label_key = f"label_{name}"
+        # positive / negative 인덱스 수집
+        pos_indices = [i for i, row in enumerate(ds) if int(row.get(label_key, 0)) == 1]
+        neg_indices = [i for i, row in enumerate(ds) if int(row.get(label_key, 0)) == 0]
+
+        if not pos_indices or not neg_indices:
+            # 해당 라벨에 대해 충분한 샘플이 없으면 0벡터로 대체
+            hidden_dim = model.config.hidden_size
+            concept_vecs.append(torch.zeros(hidden_dim, device=device))
+            continue
+
+        pos_indices = pos_indices[:max_samples_per_label]
+        neg_indices = neg_indices[:max_samples_per_label]
+
+        def _mean_hidden(indices):
+            texts = [ds[i]["text"] for i in indices]
+            acts = get_batch_activations(model, tokenizer, texts, layer_idx, device)
+            return acts.mean(dim=0)
+
+        with torch.no_grad():
+            p_mean = _mean_hidden(pos_indices)
+            n_mean = _mean_hidden(neg_indices)
+
+        c_v = concept_vector(p_mean, n_mean).to(device)
+        concept_vecs.append(c_v)
+
+    c_vectors = torch.stack(concept_vecs, dim=0)
+    return c_vectors

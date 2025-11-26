@@ -4,9 +4,18 @@ dataset_config: wikitext-2-raw-v1
 
 device: cuda
 
+use_multi_contrast: false
+
 prompt: "How to sort a list?"
 steered_feature_idx: 0
 steering_strength: 15.0
+
+steered_features:
+  code: 0
+  harm: 1
+  struct: 2
+
+num_steering_samples_per_label: 10
 
 # steering 컨셉 정의용 프롬프트 (Python vs 일반 문장)
 positive_prompts:
@@ -27,4 +36,3 @@ strength_sweep: [15.0]         # 여러 strength 값을 실험하고 싶을 때 
 
 # feature 통계 (mean/std) 계산 시 사용할 배치 수 (너무 크게 잡으면 느려짐)
 num_batches_for_stats: 10
-

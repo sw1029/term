@@ -2,7 +2,7 @@ import os
 import json
 import random
 import re
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from datasets import load_dataset
 import hydra
@@ -206,6 +206,71 @@ def sample_alpaca_noncode(n: int) -> List[Dict]:
     return out
 
 
+def sample_lmsys_chat(
+    n: int,
+    dataset_name: str = "lmsys/lmsys-chat-1m",
+    split: str = "train",
+) -> List[Dict]:
+    """
+    LMSYS 대화 데이터셋에서 일반 대화 샘플을 수집.
+
+    - label_code = 0 (일반 대화로 간주)
+    - label_harm = OpenAI moderation 'flagged' 기준으로 0/1
+    - label_struct = 0 (구조성은 LLM judge에서 보완)
+    """
+    if n <= 0:
+        return []
+
+    ds = load_dataset(dataset_name, split=split, streaming=True)
+    out: List[Dict] = []
+    it = iter(ds)
+
+    while len(out) < n:
+        try:
+            s: Dict[str, Any] = next(it)
+        except StopIteration:
+            break
+
+        conv = s.get("conversation") or []
+        if not conv:
+            continue
+
+        parts: List[str] = []
+        for turn in conv:
+            if not isinstance(turn, dict):
+                continue
+            role = turn.get("role") or "unknown"
+            content = (turn.get("content") or "").strip()
+            if not content:
+                continue
+            parts.append(f"{role}: {content}")
+
+        text = "\n".join(parts).strip()
+        if not text:
+            continue
+
+        mods = s.get("openai_moderation") or []
+        flagged_any = False
+        for m in mods:
+            if isinstance(m, dict) and m.get("flagged", False):
+                flagged_any = True
+                break
+
+        label_harm = 1 if flagged_any else 0
+
+        out.append(
+            {
+                "text": text,
+                "label_code": 0,
+                "label_harm": label_harm,
+                "label_struct": 0,
+                "source": "lmsys_chat",
+            }
+        )
+
+    return out
+
+
 def sample_toxic(n: int, pos_fraction: float = 0.5) -> List[Dict]:
     """
     RealToxicityPrompts에서 유해/비유해 텍스트를 스트리밍으로 수집.
@@ -286,6 +351,7 @@ def main(cfg: DictConfig):
     n_pos_alpaca = mc_cfg.n_pos_alpaca
     n_neg_alpaca = mc_cfg.n_neg_alpaca
     n_tox = mc_cfg.n_tox
+    n_lmsys = getattr(mc_cfg, "n_lmsys_chat", 0)
 
     print("Sampling Stack Python (code=1)...")
     pos_stack = sample_stack_python(n_pos_stack)
@@ -299,7 +365,17 @@ def main(cfg: DictConfig):
     print("Sampling RealToxicityPrompts (harm=0/1)...")
     tox_samples = sample_toxic(n_tox, pos_fraction=0.5)
 
-    data = pos_stack + pos_alpaca + neg_alpaca + tox_samples
+    if n_lmsys > 0:
+        print("Sampling LMSYS chat (general dialogue)...")
+        lmsys_samples = sample_lmsys_chat(
+            n_lmsys,
+            dataset_name=getattr(mc_cfg, "lmsys_chat_name", "lmsys/lmsys-chat-1m"),
+            split=getattr(mc_cfg, "lmsys_chat_split", "train"),
+        )
+    else:
+        lmsys_samples = []
+
+    data = pos_stack + pos_alpaca + neg_alpaca + tox_samples + lmsys_samples
     random.shuffle(data)
 
     raw_path_cfg = cfg.paths.datasets.multi_contrast_raw
@@ -316,4 +392,3 @@ def main(cfg: DictConfig):
 
 if __name__ == "__main__":
     main()
-
