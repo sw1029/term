@@ -103,6 +103,7 @@ def build_experiment_log(
     steering_label: str | None = None,
     feature_idx: int | None = None,
     prompt: str | None = None,
+    cli_command: str | None = None,
 ) -> Dict[str, Any]:
     """
     한 번의 steering 실험(layer, strength 조합)에 대한 로그 정보를 구성한다.
@@ -122,10 +123,17 @@ def build_experiment_log(
     log_dict = {
         "model_name": cfg.experiment.model_name,
         "layer_idx": int(layer_idx),
+        "command": cli_command,
         "sae": {
             "input_dim": cfg.sae.input_dim,
             "sae_dim": cfg.sae.sae_dim,
             "fixed_v_cnt": int(cfg.sae.fixed_v_cnt),
+            "batch_size": int(getattr(cfg.sae, "batch_size", 0)),
+            "epochs": int(getattr(cfg.sae, "epochs", 0)),
+            "max_steps": int(getattr(cfg.sae, "max_steps", 0)),
+            "concept_samples_per_label": int(
+                getattr(cfg.sae, "concept_samples_per_label", 0)
+            ),
             "loss_option": int(getattr(cfg.sae, "loss_option", 1)),
             "loss_module": str(getattr(cfg.sae, "loss_module", "option1_loss")),
         },
@@ -151,6 +159,9 @@ def build_experiment_log(
             "f_after": f_after,
             "g_before": g_before,
             "g_after": g_after,
+            "num_batches_for_stats": int(
+                getattr(cfg.experiment, "num_batches_for_stats", 0)
+            ),
         },
         "loss_summary": {
             "train_mean_loss": train_stats["mean_loss"],
@@ -165,7 +176,7 @@ def build_experiment_log(
     return log_dict
 
 
-def run_experiment(cfg) -> None:
+def run_experiment(cfg, cli_command: str | None = None) -> None:
     """
     전체 실험 파이프라인:
         - LLM/토크나이저 로드
@@ -394,6 +405,7 @@ def run_experiment(cfg) -> None:
                         steering_label=label_name,
                         feature_idx=feature_idx,
                         prompt=prompt,
+                        cli_command=cli_command,
                     )
                     log_filename = (
                         f"L{layer_idx}_S{strength}_{label_name}_N{idx}.json"

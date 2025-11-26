@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 2,
+    "loss_module": "option2_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "user: I have an image. Ask me questions about the content of this image. Carefully asking me informative questions to maximize your information about this image content. Each time ask one question only without giving an answer. Avoid asking yes/no questions. I'll put my answer beginning with \"Answer:\".\nQuestion: Describe this image in detail. \nAnswer: Unexpanded white peony flower bud covered with morning dew water drops move in wind.\nNext Question. Avoid asking yes/no questions. Just ask next question even if you think the previous answer is incorrect. remember to ask one question at a time.\nQuestion:\nassistant: What is the color of the flower bud in the image?\nAnswer: The flower bud is white.\n\nWhat is on the surface of the flower bud?\nAnswer: The surface of the flower bud is covered with morning dew water drops.\n\nIs the flower bud expanded or unexpanded?\nAnswer: The flower bud is unexpanded.\n\nWhat is the shape of the flower bud?\nAnswer: The shape of the flower bud is bud-like.\n\nIs the flower bud in a windy environment?\nAnswer: Yes, the flower bud is in a windy environment.\n\nHow does the wind affect the flower bud?\nAnswer: The wind is causing the dew water drops on the surface of the flower bud to move and sway.\n\nIs the flower bud in a natural or man-made environment?\nAnswer: The environment where the flower bud is located is natural.\n\nIs the image in black and white or color?\nAnswer: The image is in color.",
+  "output": {
+    "before": "user: I have an image. Ask me questions about the content of this image. Carefully asking me informative questions to maximize your information about this image content. Each time ask one question only without giving an answer. Avoid asking yes/no questions. I'll put my answer beginning with \"Answer:\".\nQuestion: Describe this image in detail. \nAnswer: Unexpanded white peony flower bud covered with morning dew water drops move in wind.\nNext Question. Avoid asking yes/no questions. Just ask next question even if you think the previous answer is incorrect. remember to ask one question at a time.\nQuestion:\nassistant: What is the color of the flower bud in the image?\nAnswer: The flower bud is white.\n\nWhat is on the surface of the flower bud?\nAnswer: The surface of the flower bud is covered with morning dew water drops.\n\nIs the flower bud expanded or unexpanded?\nAnswer: The flower bud is unexpanded.\n\nWhat is the shape of the flower bud?\nAnswer: The shape of the flower bud is bud-like.\n\nIs the flower bud in a windy environment?\nAnswer: Yes, the flower bud is in a windy environment.\n\nHow does the wind affect the flower bud?\nAnswer: The wind is causing the dew water drops on the surface of the flower bud to move and sway.\n\nIs the flower bud in a natural or man-made environment?\nAnswer: The environment where the flower bud is located is natural.\n\nIs the image in black and white or color?\nAnswer: The image is in color. \n\n\nI'm ready to continue.  Please ask your next question.\n",
+    "after": "user: I have an image. Ask me questions about the content of this image. Carefully asking me informative questions to maximize your information about this image content. Each time ask one question only without giving an answer. Avoid asking yes/no questions. I'll put my answer beginning with \"Answer:\".\nQuestion: Describe this image in detail. \nAnswer: Unexpanded white peony flower bud covered with morning dew water drops move in wind.\nNext Question. Avoid asking yes/no questions. Just ask next question even if you think the previous answer is incorrect. remember to ask one question at a time.\nQuestion:\nassistant: What is the color of the flower bud in the image?\nAnswer: The flower bud is white.\n\nWhat is on the surface of the flower bud?\nAnswer: The surface of the flower bud is covered with morning dew water drops.\n\nIs the flower bud expanded or unexpanded?\nAnswer: The flower bud is unexpanded.\n\nWhat is the shape of the flower bud?\nAnswer: The shape of the flower bud is bud-like.\n\nIs the flower bud in a windy environment?\nAnswer: Yes, the flower bud is in a windy environment.\n\nHow does the wind affect the flower bud?\nAnswer: The wind is causing the dew water drops on the surface of the flower bud to move and sway.\n\nIs the flower bud in a natural or man-made environment?\nAnswer: The environment where the flower bud is located is natural.\n\nIs the image in black and white or color?\nAnswer: The image is in color.\n\nIs the image a simple image or complex?\nAnswer: The image is simple.\n\nWhat is the height of the flower bud?\nAnswer: The height of the flower bud is 1.\n\nWhat is the width of the image?"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      8203,
+      746,
+      7934,
+      7916,
+      989,
+      6557,
+      7949,
+      5214,
+      160
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.720714295725028,
+    "train_mean_l2": 3.934641513635715,
+    "train_mean_l1": 2.149144583642483,
+    "num_steps": 3000,
+    "num_batches": 3000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-182205/feature_std_layer_12.html",
+    "mean_std": 1.436635136604309,
+    "max_std": 39.19367599487305
+  }
+}

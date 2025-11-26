@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 2,
+    "loss_module": "option2_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from concurrent.futures import ThreadPoolExecutor, as_completed\nfrom google.cloud import bigquery as bq\nfrom datetime import datetime as dt\n\nimport argparse\nimport json\nimport logging\nimport time\n\nif __name__ == \"__main__\":\n    start_time = time.time()\n    \n    threads = []\n    results = []\n\n    parser = argparse.ArgumentParser()\n\n    parser.add_argument('job_prefix', help='The job prefix to be added to the BQ jobs')\n    parser.add_argument('query_file', help='The json file with a list of queries to be executed simultaneously')\n    parser.add_argument('--query_param_list', help='The json file with a list of parameters to be supplied to the query in round-robin fashion')\n    parser.add_argument('--credential_file', help='The path to a json credential file to authenticate the client')\n    parser.add_argument('--pool_size', default=50, type=int, help='Sets the logging level (default INFO)')\n    parser.add_argument('--log_level', default=20, type=int, choices=(0, 10, 20, 30, 40, 50), help='Log level')\n\n    args = parser.parse_args()\n\n    logging.basicConfig(level=args.log_level)\n    executor = ThreadPoolExecutor(args.pool_size)\n    client = bq.Client.from_service_account_json(args.credential_file) if args.credential_file else bq.Client()\n\n    job_config = bq.job.QueryJobConfig(use_legacy_sql=False, use_query_cache=False)\n\n    with open(args.query_file, 'r') as q:\n        query_list = json.loads(q.read())\n    \n    param_list = None\n    if args.query_param_list:\n        with open(args.query_param_list, 'r') as p:\n            param_list = json.loads(p.read())\n    \n    setup_time = time.time()\n    job_list = []\n    param_index = 0\n    param_reset = len(param_list) - 1 if param_list else 0\n    for q in query_list:\n        if param_list:\n            query = q['query'].format(**param_list[param_index])\n            logging.debug(query)\n        else:\n            query = q['query']\n            logging.debug(query)\n\n        job = client.query(query, job_id_prefix=args.job_prefix, job_config=job_config)\n        threads.append(executor.submit(job.result))\n        param_index = param_index + 1 if param_index < param_reset else 0\n\n    sent_time = time.time()\n    for future in as_completed(threads):\n        results.append(list(future.result()))\n        \n    logging.debug('Execution results: {}'.format(results))\n    logging.info('Start time: {}'.format(dt.utcfromtimestamp(start_time).isoformat()))\n    logging.info('Time spent in setup: {}, {}s'.format(dt.utcfromtimestamp(setup_time).isoformat(), setup_time - start_time))\n    logging.info('Time spent in execution: {}, {}s'.format(dt.utcfromtimestamp(sent_time).isoformat(), sent_time - setup_time))",
+  "output": {
+    "before": "from concurrent.futures import ThreadPoolExecutor, as_completed\nfrom google.cloud import bigquery as bq\nfrom datetime import datetime as dt\n\nimport argparse\nimport json\nimport logging\nimport time\n\nif __name__ == \"__main__\":\n    start_time = time.time()\n    \n    threads = []\n    results = []\n\n    parser = argparse.ArgumentParser()\n\n    parser.add_argument('job_prefix', help='The job prefix to be added to the BQ jobs')\n    parser.add_argument('query_file', help='The json file with a list of queries to be executed simultaneously')\n    parser.add_argument('--query_param_list', help='The json file with a list of parameters to be supplied to the query in round-robin fashion')\n    parser.add_argument('--credential_file', help='The path to a json credential file to authenticate the client')\n    parser.add_argument('--pool_size', default=50, type=int, help='Sets the logging level (default INFO)')\n    parser.add_argument('--log_level', default=20, type=int, choices=(0, 10, 20, 30, 40, 50), help='Log level')\n\n    args = parser.parse_args()\n\n    logging.basicConfig(level=args.log_level)\n    executor = ThreadPoolExecutor(args.pool_size)\n    client = bq.Client.from_service_account_json(args.credential_file) if args.credential_file else bq.Client()\n\n    job_config = bq.job.QueryJobConfig(use_legacy_sql=False, use_query_cache=False)\n\n    with open(args.query_file, 'r') as q:\n        query_list = json.loads(q.read())\n    \n    param_list = None\n    if args.query_param_list:\n        with open(args.query_param_list, 'r') as p:\n            param_list = json.loads(p.read())\n    \n    setup_time = time.time()\n    job_list = []\n    param_index = 0\n    param_reset = len(param_list) - 1 if param_list else 0\n    for q in query_list:\n        if param_list:\n            query = q['query'].format(**param_list[param_index])\n            logging.debug(query)\n        else:\n            query = q['query']\n            logging.debug(query)\n\n        job = client.query(query, job_id_prefix=args.job_prefix, job_config=job_config)\n        threads.append(executor.submit(job.result))\n        param_index = param_index + 1 if param_index < param_reset else 0\n\n    sent_time = time.time()\n    for future in as_completed(threads):\n        results.append(list(future.result()))\n        \n    logging.debug('Execution results: {}'.format(results))\n    logging.info('Start time: {}'.format(dt.utcfromtimestamp(start_time).isoformat()))\n    logging.info('Time spent in setup: {}, {}s'.format(dt.utcfromtimestamp(setup_time).isoformat(), setup_time - start_time))\n    logging.info('Time spent in execution: {}, {}s'.format(dt.utcfromtimestamp(sent_time).isoformat(), sent_time - setup_time))\n    \n    \n    for result in results:\n        print(result)\n    \n    \n```\n\n**Explanation:**\n\n1. **Imports:** Imports necessary libraries for:\n   - **Concurrency:** `concurrent.futures` for",
+    "after": "from concurrent.futures import ThreadPoolExecutor, as_completed\nfrom google.cloud import bigquery as bq\nfrom datetime import datetime as dt\n\nimport argparse\nimport json\nimport logging\nimport time\n\nif __name__ == \"__main__\":\n    start_time = time.time()\n    \n    threads = []\n    results = []\n\n    parser = argparse.ArgumentParser()\n\n    parser.add_argument('job_prefix', help='The job prefix to be added to the BQ jobs')\n    parser.add_argument('query_file', help='The json file with a list of queries to be executed simultaneously')\n    parser.add_argument('--query_param_list', help='The json file with a list of parameters to be supplied to the query in round-robin fashion')\n    parser.add_argument('--credential_file', help='The path to a json credential file to authenticate the client')\n    parser.add_argument('--pool_size', default=50, type=int, help='Sets the logging level (default INFO)')\n    parser.add_argument('--log_level', default=20, type=int, choices=(0, 10, 20, 30, 40, 50), help='Log level')\n\n    args = parser.parse_args()\n\n    logging.basicConfig(level=args.log_level)\n    executor = ThreadPoolExecutor(args.pool_size)\n    client = bq.Client.from_service_account_json(args.credential_file) if args.credential_file else bq.Client()\n\n    job_config = bq.job.QueryJobConfig(use_legacy_sql=False, use_query_cache=False)\n\n    with open(args.query_file, 'r') as q:\n        query_list = json.loads(q.read())\n    \n    param_list = None\n    if args.query_param_list:\n        with open(args.query_param_list, 'r') as p:\n            param_list = json.loads(p.read())\n    \n    setup_time = time.time()\n    job_list = []\n    param_index = 0\n    param_reset = len(param_list) - 1 if param_list else 0\n    for q in query_list:\n        if param_list:\n            query = q['query'].format(**param_list[param_index])\n            logging.debug(query)\n        else:\n            query = q['query']\n            logging.debug(query)\n\n        job = client.query(query, job_id_prefix=args.job_prefix, job_config=job_config)\n        threads.append(executor.submit(job.result))\n        param_index = param_index + 1 if param_index < param_reset else 0\n\n    sent_time = time.time()\n    for future in as_completed(threads):\n        results.append(list(future.result()))\n        \n    logging.debug('Execution results: {}'.format(results))\n    logging.info('Start time: {}'.format(dt.utcfromtimestamp(start_time).isoformat()))\n    logging.info('Time spent in setup: {}, {}s'.format(dt.utcfromtimestamp(setup_time).isoformat(), setup_time - start_time))\n    logging.info('Time spent in execution: {}, {}s'.format(dt.utcfromtimestamp(sent_time).isoformat(), sent_time - setup_time))\n    \n    time.sleep(10 seconds)\n    \n    time.sleep(10 seconds)\n\n    logging.info('You are now ready to go.')\n    \n\n```\n\n**Important:** This script requires a detailed"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2,
+      46,
+      5593,
+      1743,
+      2334,
+      7476,
+      7541,
+      1888,
+      9055,
+      8869
+    ],
+    "f_before": [
+      0.0,
+      0.6342235207557678,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.6342235207557678,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.21914876997470856,
+      35.71140670776367,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.21914876997470856,
+      35.71140670776367,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.720714295725028,
+    "train_mean_l2": 3.934641513635715,
+    "train_mean_l1": 2.149144583642483,
+    "num_steps": 3000,
+    "num_batches": 3000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-182205/feature_std_layer_12.html",
+    "mean_std": 1.436635136604309,
+    "max_std": 39.19367599487305
+  }
+}

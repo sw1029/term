@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 1,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 2,
+    "loss_module": "option2_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "user: factor x^2+3x = 0 and then find its roots. Show detailed reasoning trace\nassistant: To factor the equation x^2 + 3x = 0, we can use the following steps:\n\n1. Multiply both sides of the equation by 1/2:\n0.5(x^2 + 3x) = 0.5(0)\nx^2 + 3x = 0\n\n2. Simplify the equation:\nx^2 + 3x = 0\n2x(x) + 3(x) = 0\n2x^2 + 3x = 0\n\n3. Factor the equation:\n2x^2 + 3x = 0\n(2x + 3)(x + 1) = 0\n\nTherefore, the roots of x^2 + 3x = 0 are:\n\nx + 1 = 0\n2x + 3 = 0\n\nTo find the roots, we can use the quadratic formula:\n\nx = (-b ± √(b^2 - 4ac)) / (2a)\n\nfor the equation:\nax^2 + bx + c = 0\n\nFor the given equation:\na = 1, b = 2, c = 3\n\nSo, the roots are:\n\nx = (-1 ± √(1^2 - 4*3*1)) / (2*1)\nx = (-1 ± √(-3)) / (2)\nx = (1 ± √(-3)) / (2)\n\nTherefore, the roots of x^2 + 3x = 0 are:\n\nx + 1 = 0\n2x + 3 = 0\n\nThe two roots are:\n\n1. x = -3\n2. x = -1 + 3i\n\nThe detailed reasoning trace is as follows:\n\n1. Multiply both sides of the equation x^2 + 3x = 0 by 1/2:\n0.5x^2 + 0.5*3*x = 0.5(0)\n0.5(x^2 + 3x) = 0.5(0)\nx^2 + 3x = 0\n\n2. Simplify the equation:\nx",
+  "output": {
+    "before": "user: factor x^2+3x = 0 and then find its roots. Show detailed reasoning trace\nassistant: To factor the equation x^2 + 3x = 0, we can use the following steps:\n\n1. Multiply both sides of the equation by 1/2:\n0.5(x^2 + 3x) = 0.5(0)\nx^2 + 3x = 0\n\n2. Simplify the equation:\nx^2 + 3x = 0\n2x(x) + 3(x) = 0\n2x^2 + 3x = 0\n\n3. Factor the equation:\n2x^2 + 3x = 0\n(2x + 3)(x + 1) = 0\n\nTherefore, the roots of x^2 + 3x = 0 are:\n\nx + 1 = 0\n2x + 3 = 0\n\nTo find the roots, we can use the quadratic formula:\n\nx = (-b ± √(b^2 - 4ac)) / (2a)\n\nfor the equation:\nax^2 + bx + c = 0\n\nFor the given equation:\na = 1, b = 2, c = 3\n\nSo, the roots are:\n\nx = (-1 ± √(1^2 - 4*3*1)) / (2*1)\nx = (-1 ± √(-3)) / (2)\nx = (1 ± √(-3)) / (2)\n\nTherefore, the roots of x^2 + 3x = 0 are:\n\nx + 1 = 0\n2x + 3 = 0\n\nThe two roots are:\n\n1. x = -3\n2. x = -1 + 3i\n\nThe detailed reasoning trace is as follows:\n\n1. Multiply both sides of the equation x^2 + 3x = 0 by 1/2:\n0.5x^2 + 0.5*3*x = 0.5(0)\n0.5(x^2 + 3x) = 0.5(0)\nx^2 + 3x = 0\n\n2. Simplify the equation:\nx^2 + 3x = 0\n2x(x) + 3(x) = 0\n2x^2 + 3x = 0\n\n3. Factor the equation:\n2x^2 + ",
+    "after": "user: factor x^2+3x = 0 and then find its roots. Show detailed reasoning trace\nassistant: To factor the equation x^2 + 3x = 0, we can use the following steps:\n\n1. Multiply both sides of the equation by 1/2:\n0.5(x^2 + 3x) = 0.5(0)\nx^2 + 3x = 0\n\n2. Simplify the equation:\nx^2 + 3x = 0\n2x(x) + 3(x) = 0\n2x^2 + 3x = 0\n\n3. Factor the equation:\n2x^2 + 3x = 0\n(2x + 3)(x + 1) = 0\n\nTherefore, the roots of x^2 + 3x = 0 are:\n\nx + 1 = 0\n2x + 3 = 0\n\nTo find the roots, we can use the quadratic formula:\n\nx = (-b ± √(b^2 - 4ac)) / (2a)\n\nfor the equation:\nax^2 + bx + c = 0\n\nFor the given equation:\na = 1, b = 2, c = 3\n\nSo, the roots are:\n\nx = (-1 ± √(1^2 - 4*3*1)) / (2*1)\nx = (-1 ± √(-3)) / (2)\nx = (1 ± √(-3)) / (2)\n\nTherefore, the roots of x^2 + 3x = 0 are:\n\nx + 1 = 0\n2x + 3 = 0\n\nThe two roots are:\n\n1. x = -3\n2. x = -1 + 3i\n\nThe detailed reasoning trace is as follows:\n\n1. Multiply both sides of the equation x^2 + 3x = 0 by 1/2:\n0.5x^2 + 0.5*3*x = 0.5(0)\n0.5(x^2 + 3x) = 0.5(0)\nx^2 + 3x = 0\n\n2. Simplify the equation:\nx^2 + 3x = 0\n2x(x) + 3(x) = 0\n2x^2 + 3x = 0\n\n3. Factor the equation:\n2x^2 + "
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      8908,
+      2279,
+      3435,
+      2829,
+      1695,
+      998,
+      2970,
+      2397
+    ],
+    "f_before": [
+      29.834659576416016,
+      36.32030487060547,
+      74.48664093017578,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      29.834659576416016,
+      36.32030487060547,
+      74.48664093017578,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      31.49616050720215,
+      17.47788429260254,
+      10.302756309509277,
+      7.6843953132629395,
+      3.146716356277466,
+      2.889281749725342,
+      2.9272513389587402,
+      0.04928016662597656,
+      2.900745153427124,
+      2.7342255115509033,
+      2.709699869155884
+    ],
+    "g_after": [
+      31.49616050720215,
+      17.47788429260254,
+      10.302756309509277,
+      7.6843953132629395,
+      3.146716356277466,
+      2.889281749725342,
+      2.9272513389587402,
+      0.04928016662597656,
+      2.900745153427124,
+      2.7342255115509033,
+      2.709699869155884
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.568553069072883,
+    "train_mean_l2": 7.2129372553662545,
+    "train_mean_l1": 3.428529784766906,
+    "num_steps": 1962,
+    "num_batches": 1962
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-195644/feature_std_layer_12.html",
+    "mean_std": 2.379754066467285,
+    "max_std": 91.05052185058594
+  }
+}

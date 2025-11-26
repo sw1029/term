@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 1,
+    "max_steps": 1000,
+    "concept_samples_per_label": 250,
+    "loss_option": 1,
+    "loss_module": "option1_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "# -*- coding: utf-8 -*- #\n\"\"\"*********************************************************************************************\"\"\"\n#   FileName     [ expert.py ]\n#   Synopsis     [ the phone linear downstream wrapper ]\n#   Author       [ S3PRL ]\n#   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]\n\"\"\"*********************************************************************************************\"\"\"\n\n\n###############\n# IMPORTATION #\n###############\nimport os\nimport math\nimport torch\nimport random\nimport pathlib\n#-------------#\nimport torch\nimport torch.nn as nn\nfrom torch.utils.data import DataLoader, DistributedSampler\nfrom torch.distributed import is_initialized\nfrom torch.nn.utils.rnn import pad_sequence\n#-------------#\nfrom ..model import *\nfrom .dataset import SpeakerClassifiDataset\nfrom argparse import Namespace\nfrom pathlib import Path\n\n\nclass DownstreamExpert(nn.Module):\n    \"\"\"\n    Used to handle downstream-specific operations\n    eg. downstream forward, metric computation, contents to log\n    \"\"\"\n\n    def __init__(self, upstream_dim, downstream_expert, expdir, **kwargs):\n        super(DownstreamExpert, self).__init__()\n        self.upstream_dim = upstream_dim\n        self.downstream = downstream_expert\n        self.datarc = downstream_expert['datarc']\n        self.modelrc = downstream_expert['modelrc']\n\n        root_dir = Path(self.datarc['file_path'])\n\n        self.train_dataset = SpeakerClassifiDataset('train', root_dir, self.datarc['meta_data'], self.datarc['max_timestep'])\n        self.dev_dataset = SpeakerClassifiDataset('dev', root_dir, self.datarc['meta_data'])\n        self.test_dataset = SpeakerClassifiDataset('test', root_dir, self.datarc['meta_data'])\n        \n        model_cls = eval(self.modelrc['select'])\n        model_conf = self.modelrc.get(self.modelrc['select'], {})\n        self.projector = nn.Linear(upstream_dim, self.modelrc['projector_dim'])\n        self.model = model_cls(\n            input_dim = self.modelrc['projector_dim'],\n            output_dim = self.train_dataset.speaker_num,\n            **model_conf,\n        )\n        self.objective = nn.CrossEntropyLoss()\n        \n        self.logging = os.path.join(expdir, 'log.log')\n        self.register_buffer('best_score', torch.zeros(1))\n\n    def _get_train_dataloader(self, dataset):\n        sampler = DistributedSampler(dataset) if is_initialized() else None\n        return DataLoader(\n            dataset, batch_size=self.datarc['train_batch_size'], \n            shuffle=(sampler is None), sampler=sampler,\n            num_workers=self.datarc['num_workers'],\n            collate_fn=dataset.collate_fn\n        )\n\n    def _get_eval_dataloader(self, dataset):\n        return DataLoader(\n            dataset, batch_size=self.datarc['eval_batch_size'],\n            shuffle=False, num_workers=self.datarc['num_workers'],\n            collate_fn=dataset.collate_fn\n        )\n\n    def get_train_dataloader(self):\n        return self._get_train_dataloader(self.train_dataset)\n\n    def get_dev_dataloader(self):\n        return self._get_eval_dataloader(self.dev_dataset)\n\n    def get_test_dataloader(self):\n        return self._get_eval_dataloader(self.test_dataset)\n\n    # Interface\n    def get_dataloader(self, mode):\n        return eval(f'self.get_{mode}_dataloader')()\n\n    # Interface\n    def forward(self, mode, features, labels, records, **kwargs):\n        device = features[0].device\n        features_len = torch.IntTensor([len(feat) for feat in features]).to(device=device)\n        features = pad_sequence(features, batch_first=True)\n        features = self.projector(features)\n        predicted, _ = self.model(features, features_len)\n\n        labels = torch.LongTensor(labels).to(features.device)\n        loss = self.objective(predicted, labels)\n\n        predicted_classid = predicted.max(dim=-1).indices\n        records['acc'] += (predicted_classid == labels).view(-1).cpu().float().tolist()\n        records['loss'].append(loss.item())\n\n        return loss\n\n    # interface\n    def log_records(self, mode, records, logger, global_step, **kwargs):\n        save_names = []\n        for key, values in records.items():\n            average = torch.FloatTensor(values).mean().item()\n            logger.add_scalar(\n                f'voxceleb1/{mode}-{key}',\n                average,\n                global_step=global_step\n            )\n            with open(self.logging, 'a') as f:\n                if key == 'acc':\n                    f.write(f'{mode} at step {global_step}: {average}\\n')\n                    if mode == 'dev' and average > self.best_score:\n                        self.best_score = torch.ones(1) * average\n                        f.write(f'New best on {mode} at step {global_step}: {average}\\n')\n                        save_names.append(f'{mode}-best.ckpt')\n        return save_names\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*- #\n\"\"\"*********************************************************************************************\"\"\"\n#   FileName     [ expert.py ]\n#   Synopsis     [ the phone linear downstream wrapper ]\n#   Author       [ S3PRL ]\n#   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]\n\"\"\"*********************************************************************************************\"\"\"\n\n\n###############\n# IMPORTATION #\n###############\nimport os\nimport math\nimport torch\nimport random\nimport pathlib\n#-------------#\nimport torch\nimport torch.nn as nn\nfrom torch.utils.data import DataLoader, DistributedSampler\nfrom torch.distributed import is_initialized\nfrom torch.nn.utils.rnn import pad_sequence\n#-------------#\nfrom ..model import *\nfrom .dataset import SpeakerClassifiDataset\nfrom argparse import Namespace\nfrom pathlib import Path\n\n\nclass DownstreamExpert(nn.Module):\n    \"\"\"\n    Used to handle downstream-specific operations\n    eg. downstream forward, metric computation, contents to log\n    \"\"\"\n\n    def __init__(self, upstream_dim, downstream_expert, expdir, **kwargs):\n        super(DownstreamExpert, self).__init__()\n        self.upstream_dim = upstream_dim\n        self.downstream = downstream_expert\n        self.datarc = downstream_expert['datarc']\n        self.modelrc = downstream_expert['modelrc']\n\n        root_dir = Path(self.datarc['file_path'])\n\n        self.train_dataset = SpeakerClassifiDataset('train', root_dir, self.datarc['meta_data'], self.datarc['max_timestep'])\n        self.dev_dataset = SpeakerClassifiDataset('dev', root_dir, self.datarc['meta_data'])\n        self.test_dataset = SpeakerClassifiDataset('test', root_dir, self.datarc['meta_data'])\n        \n        model_cls = eval(self.modelrc['select'])\n        model_conf = self.modelrc.get(self.modelrc['select'], {})\n        self.projector = nn.Linear(upstream_dim, self.modelrc['projector_dim'])\n        self.model = model_cls(\n            input_dim = self.modelrc['projector_dim'],\n            output_dim = self.train_dataset.speaker_num,\n            **model_conf,\n        )\n        self.objective = nn.CrossEntropyLoss()\n        \n        self.logging = os.path.join(expdir, 'log.log')\n        self.register_buffer('best_score', torch.zeros(1))\n\n    def _get_train_dataloader(self, dataset):\n        sampler = DistributedSampler(dataset) if is_initialized() else None\n        return DataLoader(\n            dataset, batch_size=self.datarc['train_batch_size'], \n            shuffle=(sampler is None), sampler=sampler,\n            num_workers=self.datarc['num_workers'],\n            collate_fn=dataset.collate_fn\n        )\n\n    def _get_eval_dataloader(self, dataset):\n        return DataLoader(\n            dataset, batch_size=self.datarc['eval_batch_size'],\n            shuffle=False, num_workers=self.datarc['num_workers'],\n            collate_fn=dataset.collate_fn\n        )\n\n    def get_train_dataloader(self):\n        return self._get_train_dataloader(self.train_dataset)\n\n    def get_dev_dataloader(self):\n        return self._get_eval_dataloader(self.dev_dataset)\n\n    def get_test_dataloader(self):\n        return self._get_eval_dataloader(self.test_dataset)\n\n    # Interface\n    def get_dataloader(self, mode):\n        return eval(f'self.get_{mode}_dataloader')()\n\n    # Interface\n    def forward(self, mode, features, labels, records, **kwargs):\n        device = features[0].device\n        features_len = torch.IntTensor([len(feat) for feat in features]).to(device=device)\n        features = pad_sequence(features, batch_first=True)\n        features = self.projector(features)\n        predicted, _ = self.model(features, features_len)\n\n        labels = torch.LongTensor(labels).to(features.device)\n        loss = self.objective(predicted, labels)\n\n        predicted_classid = predicted.max(dim=-1).indices\n        records['acc'] += (predicted_classid == labels).view(-1).cpu().float().tolist()\n        records['loss'].append(loss.item())\n\n        return loss\n\n    # interface\n    def log_records(self, mode, records, logger, global_step, **kwargs):\n        save_names = []\n        for key, values in records.items():\n            average = torch.FloatTensor(values).mean().item()\n            logger.add_scalar(\n                f'voxceleb1/{mode}-{key}',\n                average,\n                global_step=global_step\n            )\n            with open(self.logging, 'a') as f:\n                if key == 'acc':\n                    f.write(f'{mode} at step {global_step}: {average}\\n')\n                    if mode == 'dev' and average > self.best_score:\n                        self.best_score = torch.ones(1) * average\n                        f.write(f'New best on {mode} at step {global_step}: {average}\\n')\n                        save_names.append(f'{mode}-best.ckpt')\n        return save_names\n    \n\n    \n    \n# Example usage\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--expdir', type=str, default='exp', help='Path to the",
+    "after": "# -*- coding: utf-8 -*- #\n\"\"\"*********************************************************************************************\"\"\"\n#   FileName     [ expert.py ]\n#   Synopsis     [ the phone linear downstream wrapper ]\n#   Author       [ S3PRL ]\n#   Copyright    [ Copyleft(c), Speech Lab, NTU, Taiwan ]\n\"\"\"*********************************************************************************************\"\"\"\n\n\n###############\n# IMPORTATION #\n###############\nimport os\nimport math\nimport torch\nimport random\nimport pathlib\n#-------------#\nimport torch\nimport torch.nn as nn\nfrom torch.utils.data import DataLoader, DistributedSampler\nfrom torch.distributed import is_initialized\nfrom torch.nn.utils.rnn import pad_sequence\n#-------------#\nfrom ..model import *\nfrom .dataset import SpeakerClassifiDataset\nfrom argparse import Namespace\nfrom pathlib import Path\n\n\nclass DownstreamExpert(nn.Module):\n    \"\"\"\n    Used to handle downstream-specific operations\n    eg. downstream forward, metric computation, contents to log\n    \"\"\"\n\n    def __init__(self, upstream_dim, downstream_expert, expdir, **kwargs):\n        super(DownstreamExpert, self).__init__()\n        self.upstream_dim = upstream_dim\n        self.downstream = downstream_expert\n        self.datarc = downstream_expert['datarc']\n        self.modelrc = downstream_expert['modelrc']\n\n        root_dir = Path(self.datarc['file_path'])\n\n        self.train_dataset = SpeakerClassifiDataset('train', root_dir, self.datarc['meta_data'], self.datarc['max_timestep'])\n        self.dev_dataset = SpeakerClassifiDataset('dev', root_dir, self.datarc['meta_data'])\n        self.test_dataset = SpeakerClassifiDataset('test', root_dir, self.datarc['meta_data'])\n        \n        model_cls = eval(self.modelrc['select'])\n        model_conf = self.modelrc.get(self.modelrc['select'], {})\n        self.projector = nn.Linear(upstream_dim, self.modelrc['projector_dim'])\n        self.model = model_cls(\n            input_dim = self.modelrc['projector_dim'],\n            output_dim = self.train_dataset.speaker_num,\n            **model_conf,\n        )\n        self.objective = nn.CrossEntropyLoss()\n        \n        self.logging = os.path.join(expdir, 'log.log')\n        self.register_buffer('best_score', torch.zeros(1))\n\n    def _get_train_dataloader(self, dataset):\n        sampler = DistributedSampler(dataset) if is_initialized() else None\n        return DataLoader(\n            dataset, batch_size=self.datarc['train_batch_size'], \n            shuffle=(sampler is None), sampler=sampler,\n            num_workers=self.datarc['num_workers'],\n            collate_fn=dataset.collate_fn\n        )\n\n    def _get_eval_dataloader(self, dataset):\n        return DataLoader(\n            dataset, batch_size=self.datarc['eval_batch_size'],\n            shuffle=False, num_workers=self.datarc['num_workers'],\n            collate_fn=dataset.collate_fn\n        )\n\n    def get_train_dataloader(self):\n        return self._get_train_dataloader(self.train_dataset)\n\n    def get_dev_dataloader(self):\n        return self._get_eval_dataloader(self.dev_dataset)\n\n    def get_test_dataloader(self):\n        return self._get_eval_dataloader(self.test_dataset)\n\n    # Interface\n    def get_dataloader(self, mode):\n        return eval(f'self.get_{mode}_dataloader')()\n\n    # Interface\n    def forward(self, mode, features, labels, records, **kwargs):\n        device = features[0].device\n        features_len = torch.IntTensor([len(feat) for feat in features]).to(device=device)\n        features = pad_sequence(features, batch_first=True)\n        features = self.projector(features)\n        predicted, _ = self.model(features, features_len)\n\n        labels = torch.LongTensor(labels).to(features.device)\n        loss = self.objective(predicted, labels)\n\n        predicted_classid = predicted.max(dim=-1).indices\n        records['acc'] += (predicted_classid == labels).view(-1).cpu().float().tolist()\n        records['loss'].append(loss.item())\n\n        return loss\n\n    # interface\n    def log_records(self, mode, records, logger, global_step, **kwargs):\n        save_names = []\n        for key, values in records.items():\n            average = torch.FloatTensor(values).mean().item()\n            logger.add_scalar(\n                f'voxceleb1/{mode}-{key}',\n                average,\n                global_step=global_step\n            )\n            with open(self.logging, 'a') as f:\n                if key == 'acc':\n                    f.write(f'{mode} at step {global_step}: {average}\\n')\n                    if mode == 'dev' and average > self.best_score:\n                        self.best_score = torch.ones(1) * average\n                        f.write(f'New best on {mode} at step {global_step}: {average}\\n')\n                        save_names.append(f'{mode}-best.ckpt')\n        return save_names\n    \n    # Interface\n    def init_model(self):\n        return self.model\n    \n    # Interface\n    def init_log(self, logger):\n        return logger\n    \n    # Interface\n    def"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      418,
+      1641,
+      5597,
+      8372,
+      4662,
+      3238,
+      3787,
+      5933,
+      3814
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      9.68109130859375,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.001273239147849381,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      9.68109130859375,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.001273239147849381,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 15.652211345553399,
+    "train_mean_l2": 11.55342114698887,
+    "train_mean_l1": 4.098790381908417,
+    "num_steps": 1000,
+    "num_batches": 1000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-175135/feature_std_layer_12.html",
+    "mean_std": 1.074162483215332,
+    "max_std": 22.999488830566406
+  }
+}

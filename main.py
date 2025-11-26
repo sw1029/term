@@ -12,6 +12,7 @@ Hydra 기반 구성:
 """
 
 import hydra
+import sys
 from omegaconf import DictConfig
 
 from runner import run_experiment
@@ -23,9 +24,10 @@ def main(cfg: DictConfig) -> None:
     Hydra가 넘겨주는 설정(cfg)을 받아
     run_experiment 에 위임하는 얇은 래퍼.
     """
-    run_experiment(cfg)
+    # 전체 실행 명령어를 문자열로 기록 (예: "python main.py ...")
+    cli_command = " ".join(sys.argv)
+    run_experiment(cfg, cli_command=cli_command)
 
 
 if __name__ == "__main__":
     main()
-

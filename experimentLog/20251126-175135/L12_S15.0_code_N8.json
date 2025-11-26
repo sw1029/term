@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 1,
+    "max_steps": 1000,
+    "concept_samples_per_label": 250,
+    "loss_option": 1,
+    "loss_module": "option1_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n\n\"\"\"\\\nThis script creates a stack array\n\"\"\"\n\nimport diypy3\n\nd = diypy3.Diypy3()\narr_stk = (1, 2, 3, 4, 5)\nmax_size = 100\ninc = 10\nd.array_stack(max_size, inc, arr_stk)\n",
+  "output": {
+    "before": "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n\n\"\"\"\\\nThis script creates a stack array\n\"\"\"\n\nimport diypy3\n\nd = diypy3.Diypy3()\narr_stk = (1, 2, 3, 4, 5)\nmax_size = 100\ninc = 10\nd.array_stack(max_size, inc, arr_stk)\nd.print_stack()\nd.destroy()\n\n```\n\n**Explanation:**\n\n* **Import diypy3:** This line imports the `diypy3` library, which is a Python library for interacting with a physical robot.",
+    "after": "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n\n\"\"\"\\\nThis script creates a stack array\n\"\"\"\n\nimport diypy3\n\nd = diypy3.Diypy3()\narr_stk = (1, 2, 3, 4, 5)\nmax_size = 100\ninc = 10\nd.array_stack(max_size, inc, arr_stk)\n#d.array_stack(arr_stk)\nprint(\"Stack array created\")\n```\n\n**Explanation:**\n\n1. **Import:** This line imports the necessary `diypy3` module.\n\n2. **Create Stack Array"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      418,
+      1641,
+      5597,
+      8372,
+      4662,
+      3238,
+      3787,
+      5933,
+      3814
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      13.484153747558594,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.08363398164510727,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      13.484153747558594,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.08363398164510727,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 15.652211345553399,
+    "train_mean_l2": 11.55342114698887,
+    "train_mean_l1": 4.098790381908417,
+    "num_steps": 1000,
+    "num_batches": 1000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-175135/feature_std_layer_12.html",
+    "mean_std": 1.074162483215332,
+    "max_std": 22.999488830566406
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 2,
+    "loss_module": "option2_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: Разбей фразу \"Метотрексат-Эбеве раствор для инъекций 10 мг/мл флакон 5 мл\" на ключевые фразы, без поясняющего текста, результаты раздели на строки\nassistant: Метотрексат-Эбеве, раствор для инъекций, 10 мг/мл, флакон, 5 мл",
+  "output": {
+    "before": "user: Разбей фразу \"Метотрексат-Эбеве раствор для инъекций 10 мг/мл флакон 5 мл\" на ключевые фразы, без поясняющего текста, результаты раздели на строки\nassistant: Метотрексат-Эбеве, раствор для инъекций, 10 мг/мл, флакон, 5 мл \n",
+    "after": "user: Разбей фразу \"Метотрексат-Эбеве раствор для инъекций 10 мг/мл флакон 5 мл\" на ключевые фразы, без поясняющего текста, результаты раздели на строки\nassistant: Метотрексат-Эбеве, раствор для инъекций, 10 мг/мл, флакон, 5 мл.\n\nThis is a direct translation of the product description. \n\nIt seems like the product is meant to be a \"solution\" for injections.\nI can understand that the user wants to know the product's name, so let me break"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2,
+      46,
+      5593,
+      1743,
+      2334,
+      7476,
+      7541,
+      1888,
+      9055,
+      8869
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      1.828969955444336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      1.828969955444336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.720714295725028,
+    "train_mean_l2": 3.934641513635715,
+    "train_mean_l1": 2.149144583642483,
+    "num_steps": 3000,
+    "num_batches": 3000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-182205/feature_std_layer_12.html",
+    "mean_std": 1.436635136604309,
+    "max_std": 39.19367599487305
+  }
+}

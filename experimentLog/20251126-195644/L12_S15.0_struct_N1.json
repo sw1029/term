@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 1,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 2,
+    "loss_module": "option2_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "from sigbox.signal_decorator import SignalDecorator\nfrom sigbox.signal_box import SignalBox, SignalBoxClass\nfrom sigbox.sigbox import SigBox\n\n__all__ = [SignalBox, SignalDecorator, SignalBoxClass, SigBox]",
+  "output": {
+    "before": "from sigbox.signal_decorator import SignalDecorator\nfrom sigbox.signal_box import SignalBox, SignalBoxClass\nfrom sigbox.sigbox import SigBox\n\n__all__ = [SignalBox, SignalDecorator, SignalBoxClass, SigBox]\n\nclass MySignalBox(SignalBox):\n    \"\"\"\n    A custom signal box class.\n    \"\"\"\n\n    def __init__(self, name=\"my_signal_box\", **kwargs):\n        super().__init__(name,",
+    "after": "from sigbox.signal_decorator import SignalDecorator\nfrom sigbox.signal_box import SignalBox, SignalBoxClass\nfrom sigbox.sigbox import SigBox\n\n__all__ = [SignalBox, SignalDecorator, SignalBoxClass, SigBox]\n__all__ = [\n    \"SignalBox\",\n    \"SignalDecorator\",\n    \"SignalBoxClass\",\n    \"SigBox\",\n]\n```\n\n**Explanation:**\n\n* **`SignalBox`**: The core class"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      8908,
+      2279,
+      3435,
+      2829,
+      1695,
+      998,
+      2970,
+      2397
+    ],
+    "f_before": [
+      102.85896301269531,
+      226.65704345703125,
+      15.752079963684082,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      102.85896301269531,
+      226.65704345703125,
+      15.752079963684082,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      115.54393005371094,
+      60.2573356628418,
+      35.52012634277344,
+      37.19880676269531,
+      10.740533828735352,
+      9.961183547973633,
+      10.09208869934082,
+      0.0,
+      10.000704765319824,
+      9.426606178283691,
+      9.281429290771484
+    ],
+    "g_after": [
+      115.54393005371094,
+      60.2573356628418,
+      35.52012634277344,
+      37.19880676269531,
+      10.740533828735352,
+      9.961183547973633,
+      10.09208869934082,
+      0.0,
+      10.000704765319824,
+      9.426606178283691,
+      9.281429290771484
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.568553069072883,
+    "train_mean_l2": 7.2129372553662545,
+    "train_mean_l1": 3.428529784766906,
+    "num_steps": 1962,
+    "num_batches": 1962
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-195644/feature_std_layer_12.html",
+    "mean_std": 2.379754066467285,
+    "max_std": 91.05052185058594
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 3,
+    "loss_module": "option3_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "\nfrom lxml.builder import ElementMaker\n\nfrom moai.metadata.mods import NL_MODS, XSI_NS\n\n        \nclass DIDL(object):\n    \"\"\"A metadata prefix implementing the DARE DIDL metadata format\n    this format is registered under the name \"didl\"\n    Note that this format re-uses oai_dc and mods formats that come with\n    MOAI by default\n    \"\"\"\n        \n    def __init__(self, prefix, config, db):\n        self.prefix = prefix\n        self.config = config\n        self.db = db\n\n        self.ns = {'didl': \"urn:mpeg:mpeg21:2002:02-DIDL-NS\",\n                   'dii': \"urn:mpeg:mpeg21:2002:01-DII-NS\",\n                   'dip': \"urn:mpeg:mpeg21:2005:01-DIP-NS\",\n                   'dcterms': \"http://purl.org/dc/terms/\",\n                   'xsi': \"http://www.w3.org/2001/XMLSchema-instance\",\n                   'rdf': \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\",\n                   'dc': 'http://purl.org/dc/elements/1.1/',\n                   }\n\n        self.schemas = {'didl':'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/did/didl.xsd',\n                        'dii': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dii/dii.xsd',\n                        'dip': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dip/dip.xsd'}\n        \n    def get_namespace(self):\n        return self.ns[self.prefix]\n\n    def get_schema_location(self):\n        return self.schemas[self.prefix]\n\n        \n    def __call__(self, element, metadata):\n        data = metadata.record\n        \n        DIDL = ElementMaker(namespace=self.ns['didl'], nsmap=self.ns)\n        DII = ElementMaker(namespace=self.ns['dii'])\n        DIP = ElementMaker(namespace=self.ns['dip'])\n        RDF = ElementMaker(namespace=self.ns['rdf'])\n        DCTERMS = ElementMaker(namespace=self.ns['dcterms'])\n\n        oai_url = (self.config.url+'?verb=GetRecord&'\n                   'metadataPrefix=%s&identifier=%s' % (\n            self.prefix,\n            data['id']))\n\n        id_url = data['metadata'].get('url', [None])[0]        \n\n        # generate mods for this feed\n        mods_data = DIDL.Resource(mimeType=\"application/xml\")\n        NL_MODS('mods', self.config, self.db)(mods_data, metadata)\n\n        asset_data = []\n\n        descriptive_metadata = RDF.type()\n        descriptive_metadata.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/descriptiveMetadata')\n        \n        didl = DIDL.DIDL(\n            DIDL.Item(\n             DIDL.Descriptor(\n              DIDL.Statement(\n               DCTERMS.modified(data['modified'].isoformat().split('.')[0]),\n               mimeType=\"application/xml\"\n               )\n              ),\n             DIDL.Component(\n              DIDL.Resource(ref=id_url or oai_url,mimeType=\"application/xml\")\n              ),\n             DIDL.Item(\n              DIDL.Descriptor(\n               DIDL.Statement(descriptive_metadata, mimeType=\"application/xml\")\n               ),\n              DIDL.Component(\n                DIDL.Descriptor(\n                   DIDL.Statement(\"mods\", mimeType=\"text/plain\")),\n                mods_data)\n              ),\n             )\n            )\n\n        object_file = RDF.type()\n        object_file.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/objectFile')\n        for root_item in didl:\n            for asset in data['metadata'].get('asset', []):\n                url = asset['url']\n                if not url.startswith('http://'):\n                    url = self.config.url.rstrip('/') + '/' + url.lstrip('/')\n                item = DIDL.Item(\n                    DIDL.Descriptor(\n                     DIDL.Statement(object_file, mimeType=\"application/xml\")\n                     )\n                    )\n                access = asset.get('access')\n                if access == 'open':\n                    access = (\n                        'http://purl.org/eprint/accessRights/OpenAccess')\n                elif access == 'restricted':\n                    access = (\n                        'http://purl.org/eprint/accessRights/RestrictedAccess')\n                elif access == 'closed':\n                    access = (\n                        'http://purl.org/eprint/accessRights/ClosedAccess')\n                if access:\n                    item.append(\n                        DIDL.Descriptor(\n                        DIDL.Statement(DCTERMS.accessRights(access),\n                                       mimeType=\"application/xml\")))\n                for modified in asset.get('modified', []):\n                    item.append(\n                        DIDL.Descriptor(\n                                DIDL.Statement(DCTERMS.modified(modified),\n                                               mimeType=\"application/xml\")))\n                    \n                item.append(\n                    DIDL.Component(\n                     DIDL.Resource(mimeType=asset['mimetype'],\n                                   ref=url)\n                     )\n                    )\n\n                root_item.append(item)\n            break\n        \n        human_start_page = RDF.type()\n        human_start_page.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/humanStartPage')\n        if data['metadata'].get('url'):\n             item = DIDL.Item(\n                 DIDL.Descriptor(\n                  DIDL.Statement(human_start_page, mimeType=\"application/xml\")\n                  ),\n                 DIDL.Component(\n                  DIDL.Resource(mimeType=\"text/html\", ref=data['metadata']['url'][0])\n                 )\n                )\n             root_item.append(item)\n        \n        didl.attrib['{%s}schemaLocation' % XSI_NS] = (\n            '%s %s %s %s %s %s' % (self.ns['didl'],\n                                   self.schemas['didl'],\n                                   self.ns['dii'],\n                                   self.schemas['dii'],\n                                   self.ns['dip'],\n                                   self.schemas['dip']))\n        element.append(didl)\n",
+  "output": {
+    "before": "\nfrom lxml.builder import ElementMaker\n\nfrom moai.metadata.mods import NL_MODS, XSI_NS\n\n        \nclass DIDL(object):\n    \"\"\"A metadata prefix implementing the DARE DIDL metadata format\n    this format is registered under the name \"didl\"\n    Note that this format re-uses oai_dc and mods formats that come with\n    MOAI by default\n    \"\"\"\n        \n    def __init__(self, prefix, config, db):\n        self.prefix = prefix\n        self.config = config\n        self.db = db\n\n        self.ns = {'didl': \"urn:mpeg:mpeg21:2002:02-DIDL-NS\",\n                   'dii': \"urn:mpeg:mpeg21:2002:01-DII-NS\",\n                   'dip': \"urn:mpeg:mpeg21:2005:01-DIP-NS\",\n                   'dcterms': \"http://purl.org/dc/terms/\",\n                   'xsi': \"http://www.w3.org/2001/XMLSchema-instance\",\n                   'rdf': \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\",\n                   'dc': 'http://purl.org/dc/elements/1.1/',\n                   }\n\n        self.schemas = {'didl':'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/did/didl.xsd',\n                        'dii': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dii/dii.xsd',\n                        'dip': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dip/dip.xsd'}\n        \n    def get_namespace(self):\n        return self.ns[self.prefix]\n\n    def get_schema_location(self):\n        return self.schemas[self.prefix]\n\n        \n    def __call__(self, element, metadata):\n        data = metadata.record\n        \n        DIDL = ElementMaker(namespace=self.ns['didl'], nsmap=self.ns)\n        DII = ElementMaker(namespace=self.ns['dii'])\n        DIP = ElementMaker(namespace=self.ns['dip'])\n        RDF = ElementMaker(namespace=self.ns['rdf'])\n        DCTERMS = ElementMaker(namespace=self.ns['dcterms'])\n\n        oai_url = (self.config.url+'?verb=GetRecord&'\n                   'metadataPrefix=%s&identifier=%s' % (\n            self.prefix,\n            data['id']))\n\n        id_url = data['metadata'].get('url', [None])[0]        \n\n        # generate mods for this feed\n        mods_data = DIDL.Resource(mimeType=\"application/xml\")\n        NL_MODS('mods', self.config, self.db)(mods_data, metadata)\n\n        asset_data = []\n\n        descriptive_metadata = RDF.type()\n        descriptive_metadata.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/descriptiveMetadata')\n        \n        didl = DIDL.DIDL(\n            DIDL.Item(\n             DIDL.Descriptor(\n              DIDL.Statement(\n               DCTERMS.modified(data['modified'].isoformat().split('.')[0]),\n               mimeType=\"application/xml\"\n               )\n              ),\n             DIDL.Component(\n              DIDL.Resource(ref=id_url or oai_url,mimeType=\"application/xml\")\n              ),\n             DIDL.Item(\n              DIDL.Descriptor(\n               DIDL.Statement(descriptive_metadata, mimeType=\"application/xml\")\n               ),\n              DIDL.Component(\n                DIDL.Descriptor(\n                   DIDL.Statement(\"mods\", mimeType=\"text/plain\")),\n                mods_data)\n              ),\n             )\n            )\n\n        object_file = RDF.type()\n        object_file.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/objectFile')\n        for root_item in didl:\n            for asset in data['metadata'].get('asset', []):\n                url = asset['url']\n                if not url.startswith('http://'):\n                    url = self.config.url.rstrip('/') + '/' + url.lstrip('/')\n                item = DIDL.Item(\n                    DIDL.Descriptor(\n                     DIDL.Statement(object_file, mimeType=\"application/xml\")\n                     )\n                    )\n                access = asset.get('access')\n                if access == 'open':\n                    access = (\n                        'http://purl.org/eprint/accessRights/OpenAccess')\n                elif access == 'restricted':\n                    access = (\n                        'http://purl.org/eprint/accessRights/RestrictedAccess')\n                elif access == 'closed':\n                    access = (\n                        'http://purl.org/eprint/accessRights/ClosedAccess')\n                if access:\n                    item.append(\n                        DIDL.Descriptor(\n                        DIDL.Statement(DCTERMS.accessRights(access),\n                                       mimeType=\"application/xml\")))\n                for modified in asset.get('modified', []):\n                    item.append(\n                        DIDL.Descriptor(\n                                DIDL.Statement(DCTERMS.modified(modified),\n                                               mimeType=\"application/xml\")))\n                    \n                item.append(\n                    DIDL.Component(\n                     DIDL.Resource(mimeType=asset['mimetype'],\n                                   ref=url)\n                     )\n                    )\n\n                root_item.append(item)\n            break\n        \n        human_start_page = RDF.type()\n        human_start_page.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/humanStartPage')\n        if data['metadata'].get('url'):\n             item = DIDL.Item(\n                 DIDL.Descriptor(\n                  DIDL.Statement(human_start_page, mimeType=\"application/xml\")\n                  ),\n                 DIDL.Component(\n                  DIDL.Resource(mimeType=\"text/html\", ref=data['metadata']['url'][0])\n                 )\n                )\n             root_item.append(item)\n        \n        didl.attrib['{%s}schemaLocation' % XSI_NS] = (\n            '%s %s %s %s %s %s' % (self.ns['didl'],\n                                   self.schemas['didl'],\n                                   self.ns['dii'],\n                                   self.schemas['dii'],\n                                   self.ns['dip'],\n                                   self.schemas['dip']))\n        element.append(didl)\n        \n    def to_xml(self, element):\n        return ElementMaker(namespace=self.ns['didl']).DIDL(element)\n\n        \n# Example usage\nconfig = {'url': 'http://example.com",
+    "after": "\nfrom lxml.builder import ElementMaker\n\nfrom moai.metadata.mods import NL_MODS, XSI_NS\n\n        \nclass DIDL(object):\n    \"\"\"A metadata prefix implementing the DARE DIDL metadata format\n    this format is registered under the name \"didl\"\n    Note that this format re-uses oai_dc and mods formats that come with\n    MOAI by default\n    \"\"\"\n        \n    def __init__(self, prefix, config, db):\n        self.prefix = prefix\n        self.config = config\n        self.db = db\n\n        self.ns = {'didl': \"urn:mpeg:mpeg21:2002:02-DIDL-NS\",\n                   'dii': \"urn:mpeg:mpeg21:2002:01-DII-NS\",\n                   'dip': \"urn:mpeg:mpeg21:2005:01-DIP-NS\",\n                   'dcterms': \"http://purl.org/dc/terms/\",\n                   'xsi': \"http://www.w3.org/2001/XMLSchema-instance\",\n                   'rdf': \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\",\n                   'dc': 'http://purl.org/dc/elements/1.1/',\n                   }\n\n        self.schemas = {'didl':'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/did/didl.xsd',\n                        'dii': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dii/dii.xsd',\n                        'dip': 'http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-21_schema_files/dip/dip.xsd'}\n        \n    def get_namespace(self):\n        return self.ns[self.prefix]\n\n    def get_schema_location(self):\n        return self.schemas[self.prefix]\n\n        \n    def __call__(self, element, metadata):\n        data = metadata.record\n        \n        DIDL = ElementMaker(namespace=self.ns['didl'], nsmap=self.ns)\n        DII = ElementMaker(namespace=self.ns['dii'])\n        DIP = ElementMaker(namespace=self.ns['dip'])\n        RDF = ElementMaker(namespace=self.ns['rdf'])\n        DCTERMS = ElementMaker(namespace=self.ns['dcterms'])\n\n        oai_url = (self.config.url+'?verb=GetRecord&'\n                   'metadataPrefix=%s&identifier=%s' % (\n            self.prefix,\n            data['id']))\n\n        id_url = data['metadata'].get('url', [None])[0]        \n\n        # generate mods for this feed\n        mods_data = DIDL.Resource(mimeType=\"application/xml\")\n        NL_MODS('mods', self.config, self.db)(mods_data, metadata)\n\n        asset_data = []\n\n        descriptive_metadata = RDF.type()\n        descriptive_metadata.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/descriptiveMetadata')\n        \n        didl = DIDL.DIDL(\n            DIDL.Item(\n             DIDL.Descriptor(\n              DIDL.Statement(\n               DCTERMS.modified(data['modified'].isoformat().split('.')[0]),\n               mimeType=\"application/xml\"\n               )\n              ),\n             DIDL.Component(\n              DIDL.Resource(ref=id_url or oai_url,mimeType=\"application/xml\")\n              ),\n             DIDL.Item(\n              DIDL.Descriptor(\n               DIDL.Statement(descriptive_metadata, mimeType=\"application/xml\")\n               ),\n              DIDL.Component(\n                DIDL.Descriptor(\n                   DIDL.Statement(\"mods\", mimeType=\"text/plain\")),\n                mods_data)\n              ),\n             )\n            )\n\n        object_file = RDF.type()\n        object_file.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/objectFile')\n        for root_item in didl:\n            for asset in data['metadata'].get('asset', []):\n                url = asset['url']\n                if not url.startswith('http://'):\n                    url = self.config.url.rstrip('/') + '/' + url.lstrip('/')\n                item = DIDL.Item(\n                    DIDL.Descriptor(\n                     DIDL.Statement(object_file, mimeType=\"application/xml\")\n                     )\n                    )\n                access = asset.get('access')\n                if access == 'open':\n                    access = (\n                        'http://purl.org/eprint/accessRights/OpenAccess')\n                elif access == 'restricted':\n                    access = (\n                        'http://purl.org/eprint/accessRights/RestrictedAccess')\n                elif access == 'closed':\n                    access = (\n                        'http://purl.org/eprint/accessRights/ClosedAccess')\n                if access:\n                    item.append(\n                        DIDL.Descriptor(\n                        DIDL.Statement(DCTERMS.accessRights(access),\n                                       mimeType=\"application/xml\")))\n                for modified in asset.get('modified', []):\n                    item.append(\n                        DIDL.Descriptor(\n                                DIDL.Statement(DCTERMS.modified(modified),\n                                               mimeType=\"application/xml\")))\n                    \n                item.append(\n                    DIDL.Component(\n                     DIDL.Resource(mimeType=asset['mimetype'],\n                                   ref=url)\n                     )\n                    )\n\n                root_item.append(item)\n            break\n        \n        human_start_page = RDF.type()\n        human_start_page.attrib['{%s}resource' % self.ns['rdf']] = (\n            'info:eu-repo/semantics/humanStartPage')\n        if data['metadata'].get('url'):\n             item = DIDL.Item(\n                 DIDL.Descriptor(\n                  DIDL.Statement(human_start_page, mimeType=\"application/xml\")\n                  ),\n                 DIDL.Component(\n                  DIDL.Resource(mimeType=\"text/html\", ref=data['metadata']['url'][0])\n                 )\n                )\n             root_item.append(item)\n        \n        didl.attrib['{%s}schemaLocation' % XSI_NS] = (\n            '%s %s %s %s %s %s' % (self.ns['didl'],\n                                   self.schemas['didl'],\n                                   self.ns['dii'],\n                                   self.schemas['dii'],\n                                   self.ns['dip'],\n                                   self.schemas['dip']))\n        element.append(didl)\n        \n        return element\n\n    def get_metadata_format(self, element):\n        return self.config.get('metadata_format')\n    \n    def get_metadata_prefix(self, element):\n        return self"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      3600,
+      7196,
+      1592,
+      6372,
+      3645,
+      407,
+      1854,
+      4772,
+      6110,
+      6030
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.008638179861009121,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.008638179861009121,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.500702248136203,
+    "train_mean_l2": 4.52228784327209,
+    "train_mean_l1": 1.9784144236048062,
+    "num_steps": 3000,
+    "num_batches": 3000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-190647/feature_std_layer_12.html",
+    "mean_std": 0.993312418460846,
+    "max_std": 26.361066818237305
+  }
+}

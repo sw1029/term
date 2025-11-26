@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 1,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 2,
+    "loss_module": "option2_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "\"\"\"\nTests for file.rename state function\n\"\"\"\n# nox -e pytest-zeromq-3.8(coverage=False) -- -vvv --run-slow --run-destructive tests\\pytests\\functional\\states\\file\\test_rename.py\n\nimport pytest\nimport salt.utils.path\n\npytestmark = [\n    pytest.mark.windows_whitelisted,\n]\n\n\n@pytest.fixture(scope=\"module\")\ndef file(states):\n    return states.file\n\n\n@pytest.fixture(scope=\"function\")\ndef source():\n    with pytest.helpers.temp_file(\n        name=\"old_name.txt\", contents=\"Source content\"\n    ) as source:\n        yield source\n\n\ndef test_defaults(file, source):\n    \"\"\"\n    Test file.rename with defaults\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    try:\n        file.rename(name=str(new_name), source=str(source))\n        assert new_name.exists()\n        assert not source.exists()\n    finally:\n        new_name.unlink()\n\n\ndef test_relative_name(file):\n    \"\"\"\n    Test file.rename when name is a relative path\n    \"\"\"\n    result = file.rename(name=\"..\\\\rel\\\\path\\\\test\", source=str(source))\n    assert \"is not an absolute path\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is False\n\n\ndef test_missing_source(file, source):\n    \"\"\"\n    Test file.rename with the source file is missing\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    missing_name = source.parent / \"missing.txt\"\n    result = file.rename(name=str(new_name), source=str(missing_name))\n    assert \"has already been moved out of place\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is True\n\n\ndef test_target_exists(file, source):\n    \"\"\"\n    Test file.rename when there is an existing file with the new name\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    new_name.write_text(\"existing file\")\n    try:\n        result = file.rename(name=str(new_name), source=str(source))\n        assert \"exists and will not be overwritten\" in result.filtered[\"comment\"]\n        assert result.filtered[\"result\"] is True\n    finally:\n        new_name.unlink()\n\n\ndef test_target_exists_force(file, source):\n    \"\"\"\n    Test file.rename when there is an existing file with the new name and\n    force=True\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    new_name.write_text(\"existing file\")\n    try:\n        file.rename(name=str(new_name), source=str(source), force=True)\n        assert new_name.exists()\n        assert not source.exists()\n        assert new_name.read_text() == \"Source content\"\n    finally:\n        new_name.unlink()\n\n\ndef test_test_is_true(file, source):\n    new_name = source.parent / \"new_name.txt\"\n    result = file.rename(name=str(new_name), source=str(source), test=True)\n    assert \"is set to be moved to\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is None\n\n\ndef test_missing_dirs(file, source):\n    new_name = source.parent / \"missing_subdir\" / \"new_name.txt\"\n    result = file.rename(name=str(new_name), source=str(source))\n    assert \"is not present\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is False\n\n\ndef test_missing_dirs_makedirs(file, source):\n    new_name = source.parent / \"missing_subdir\" / \"new_name.txt\"\n    try:\n        file.rename(name=str(new_name), source=str(source), makedirs=True)\n        assert new_name.exists()\n        assert not source.exists()\n    finally:\n        new_name.unlink()\n        new_name.parent.rmdir()\n\n\ndef test_source_is_link(file, source):\n    link_source = source.parent / \"link_source.lnk\"\n    link_source.symlink_to(source)\n    new_name = source.parent / \"new_name.lnk\"\n    try:\n        file.rename(name=str(new_name), source=str(link_source))\n        assert new_name.exists()\n        assert new_name.is_symlink()\n        assert salt.utils.path.readlink(str(new_name)) == str(source)\n        assert new_name.read_text() == \"Source content\"\n        assert not link_source.exists()\n    finally:\n        new_name.unlink()\n",
+  "output": {
+    "before": "\"\"\"\nTests for file.rename state function\n\"\"\"\n# nox -e pytest-zeromq-3.8(coverage=False) -- -vvv --run-slow --run-destructive tests\\pytests\\functional\\states\\file\\test_rename.py\n\nimport pytest\nimport salt.utils.path\n\npytestmark = [\n    pytest.mark.windows_whitelisted,\n]\n\n\n@pytest.fixture(scope=\"module\")\ndef file(states):\n    return states.file\n\n\n@pytest.fixture(scope=\"function\")\ndef source():\n    with pytest.helpers.temp_file(\n        name=\"old_name.txt\", contents=\"Source content\"\n    ) as source:\n        yield source\n\n\ndef test_defaults(file, source):\n    \"\"\"\n    Test file.rename with defaults\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    try:\n        file.rename(name=str(new_name), source=str(source))\n        assert new_name.exists()\n        assert not source.exists()\n    finally:\n        new_name.unlink()\n\n\ndef test_relative_name(file):\n    \"\"\"\n    Test file.rename when name is a relative path\n    \"\"\"\n    result = file.rename(name=\"..\\\\rel\\\\path\\\\test\", source=str(source))\n    assert \"is not an absolute path\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is False\n\n\ndef test_missing_source(file, source):\n    \"\"\"\n    Test file.rename with the source file is missing\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    missing_name = source.parent / \"missing.txt\"\n    result = file.rename(name=str(new_name), source=str(missing_name))\n    assert \"has already been moved out of place\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is True\n\n\ndef test_target_exists(file, source):\n    \"\"\"\n    Test file.rename when there is an existing file with the new name\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    new_name.write_text(\"existing file\")\n    try:\n        result = file.rename(name=str(new_name), source=str(source))\n        assert \"exists and will not be overwritten\" in result.filtered[\"comment\"]\n        assert result.filtered[\"result\"] is True\n    finally:\n        new_name.unlink()\n\n\ndef test_target_exists_force(file, source):\n    \"\"\"\n    Test file.rename when there is an existing file with the new name and\n    force=True\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    new_name.write_text(\"existing file\")\n    try:\n        file.rename(name=str(new_name), source=str(source), force=True)\n        assert new_name.exists()\n        assert not source.exists()\n        assert new_name.read_text() == \"Source content\"\n    finally:\n        new_name.unlink()\n\n\ndef test_test_is_true(file, source):\n    new_name = source.parent / \"new_name.txt\"\n    result = file.rename(name=str(new_name), source=str(source), test=True)\n    assert \"is set to be moved to\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is None\n\n\ndef test_missing_dirs(file, source):\n    new_name = source.parent / \"missing_subdir\" / \"new_name.txt\"\n    result = file.rename(name=str(new_name), source=str(source))\n    assert \"is not present\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is False\n\n\ndef test_missing_dirs_makedirs(file, source):\n    new_name = source.parent / \"missing_subdir\" / \"new_name.txt\"\n    try:\n        file.rename(name=str(new_name), source=str(source), makedirs=True)\n        assert new_name.exists()\n        assert not source.exists()\n    finally:\n        new_name.unlink()\n        new_name.parent.rmdir()\n\n\ndef test_source_is_link(file, source):\n    link_source = source.parent / \"link_source.lnk\"\n    link_source.symlink_to(source)\n    new_name = source.parent / \"new_name.lnk\"\n    try:\n        file.rename(name=str(new_name), source=str(link_source))\n        assert new_name.exists()\n        assert new_name.is_symlink()\n        assert salt.utils.path.readlink(str(new_name)) == str(source)\n        assert new_name.read_text() == \"Source content\"\n        assert not link_source.exists()\n    finally:\n        new_name.unlink()\n        link_source.unlink()\n```",
+    "after": "\"\"\"\nTests for file.rename state function\n\"\"\"\n# nox -e pytest-zeromq-3.8(coverage=False) -- -vvv --run-slow --run-destructive tests\\pytests\\functional\\states\\file\\test_rename.py\n\nimport pytest\nimport salt.utils.path\n\npytestmark = [\n    pytest.mark.windows_whitelisted,\n]\n\n\n@pytest.fixture(scope=\"module\")\ndef file(states):\n    return states.file\n\n\n@pytest.fixture(scope=\"function\")\ndef source():\n    with pytest.helpers.temp_file(\n        name=\"old_name.txt\", contents=\"Source content\"\n    ) as source:\n        yield source\n\n\ndef test_defaults(file, source):\n    \"\"\"\n    Test file.rename with defaults\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    try:\n        file.rename(name=str(new_name), source=str(source))\n        assert new_name.exists()\n        assert not source.exists()\n    finally:\n        new_name.unlink()\n\n\ndef test_relative_name(file):\n    \"\"\"\n    Test file.rename when name is a relative path\n    \"\"\"\n    result = file.rename(name=\"..\\\\rel\\\\path\\\\test\", source=str(source))\n    assert \"is not an absolute path\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is False\n\n\ndef test_missing_source(file, source):\n    \"\"\"\n    Test file.rename with the source file is missing\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    missing_name = source.parent / \"missing.txt\"\n    result = file.rename(name=str(new_name), source=str(missing_name))\n    assert \"has already been moved out of place\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is True\n\n\ndef test_target_exists(file, source):\n    \"\"\"\n    Test file.rename when there is an existing file with the new name\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    new_name.write_text(\"existing file\")\n    try:\n        result = file.rename(name=str(new_name), source=str(source))\n        assert \"exists and will not be overwritten\" in result.filtered[\"comment\"]\n        assert result.filtered[\"result\"] is True\n    finally:\n        new_name.unlink()\n\n\ndef test_target_exists_force(file, source):\n    \"\"\"\n    Test file.rename when there is an existing file with the new name and\n    force=True\n    \"\"\"\n    new_name = source.parent / \"new_name.txt\"\n    new_name.write_text(\"existing file\")\n    try:\n        file.rename(name=str(new_name), source=str(source), force=True)\n        assert new_name.exists()\n        assert not source.exists()\n        assert new_name.read_text() == \"Source content\"\n    finally:\n        new_name.unlink()\n\n\ndef test_test_is_true(file, source):\n    new_name = source.parent / \"new_name.txt\"\n    result = file.rename(name=str(new_name), source=str(source), test=True)\n    assert \"is set to be moved to\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is None\n\n\ndef test_missing_dirs(file, source):\n    new_name = source.parent / \"missing_subdir\" / \"new_name.txt\"\n    result = file.rename(name=str(new_name), source=str(source))\n    assert \"is not present\" in result.filtered[\"comment\"]\n    assert result.filtered[\"result\"] is False\n\n\ndef test_missing_dirs_makedirs(file, source):\n    new_name = source.parent / \"missing_subdir\" / \"new_name.txt\"\n    try:\n        file.rename(name=str(new_name), source=str(source), makedirs=True)\n        assert new_name.exists()\n        assert not source.exists()\n    finally:\n        new_name.unlink()\n        new_name.parent.rmdir()\n\n\ndef test_source_is_link(file, source):\n    link_source = source.parent / \"link_source.lnk\"\n    link_source.symlink_to(source)\n    new_name = source.parent / \"new_name.lnk\"\n    try:\n        file.rename(name=str(new_name), source=str(link_source))\n        assert new_name.exists()\n        assert new_name.is_symlink()\n        assert salt.utils.path.readlink(str(new_name)) == str(source)\n        assert new_name.read_text() == \"Source content\"\n        assert not link_source.exists()\n    finally:\n        new_name.unlink()\n    \n    \n\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2,
+      5222,
+      4669,
+      9015,
+      3992,
+      6186,
+      5991,
+      8598,
+      6644,
+      4763
+    ],
+    "f_before": [
+      25.86406898498535,
+      54.750362396240234,
+      0.1694587767124176,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      25.86406898498535,
+      54.750362396240234,
+      0.1694587767124176,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      18.920326232910156,
+      59.56656265258789,
+      2.6346168518066406,
+      2.5130550861358643,
+      0.07692296802997589,
+      2.5116233825683594,
+      2.5814366340637207,
+      2.4329135417938232,
+      2.448178291320801,
+      0.0,
+      2.459235429763794
+    ],
+    "g_after": [
+      18.920326232910156,
+      59.56656265258789,
+      2.6346168518066406,
+      2.5130550861358643,
+      0.07692296802997589,
+      2.5116233825683594,
+      2.5814366340637207,
+      2.4329135417938232,
+      2.448178291320801,
+      0.0,
+      2.459235429763794
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.568553069072883,
+    "train_mean_l2": 7.2129372553662545,
+    "train_mean_l1": 3.428529784766906,
+    "num_steps": 1962,
+    "num_batches": 1962
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-195644/feature_std_layer_12.html",
+    "mean_std": 2.379754066467285,
+    "max_std": 91.05052185058594
+  }
+}

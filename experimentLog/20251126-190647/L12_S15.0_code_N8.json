@@ -1,0 +1,110 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 3000,
+    "concept_samples_per_label": 250,
+    "loss_option": 3,
+    "loss_module": "option3_loss"
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Describe the immigration process to the US.\n\nThe immigration process to the US involves three main stages: applying for a visa, attending an interview at a US embassy or consulate, and applying for a green card or other immigration status. The visa application requires filling out an online form, submitting documents and financial information, and attending an appointment for biometric testing. The visa interview at the embassy or consulate typically involves questions about the applicant's background and circumstances as well as providing additional documents. Finally, the green card application requires submitting a specific form, necessary documents and a filing fee.",
+  "output": {
+    "before": "Describe the immigration process to the US.\n\nThe immigration process to the US involves three main stages: applying for a visa, attending an interview at a US embassy or consulate, and applying for a green card or other immigration status. The visa application requires filling out an online form, submitting documents and financial information, and attending an appointment for biometric testing. The visa interview at the embassy or consulate typically involves questions about the applicant's background and circumstances as well as providing additional documents. Finally, the green card application requires submitting a specific form, necessary documents and a filing fee. \n\nHere's a breakdown of each stage:\n\n**1. Visa Application:**\n\n* **Determine Eligibility:** Research visa categories relevant to your situation. Common categories include family-based, employment-based, and refugee/asylee.",
+    "after": "Describe the immigration process to the US.\n\nThe immigration process to the US involves three main stages: applying for a visa, attending an interview at a US embassy or consulate, and applying for a green card or other immigration status. The visa application requires filling out an online form, submitting documents and financial information, and attending an appointment for biometric testing. The visa interview at the embassy or consulate typically involves questions about the applicant's background and circumstances as well as providing additional documents. Finally, the green card application requires submitting a specific form, necessary documents and a filing fee.\n\n\nHere are some of the key things to know about the US immigration process:\n\n**Types of visas:**\n\n* **Tourist visas:** Allow visitors to enter the US for tourism, business, or other short-term activities.\n* **Work"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      827,
+      6008,
+      7490,
+      2623,
+      5126,
+      3574,
+      7348,
+      2572,
+      1302,
+      9123
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.014813701622188091,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.014813701622188091,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.500702248136203,
+    "train_mean_l2": 4.52228784327209,
+    "train_mean_l1": 1.9784144236048062,
+    "num_steps": 3000,
+    "num_batches": 3000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251126-190647/feature_std_layer_12.html",
+    "mean_std": 0.993312418460846,
+    "max_std": 26.361066818237305
+  }
+}
