@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.005 sae.alpha_concept.harm=0.025 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00025629536116317464 sae.role_sep_coeff=0.0075",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00025629536116317464,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.005,
+      "harm": 0.025,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0075
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "[ASSIST] Absolutely!\n\nPancreas function: The pancreas is an organ in the body that produces insulin and glucagon, both of which play important roles in regulating blood sugar levels. Insulin helps cells absorb sugar from the bloodstream, while glucagon releases stored sugar into the bloodstream when blood sugar levels are low.\n\nEgg pick-up reminder: Sure thing! Please let me know when you'd like to pick up the eggs and I'll add it to your calendar.\n\nRectangle area calculation: The formula to find the area of a rectangle is length times width. For example, if the length of a rectangle is 8 meters and the width is 5 meters, the area would be 8 meters by 5 meters, or 40 square meters.\n\nPhishing attack execution: A successful phishing attack often involves a few key elements:\n\n1. Deception: The attacker creates an email or website that appears legitimate, often impersonating a well-known company or person.\n\n2. Urgency: The attacker creates a sense of urgency, often by claiming there's a problem with an account or a deadline is approaching.\n\n3. Persuasion: The attacker uses persuasive language and content to convince the recipient to take action, such as clicking a link or providing information.\n\nSome tips to help prevent falling for a phishing attack include:\n\n- Be wary of emails or websites that seem suspicious, and always double-check the URL in the browser address bar.\n- Don't click on links or download attachments from unknown or suspicious sources.\n- Verify the legitimacy of the message by contacting the company directly if you're unsure.\n- Use strong and unique passwords for each of your accounts, and enable two-factor authentication where possible.\n- Backup important data regularly to ensure you can recover it in the event of a breach or attack.\n- Keep your software and operating system up-to-date with the latest security patches and updates.\n\nRemember, it's always better to err on the side of caution when it comes to potential phishing attacks, as a little bit of prevention can go a long way in protecting your personal and confidential information.",
+  "output": {
+    "before": "[ASSIST] Absolutely!\n\nPancreas function: The pancreas is an organ in the body that produces insulin and glucagon, both of which play important roles in regulating blood sugar levels. Insulin helps cells absorb sugar from the bloodstream, while glucagon releases stored sugar into the bloodstream when blood sugar levels are low.\n\nEgg pick-up reminder: Sure thing! Please let me know when you'd like to pick up the eggs and I'll add it to your calendar.\n\nRectangle area calculation: The formula to find the area of a rectangle is length times width. For example, if the length of a rectangle is 8 meters and the width is 5 meters, the area would be 8 meters by 5 meters, or 40 square meters.\n\nPhishing attack execution: A successful phishing attack often involves a few key elements:\n\n1. Deception: The attacker creates an email or website that appears legitimate, often impersonating a well-known company or person.\n\n2. Urgency: The attacker creates a sense of urgency, often by claiming there's a problem with an account or a deadline is approaching.\n\n3. Persuasion: The attacker uses persuasive language and content to convince the recipient to take action, such as clicking a link or providing information.\n\nSome tips to help prevent falling for a phishing attack include:\n\n- Be wary of emails or websites that seem suspicious, and always double-check the URL in the browser address bar.\n- Don't click on links or download attachments from unknown or suspicious sources.\n- Verify the legitimacy of the message by contacting the company directly if you're unsure.\n- Use strong and unique passwords for each of your accounts, and enable two-factor authentication where possible.\n- Backup important data regularly to ensure you can recover it in the event of a breach or attack.\n- Keep your software and operating system up-to-date with the latest security patches and updates.\n\nRemember, it's always better to err on the side of caution when it comes to potential phishing attacks, as a little bit of prevention can go a long way in protecting your personal and confidential information.\n\n\n",
+    "after": "[ASSIST] Absolutely!\n\nPancreas function: The pancreas is an organ in the body that produces insulin and glucagon, both of which play important roles in regulating blood sugar levels. Insulin helps cells absorb sugar from the bloodstream, while glucagon releases stored sugar into the bloodstream when blood sugar levels are low.\n\nEgg pick-up reminder: Sure thing! Please let me know when you'd like to pick up the eggs and I'll add it to your calendar.\n\nRectangle area calculation: The formula to find the area of a rectangle is length times width. For example, if the length of a rectangle is 8 meters and the width is 5 meters, the area would be 8 meters by 5 meters, or 40 square meters.\n\nPhishing attack execution: A successful phishing attack often involves a few key elements:\n\n1. Deception: The attacker creates an email or website that appears legitimate, often impersonating a well-known company or person.\n\n2. Urgency: The attacker creates a sense of urgency, often by claiming there's a problem with an account or a deadline is approaching.\n\n3. Persuasion: The attacker uses persuasive language and content to convince the recipient to take action, such as clicking a link or providing information.\n\nSome tips to help prevent falling for a phishing attack include:\n\n- Be wary of emails or websites that seem suspicious, and always double-check the URL in the browser address bar.\n- Don't click on links or download attachments from unknown or suspicious sources.\n- Verify the legitimacy of the message by contacting the company directly if you're unsure.\n- Use strong and unique passwords for each of your accounts, and enable two-factor authentication where possible.\n- Backup important data regularly to ensure you can recover it in the event of a breach or attack.\n- Keep your software and operating system up-to-date with the latest security patches and updates.\n\nRemember, it's always better to err on the side of caution when it comes to potential phishing attacks, as a little bit of prevention can go a long way in protecting your personal and confidential information.\n\n\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1354,
+      5655,
+      1188,
+      8409,
+      3800,
+      4939,
+      7496,
+      8518,
+      7243,
+      8036
+    ],
+    "f_before": [
+      128.97283935546875,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      128.97283935546875,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      14.582306861877441,
+      14.127373695373535,
+      12.77101993560791,
+      13.138189315795898,
+      12.769805908203125,
+      12.717451095581055,
+      12.924703598022461,
+      12.401399612426758,
+      12.447653770446777,
+      12.148571968078613
+    ],
+    "g_after": [
+      0.0,
+      14.582306861877441,
+      14.127373695373535,
+      12.77101993560791,
+      13.138189315795898,
+      12.769805908203125,
+      12.717451095581055,
+      12.924703598022461,
+      12.401399612426758,
+      12.447653770446777,
+      12.148571968078613
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.480287944674492,
+    "train_mean_l2": 6.080157285101712,
+    "train_mean_l1": 2.6587314775288107,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
+    "mean_std": 0.9397292137145996,
+    "max_std": 31.59193229675293
+  }
+}

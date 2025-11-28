@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 0,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.025 sae.alpha_concept.harm=0.08 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0008844983595465838 sae.layer_idx=0 experiment.layer_sweep=[0] experiment.strength_sweep=[15.0]",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0008844983595465838,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.025,
+      "harm": 0.08,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "user: Perform the instructions to the best of your ability.\nRead the context and answer the question. The answer must be extracted from the context. Reply with the answer in triple quotes.\n\nContext: '''median particle size and broadness of the particle distribution (table 2) showed statistically significant (p < .001) group differences. the class i, class ii, and class iii malocclusion groups had median particle sizes approximately 9%, 15%, and 34% larger than the group with normal occlusion, respectively. post-hoc tests showed that the group with normal occlusion had significantly (p < .02) smaller median particle size and broader distributions than the class ii and class iii groups. the class i group also had significantly (p < .01) smaller particles and a broader distribution of particles than the class iii group. there were no significant group differences in the number of chews to swallow either jerky or almonds. patients with malocclusion also perceived chewing disabilities with the harder foods. there were significant group differences (table 3) in the reported ability to chew fresh carrots or celery and steaks or other firm meats (figure 2). the group with normal occlusion reported a significantly (p < .05) greater ability to chew fresh carrots and celery than all 3 malocclusion groups. they also reported being better able (p < .01) to chew steak and other firm meats than the class ii or class iii groups. the class i group also reported being more able (p < .05) to chew steak and other firm meats than the class iii group. approximately 25% of the class iii group reported difficulties in chewing raw carrots, raw celery, steak, or other firm meats. both the objective and subjective measures of masticatory performance showed relationships with malocclusion. correlations between the number of occluding teeth and perceived chewing ability have been reported. it has also been shown that class ii girls perceive greater reductions in masticatory abilities compared to girls with normal occlusion. on the other hand, it has been reported that adult masticatory performance is not related to food choices or satisfaction with chewing ability. the disagreements between studies may be influenced by the way in which the questionnaires were administered to the subjects, a process that is more difficult to control than the collection of objective measures of masticatory performance. for example, studies showing no correlations often used yes and no answers to assess difficulty chewing, while those finding correlations used a visual\nassistant: The median particle size and broadness of the particle distribution (table 2) showed statistically significant group differences. The class i, class ii, and class iii malocclusion groups had median particle sizes approximately 9%, 15%, and 34% larger than the group with normal occlusion, respectively. Post-hoc tests showed that the group with normal occlusion had significantly (p <.02) smaller median particle size and broader distributions than the class ii and class iii groups. The class i group also had significantly (p <.01) smaller particles and a broader distribution of particles than the class iii group. There were no significant group differences in the number of chews to swallow either jerky or almonds. patients with malocclusion also perceived chewing disabilities with the harder foods. There were significant group differences (table 3) in the reported ability to chew fresh carrots or celery and steaks or other firm meats (figure 2). The group with normal occlusion reported a significantly (p <.05) greater ability to chew fresh carrots and celery",
+  "output": {
+    "before": "user: Perform the instructions to the best of your ability.\nRead the context and answer the question. The answer must be extracted from the context. Reply with the answer in triple quotes.\n\nContext: '''median particle size and broadness of the particle distribution (table 2) showed statistically significant (p < .001) group differences. the class i, class ii, and class iii malocclusion groups had median particle sizes approximately 9%, 15%, and 34% larger than the group with normal occlusion, respectively. post-hoc tests showed that the group with normal occlusion had significantly (p < .02) smaller median particle size and broader distributions than the class ii and class iii groups. the class i group also had significantly (p < .01) smaller particles and a broader distribution of particles than the class iii group. there were no significant group differences in the number of chews to swallow either jerky or almonds. patients with malocclusion also perceived chewing disabilities with the harder foods. there were significant group differences (table 3) in the reported ability to chew fresh carrots or celery and steaks or other firm meats (figure 2). the group with normal occlusion reported a significantly (p < .05) greater ability to chew fresh carrots and celery than all 3 malocclusion groups. they also reported being better able (p < .01) to chew steak and other firm meats than the class ii or class iii groups. the class i group also reported being more able (p < .05) to chew steak and other firm meats than the class iii group. approximately 25% of the class iii group reported difficulties in chewing raw carrots, raw celery, steak, or other firm meats. both the objective and subjective measures of masticatory performance showed relationships with malocclusion. correlations between the number of occluding teeth and perceived chewing ability have been reported. it has also been shown that class ii girls perceive greater reductions in masticatory abilities compared to girls with normal occlusion. on the other hand, it has been reported that adult masticatory performance is not related to food choices or satisfaction with chewing ability. the disagreements between studies may be influenced by the way in which the questionnaires were administered to the subjects, a process that is more difficult to control than the collection of objective measures of masticatory performance. for example, studies showing no correlations often used yes and no answers to assess difficulty chewing, while those finding correlations used a visual\nassistant: The median particle size and broadness of the particle distribution (table 2) showed statistically significant group differences. The class i, class ii, and class iii malocclusion groups had median particle sizes approximately 9%, 15%, and 34% larger than the group with normal occlusion, respectively. Post-hoc tests showed that the group with normal occlusion had significantly (p <.02) smaller median particle size and broader distributions than the class ii and class iii groups. The class i group also had significantly (p <.01) smaller particles and a broader distribution of particles than the class iii group. There were no significant group differences in the number of chews to swallow either jerky or almonds. patients with malocclusion also perceived chewing disabilities with the harder foods. There were significant group differences (table 3) in the reported ability to chew fresh carrots or celery and steaks or other firm meats (figure 2). The group with normal occlusion reported a significantly (p <.05) greater ability to chew fresh carrots and celery than all 3 malocclusion groups. They also reported being better able (p <.01) to chew steak and other firm meats than the class ii or class iii groups. The class i group also reported being more able (p <.0",
+    "after": "user: Perform the instructions to the best of your ability.\nRead the context and answer the question. The answer must be extracted from the context. Reply with the answer in triple quotes.\n\nContext: '''median particle size and broadness of the particle distribution (table 2) showed statistically significant (p < .001) group differences. the class i, class ii, and class iii malocclusion groups had median particle sizes approximately 9%, 15%, and 34% larger than the group with normal occlusion, respectively. post-hoc tests showed that the group with normal occlusion had significantly (p < .02) smaller median particle size and broader distributions than the class ii and class iii groups. the class i group also had significantly (p < .01) smaller particles and a broader distribution of particles than the class iii group. there were no significant group differences in the number of chews to swallow either jerky or almonds. patients with malocclusion also perceived chewing disabilities with the harder foods. there were significant group differences (table 3) in the reported ability to chew fresh carrots or celery and steaks or other firm meats (figure 2). the group with normal occlusion reported a significantly (p < .05) greater ability to chew fresh carrots and celery than all 3 malocclusion groups. they also reported being better able (p < .01) to chew steak and other firm meats than the class ii or class iii groups. the class i group also reported being more able (p < .05) to chew steak and other firm meats than the class iii group. approximately 25% of the class iii group reported difficulties in chewing raw carrots, raw celery, steak, or other firm meats. both the objective and subjective measures of masticatory performance showed relationships with malocclusion. correlations between the number of occluding teeth and perceived chewing ability have been reported. it has also been shown that class ii girls perceive greater reductions in masticatory abilities compared to girls with normal occlusion. on the other hand, it has been reported that adult masticatory performance is not related to food choices or satisfaction with chewing ability. the disagreements between studies may be influenced by the way in which the questionnaires were administered to the subjects, a process that is more difficult to control than the collection of objective measures of masticatory performance. for example, studies showing no correlations often used yes and no answers to assess difficulty chewing, while those finding correlations used a visual\nassistant: The median particle size and broadness of the particle distribution (table 2) showed statistically significant group differences. The class i, class ii, and class iii malocclusion groups had median particle sizes approximately 9%, 15%, and 34% larger than the group with normal occlusion, respectively. Post-hoc tests showed that the group with normal occlusion had significantly (p <.02) smaller median particle size and broader distributions than the class ii and class iii groups. The class i group also had significantly (p <.01) smaller particles and a broader distribution of particles than the class iii group. There were no significant group differences in the number of chews to swallow either jerky or almonds. patients with malocclusion also perceived chewing disabilities with the harder foods. There were significant group differences (table 3) in the reported ability to chew fresh carrots or celery and steaks or other firm meats (figure 2). The group with normal occlusion reported a significantly (p <.05) greater ability to chew fresh carrots and celery than all 3 malocclusion groups. They also reported being better able (p < .01) to chew steak and other firm meats than the class ii or class iii groups. The class i group also reported being more able (p <"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      1,
+      5419,
+      922,
+      4677,
+      8280,
+      7649,
+      7027,
+      2579,
+      1217
+    ],
+    "f_before": [
+      0.36609676480293274,
+      6.947488307952881,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.36609676480293274,
+      6.947488307952881,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      2.8395259380340576,
+      0.14928299188613892,
+      2.760230541229248,
+      0.7572746276855469,
+      0.7112943530082703,
+      0.7297395467758179,
+      0.6991884708404541,
+      0.7398756742477417,
+      0.7346609234809875,
+      0.03404770419001579,
+      0.7170202732086182
+    ],
+    "g_after": [
+      2.8395259380340576,
+      0.14928299188613892,
+      2.760230541229248,
+      0.7572746276855469,
+      0.7112943530082703,
+      0.7297395467758179,
+      0.6991884708404541,
+      0.7398756742477417,
+      0.7346609234809875,
+      0.03404770419001579,
+      0.7170202732086182
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.9852456296756864,
+    "train_mean_l2": 0.7588098129555583,
+    "train_mean_l1": 0.7674992515295744,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-084646/feature_std_layer_0.html",
+    "mean_std": 0.4904178977012634,
+    "max_std": 36.88555908203125
+  }
+}

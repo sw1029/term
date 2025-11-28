@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.005 sae.alpha_concept.harm=0.025 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00025629536116317464 sae.role_sep_coeff=0.0075",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00025629536116317464,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.005,
+      "harm": 0.025,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0075
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.AddScene(\"Scene\")\r\n    scene2 = SceneManager.AddScene(\"Scene 2\")\r\n    scene.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n    scene2.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n\r\n    cube = GameObject(\"Cube\")\r\n    renderer = cube.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(255, 0, 0))\r\n    cube.AddComponent(Switch)\r\n    scene.Add(cube)\r\n\r\n    cube2 = GameObject(\"Cube 2\")\r\n    renderer = cube2.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(0, 0, 255))\r\n    scene2.Add(cube2)\r\n\r\n    SceneManager.LoadScene(scene)\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n",
+  "output": {
+    "before": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.AddScene(\"Scene\")\r\n    scene2 = SceneManager.AddScene(\"Scene 2\")\r\n    scene.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n    scene2.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n\r\n    cube = GameObject(\"Cube\")\r\n    renderer = cube.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(255, 0, 0))\r\n    cube.AddComponent(Switch)\r\n    scene.Add(cube)\r\n\r\n    cube2 = GameObject(\"Cube 2\")\r\n    renderer = cube2.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(0, 0, 255))\r\n    scene2.Add(cube2)\r\n\r\n    SceneManager.LoadScene(scene)\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n```\nThis code demonstrates a simple Unity scene with two cubes and a switch behavior.\r\n\r\n**Functionality:**\r\n\r\n* **Scene Management:** The code utilizes `SceneManager` to create and manage scenes.\r\n* **Cube Creation:**",
+    "after": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.AddScene(\"Scene\")\r\n    scene2 = SceneManager.AddScene(\"Scene 2\")\r\n    scene.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n    scene2.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n\r\n    cube = GameObject(\"Cube\")\r\n    renderer = cube.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(255, 0, 0))\r\n    cube.AddComponent(Switch)\r\n    scene.Add(cube)\r\n\r\n    cube2 = GameObject(\"Cube 2\")\r\n    renderer = cube2.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(0, 0, 255))\r\n    scene2.Add(cube2)\r\n\r\n    SceneManager.LoadScene(scene)\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n\r\n\r\n\r\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1354,
+      5655,
+      1188,
+      8409,
+      3800,
+      4939,
+      7496,
+      8518,
+      7243,
+      8036
+    ],
+    "f_before": [
+      34.7606315612793,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      34.7606315612793,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      3.930208921432495,
+      3.807595729827881,
+      3.4420325756073,
+      3.54099178314209,
+      3.4417054653167725,
+      3.4275949001312256,
+      3.4834535121917725,
+      3.3424129486083984,
+      3.354879379272461,
+      3.274271011352539
+    ],
+    "g_after": [
+      0.0,
+      3.930208921432495,
+      3.807595729827881,
+      3.4420325756073,
+      3.54099178314209,
+      3.4417054653167725,
+      3.4275949001312256,
+      3.4834535121917725,
+      3.3424129486083984,
+      3.354879379272461,
+      3.274271011352539
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.480287944674492,
+    "train_mean_l2": 6.080157285101712,
+    "train_mean_l1": 2.6587314775288107,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
+    "mean_std": 0.9397292137145996,
+    "max_std": 31.59193229675293
+  }
+}

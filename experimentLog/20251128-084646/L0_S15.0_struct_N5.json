@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 0,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.025 sae.alpha_concept.harm=0.08 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0008844983595465838 sae.layer_idx=0 experiment.layer_sweep=[0] experiment.strength_sweep=[15.0]",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0008844983595465838,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.025,
+      "harm": 0.08,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n\n    version('1.20.0', sha256='5695a10cb7f9ae0d01f665b56602a845b0a8cb17e2123bfece10c2e58552468c')\n    version('1.18.1', sha256='70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786')\n    version('1.17.1', sha256='0f0a35ec923d87bc495f6753b1e540fd046d95db56a35250c44089fbce03b698')\n\n    depends_on('cairo@1.15.10: +pdf', when='@1.20.0:')\n    depends_on('cairo@1.13.1: +pdf', when='@:1.18.1')\n    depends_on('pkgconfig', type='build')\n    depends_on('py-setuptools', type='build')\n    depends_on('python@2.7:2.8,3.3:', when='@:1.17.1',  type=('build', 'run'))\n    depends_on('python@2.7:2.8,3.4:3.7', when='@1.18.1:1.19', type=('build', 'run'))\n    depends_on('python@3.6:3', when='@1.20.0:', type=('build', 'run'))\n\n    @run_after('install')\n    def post_install(self):\n        src = self.prefix.lib + '/pkgconfig/py3cairo.pc'\n        dst = self.prefix.lib + '/pkgconfig/pycairo.pc'\n        if os.path.exists(src) and not os.path.exists(dst):\n            copy(src, dst)\n",
+  "output": {
+    "before": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n\n    version('1.20.0', sha256='5695a10cb7f9ae0d01f665b56602a845b0a8cb17e2123bfece10c2e58552468c')\n    version('1.18.1', sha256='70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786')\n    version('1.17.1', sha256='0f0a35ec923d87bc495f6753b1e540fd046d95db56a35250c44089fbce03b698')\n\n    depends_on('cairo@1.15.10: +pdf', when='@1.20.0:')\n    depends_on('cairo@1.13.1: +pdf', when='@:1.18.1')\n    depends_on('pkgconfig', type='build')\n    depends_on('py-setuptools', type='build')\n    depends_on('python@2.7:2.8,3.3:', when='@:1.17.1',  type=('build', 'run'))\n    depends_on('python@2.7:2.8,3.4:3.7', when='@1.18.1:1.19', type=('build', 'run'))\n    depends_on('python@3.6:3', when='@1.20.0:', type=('build', 'run'))\n\n    @run_after('install')\n    def post_install(self):\n        src = self.prefix.lib + '/pkgconfig/py3cairo.pc'\n        dst = self.prefix.lib + '/pkgconfig/pycairo.pc'\n        if os.path.exists(src) and not os.path.exists(dst):\n            copy(src, dst)\n        self.env.set('PYcairo_LIB_DIR', os.path.abspath(self.prefix.lib))\n        self.env.set('PYcairo_INCLUDE_DIR', os.path.abspath(self.prefix",
+    "after": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n\n    version('1.20.0', sha256='5695a10cb7f9ae0d01f665b56602a845b0a8cb17e2123bfece10c2e58552468c')\n    version('1.18.1', sha256='70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786')\n    version('1.17.1', sha256='0f0a35ec923d87bc495f6753b1e540fd046d95db56a35250c44089fbce03b698')\n\n    depends_on('cairo@1.15.10: +pdf', when='@1.20.0:')\n    depends_on('cairo@1.13.1: +pdf', when='@:1.18.1')\n    depends_on('pkgconfig', type='build')\n    depends_on('py-setuptools', type='build')\n    depends_on('python@2.7:2.8,3.3:', when='@:1.17.1',  type=('build', 'run'))\n    depends_on('python@2.7:2.8,3.4:3.7', when='@1.18.1:1.19', type=('build', 'run'))\n    depends_on('python@3.6:3', when='@1.20.0:', type=('build', 'run'))\n\n    @run_after('install')\n    def post_install(self):\n        src = self.prefix.lib + '/pkgconfig/py3cairo.pc'\n        dst = self.prefix.lib + '/pkgconfig/pycairo.pc'\n        if os.path.exists(src) and not os.path.exists(dst):\n            copy(src, dst)\n        else:\n            print(f\"Creating a new directory: /pkgconfig/py3cairo.pc\"\n            os.mkdir(os.path.join(os.path.join('/pkgconfig/py3cairo.pc"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      5419,
+      7649,
+      1217,
+      4677,
+      8280,
+      7862,
+      7027,
+      922
+    ],
+    "f_before": [
+      0.0,
+      84.96479034423828,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      84.96479034423828,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      34.646026611328125,
+      0.0,
+      31.819541931152344,
+      8.819045066833496,
+      8.224908828735352,
+      8.030919075012207,
+      8.768712043762207,
+      8.27653694152832,
+      8.2193021774292,
+      8.518310546875,
+      8.751605987548828
+    ],
+    "g_after": [
+      34.646026611328125,
+      0.0,
+      31.819541931152344,
+      8.819045066833496,
+      8.224908828735352,
+      8.030919075012207,
+      8.768712043762207,
+      8.27653694152832,
+      8.2193021774292,
+      8.518310546875,
+      8.751605987548828
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.9852456296756864,
+    "train_mean_l2": 0.7588098129555583,
+    "train_mean_l1": 0.7674992515295744,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-084646/feature_std_layer_0.html",
+    "mean_std": 0.4904178977012634,
+    "max_std": 36.88555908203125
+  }
+}

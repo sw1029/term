@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.005 sae.alpha_concept.harm=0.025 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00025629536116317464 sae.role_sep_coeff=0.0075",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00025629536116317464,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.005,
+      "harm": 0.025,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0075
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import math\ndef iter_pi(epsilon):\n    down=1\n    res=0\n    count=0\n    while abs(res*4-math.pi)>epsilon:\n        if count%2==0:\n            res+=1/down\n        else:\n            res-=1/down\n        count+=1\n        down+=2\n    return [count, round(res*4,10)]",
+  "output": {
+    "before": "import math\ndef iter_pi(epsilon):\n    down=1\n    res=0\n    count=0\n    while abs(res*4-math.pi)>epsilon:\n        if count%2==0:\n            res+=1/down\n        else:\n            res-=1/down\n        count+=1\n        down+=2\n    return [count, round(res*4,10)]\ndef main():\n    epsilon=0.00001\n    count,res=iter_pi(epsilon)\n    print(f\"Number of iterations: {count}\")\n    print(f\"Approximation of pi",
+    "after": "import math\ndef iter_pi(epsilon):\n    down=1\n    res=0\n    count=0\n    while abs(res*4-math.pi)>epsilon:\n        if count%2==0:\n            res+=1/down\n        else:\n            res-=1/down\n        count+=1\n        down+=2\n    return [count, round(res*4,10)]\n\n\n#test\nepsilon = 1e-6\npi_res = iter_pi(epsilon)\nprint(f'Iterate Pi: {pi_res}')\n```\n\n**Explanation:**\n\nThe code implements a fast iterative calculation"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      7359,
+      1650,
+      7137,
+      8450,
+      7981,
+      9035,
+      5623,
+      7453,
+      6605
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.7009180188179016,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.7009180188179016,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.03277038782835007,
+      0.0,
+      0.0,
+      0.0,
+      0.019828559830784798,
+      0.06847453117370605,
+      0.0,
+      0.0046185157261788845,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.03277038782835007,
+      0.0,
+      0.0,
+      0.0,
+      0.019828559830784798,
+      0.06847453117370605,
+      0.0,
+      0.0046185157261788845,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.480287944674492,
+    "train_mean_l2": 6.080157285101712,
+    "train_mean_l1": 2.6587314775288107,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
+    "mean_std": 0.9397292137145996,
+    "max_std": 31.59193229675293
+  }
+}
