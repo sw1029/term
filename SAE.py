@@ -15,10 +15,19 @@ import utils
 
 
 class H_SAE(nn.Module):
-    def __init__(self, input_dim, sae_dim, c_vectors=None, feature_gnn: nn.Module | None = None):
+    def __init__(
+        self,
+        input_dim,
+        sae_dim,
+        c_vectors=None,
+        feature_gnn: nn.Module | None = None,
+        jumprelu_bandwidth: float = 0.001,
+        jumprelu_init_threshold: float = 0.001,
+    ):
         super().__init__()
         self.input_dim = input_dim
         self.sae_dim = sae_dim
+        self.last_l0_count = None  # Heaviside 기반 L0 카운트 (batch 단위)
 
         # 인코더 레이어
         self.encoder = nn.Linear(input_dim, sae_dim)
@@ -37,6 +46,13 @@ class H_SAE(nn.Module):
             # concept-free 설정 (Option3 등)에서는 고정 벡터 없음
             self.fixed_v_cnt = 0
 
+        # JumpReLU 활성화 모듈 (feature별 threshold 학습)
+        self.jumprelu = utils.JumpReLU(
+            feature_dim=self.sae_dim,
+            bandwidth=jumprelu_bandwidth,
+            init_threshold=jumprelu_init_threshold,
+        )
+
         # 선택적으로 feature 상에서 동작하는 설명 전용 GNN 모듈
         self.feature_gnn = feature_gnn
 
@@ -49,8 +65,14 @@ class H_SAE(nn.Module):
     def forward(self, x):
         # SAE feature 추출 (구조를 단순/명시적으로 유지)
         z = self.encoder(x) - self.enc_bias
-        f = torch.relu(z)  # <-- jump relu로 수정할것.
-        # f = utils.JumpReLU(init_b=0.0)(z)  # b값을 고정한 형태의 초기적인 jump relu
+        # JumpReLU로 활성화
+        f = self.jumprelu(z)
+
+        # Heaviside step으로 L0 카운트 (sparsity 측정용)
+        threshold = self.jumprelu.get_threshold()
+        bandwidth = self.jumprelu.bandwidth
+        l0_mask = utils.HeavisideStepFunction.apply(z, threshold, bandwidth)  # (batch, d_sae)
+        self.last_l0_count = l0_mask.sum(dim=-1)  # (batch,)
 
         # 재구성 단계
         x_reconst = torch.matmul(f, self.decoder) + self.dec_bias

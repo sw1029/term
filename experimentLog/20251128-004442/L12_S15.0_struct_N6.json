@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "\nfrom .archive import Archive\nfrom .resource import Resource",
+  "output": {
+    "before": "\nfrom .archive import Archive\nfrom .resource import Resource\nfrom .exception import Exception\nfrom .utils import get_config\n\n\nclass FileManager:\n    \"\"\"\n    A class for managing files and resources in a specific environment.\n\n    Attributes:\n        config (dict): Configuration settings for the",
+    "after": "\nfrom .archive import Archive\nfrom .resource import Resource\nfrom .utils import get_version\n\n# Import for testing\n# from .testing import *\n\n# Import for pytorch\nimport torch\n\n# Import for pytorch.autograd\nimport torch.autograd\nimport torch.nn\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      640,
+      6519,
+      3446,
+      8452,
+      6016,
+      2049,
+      1193,
+      1128,
+      3683
+    ],
+    "f_before": [
+      0.0,
+      82.54933166503906,
+      2.591277837753296,
+      0.0,
+      0.0,
+      2.176470994949341,
+      0.0,
+      0.0,
+      0.0,
+      3.527737617492676,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      82.54933166503906,
+      2.591277837753296,
+      0.0,
+      0.0,
+      2.176470994949341,
+      0.0,
+      0.0,
+      0.0,
+      3.527737617492676,
+      0.0
+    ],
+    "g_before": [
+      47.58049774169922,
+      0.41320550441741943,
+      10.91006851196289,
+      9.863353729248047,
+      0.046487897634506226,
+      0.5774843096733093,
+      0.6847904920578003,
+      0.4447007179260254,
+      0.023202883079648018,
+      0.4133351445198059,
+      0.30600279569625854
+    ],
+    "g_after": [
+      47.58049774169922,
+      0.41320550441741943,
+      10.91006851196289,
+      9.863353729248047,
+      0.046487897634506226,
+      0.5774843096733093,
+      0.6847904920578003,
+      0.4447007179260254,
+      0.023202883079648018,
+      0.4133351445198059,
+      0.30600279569625854
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.201878755688668,
+    "train_mean_l2": 7.170743455663324,
+    "train_mean_l1": 2.9389141985476015,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-004442/feature_std_layer_12.html",
+    "mean_std": 1.2031725645065308,
+    "max_std": 42.59959411621094
+  }
+}

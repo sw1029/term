@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import ast\nimport importlib\nimport os\nimport logging\nimport logging.config\nimport sys\n\nfrom flask import Flask, Blueprint\nfrom flask_restful import Api\nfrom flask_cors import CORS\nfrom typing import Dict, Any  # noqa: F401\nfrom flasgger import Swagger\n\nfrom search_service.api.dashboard import SearchDashboardAPI\nfrom search_service.api.table import SearchTableAPI, SearchTableFilterAPI\nfrom search_service.api.user import SearchUserAPI\nfrom search_service.api.document import DocumentUserAPI, DocumentTableAPI, DocumentTablesAPI, DocumentUsersAPI\nfrom search_service.api.healthcheck import healthcheck\n\n# For customized flask use below arguments to override.\nFLASK_APP_MODULE_NAME = os.getenv('FLASK_APP_MODULE_NAME')\nFLASK_APP_CLASS_NAME = os.getenv('FLASK_APP_CLASS_NAME')\nFLASK_APP_KWARGS_DICT_STR = os.getenv('FLASK_APP_KWARGS_DICT')\nROOT_DIR = os.path.dirname(os.path.abspath(__file__))\n\n# Environment Variable to enable cors\nCORS_ENABLED = os.environ.get('CORS_ENABLED', False)\n\n\ndef create_app(*, config_module_class: str) -> Flask:\n    \"\"\"\n    Creates app in function so that flask with flask extensions can be\n    initialized with specific config. Here it defines the route of APIs\n    so that it can be seen in one place where implementation is separated.\n\n    Config is being fetched via module.class name where module.class name\n    can be passed through environment variable.\n    This is to make config fetched through runtime PYTHON_PATH so that\n    Config class can be easily injected.\n    More on: http://flask.pocoo.org/docs/1.0/config/\n\n    :param config_module_class: name of the config\n    :return: Flask\n    \"\"\"\n    if FLASK_APP_MODULE_NAME and FLASK_APP_CLASS_NAME:\n        print(f'Using requested Flask module {FLASK_APP_MODULE_NAME} '\n              f'and class {FLASK_APP_CLASS_NAME}', file=sys.stderr)\n        class_obj = getattr(\n            importlib.import_module(FLASK_APP_MODULE_NAME),\n            FLASK_APP_CLASS_NAME\n        )\n\n        flask_kwargs_dict = {}  # type: Dict[str, Any]\n        if FLASK_APP_KWARGS_DICT_STR:\n            print(f'Using kwargs {FLASK_APP_KWARGS_DICT_STR} to instantiate Flask',\n                  file=sys.stderr)\n            flask_kwargs_dict = ast.literal_eval(FLASK_APP_KWARGS_DICT_STR)\n\n        app = class_obj(__name__, **flask_kwargs_dict)\n\n    else:\n        app = Flask(__name__)\n\n    if CORS_ENABLED:\n        CORS(app)\n    config_module_class = \\\n        os.getenv('SEARCH_SVC_CONFIG_MODULE_CLASS') or config_module_class\n    app.config.from_object(config_module_class)\n\n    if app.config.get('LOG_CONFIG_FILE'):\n        logging.config.fileConfig(app.config.get('LOG_CONFIG_FILE'), disable_existing_loggers=False)\n    else:\n        logging.basicConfig(format=app.config.get('LOG_FORMAT'), datefmt=app.config.get('LOG_DATE_FORMAT'))\n        logging.getLogger().setLevel(app.config.get('LOG_LEVEL'))\n\n    logging.info('Creating app with config name {}'\n                 .format(config_module_class))\n    logging.info('Created app with config name {}'.format(config_module_class))\n\n    api_bp = Blueprint('api', __name__)\n    api_bp.add_url_rule('/healthcheck', 'healthcheck', healthcheck)\n    api = Api(api_bp)\n    # Table Search API\n    # TODO: Rename endpoint to be more generic and accept a resource type so that logic can be re-used\n    api.add_resource(SearchTableFilterAPI, '/search_table')\n    api.add_resource(SearchTableAPI, '/search')\n\n    # User Search API\n    api.add_resource(SearchUserAPI, '/search_user')\n\n    # Dashboard Search API\n    api.add_resource(SearchDashboardAPI, '/search_dashboard')\n\n    # DocumentAPI\n    api.add_resource(DocumentTablesAPI, '/document_table')\n    api.add_resource(DocumentTableAPI, '/document_table/<document_id>')\n\n    api.add_resource(DocumentUsersAPI, '/document_user')\n    api.add_resource(DocumentUserAPI, '/document_user/<document_id>')\n\n    app.register_blueprint(api_bp)\n\n    if app.config.get('SWAGGER_ENABLED'):\n        Swagger(app, template_file=os.path.join(ROOT_DIR, app.config.get('SWAGGER_TEMPLATE_PATH')), parse=True)\n    return app\n",
+  "output": {
+    "before": "import ast\nimport importlib\nimport os\nimport logging\nimport logging.config\nimport sys\n\nfrom flask import Flask, Blueprint\nfrom flask_restful import Api\nfrom flask_cors import CORS\nfrom typing import Dict, Any  # noqa: F401\nfrom flasgger import Swagger\n\nfrom search_service.api.dashboard import SearchDashboardAPI\nfrom search_service.api.table import SearchTableAPI, SearchTableFilterAPI\nfrom search_service.api.user import SearchUserAPI\nfrom search_service.api.document import DocumentUserAPI, DocumentTableAPI, DocumentTablesAPI, DocumentUsersAPI\nfrom search_service.api.healthcheck import healthcheck\n\n# For customized flask use below arguments to override.\nFLASK_APP_MODULE_NAME = os.getenv('FLASK_APP_MODULE_NAME')\nFLASK_APP_CLASS_NAME = os.getenv('FLASK_APP_CLASS_NAME')\nFLASK_APP_KWARGS_DICT_STR = os.getenv('FLASK_APP_KWARGS_DICT')\nROOT_DIR = os.path.dirname(os.path.abspath(__file__))\n\n# Environment Variable to enable cors\nCORS_ENABLED = os.environ.get('CORS_ENABLED', False)\n\n\ndef create_app(*, config_module_class: str) -> Flask:\n    \"\"\"\n    Creates app in function so that flask with flask extensions can be\n    initialized with specific config. Here it defines the route of APIs\n    so that it can be seen in one place where implementation is separated.\n\n    Config is being fetched via module.class name where module.class name\n    can be passed through environment variable.\n    This is to make config fetched through runtime PYTHON_PATH so that\n    Config class can be easily injected.\n    More on: http://flask.pocoo.org/docs/1.0/config/\n\n    :param config_module_class: name of the config\n    :return: Flask\n    \"\"\"\n    if FLASK_APP_MODULE_NAME and FLASK_APP_CLASS_NAME:\n        print(f'Using requested Flask module {FLASK_APP_MODULE_NAME} '\n              f'and class {FLASK_APP_CLASS_NAME}', file=sys.stderr)\n        class_obj = getattr(\n            importlib.import_module(FLASK_APP_MODULE_NAME),\n            FLASK_APP_CLASS_NAME\n        )\n\n        flask_kwargs_dict = {}  # type: Dict[str, Any]\n        if FLASK_APP_KWARGS_DICT_STR:\n            print(f'Using kwargs {FLASK_APP_KWARGS_DICT_STR} to instantiate Flask',\n                  file=sys.stderr)\n            flask_kwargs_dict = ast.literal_eval(FLASK_APP_KWARGS_DICT_STR)\n\n        app = class_obj(__name__, **flask_kwargs_dict)\n\n    else:\n        app = Flask(__name__)\n\n    if CORS_ENABLED:\n        CORS(app)\n    config_module_class = \\\n        os.getenv('SEARCH_SVC_CONFIG_MODULE_CLASS') or config_module_class\n    app.config.from_object(config_module_class)\n\n    if app.config.get('LOG_CONFIG_FILE'):\n        logging.config.fileConfig(app.config.get('LOG_CONFIG_FILE'), disable_existing_loggers=False)\n    else:\n        logging.basicConfig(format=app.config.get('LOG_FORMAT'), datefmt=app.config.get('LOG_DATE_FORMAT'))\n        logging.getLogger().setLevel(app.config.get('LOG_LEVEL'))\n\n    logging.info('Creating app with config name {}'\n                 .format(config_module_class))\n    logging.info('Created app with config name {}'.format(config_module_class))\n\n    api_bp = Blueprint('api', __name__)\n    api_bp.add_url_rule('/healthcheck', 'healthcheck', healthcheck)\n    api = Api(api_bp)\n    # Table Search API\n    # TODO: Rename endpoint to be more generic and accept a resource type so that logic can be re-used\n    api.add_resource(SearchTableFilterAPI, '/search_table')\n    api.add_resource(SearchTableAPI, '/search')\n\n    # User Search API\n    api.add_resource(SearchUserAPI, '/search_user')\n\n    # Dashboard Search API\n    api.add_resource(SearchDashboardAPI, '/search_dashboard')\n\n    # DocumentAPI\n    api.add_resource(DocumentTablesAPI, '/document_table')\n    api.add_resource(DocumentTableAPI, '/document_table/<document_id>')\n\n    api.add_resource(DocumentUsersAPI, '/document_user')\n    api.add_resource(DocumentUserAPI, '/document_user/<document_id>')\n\n    app.register_blueprint(api_bp)\n\n    if app.config.get('SWAGGER_ENABLED'):\n        Swagger(app, template_file=os.path.join(ROOT_DIR, app.config.get('SWAGGER_TEMPLATE_PATH')), parse=True)\n    return app\n```\n\n**Explanation:**\n\n1. **Setup:**\n   - Imports necessary modules from Flask, Flask-RESTful, and other extensions.\n   - Defines environment variables for Flask app configuration (app module, class name, config module class).",
+    "after": "import ast\nimport importlib\nimport os\nimport logging\nimport logging.config\nimport sys\n\nfrom flask import Flask, Blueprint\nfrom flask_restful import Api\nfrom flask_cors import CORS\nfrom typing import Dict, Any  # noqa: F401\nfrom flasgger import Swagger\n\nfrom search_service.api.dashboard import SearchDashboardAPI\nfrom search_service.api.table import SearchTableAPI, SearchTableFilterAPI\nfrom search_service.api.user import SearchUserAPI\nfrom search_service.api.document import DocumentUserAPI, DocumentTableAPI, DocumentTablesAPI, DocumentUsersAPI\nfrom search_service.api.healthcheck import healthcheck\n\n# For customized flask use below arguments to override.\nFLASK_APP_MODULE_NAME = os.getenv('FLASK_APP_MODULE_NAME')\nFLASK_APP_CLASS_NAME = os.getenv('FLASK_APP_CLASS_NAME')\nFLASK_APP_KWARGS_DICT_STR = os.getenv('FLASK_APP_KWARGS_DICT')\nROOT_DIR = os.path.dirname(os.path.abspath(__file__))\n\n# Environment Variable to enable cors\nCORS_ENABLED = os.environ.get('CORS_ENABLED', False)\n\n\ndef create_app(*, config_module_class: str) -> Flask:\n    \"\"\"\n    Creates app in function so that flask with flask extensions can be\n    initialized with specific config. Here it defines the route of APIs\n    so that it can be seen in one place where implementation is separated.\n\n    Config is being fetched via module.class name where module.class name\n    can be passed through environment variable.\n    This is to make config fetched through runtime PYTHON_PATH so that\n    Config class can be easily injected.\n    More on: http://flask.pocoo.org/docs/1.0/config/\n\n    :param config_module_class: name of the config\n    :return: Flask\n    \"\"\"\n    if FLASK_APP_MODULE_NAME and FLASK_APP_CLASS_NAME:\n        print(f'Using requested Flask module {FLASK_APP_MODULE_NAME} '\n              f'and class {FLASK_APP_CLASS_NAME}', file=sys.stderr)\n        class_obj = getattr(\n            importlib.import_module(FLASK_APP_MODULE_NAME),\n            FLASK_APP_CLASS_NAME\n        )\n\n        flask_kwargs_dict = {}  # type: Dict[str, Any]\n        if FLASK_APP_KWARGS_DICT_STR:\n            print(f'Using kwargs {FLASK_APP_KWARGS_DICT_STR} to instantiate Flask',\n                  file=sys.stderr)\n            flask_kwargs_dict = ast.literal_eval(FLASK_APP_KWARGS_DICT_STR)\n\n        app = class_obj(__name__, **flask_kwargs_dict)\n\n    else:\n        app = Flask(__name__)\n\n    if CORS_ENABLED:\n        CORS(app)\n    config_module_class = \\\n        os.getenv('SEARCH_SVC_CONFIG_MODULE_CLASS') or config_module_class\n    app.config.from_object(config_module_class)\n\n    if app.config.get('LOG_CONFIG_FILE'):\n        logging.config.fileConfig(app.config.get('LOG_CONFIG_FILE'), disable_existing_loggers=False)\n    else:\n        logging.basicConfig(format=app.config.get('LOG_FORMAT'), datefmt=app.config.get('LOG_DATE_FORMAT'))\n        logging.getLogger().setLevel(app.config.get('LOG_LEVEL'))\n\n    logging.info('Creating app with config name {}'\n                 .format(config_module_class))\n    logging.info('Created app with config name {}'.format(config_module_class))\n\n    api_bp = Blueprint('api', __name__)\n    api_bp.add_url_rule('/healthcheck', 'healthcheck', healthcheck)\n    api = Api(api_bp)\n    # Table Search API\n    # TODO: Rename endpoint to be more generic and accept a resource type so that logic can be re-used\n    api.add_resource(SearchTableFilterAPI, '/search_table')\n    api.add_resource(SearchTableAPI, '/search')\n\n    # User Search API\n    api.add_resource(SearchUserAPI, '/search_user')\n\n    # Dashboard Search API\n    api.add_resource(SearchDashboardAPI, '/search_dashboard')\n\n    # DocumentAPI\n    api.add_resource(DocumentTablesAPI, '/document_table')\n    api.add_resource(DocumentTableAPI, '/document_table/<document_id>')\n\n    api.add_resource(DocumentUsersAPI, '/document_user')\n    api.add_resource(DocumentUserAPI, '/document_user/<document_id>')\n\n    app.register_blueprint(api_bp)\n\n    if app.config.get('SWAGGER_ENABLED'):\n        Swagger(app, template_file=os.path.join(ROOT_DIR, app.config.get('SWAGGER_TEMPLATE_PATH')), parse=True)\n    return app\n```\n\n**Explanation:**\n\n- This code snippet is a basic outline of how to create a Flask application and a bot.\n- It sets up a simple web server and a bot to interact with users.\n\nThis is just a basic outline."
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      4276,
+      5734,
+      2206,
+      8217,
+      1877,
+      5359,
+      2418,
+      6897,
+      5080,
+      5367
+    ],
+    "f_before": [
+      51.176998138427734,
+      0.0,
+      29.128171920776367,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      51.176998138427734,
+      0.0,
+      29.128171920776367,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      3.0314385890960693,
+      5.281161308288574,
+      5.141413688659668,
+      4.99985408782959,
+      5.127556800842285,
+      4.9286274909973145,
+      4.821068286895752,
+      4.975253105163574,
+      5.011748790740967,
+      4.942861080169678,
+      4.59783935546875
+    ],
+    "g_after": [
+      3.0314385890960693,
+      5.281161308288574,
+      5.141413688659668,
+      4.99985408782959,
+      5.127556800842285,
+      4.9286274909973145,
+      4.821068286895752,
+      4.975253105163574,
+      5.011748790740967,
+      4.942861080169678,
+      4.59783935546875
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.457677711099386,
+    "train_mean_l2": 5.954684367239476,
+    "train_mean_l1": 2.5029932170808316,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-000733/feature_std_layer_12.html",
+    "mean_std": 0.9244738221168518,
+    "max_std": 25.908597946166992
+  }
+}

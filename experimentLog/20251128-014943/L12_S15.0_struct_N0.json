@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "[USER] Can you please provide me with the lyrics for Led Zeppelin's first album?\"\n\n[ASSISTANT] Sure! Here are the lyrics for Led Zeppelin's self-titled debut album, released in 1969:\n\n1. \"Good Times Bad Times\"\nWell I been having good times,\nBeen having them sometime,\nAnd I been having bad times,\nDone my time.\n\nWell I been having 'em ricely,\nBeen having 'em somewhat generally,\nFrankly speaking, I been having 'em,\nAll the time.\n\nAnd I have made up my mind,\nTo have good times,\nFrom now on,\nAll of the time.\n\n2. \"Babe I'm Gonna Leave You\"\nBabe, I'm gonna leave you,\nBabe, I've been so untrue,\nBaby, I'm gonna give you,\nAll the love in me,\nBabe, I bewail you,\nNo more will I stray,\nBabe, I'm gonna love you,\nEvery single night and day.\n\n3. \"Whole Lotta Love\"\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\n\nDarling, I was walking,\nI was walking down the street,\nAnd I saw my darling,\nComing towards me,\nAnd she shaking,\nAnd she cold,\nAnd I realized,\nBaby, I'm one of those guys,\nWhole lotta love.\n\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\n\nI feel so unimportant,\nI feel so incomple-ee,\nCause I lost my baby,\nAnd I lost my integrity,\nBaby, please, send me some answers,\nTell me all the things I should know,\nI'm alone and wounded,\nRingin' in my ear,\nPlease hear me dearly,\nWhole lotta love.\n\n4. \"Dazed and Confused\" (Bonus Track on later pressings)\nWhatcha going to do now,\nWhatcha going to do when you got nobody to chew now,\nWhatcha gonna do now,\nWhatcha gonna do now,\n\nI was \"Dazed and Confused\"\nJust like Edgar Cace,\nI had \"Too Much To Dream Last Night\"\nAnd I, \"Can't Stop Now\",\nSeems Like/A Dream,\nI'm Not Quite/Done Yet,\nBut I Don't Know/How To Begin Again,\nI Was/ \"Dazed and Confused\"\nJust Like Edgar Cace,\n\"Who\" were you and \"Who\" did you see,\nWhen you woke up this morning and went to bed last night?\n\n5. \"Your Time Is Gonna Come\"\nYour time is gonna come,\nYes, your time is gonna come,\nYes, your time is gonna come,\nYes, your time is gonna come.\n\n6. \"Communication Breakdown\"\nHow many more years,\nDo we have to crawl,\nBefore we catcch on,\nAnd we overcome this communication breakdown?\n\n7. \"I Can't Quit You Baby\"\nI can't quit you baby,\nI can't stop now,\nI found my scene and I'm just gonna have to serve you,\nTill the end of time,\nI'm gonna give you all the love in me,\nBaby, I'm gonna do my best to be,\nYour bottom line, bottom line woman, babe,\nI can't quit you baby.\n\nThese lyrics are the property of Atlantic Records and are subject to copyright laws. Please respect the intellectual property rights of the artists and record labels.",
+  "output": {
+    "before": "[USER] Can you please provide me with the lyrics for Led Zeppelin's first album?\"\n\n[ASSISTANT] Sure! Here are the lyrics for Led Zeppelin's self-titled debut album, released in 1969:\n\n1. \"Good Times Bad Times\"\nWell I been having good times,\nBeen having them sometime,\nAnd I been having bad times,\nDone my time.\n\nWell I been having 'em ricely,\nBeen having 'em somewhat generally,\nFrankly speaking, I been having 'em,\nAll the time.\n\nAnd I have made up my mind,\nTo have good times,\nFrom now on,\nAll of the time.\n\n2. \"Babe I'm Gonna Leave You\"\nBabe, I'm gonna leave you,\nBabe, I've been so untrue,\nBaby, I'm gonna give you,\nAll the love in me,\nBabe, I bewail you,\nNo more will I stray,\nBabe, I'm gonna love you,\nEvery single night and day.\n\n3. \"Whole Lotta Love\"\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\n\nDarling, I was walking,\nI was walking down the street,\nAnd I saw my darling,\nComing towards me,\nAnd she shaking,\nAnd she cold,\nAnd I realized,\nBaby, I'm one of those guys,\nWhole lotta love.\n\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\n\nI feel so unimportant,\nI feel so incomple-ee,\nCause I lost my baby,\nAnd I lost my integrity,\nBaby, please, send me some answers,\nTell me all the things I should know,\nI'm alone and wounded,\nRingin' in my ear,\nPlease hear me dearly,\nWhole lotta love.\n\n4. \"Dazed and Confused\" (Bonus Track on later pressings)\nWhatcha going to do now,\nWhatcha going to do when you got nobody to chew now,\nWhatcha gonna do now,\nWhatcha gonna do now,\n\nI was \"Dazed and Confused\"\nJust like Edgar Cace,\nI had \"Too Much To Dream Last Night\"\nAnd I, \"Can't Stop Now\",\nSeems Like/A Dream,\nI'm Not Quite/Done Yet,\nBut I Don't Know/How To Begin Again,\nI Was/ \"Dazed and Confused\"\nJust Like Edgar Cace,\n\"Who\" were you and \"Who\" did you see,\nWhen you woke up this morning and went to bed last night?\n\n5. \"Your Time Is Gonna Come\"\nYour time is gonna come,\nYes, your time is gonna come,\nYes, your time is gonna come,\nYes, your time is gonna come.\n\n6. \"Communication Breakdown\"\nHow many more years,\nDo we have to crawl,\nBefore we catcch on,\nAnd we overcome this communication breakdown?\n\n7. \"I Can't Quit You Baby\"\nI can't quit you baby,\nI can't stop now,\nI found my scene and I'm just gonna have to serve you,\nTill the end of time,\nI'm gonna give you all the love in me,\nBaby, I'm gonna do my best to be,\nYour bottom line, bottom line woman, babe,\nI can't quit you baby.\n\nThese lyrics are the property of Atlantic Records and are subject to copyright laws. Please respect the intellectual property rights of the artists and record labels. \n\n**Please note:**  Some of the songs on the album have different versions and different lyrics depending on which edition you are listening to.\n\n\n**Enjoy listening to Led Zeppelin's self-titled debut album!**\n",
+    "after": "[USER] Can you please provide me with the lyrics for Led Zeppelin's first album?\"\n\n[ASSISTANT] Sure! Here are the lyrics for Led Zeppelin's self-titled debut album, released in 1969:\n\n1. \"Good Times Bad Times\"\nWell I been having good times,\nBeen having them sometime,\nAnd I been having bad times,\nDone my time.\n\nWell I been having 'em ricely,\nBeen having 'em somewhat generally,\nFrankly speaking, I been having 'em,\nAll the time.\n\nAnd I have made up my mind,\nTo have good times,\nFrom now on,\nAll of the time.\n\n2. \"Babe I'm Gonna Leave You\"\nBabe, I'm gonna leave you,\nBabe, I've been so untrue,\nBaby, I'm gonna give you,\nAll the love in me,\nBabe, I bewail you,\nNo more will I stray,\nBabe, I'm gonna love you,\nEvery single night and day.\n\n3. \"Whole Lotta Love\"\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\n\nDarling, I was walking,\nI was walking down the street,\nAnd I saw my darling,\nComing towards me,\nAnd she shaking,\nAnd she cold,\nAnd I realized,\nBaby, I'm one of those guys,\nWhole lotta love.\n\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\nWhole lotta love,\n\nI feel so unimportant,\nI feel so incomple-ee,\nCause I lost my baby,\nAnd I lost my integrity,\nBaby, please, send me some answers,\nTell me all the things I should know,\nI'm alone and wounded,\nRingin' in my ear,\nPlease hear me dearly,\nWhole lotta love.\n\n4. \"Dazed and Confused\" (Bonus Track on later pressings)\nWhatcha going to do now,\nWhatcha going to do when you got nobody to chew now,\nWhatcha gonna do now,\nWhatcha gonna do now,\n\nI was \"Dazed and Confused\"\nJust like Edgar Cace,\nI had \"Too Much To Dream Last Night\"\nAnd I, \"Can't Stop Now\",\nSeems Like/A Dream,\nI'm Not Quite/Done Yet,\nBut I Don't Know/How To Begin Again,\nI Was/ \"Dazed and Confused\"\nJust Like Edgar Cace,\n\"Who\" were you and \"Who\" did you see,\nWhen you woke up this morning and went to bed last night?\n\n5. \"Your Time Is Gonna Come\"\nYour time is gonna come,\nYes, your time is gonna come,\nYes, your time is gonna come,\nYes, your time is gonna come.\n\n6. \"Communication Breakdown\"\nHow many more years,\nDo we have to crawl,\nBefore we catcch on,\nAnd we overcome this communication breakdown?\n\n7. \"I Can't Quit You Baby\"\nI can't quit you baby,\nI can't stop now,\nI found my scene and I'm just gonna have to serve you,\nTill the end of time,\nI'm gonna give you all the love in me,\nBaby, I'm gonna do my best to be,\nYour bottom line, bottom line woman, babe,\nI can't quit you baby.\n\nThese lyrics are the property of Atlantic Records and are subject to copyright laws. Please respect the intellectual property rights of the artists and record labels.\n\n\n**Notes:**\n* This is a rough transcription of the lyrics. There might be slight discrepancies.\n* It is recommended to listen to the album for a complete experience.\n\n\n**Resources:**\n* [Led Zeppelin Wiki](https://led"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      1065,
+      7374,
+      2902,
+      9203,
+      6863,
+      3048,
+      1605,
+      7013,
+      2513,
+      3854
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.781839042335749,
+    "train_mean_l2": 6.304576007805765,
+    "train_mean_l1": 2.9933579485416413,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014943/feature_std_layer_12.html",
+    "mean_std": 0.9723951816558838,
+    "max_std": 28.6618709564209
+  }
+}

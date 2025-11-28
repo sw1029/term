@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Compare the American and French Revolutions\n\nThe American and French Revolutions were both movements that sought to replace existing systems of government and establish new, democratic systems in their place. However, the underlying causes of the revolutions were quite different. The French Revolution was driven largely by social and economic inequalities and a desire for liberty, whereas the American Revolution was largely driven by a sense of injustice associated with colonial rule and taxation. Both revolutions brought about profound societal change, and were instrumental in the formation of modern democracies.",
+  "output": {
+    "before": "Compare the American and French Revolutions\n\nThe American and French Revolutions were both movements that sought to replace existing systems of government and establish new, democratic systems in their place. However, the underlying causes of the revolutions were quite different. The French Revolution was driven largely by social and economic inequalities and a desire for liberty, whereas the American Revolution was largely driven by a sense of injustice associated with colonial rule and taxation. Both revolutions brought about profound societal change, and were instrumental in the formation of modern democracies. \n\nThis statement is a good start to comparing the American and French Revolutions, but it could be further developed. Here are some key points to consider for a more comprehensive comparison:\n\n**Causes:**\n\n* **American Revolution:** \n    ",
+    "after": "Compare the American and French Revolutions\n\nThe American and French Revolutions were both movements that sought to replace existing systems of government and establish new, democratic systems in their place. However, the underlying causes of the revolutions were quite different. The French Revolution was driven largely by social and economic inequalities and a desire for liberty, whereas the American Revolution was largely driven by a sense of injustice associated with colonial rule and taxation. Both revolutions brought about profound societal change, and were instrumental in the formation of modern democracies.\n\nThe American Revolution was a peaceful protest and a violent revolution, while the French Revolution was a violent and destructive one.\n\n**The American Revolution:**\n\n* **Peaceful protest:** The American Revolution was a peaceful protest against the British Crown.\n*"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      4276,
+      5734,
+      2206,
+      8217,
+      1877,
+      5359,
+      2418,
+      6897,
+      5080,
+      5367
+    ],
+    "f_before": [
+      60.63114929199219,
+      6.492476463317871,
+      87.81580352783203,
+      0.0,
+      0.0,
+      0.0,
+      0.09575044363737106,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      60.63114929199219,
+      6.492476463317871,
+      87.81580352783203,
+      0.0,
+      0.0,
+      0.0,
+      0.09575044363737106,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      9.844991683959961,
+      6.3206915855407715,
+      6.091209411621094,
+      5.990742206573486,
+      6.091713905334473,
+      5.882911205291748,
+      5.7116851806640625,
+      5.894353866577148,
+      5.937591075897217,
+      5.897887229919434,
+      5.447218418121338
+    ],
+    "g_after": [
+      9.844991683959961,
+      6.3206915855407715,
+      6.091209411621094,
+      5.990742206573486,
+      6.091713905334473,
+      5.882911205291748,
+      5.7116851806640625,
+      5.894353866577148,
+      5.937591075897217,
+      5.897887229919434,
+      5.447218418121338
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.457677711099386,
+    "train_mean_l2": 5.954684367239476,
+    "train_mean_l1": 2.5029932170808316,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-000733/feature_std_layer_12.html",
+    "mean_std": 0.9244738221168518,
+    "max_std": 25.908597946166992
+  }
+}

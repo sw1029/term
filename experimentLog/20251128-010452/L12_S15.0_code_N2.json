@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=mse sae.guidance_mse_pos_value=1.0 sae.guidance_mse_neg_value=0.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "mse",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import os\n\nfrom . import model\nfrom . import routes\nfrom . import views\n\nMODELS = [model.AddonS3UserSettings, model.AddonS3NodeSettings]\nUSER_SETTINGS_MODEL = model.AddonS3UserSettings\nNODE_SETTINGS_MODEL = model.AddonS3NodeSettings\n\nROUTES = [routes.settings_routes]\n\nSHORT_NAME = 's3'\nFULL_NAME = 'Amazon S3'\n\n\nOWNERS = ['user', 'node']\n\nADDED_DEFAULT = []\nADDED_MANDATORY = []\n\nVIEWS = []\nCONFIGS = ['accounts', 'node']\n\nCATEGORIES = ['storage']\n\nINCLUDE_JS = {}\n\nINCLUDE_CSS = {\n    'widget': [],\n    'page': [],\n}\n\nHAS_HGRID_FILES = True\nGET_HGRID_DATA = views.hgrid.s3_hgrid_data\n# 1024 ** 1024  # There really shouldnt be a limit...\nMAX_FILE_SIZE = 128  # MB\n\nHERE = os.path.dirname(os.path.abspath(__file__))\nNODE_SETTINGS_TEMPLATE = os.path.join(HERE, 'templates', 's3_node_settings.mako')\nUSER_SETTINGS_TEMPLATE = os.path.join(HERE, 'templates', 's3_user_settings.mako')\n",
+  "output": {
+    "before": "import os\n\nfrom . import model\nfrom . import routes\nfrom . import views\n\nMODELS = [model.AddonS3UserSettings, model.AddonS3NodeSettings]\nUSER_SETTINGS_MODEL = model.AddonS3UserSettings\nNODE_SETTINGS_MODEL = model.AddonS3NodeSettings\n\nROUTES = [routes.settings_routes]\n\nSHORT_NAME = 's3'\nFULL_NAME = 'Amazon S3'\n\n\nOWNERS = ['user', 'node']\n\nADDED_DEFAULT = []\nADDED_MANDATORY = []\n\nVIEWS = []\nCONFIGS = ['accounts', 'node']\n\nCATEGORIES = ['storage']\n\nINCLUDE_JS = {}\n\nINCLUDE_CSS = {\n    'widget': [],\n    'page': [],\n}\n\nHAS_HGRID_FILES = True\nGET_HGRID_DATA = views.hgrid.s3_hgrid_data\n# 1024 ** 1024  # There really shouldnt be a limit...\nMAX_FILE_SIZE = 128  # MB\n\nHERE = os.path.dirname(os.path.abspath(__file__))\nNODE_SETTINGS_TEMPLATE = os.path.join(HERE, 'templates', 's3_node_settings.mako')\nUSER_SETTINGS_TEMPLATE = os.path.join(HERE, 'templates', 's3_user_settings.mako')\n```\n\n**Explanation:**\n\nThis code defines the configuration for a hypothetical extension for an application that interacts with Amazon S3.  It includes:\n\n**1. Modules:**\n   - `model`: This directory likely holds classes for interacting with S",
+    "after": "import os\n\nfrom . import model\nfrom . import routes\nfrom . import views\n\nMODELS = [model.AddonS3UserSettings, model.AddonS3NodeSettings]\nUSER_SETTINGS_MODEL = model.AddonS3UserSettings\nNODE_SETTINGS_MODEL = model.AddonS3NodeSettings\n\nROUTES = [routes.settings_routes]\n\nSHORT_NAME = 's3'\nFULL_NAME = 'Amazon S3'\n\n\nOWNERS = ['user', 'node']\n\nADDED_DEFAULT = []\nADDED_MANDATORY = []\n\nVIEWS = []\nCONFIGS = ['accounts', 'node']\n\nCATEGORIES = ['storage']\n\nINCLUDE_JS = {}\n\nINCLUDE_CSS = {\n    'widget': [],\n    'page': [],\n}\n\nHAS_HGRID_FILES = True\nGET_HGRID_DATA = views.hgrid.s3_hgrid_data\n# 1024 ** 1024  # There really shouldnt be a limit...\nMAX_FILE_SIZE = 128  # MB\n\nHERE = os.path.dirname(os.path.abspath(__file__))\nNODE_SETTINGS_TEMPLATE = os.path.join(HERE, 'templates', 's3_node_settings.mako')\nUSER_SETTINGS_TEMPLATE = os.path.join(HERE, 'templates', 's3_user_settings.mako')\n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      4645,
+      7186,
+      1821,
+      1097,
+      5276,
+      2802,
+      7152,
+      7810,
+      6738
+    ],
+    "f_before": [
+      0.7043607234954834,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.7043607234954834,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.4035767614841461,
+      0.08581753075122833,
+      0.07489557564258575,
+      0.07127148658037186,
+      0.06828366965055466,
+      0.0,
+      0.07191456854343414,
+      0.06810091435909271,
+      0.06976977735757828,
+      0.06858908385038376
+    ],
+    "g_after": [
+      0.0,
+      0.4035767614841461,
+      0.08581753075122833,
+      0.07489557564258575,
+      0.07127148658037186,
+      0.06828366965055466,
+      0.0,
+      0.07191456854343414,
+      0.06810091435909271,
+      0.06976977735757828,
+      0.06858908385038376
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.54353929513693,
+    "train_mean_l2": 6.013987733893097,
+    "train_mean_l1": 2.5168445214927195,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-010452/feature_std_layer_12.html",
+    "mean_std": 1.0416896343231201,
+    "max_std": 30.567893981933594
+  }
+}

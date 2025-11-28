@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import numpy as np\nimport random\n\nimport loggers as lg\n\nfrom game import Game, GameState\nfrom model import Residual_CNN\n\nfrom agent import Agent, User\n\nimport config\n\ndef playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0, goes_first = 0):\n    \n    if player1version == -1:\n        player1 = User('player1', env.state_size, env.action_size)\n    else:\n        player1_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)\n\n        if player1version > 0:\n            player1_network = player1_NN.read(env.name, run_version, player1version)\n            player1_NN.model.set_weights(player1_network.get_weights())   \n        player1 = Agent('player1', env.state_size, env.action_size, config.p1_MCTS_SIMS, config.CPUCT, player1_NN)\n\n    if player2version == -1:\n        player2 = User('player2', env.state_size, env.action_size)\n    else:\n        player2_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)\n        \n        if player2version > 0:\n            player2_network = player2_NN.read(env.name, run_version, player2version)\n            player2_NN.model.set_weights(player2_network.get_weights())\n        player2 = Agent('player2', env.state_size, env.action_size, config.p2_MCTS_SIMS, config.CPUCT, player2_NN)\n\n    scores, memory, points, sp_scores = playMatches(player1, player2, EPISODES, logger, turns_until_tau0, None, goes_first)\n\n    return (scores, memory, points, sp_scores)\n\n\ndef playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = None, goes_first = 0):\n\n    env = Game()\n    scores = {player1.name:0, \"drawn\": 0, player2.name:0}\n    sp_scores = {'sp':0, \"drawn\": 0, 'nsp':0}\n    points = {player1.name:[], player2.name:[]}\n\n    for e in range(EPISODES):\n\n        logger.info('====================')\n        logger.info('EPISODE %d OF %d', e+1, EPISODES)\n        logger.info('====================')\n\n        print (str(e+1) + ' ', end='')\n\n        state = env.reset()\n        \n        done = 0\n        turn = 0\n        player1.mcts = None\n        player2.mcts = None\n\n        if goes_first == 0:\n            player1Starts = random.randint(0,1) * 2 - 1\n        else:\n            player1Starts = goes_first\n\n        if player1Starts == 1:\n            players = {1:{\"agent\": player1, \"name\":player1.name}\n                    , -1: {\"agent\": player2, \"name\":player2.name}\n                    }\n            logger.info(player1.name + ' plays as X')\n        else:\n            players = {1:{\"agent\": player2, \"name\":player2.name}\n                    , -1: {\"agent\": player1, \"name\":player1.name}\n                    }\n            logger.info(player2.name + ' plays as X')\n            logger.info('--------------')\n\n        env.gameState.render(logger)\n\n        while done == 0:\n            turn = turn + 1\n    \n            #### Run the MCTS algo and return an action\n            if turn < turns_until_tau0:\n                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)\n            else:\n                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)\n\n            if memory != None:\n                ####Commit the move to memory\n                memory.commit_stmemory(env.identities, state, pi)\n\n\n            logger.info('action: %d', action)\n            for r in range(env.grid_shape[0]):\n                logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x,2)) for x in pi[env.grid_shape[1]*r : (env.grid_shape[1]*r + env.grid_shape[1])]])\n            logger.info('MCTS perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(MCTS_value,2))\n            logger.info('NN perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(NN_value,2))\n            logger.info('====================')\n\n            ### Do the action\n            state, value, done, _ = env.step(action) #the value of the newState from the POV of the new playerTurn i.e. -1 if the previous player played a winning move\n            \n            env.gameState.render(logger)\n\n            if done == 1: \n                if memory != None:\n                    #### If the game is finished, assign the values correctly to the game moves\n                    for move in memory.stmemory:\n                        if move['playerTurn'] == state.playerTurn:\n                            move['value'] = value\n                        else:\n                            move['value'] = -value\n                         \n                    memory.commit_ltmemory()\n             \n                if value == 1:\n                    logger.info('%s WINS!', players[state.playerTurn]['name'])\n                    scores[players[state.playerTurn]['name']] = scores[players[state.playerTurn]['name']] + 1\n                    if state.playerTurn == 1: \n                        sp_scores['sp'] = sp_scores['sp'] + 1\n                    else:\n                        sp_scores['nsp'] = sp_scores['nsp'] + 1\n\n                elif value == -1:\n                    logger.info('%s WINS!', players[-state.playerTurn]['name'])\n                    scores[players[-state.playerTurn]['name']] = scores[players[-state.playerTurn]['name']] + 1\n               \n                    if state.playerTurn == 1: \n                        sp_scores['nsp'] = sp_scores['nsp'] + 1\n                    else:\n                        sp_scores['sp'] = sp_scores['sp'] + 1\n\n                else:\n                    logger.info('DRAW...')\n                    scores['drawn'] = scores['drawn'] + 1\n                    sp_scores['drawn'] = sp_scores['drawn'] + 1\n\n                pts = state.score\n                points[players[state.playerTurn]['name']].append(pts[0])\n                points[players[-state.playerTurn]['name']].append(pts[1])\n\n    return (scores, memory, points, sp_scores)\n",
+  "output": {
+    "before": "import numpy as np\nimport random\n\nimport loggers as lg\n\nfrom game import Game, GameState\nfrom model import Residual_CNN\n\nfrom agent import Agent, User\n\nimport config\n\ndef playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0, goes_first = 0):\n    \n    if player1version == -1:\n        player1 = User('player1', env.state_size, env.action_size)\n    else:\n        player1_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)\n\n        if player1version > 0:\n            player1_network = player1_NN.read(env.name, run_version, player1version)\n            player1_NN.model.set_weights(player1_network.get_weights())   \n        player1 = Agent('player1', env.state_size, env.action_size, config.p1_MCTS_SIMS, config.CPUCT, player1_NN)\n\n    if player2version == -1:\n        player2 = User('player2', env.state_size, env.action_size)\n    else:\n        player2_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)\n        \n        if player2version > 0:\n            player2_network = player2_NN.read(env.name, run_version, player2version)\n            player2_NN.model.set_weights(player2_network.get_weights())\n        player2 = Agent('player2', env.state_size, env.action_size, config.p2_MCTS_SIMS, config.CPUCT, player2_NN)\n\n    scores, memory, points, sp_scores = playMatches(player1, player2, EPISODES, logger, turns_until_tau0, None, goes_first)\n\n    return (scores, memory, points, sp_scores)\n\n\ndef playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = None, goes_first = 0):\n\n    env = Game()\n    scores = {player1.name:0, \"drawn\": 0, player2.name:0}\n    sp_scores = {'sp':0, \"drawn\": 0, 'nsp':0}\n    points = {player1.name:[], player2.name:[]}\n\n    for e in range(EPISODES):\n\n        logger.info('====================')\n        logger.info('EPISODE %d OF %d', e+1, EPISODES)\n        logger.info('====================')\n\n        print (str(e+1) + ' ', end='')\n\n        state = env.reset()\n        \n        done = 0\n        turn = 0\n        player1.mcts = None\n        player2.mcts = None\n\n        if goes_first == 0:\n            player1Starts = random.randint(0,1) * 2 - 1\n        else:\n            player1Starts = goes_first\n\n        if player1Starts == 1:\n            players = {1:{\"agent\": player1, \"name\":player1.name}\n                    , -1: {\"agent\": player2, \"name\":player2.name}\n                    }\n            logger.info(player1.name + ' plays as X')\n        else:\n            players = {1:{\"agent\": player2, \"name\":player2.name}\n                    , -1: {\"agent\": player1, \"name\":player1.name}\n                    }\n            logger.info(player2.name + ' plays as X')\n            logger.info('--------------')\n\n        env.gameState.render(logger)\n\n        while done == 0:\n            turn = turn + 1\n    \n            #### Run the MCTS algo and return an action\n            if turn < turns_until_tau0:\n                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)\n            else:\n                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)\n\n            if memory != None:\n                ####Commit the move to memory\n                memory.commit_stmemory(env.identities, state, pi)\n\n\n            logger.info('action: %d', action)\n            for r in range(env.grid_shape[0]):\n                logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x,2)) for x in pi[env.grid_shape[1]*r : (env.grid_shape[1]*r + env.grid_shape[1])]])\n            logger.info('MCTS perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(MCTS_value,2))\n            logger.info('NN perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(NN_value,2))\n            logger.info('====================')\n\n            ### Do the action\n            state, value, done, _ = env.step(action) #the value of the newState from the POV of the new playerTurn i.e. -1 if the previous player played a winning move\n            \n            env.gameState.render(logger)\n\n            if done == 1: \n                if memory != None:\n                    #### If the game is finished, assign the values correctly to the game moves\n                    for move in memory.stmemory:\n                        if move['playerTurn'] == state.playerTurn:\n                            move['value'] = value\n                        else:\n                            move['value'] = -value\n                         \n                    memory.commit_ltmemory()\n             \n                if value == 1:\n                    logger.info('%s WINS!', players[state.playerTurn]['name'])\n                    scores[players[state.playerTurn]['name']] = scores[players[state.playerTurn]['name']] + 1\n                    if state.playerTurn == 1: \n                        sp_scores['sp'] = sp_scores['sp'] + 1\n                    else:\n                        sp_scores['nsp'] = sp_scores['nsp'] + 1\n\n                elif value == -1:\n                    logger.info('%s WINS!', players[-state.playerTurn]['name'])\n                    scores[players[-state.playerTurn]['name']] = scores[players[-state.playerTurn]['name']] + 1\n               \n                    if state.playerTurn == 1: \n                        sp_scores['nsp'] = sp_scores['nsp'] + 1\n                    else:\n                        sp_scores['sp'] = sp_scores['sp'] + 1\n\n                else:\n                    logger.info('DRAW...')\n                    scores['drawn'] = scores['drawn'] + 1\n                    sp_scores['drawn'] = sp_scores['drawn'] + 1\n\n                pts = state.score\n                points[players[state.playerTurn]['name']].append(pts[0])\n                points[players[-state.playerTurn]['name']].append(pts[1])\n\n    return (scores, memory, points, sp_scores)\n  \n```\n \n \n\n**Explanation:**\n\nThis code implements a function `playMatchesBetweenVersions` to play multiple games between two agents, one with a neural network and one with a basic MCTS strategy.  \n\n**Key Components",
+    "after": "import numpy as np\nimport random\n\nimport loggers as lg\n\nfrom game import Game, GameState\nfrom model import Residual_CNN\n\nfrom agent import Agent, User\n\nimport config\n\ndef playMatchesBetweenVersions(env, run_version, player1version, player2version, EPISODES, logger, turns_until_tau0, goes_first = 0):\n    \n    if player1version == -1:\n        player1 = User('player1', env.state_size, env.action_size)\n    else:\n        player1_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)\n\n        if player1version > 0:\n            player1_network = player1_NN.read(env.name, run_version, player1version)\n            player1_NN.model.set_weights(player1_network.get_weights())   \n        player1 = Agent('player1', env.state_size, env.action_size, config.p1_MCTS_SIMS, config.CPUCT, player1_NN)\n\n    if player2version == -1:\n        player2 = User('player2', env.state_size, env.action_size)\n    else:\n        player2_NN = Residual_CNN(config.REG_CONST, config.LEARNING_RATE, env.input_shape,   env.action_size, config.HIDDEN_CNN_LAYERS)\n        \n        if player2version > 0:\n            player2_network = player2_NN.read(env.name, run_version, player2version)\n            player2_NN.model.set_weights(player2_network.get_weights())\n        player2 = Agent('player2', env.state_size, env.action_size, config.p2_MCTS_SIMS, config.CPUCT, player2_NN)\n\n    scores, memory, points, sp_scores = playMatches(player1, player2, EPISODES, logger, turns_until_tau0, None, goes_first)\n\n    return (scores, memory, points, sp_scores)\n\n\ndef playMatches(player1, player2, EPISODES, logger, turns_until_tau0, memory = None, goes_first = 0):\n\n    env = Game()\n    scores = {player1.name:0, \"drawn\": 0, player2.name:0}\n    sp_scores = {'sp':0, \"drawn\": 0, 'nsp':0}\n    points = {player1.name:[], player2.name:[]}\n\n    for e in range(EPISODES):\n\n        logger.info('====================')\n        logger.info('EPISODE %d OF %d', e+1, EPISODES)\n        logger.info('====================')\n\n        print (str(e+1) + ' ', end='')\n\n        state = env.reset()\n        \n        done = 0\n        turn = 0\n        player1.mcts = None\n        player2.mcts = None\n\n        if goes_first == 0:\n            player1Starts = random.randint(0,1) * 2 - 1\n        else:\n            player1Starts = goes_first\n\n        if player1Starts == 1:\n            players = {1:{\"agent\": player1, \"name\":player1.name}\n                    , -1: {\"agent\": player2, \"name\":player2.name}\n                    }\n            logger.info(player1.name + ' plays as X')\n        else:\n            players = {1:{\"agent\": player2, \"name\":player2.name}\n                    , -1: {\"agent\": player1, \"name\":player1.name}\n                    }\n            logger.info(player2.name + ' plays as X')\n            logger.info('--------------')\n\n        env.gameState.render(logger)\n\n        while done == 0:\n            turn = turn + 1\n    \n            #### Run the MCTS algo and return an action\n            if turn < turns_until_tau0:\n                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 1)\n            else:\n                action, pi, MCTS_value, NN_value = players[state.playerTurn]['agent'].act(state, 0)\n\n            if memory != None:\n                ####Commit the move to memory\n                memory.commit_stmemory(env.identities, state, pi)\n\n\n            logger.info('action: %d', action)\n            for r in range(env.grid_shape[0]):\n                logger.info(['----' if x == 0 else '{0:.2f}'.format(np.round(x,2)) for x in pi[env.grid_shape[1]*r : (env.grid_shape[1]*r + env.grid_shape[1])]])\n            logger.info('MCTS perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(MCTS_value,2))\n            logger.info('NN perceived value for %s: %f', state.pieces[str(state.playerTurn)] ,np.round(NN_value,2))\n            logger.info('====================')\n\n            ### Do the action\n            state, value, done, _ = env.step(action) #the value of the newState from the POV of the new playerTurn i.e. -1 if the previous player played a winning move\n            \n            env.gameState.render(logger)\n\n            if done == 1: \n                if memory != None:\n                    #### If the game is finished, assign the values correctly to the game moves\n                    for move in memory.stmemory:\n                        if move['playerTurn'] == state.playerTurn:\n                            move['value'] = value\n                        else:\n                            move['value'] = -value\n                         \n                    memory.commit_ltmemory()\n             \n                if value == 1:\n                    logger.info('%s WINS!', players[state.playerTurn]['name'])\n                    scores[players[state.playerTurn]['name']] = scores[players[state.playerTurn]['name']] + 1\n                    if state.playerTurn == 1: \n                        sp_scores['sp'] = sp_scores['sp'] + 1\n                    else:\n                        sp_scores['nsp'] = sp_scores['nsp'] + 1\n\n                elif value == -1:\n                    logger.info('%s WINS!', players[-state.playerTurn]['name'])\n                    scores[players[-state.playerTurn]['name']] = scores[players[-state.playerTurn]['name']] + 1\n               \n                    if state.playerTurn == 1: \n                        sp_scores['nsp'] = sp_scores['nsp'] + 1\n                    else:\n                        sp_scores['sp'] = sp_scores['sp'] + 1\n\n                else:\n                    logger.info('DRAW...')\n                    scores['drawn'] = scores['drawn'] + 1\n                    sp_scores['drawn'] = sp_scores['drawn'] + 1\n\n                pts = state.score\n                points[players[state.playerTurn]['name']].append(pts[0])\n                points[players[-state.playerTurn]['name']].append(pts[1])\n\n    return (scores, memory, points, sp_scores)\n```\n\n\n```python\nfrom pyperclip import copy\nfrom game import Game\nfrom model import Residual_CNN\n\n# Get all the config values from config\nconfig = config.Config()\n\n# Get logger\nlogger = lg.getLogger()"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      6926,
+      4819,
+      426,
+      4879,
+      3414,
+      7803,
+      439,
+      5549,
+      8891
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.014690427109599113,
+      0.018112288787961006,
+      0.0,
+      0.024296332150697708,
+      0.0,
+      0.022831115871667862,
+      0.0,
+      0.0338577926158905,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.014690427109599113,
+      0.018112288787961006,
+      0.0,
+      0.024296332150697708,
+      0.0,
+      0.022831115871667862,
+      0.0,
+      0.0338577926158905,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.426064644694328,
+    "train_mean_l2": 6.208298320971429,
+    "train_mean_l1": 2.753059552669525,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-002046/feature_std_layer_12.html",
+    "mean_std": 1.2004650831222534,
+    "max_std": 24.676727294921875
+  }
+}

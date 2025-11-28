@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "import unittest\nimport sys\nimport os\nimport csv\nimport psycopg2\nfrom pprint import pprint\nsys.path.insert(0, '..')\nfrom db_utils.pg_connect import pg_connect\n\n\n\nconfig_file = 'databases.conf'\ndb = pg_connect('postgres', config_file)\ntable = 'test_table'\n\nclass test_pg_connect(unittest.TestCase):\n    def setUp(self):\n        db.update_db('DROP TABLE IF EXISTS test_table;')\n        db.update_db('CREATE TABLE IF NOT EXISTS test_table(name VARCHAR);')\n        db.update_db('DROP TABLE IF EXISTS csv_test_table')\n\n\n    def tearDown(self):\n        db.update_db('DROP TABLE IF EXISTS test_table;')\n\n\n    def test_updatedb(self):        \n        insert1 = db.update_db('''\n            INSERT INTO test_table(name) \n            VALUES ('Mahe Drysdale')''', pprint=True)\n        self.assertEqual(insert1, 1)\n\n        insert2 = db.update_db('''\n        INSERT INTO test_table(name) VALUES (%s)\n        ''', \n        params=('Ondrej Synek',), \n        pprint=True)\n\n        self.assertEqual(insert2, 1)\n\n\n        delete = db.update_db('''\n        DELETE FROM test_table WHERE name = 'Ondrej Synek'\n        ''', pprint=True)\n\n        self.assertEqual(delete, 1)\n\n\n    def test_dicts_query(self):\n        val = 'new row'\n        db.update_db('''\n            INSERT INTO test_table(name) VALUES (%s)\n        ''', params=(val,), pprint=False)\n\n        dicts = db.get_dicts_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=True)\n\n        pprint(dicts)\n        self.assertEqual(dicts[0].get('name'),val)\n        #self.assertEqual(dicts[0], dict)\n\n\n    def test_arr_query(self):\n        val = 'Damir Martin'\n        db.update_db('''\n            INSERT INTO test_table(name) VALUES (%s)\n            ''', \n            params=(val,), \n            pprint=True)\n\n        arr = db.get_arr_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=True)\n\n        self.assertEqual(arr[1][0], val)\n        self.assertEqual(len(arr), 2)\n        self.assertEqual(type(arr), list)\n\n    \n    def test_df_query(self):\n        print('testing get_df_from_query method....')\n        TEST_ROW = 'one test row'\n\n        db.update_db('drop table if exists test_table;', pprint=False)\n        db.update_db('create table if not exists test_table(name varchar);', pprint=False)\n        db.update_db(\"insert into test_table(name) values (%s)\", params=(TEST_ROW,), pprint=False)\n\n        df = db.get_df_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=False)\n\n        self.assertEqual(df['name'][0], TEST_ROW)\n\n\n    def test_transaction(self):\n        sql_list = [\n\n        '''\n        DROP TABLE IF EXISTS transaction_table\n        ''',\n\n        '''\n        CREATE TABLE IF NOT EXISTS transaction_table(a_col varchar(20) PRIMARY KEY)\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('first test row')\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('second test row')\n        ''',\n\n        '''\n        DROP TABLE transaction_table\n        '''\n        ]\n\n        expected_output = [-1, -1, -1, 1, 1, -1]\n        row_update = db.transaction(sql_list, pprint=False)\n        self.assertEqual(row_update, expected_output)\n\n        sql_list = [\n\n        '''\n        DROP TABLE if exists transaction_table\n        ''',\n\n        '''\n        CREATE TABLE IF NOT EXISTS transaction_table(a_col varchar(20) PRIMARY KEY)\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('first test row')\n        ''',\n\n        '''\n        SELECT sql_sytnax_error FORM TALBE\n        '''\n        ]\n\n        self.assertRaises(Exception, db.transaction, sql_list, pprint=False)\n        self.assertRaises(psycopg2.errors.UndefinedTable, db.update_db, 'SELECT * FROM transaction_table', pprint=False)\n\n\n    def test_write_arr_to_table(self):\n        testArray = [\n        ['v1','v2','v3','v4','v5'],\n        ['a1','a2','a3','a4','a5'],\n        ['b1','b2','b3','b4','b5'],\n        ['c1','c2','c3','c4','c5'],\n        ['d1','d2','d3','d4','d5']\n        ]\n\n        tablename = 'test_table'\n        columns = ['column1','column2','column3','column4','column5']\n        db.write_arr_to_table(testArray,tablename, columns)\n\n        row_count = db.get_arr_from_query('SELECT COUNT(*) FROM test_table')\n        element = db.get_arr_from_query('SELECT column1 FROM test_table')\n        self.assertEqual(row_count[1], [5])\n        self.assertEqual(element[1:], [['v1'], ['a1'], ['b1'], ['c1'], ['d1']])\n\n\n    def test_csv_to_table(self):\n        db.csv_to_table('sample.csv', 'csv_test_table', append=False)\n\n        columnArray = None\n        csv_row_count = None\n\n        with open(\"sample.csv\", \"r\") as f:\n\n            columnsString = f.readline()\n            columnsString = columnsString.replace('\\n','')\n            columnsString = columnsString.replace('_',' ')\n            columnsString = columnsString.lower()\n            columnArray = columnsString.split(',')\n\n            reader = csv.reader(f, delimiter = ',')\n            data = list(reader)\n            csv_row_count = len(data)\n\n\n        column_list = db.get_arr_from_query('''\n            SELECT column_name\n            FROM INFORMATION_SCHEMA.COLUMNS\n            WHERE TABLE_NAME = 'csv_test_table'\n            ''')\n        column_list = column_list[1:]\n        result_list = []\n\n        for c in column_list:\n            result_list.append(c[0].replace('_',' '))\n\n        sql_row_count = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table', pprint=True)    \n\n        self.assertEqual(columnArray, result_list)\n        self.assertEqual(csv_row_count, sql_row_count[1][0])\n\n\n\n    def test_copy_expert(self):\n        db.csv_to_table('sample.csv', 'csv_test_table', append=False)\n\n        #dump to file\n        sql_dump = \"\"\"COPY csv_test_table\n        TO STDOUT\n        WITH CSV HEADER\"\"\"\n\n        with open(\"copy_expert_dump.csv\",'w+') as f:\n            db.copy_expert(sql_dump, f)\n\n        with open(\"copy_expert_dump.csv\", \"r\") as f:\n            reader = csv.reader(f, delimiter = \",\")\n            data = list(reader)\n            csv_row_count1 = len(data)\n\n        sql_row_count1 = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table', pprint=True)\n        self.assertEqual(sql_row_count1[1][0]+1, csv_row_count1)\n\n        #load from file\n        db.update_db('TRUNCATE csv_test_table', pprint=True)\n\n        sql_load = \"\"\"COPY csv_test_table\n        FROM STDIN\n        WITH CSV HEADER\"\"\"\n\n\n        with open('sample.csv','r') as f:\n            db.copy_expert(sql_load, f)\n\n        with open('sample.csv', 'r') as f:\n            reader = csv.reader(f, delimiter = ',')\n            data = list(reader)\n            csv_row_count2 = len(data)\n\n        sql_row_count2 = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table')\n        self.assertEqual(csv_row_count2, sql_row_count2[1][0]+1)\n\n\nunittest.main()",
+  "output": {
+    "before": "import unittest\nimport sys\nimport os\nimport csv\nimport psycopg2\nfrom pprint import pprint\nsys.path.insert(0, '..')\nfrom db_utils.pg_connect import pg_connect\n\n\n\nconfig_file = 'databases.conf'\ndb = pg_connect('postgres', config_file)\ntable = 'test_table'\n\nclass test_pg_connect(unittest.TestCase):\n    def setUp(self):\n        db.update_db('DROP TABLE IF EXISTS test_table;')\n        db.update_db('CREATE TABLE IF NOT EXISTS test_table(name VARCHAR);')\n        db.update_db('DROP TABLE IF EXISTS csv_test_table')\n\n\n    def tearDown(self):\n        db.update_db('DROP TABLE IF EXISTS test_table;')\n\n\n    def test_updatedb(self):        \n        insert1 = db.update_db('''\n            INSERT INTO test_table(name) \n            VALUES ('Mahe Drysdale')''', pprint=True)\n        self.assertEqual(insert1, 1)\n\n        insert2 = db.update_db('''\n        INSERT INTO test_table(name) VALUES (%s)\n        ''', \n        params=('Ondrej Synek',), \n        pprint=True)\n\n        self.assertEqual(insert2, 1)\n\n\n        delete = db.update_db('''\n        DELETE FROM test_table WHERE name = 'Ondrej Synek'\n        ''', pprint=True)\n\n        self.assertEqual(delete, 1)\n\n\n    def test_dicts_query(self):\n        val = 'new row'\n        db.update_db('''\n            INSERT INTO test_table(name) VALUES (%s)\n        ''', params=(val,), pprint=False)\n\n        dicts = db.get_dicts_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=True)\n\n        pprint(dicts)\n        self.assertEqual(dicts[0].get('name'),val)\n        #self.assertEqual(dicts[0], dict)\n\n\n    def test_arr_query(self):\n        val = 'Damir Martin'\n        db.update_db('''\n            INSERT INTO test_table(name) VALUES (%s)\n            ''', \n            params=(val,), \n            pprint=True)\n\n        arr = db.get_arr_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=True)\n\n        self.assertEqual(arr[1][0], val)\n        self.assertEqual(len(arr), 2)\n        self.assertEqual(type(arr), list)\n\n    \n    def test_df_query(self):\n        print('testing get_df_from_query method....')\n        TEST_ROW = 'one test row'\n\n        db.update_db('drop table if exists test_table;', pprint=False)\n        db.update_db('create table if not exists test_table(name varchar);', pprint=False)\n        db.update_db(\"insert into test_table(name) values (%s)\", params=(TEST_ROW,), pprint=False)\n\n        df = db.get_df_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=False)\n\n        self.assertEqual(df['name'][0], TEST_ROW)\n\n\n    def test_transaction(self):\n        sql_list = [\n\n        '''\n        DROP TABLE IF EXISTS transaction_table\n        ''',\n\n        '''\n        CREATE TABLE IF NOT EXISTS transaction_table(a_col varchar(20) PRIMARY KEY)\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('first test row')\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('second test row')\n        ''',\n\n        '''\n        DROP TABLE transaction_table\n        '''\n        ]\n\n        expected_output = [-1, -1, -1, 1, 1, -1]\n        row_update = db.transaction(sql_list, pprint=False)\n        self.assertEqual(row_update, expected_output)\n\n        sql_list = [\n\n        '''\n        DROP TABLE if exists transaction_table\n        ''',\n\n        '''\n        CREATE TABLE IF NOT EXISTS transaction_table(a_col varchar(20) PRIMARY KEY)\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('first test row')\n        ''',\n\n        '''\n        SELECT sql_sytnax_error FORM TALBE\n        '''\n        ]\n\n        self.assertRaises(Exception, db.transaction, sql_list, pprint=False)\n        self.assertRaises(psycopg2.errors.UndefinedTable, db.update_db, 'SELECT * FROM transaction_table', pprint=False)\n\n\n    def test_write_arr_to_table(self):\n        testArray = [\n        ['v1','v2','v3','v4','v5'],\n        ['a1','a2','a3','a4','a5'],\n        ['b1','b2','b3','b4','b5'],\n        ['c1','c2','c3','c4','c5'],\n        ['d1','d2','d3','d4','d5']\n        ]\n\n        tablename = 'test_table'\n        columns = ['column1','column2','column3','column4','column5']\n        db.write_arr_to_table(testArray,tablename, columns)\n\n        row_count = db.get_arr_from_query('SELECT COUNT(*) FROM test_table')\n        element = db.get_arr_from_query('SELECT column1 FROM test_table')\n        self.assertEqual(row_count[1], [5])\n        self.assertEqual(element[1:], [['v1'], ['a1'], ['b1'], ['c1'], ['d1']])\n\n\n    def test_csv_to_table(self):\n        db.csv_to_table('sample.csv', 'csv_test_table', append=False)\n\n        columnArray = None\n        csv_row_count = None\n\n        with open(\"sample.csv\", \"r\") as f:\n\n            columnsString = f.readline()\n            columnsString = columnsString.replace('\\n','')\n            columnsString = columnsString.replace('_',' ')\n            columnsString = columnsString.lower()\n            columnArray = columnsString.split(',')\n\n            reader = csv.reader(f, delimiter = ',')\n            data = list(reader)\n            csv_row_count = len(data)\n\n\n        column_list = db.get_arr_from_query('''\n            SELECT column_name\n            FROM INFORMATION_SCHEMA.COLUMNS\n            WHERE TABLE_NAME = 'csv_test_table'\n            ''')\n        column_list = column_list[1:]\n        result_list = []\n\n        for c in column_list:\n            result_list.append(c[0].replace('_',' '))\n\n        sql_row_count = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table', pprint=True)    \n\n        self.assertEqual(columnArray, result_list)\n        self.assertEqual(csv_row_count, sql_row_count[1][0])\n\n\n\n    def test_copy_expert(self):\n        db.csv_to_table('sample.csv', 'csv_test_table', append=False)\n\n        #dump to file\n        sql_dump = \"\"\"COPY csv_test_table\n        TO STDOUT\n        WITH CSV HEADER\"\"\"\n\n        with open(\"copy_expert_dump.csv\",'w+') as f:\n            db.copy_expert(sql_dump, f)\n\n        with open(\"copy_expert_dump.csv\", \"r\") as f:\n            reader = csv.reader(f, delimiter = \",\")\n            data = list(reader)\n            csv_row_count1 = len(data)\n\n        sql_row_count1 = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table', pprint=True)\n        self.assertEqual(sql_row_count1[1][0]+1, csv_row_count1)\n\n        #load from file\n        db.update_db('TRUNCATE csv_test_table', pprint=True)\n\n        sql_load = \"\"\"COPY csv_test_table\n        FROM STDIN\n        WITH CSV HEADER\"\"\"\n\n\n        with open('sample.csv','r') as f:\n            db.copy_expert(sql_load, f)\n\n        with open('sample.csv', 'r') as f:\n            reader = csv.reader(f, delimiter = ',')\n            data = list(reader)\n            csv_row_count2 = len(data)\n\n        sql_row_count2 = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table')\n        self.assertEqual(csv_row_count2, sql_row_count2[1][0]+1)\n\n\nunittest.main()\n```\n\n\n**Explanation:**\n\nThe test script tests various functionalities of the `db_utils.pg_connect` module. \n\n**Key Functions Tested:**\n\n* **`pg_connect`**: This function is used to establish a connection",
+    "after": "import unittest\nimport sys\nimport os\nimport csv\nimport psycopg2\nfrom pprint import pprint\nsys.path.insert(0, '..')\nfrom db_utils.pg_connect import pg_connect\n\n\n\nconfig_file = 'databases.conf'\ndb = pg_connect('postgres', config_file)\ntable = 'test_table'\n\nclass test_pg_connect(unittest.TestCase):\n    def setUp(self):\n        db.update_db('DROP TABLE IF EXISTS test_table;')\n        db.update_db('CREATE TABLE IF NOT EXISTS test_table(name VARCHAR);')\n        db.update_db('DROP TABLE IF EXISTS csv_test_table')\n\n\n    def tearDown(self):\n        db.update_db('DROP TABLE IF EXISTS test_table;')\n\n\n    def test_updatedb(self):        \n        insert1 = db.update_db('''\n            INSERT INTO test_table(name) \n            VALUES ('Mahe Drysdale')''', pprint=True)\n        self.assertEqual(insert1, 1)\n\n        insert2 = db.update_db('''\n        INSERT INTO test_table(name) VALUES (%s)\n        ''', \n        params=('Ondrej Synek',), \n        pprint=True)\n\n        self.assertEqual(insert2, 1)\n\n\n        delete = db.update_db('''\n        DELETE FROM test_table WHERE name = 'Ondrej Synek'\n        ''', pprint=True)\n\n        self.assertEqual(delete, 1)\n\n\n    def test_dicts_query(self):\n        val = 'new row'\n        db.update_db('''\n            INSERT INTO test_table(name) VALUES (%s)\n        ''', params=(val,), pprint=False)\n\n        dicts = db.get_dicts_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=True)\n\n        pprint(dicts)\n        self.assertEqual(dicts[0].get('name'),val)\n        #self.assertEqual(dicts[0], dict)\n\n\n    def test_arr_query(self):\n        val = 'Damir Martin'\n        db.update_db('''\n            INSERT INTO test_table(name) VALUES (%s)\n            ''', \n            params=(val,), \n            pprint=True)\n\n        arr = db.get_arr_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=True)\n\n        self.assertEqual(arr[1][0], val)\n        self.assertEqual(len(arr), 2)\n        self.assertEqual(type(arr), list)\n\n    \n    def test_df_query(self):\n        print('testing get_df_from_query method....')\n        TEST_ROW = 'one test row'\n\n        db.update_db('drop table if exists test_table;', pprint=False)\n        db.update_db('create table if not exists test_table(name varchar);', pprint=False)\n        db.update_db(\"insert into test_table(name) values (%s)\", params=(TEST_ROW,), pprint=False)\n\n        df = db.get_df_from_query('''\n        SELECT * FROM test_table\n        ''', pprint=False)\n\n        self.assertEqual(df['name'][0], TEST_ROW)\n\n\n    def test_transaction(self):\n        sql_list = [\n\n        '''\n        DROP TABLE IF EXISTS transaction_table\n        ''',\n\n        '''\n        CREATE TABLE IF NOT EXISTS transaction_table(a_col varchar(20) PRIMARY KEY)\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('first test row')\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('second test row')\n        ''',\n\n        '''\n        DROP TABLE transaction_table\n        '''\n        ]\n\n        expected_output = [-1, -1, -1, 1, 1, -1]\n        row_update = db.transaction(sql_list, pprint=False)\n        self.assertEqual(row_update, expected_output)\n\n        sql_list = [\n\n        '''\n        DROP TABLE if exists transaction_table\n        ''',\n\n        '''\n        CREATE TABLE IF NOT EXISTS transaction_table(a_col varchar(20) PRIMARY KEY)\n        ''',\n\n        '''\n        INSERT INTO transaction_table(a_col) VALUES ('first test row')\n        ''',\n\n        '''\n        SELECT sql_sytnax_error FORM TALBE\n        '''\n        ]\n\n        self.assertRaises(Exception, db.transaction, sql_list, pprint=False)\n        self.assertRaises(psycopg2.errors.UndefinedTable, db.update_db, 'SELECT * FROM transaction_table', pprint=False)\n\n\n    def test_write_arr_to_table(self):\n        testArray = [\n        ['v1','v2','v3','v4','v5'],\n        ['a1','a2','a3','a4','a5'],\n        ['b1','b2','b3','b4','b5'],\n        ['c1','c2','c3','c4','c5'],\n        ['d1','d2','d3','d4','d5']\n        ]\n\n        tablename = 'test_table'\n        columns = ['column1','column2','column3','column4','column5']\n        db.write_arr_to_table(testArray,tablename, columns)\n\n        row_count = db.get_arr_from_query('SELECT COUNT(*) FROM test_table')\n        element = db.get_arr_from_query('SELECT column1 FROM test_table')\n        self.assertEqual(row_count[1], [5])\n        self.assertEqual(element[1:], [['v1'], ['a1'], ['b1'], ['c1'], ['d1']])\n\n\n    def test_csv_to_table(self):\n        db.csv_to_table('sample.csv', 'csv_test_table', append=False)\n\n        columnArray = None\n        csv_row_count = None\n\n        with open(\"sample.csv\", \"r\") as f:\n\n            columnsString = f.readline()\n            columnsString = columnsString.replace('\\n','')\n            columnsString = columnsString.replace('_',' ')\n            columnsString = columnsString.lower()\n            columnArray = columnsString.split(',')\n\n            reader = csv.reader(f, delimiter = ',')\n            data = list(reader)\n            csv_row_count = len(data)\n\n\n        column_list = db.get_arr_from_query('''\n            SELECT column_name\n            FROM INFORMATION_SCHEMA.COLUMNS\n            WHERE TABLE_NAME = 'csv_test_table'\n            ''')\n        column_list = column_list[1:]\n        result_list = []\n\n        for c in column_list:\n            result_list.append(c[0].replace('_',' '))\n\n        sql_row_count = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table', pprint=True)    \n\n        self.assertEqual(columnArray, result_list)\n        self.assertEqual(csv_row_count, sql_row_count[1][0])\n\n\n\n    def test_copy_expert(self):\n        db.csv_to_table('sample.csv', 'csv_test_table', append=False)\n\n        #dump to file\n        sql_dump = \"\"\"COPY csv_test_table\n        TO STDOUT\n        WITH CSV HEADER\"\"\"\n\n        with open(\"copy_expert_dump.csv\",'w+') as f:\n            db.copy_expert(sql_dump, f)\n\n        with open(\"copy_expert_dump.csv\", \"r\") as f:\n            reader = csv.reader(f, delimiter = \",\")\n            data = list(reader)\n            csv_row_count1 = len(data)\n\n        sql_row_count1 = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table', pprint=True)\n        self.assertEqual(sql_row_count1[1][0]+1, csv_row_count1)\n\n        #load from file\n        db.update_db('TRUNCATE csv_test_table', pprint=True)\n\n        sql_load = \"\"\"COPY csv_test_table\n        FROM STDIN\n        WITH CSV HEADER\"\"\"\n\n\n        with open('sample.csv','r') as f:\n            db.copy_expert(sql_load, f)\n\n        with open('sample.csv', 'r') as f:\n            reader = csv.reader(f, delimiter = ',')\n            data = list(reader)\n            csv_row_count2 = len(data)\n\n        sql_row_count2 = db.get_arr_from_query('SELECT COUNT(*) FROM csv_test_table')\n        self.assertEqual(csv_row_count2, sql_row_count2[1][0]+1)\n\n\nunittest.main()\n\n```\n\n```python\nimport psycopg2\nfrom pprint import pprint\n\n# Assuming you have your db configuration file in the same directory as your Python file\n\n# Define your database connection parameters\nconfig_file = 'databases.conf'\n\n#"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      2732,
+      7210,
+      4064,
+      3803,
+      2844,
+      950,
+      2266,
+      6315,
+      4138
+    ],
+    "f_before": [
+      43.810611724853516,
+      126.73149108886719,
+      0.0,
+      0.13161450624465942,
+      0.0,
+      0.0,
+      0.0,
+      0.04299069195985794,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      43.810611724853516,
+      126.73149108886719,
+      0.0,
+      0.13161450624465942,
+      0.0,
+      0.0,
+      0.0,
+      0.04299069195985794,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      72.2735366821289,
+      25.21062660217285,
+      19.82927131652832,
+      5.135883808135986,
+      4.645322322845459,
+      4.671327590942383,
+      30.060157775878906,
+      4.287705898284912,
+      4.411728382110596,
+      16.936569213867188,
+      4.163295745849609
+    ],
+    "g_after": [
+      72.2735366821289,
+      25.21062660217285,
+      19.82927131652832,
+      5.135883808135986,
+      4.645322322845459,
+      4.671327590942383,
+      30.060157775878906,
+      4.287705898284912,
+      4.411728382110596,
+      16.936569213867188,
+      4.163295745849609
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

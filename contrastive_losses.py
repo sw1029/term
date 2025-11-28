@@ -1,16 +1,23 @@
 import torch
+import torch.nn.functional as F
 
 
 def _concept_loss_one(
     f_k: torch.Tensor,
     labels: torch.Tensor,
     positive_target: int = 1,
+    method: str = "contrastive",
+    margin: float = 0.0,
+    mse_pos_value: float = 1.0,
+    mse_neg_value: float = 0.0,
 ) -> torch.Tensor:
     """
-    단일 feature k에 대한 contrastive supervision 손실을 계산한다.
+    단일 feature k에 대한 supervision 손실을 계산한다.
 
-    - positive_target 레이블(예: 1)에서 f_k 평균이 크고,
-      반대 레이블(0)에서 f_k 평균이 작도록 유도한다.
+    method:
+        - "contrastive": -(mu_pos - mu_neg)
+        - "margin": ReLU(margin - (mu_pos - mu_neg))
+        - "mse": 양성/음성에 대한 target 값을 주고 MSE를 최소화
     """
     if labels is None or f_k is None:
         return torch.tensor(0.0, device=f_k.device if f_k is not None else "cpu")
@@ -21,9 +28,19 @@ def _concept_loss_one(
     if not pos_mask.any() or not neg_mask.any():
         return torch.tensor(0.0, device=f_k.device)
 
+    if method == "mse":
+        target = torch.zeros_like(f_k, device=f_k.device, dtype=f_k.dtype)
+        target[pos_mask] = mse_pos_value
+        target[neg_mask] = mse_neg_value
+        return F.mse_loss(f_k, target)
+
     mu_pos = f_k[pos_mask].mean()
     mu_neg = f_k[neg_mask].mean()
-    # pos에서 크고 neg에서 작아지도록 하는 손실
+
+    if method == "margin":
+        return F.relu(margin - (mu_pos - mu_neg))
+
+    # default: 간단한 contrastive 차이 극대화
     return - (mu_pos - mu_neg)
 
 
@@ -34,6 +51,10 @@ def multi_concept_contrastive_loss(
     alpha_concept: dict,
     device,
     positive_targets: dict | None = None,
+    method: str = "contrastive",
+    margin: float = 0.0,
+    mse_pos_value: float = 1.0,
+    mse_neg_value: float = 0.0,
 ) -> torch.Tensor:
     """
     여러 개의 concept feature(code, harm, struct 등)에 대해
@@ -70,8 +91,15 @@ def multi_concept_contrastive_loss(
         f_k = f[:, idx]
         pos_target = positive_targets.get(name, 1)
 
-        L_c = _concept_loss_one(f_k, labels, positive_target=pos_target)
+        L_c = _concept_loss_one(
+            f_k,
+            labels,
+            positive_target=pos_target,
+            method=method,
+            margin=margin,
+            mse_pos_value=mse_pos_value,
+            mse_neg_value=mse_neg_value,
+        )
         total = total + alpha * L_c
 
     return total
-

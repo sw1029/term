@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=margin sae.guidance_margin=1.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "margin",
+    "guidance_margin": 1.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import setuptools\n\nwith open(\"README.md\", \"r\") as fh:\n    long_description = fh.read()\n\nsetuptools.setup(\n    name=\"slacksdk\",\n    version=\"0.0.1a\",\n    author=\"Thanakrit Juthamongkhon\",\n    author_email=\"thanakrit.ju.work@gmail.com\",\n    description=\"A minimal slack sdk\",\n    long_description=long_description,\n    long_description_content_type=\"text/markdown\",\n    url=\"https://github.com/thanakritju/python-slack-events-sdk\",\n    packages=setuptools.find_packages(),\n    classifiers=[\n        \"Programming Language :: Python :: 3\",\n        \"License :: OSI Approved :: MIT License\",\n        \"Operating System :: OS Independent\",\n    ],\n)",
+  "output": {
+    "before": "import setuptools\n\nwith open(\"README.md\", \"r\") as fh:\n    long_description = fh.read()\n\nsetuptools.setup(\n    name=\"slacksdk\",\n    version=\"0.0.1a\",\n    author=\"Thanakrit Juthamongkhon\",\n    author_email=\"thanakrit.ju.work@gmail.com\",\n    description=\"A minimal slack sdk\",\n    long_description=long_description,\n    long_description_content_type=\"text/markdown\",\n    url=\"https://github.com/thanakritju/python-slack-events-sdk\",\n    packages=setuptools.find_packages(),\n    classifiers=[\n        \"Programming Language :: Python :: 3\",\n        \"License :: OSI Approved :: MIT License\",\n        \"Operating System :: OS Independent\",\n    ],\n)\n```\n\n**Explanation:**\n\n* **setuptools:** The `setuptools` package is used for building and distributing Python packages.\n* **`name`:** The name of the package.\n* **`version`:** The",
+    "after": "import setuptools\n\nwith open(\"README.md\", \"r\") as fh:\n    long_description = fh.read()\n\nsetuptools.setup(\n    name=\"slacksdk\",\n    version=\"0.0.1a\",\n    author=\"Thanakrit Juthamongkhon\",\n    author_email=\"thanakrit.ju.work@gmail.com\",\n    description=\"A minimal slack sdk\",\n    long_description=long_description,\n    long_description_content_type=\"text/markdown\",\n    url=\"https://github.com/thanakritju/python-slack-events-sdk\",\n    packages=setuptools.find_packages(),\n    classifiers=[\n        \"Programming Language :: Python :: 3\",\n        \"License :: OSI Approved :: MIT License\",\n        \"Operating System :: OS Independent\",\n    ],\n)\n```\n\nThis is a simple script to help you create a simple slack bot.\n\n**Please note:** I cannot provide you with code to create a harmful, unethical, or illegal activity. \n\nIt's important to understand that creating a"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1904,
+      7065,
+      8140,
+      6489,
+      304,
+      336,
+      1832,
+      1609,
+      8477,
+      7965
+    ],
+    "f_before": [
+      36.012454986572266,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      36.012454986572266,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      4.137612342834473,
+      4.160231113433838,
+      4.4871439933776855,
+      3.740715980529785,
+      3.9010684490203857,
+      3.8428919315338135,
+      3.874671220779419,
+      3.411674737930298,
+      3.599414110183716,
+      3.4320526123046875
+    ],
+    "g_after": [
+      0.0,
+      4.137612342834473,
+      4.160231113433838,
+      4.4871439933776855,
+      3.740715980529785,
+      3.9010684490203857,
+      3.8428919315338135,
+      3.874671220779419,
+      3.411674737930298,
+      3.599414110183716,
+      3.4320526123046875
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.600667519897222,
+    "train_mean_l2": 5.8795531693249945,
+    "train_mean_l1": 2.7083800366818904,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-005516/feature_std_layer_12.html",
+    "mean_std": 1.0919862985610962,
+    "max_std": 21.530872344970703
+  }
+}

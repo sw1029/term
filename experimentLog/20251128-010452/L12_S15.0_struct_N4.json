@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=mse sae.guidance_mse_pos_value=1.0 sae.guidance_mse_neg_value=0.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "mse",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n# Copyright (c) 2017 Public Library of Science\n#\n# Permission is hereby granted, free of charge, to any person obtaining a\n# copy of this software and associated documentation files (the \"Software\"),\n# to deal in the Software without restriction, including without limitation\n# the rights to use, copy, modify, merge, publish, distribute, sublicense,\n# and/or sell copies of the Software, and to permit persons to whom the\n# Software is furnished to do so, subject to the following conditions:\n#\n# The above copyright notice and this permission notice shall be included in\n# all copies or substantial portions of the Software.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL\n# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n# DEALINGS IN THE SOFTWARE.\n\n\nimport unittest\nimport random\nfrom teamcity import is_running_under_teamcity\nfrom teamcity.unittestpy import TeamcityTestRunner\n\nfrom .WebDriverFactory import WebDriverFactory\n\n__author__ = 'jkrzemien@plos.org'\n\n\nclass FrontEndTest(unittest.TestCase):\n    \"\"\"\n\n    Base class to provide Front End tests with desired WebDriver instances, as defined in\n    [[Config.py]].\n\n    It inherits from `TestCase` in order to count as a test suite for Python's `unittest` framework.\n\n    \"\"\"\n\n    # This defines any `FrontEndTest` derived class as able to be run by Nose in a parallel way.\n    # Requires Nose's `MultiProcess` plugin to be *enabled*\n    _multiprocess_can_split_ = True\n\n    # Will contain a single driver instance for the current test\n    _driver = None\n\n    # Will contain a list of driver (not instantiated) for the current test variations\n    # (for all browsers)\n    _injected_drivers = []\n\n    # Factory object to instantiate drivers\n    factory = WebDriverFactory()\n\n    def setUp(self):\n        pass\n\n    def tearDown(self):\n        \"\"\"\n        Method in charge of destroying the WebDriver/Proxy instances\n        once the test finished running (even upon test failure).\n        \"\"\"\n        if self._driver:\n            self._driver.quit()\n        else:\n            self.factory.teardown_webdriver()\n\n    def getDriver(self):\n        \"\"\"\n        Simple method to retrieve the WebDriver/Proxy instances for this class to test method.\n        \"\"\"\n        if not self._driver:\n            if len(self._injected_drivers) > 0:\n                self._driver = self.factory.setup_remote_webdriver(self._injected_drivers.pop())\n            else:\n                self._driver = self.factory.setup_webdriver()\n        return self._driver\n\n    @staticmethod\n    def _run_tests_randomly():\n        \"\"\"\n        *Static* method for every test suite inheriting this class to be able to run its tests\n        in, at least, a non linear fashion.\n        \"\"\"\n        unittest.TestLoader.sortTestMethodsUsing = lambda _, x, y: random.choice([-1, 1])\n        if is_running_under_teamcity():\n            runner = TeamcityTestRunner()\n        else:\n            runner = unittest.TextTestRunner()\n        unittest.main(testRunner=runner)\n",
+  "output": {
+    "before": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n# Copyright (c) 2017 Public Library of Science\n#\n# Permission is hereby granted, free of charge, to any person obtaining a\n# copy of this software and associated documentation files (the \"Software\"),\n# to deal in the Software without restriction, including without limitation\n# the rights to use, copy, modify, merge, publish, distribute, sublicense,\n# and/or sell copies of the Software, and to permit persons to whom the\n# Software is furnished to do so, subject to the following conditions:\n#\n# The above copyright notice and this permission notice shall be included in\n# all copies or substantial portions of the Software.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL\n# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n# DEALINGS IN THE SOFTWARE.\n\n\nimport unittest\nimport random\nfrom teamcity import is_running_under_teamcity\nfrom teamcity.unittestpy import TeamcityTestRunner\n\nfrom .WebDriverFactory import WebDriverFactory\n\n__author__ = 'jkrzemien@plos.org'\n\n\nclass FrontEndTest(unittest.TestCase):\n    \"\"\"\n\n    Base class to provide Front End tests with desired WebDriver instances, as defined in\n    [[Config.py]].\n\n    It inherits from `TestCase` in order to count as a test suite for Python's `unittest` framework.\n\n    \"\"\"\n\n    # This defines any `FrontEndTest` derived class as able to be run by Nose in a parallel way.\n    # Requires Nose's `MultiProcess` plugin to be *enabled*\n    _multiprocess_can_split_ = True\n\n    # Will contain a single driver instance for the current test\n    _driver = None\n\n    # Will contain a list of driver (not instantiated) for the current test variations\n    # (for all browsers)\n    _injected_drivers = []\n\n    # Factory object to instantiate drivers\n    factory = WebDriverFactory()\n\n    def setUp(self):\n        pass\n\n    def tearDown(self):\n        \"\"\"\n        Method in charge of destroying the WebDriver/Proxy instances\n        once the test finished running (even upon test failure).\n        \"\"\"\n        if self._driver:\n            self._driver.quit()\n        else:\n            self.factory.teardown_webdriver()\n\n    def getDriver(self):\n        \"\"\"\n        Simple method to retrieve the WebDriver/Proxy instances for this class to test method.\n        \"\"\"\n        if not self._driver:\n            if len(self._injected_drivers) > 0:\n                self._driver = self.factory.setup_remote_webdriver(self._injected_drivers.pop())\n            else:\n                self._driver = self.factory.setup_webdriver()\n        return self._driver\n\n    @staticmethod\n    def _run_tests_randomly():\n        \"\"\"\n        *Static* method for every test suite inheriting this class to be able to run its tests\n        in, at least, a non linear fashion.\n        \"\"\"\n        unittest.TestLoader.sortTestMethodsUsing = lambda _, x, y: random.choice([-1, 1])\n        if is_running_under_teamcity():\n            runner = TeamcityTestRunner()\n        else:\n            runner = unittest.TextTestRunner()\n        unittest.main(testRunner=runner)\n    \n    @classmethod\n    def _run_tests(cls):\n        \"\"\"\n        Method to run the tests in a random order, potentially in parallel.\n        \"\"\"\n        cls._run_tests_randomly()\n        ",
+    "after": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n# Copyright (c) 2017 Public Library of Science\n#\n# Permission is hereby granted, free of charge, to any person obtaining a\n# copy of this software and associated documentation files (the \"Software\"),\n# to deal in the Software without restriction, including without limitation\n# the rights to use, copy, modify, merge, publish, distribute, sublicense,\n# and/or sell copies of the Software, and to permit persons to whom the\n# Software is furnished to do so, subject to the following conditions:\n#\n# The above copyright notice and this permission notice shall be included in\n# all copies or substantial portions of the Software.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL\n# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\n# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n# DEALINGS IN THE SOFTWARE.\n\n\nimport unittest\nimport random\nfrom teamcity import is_running_under_teamcity\nfrom teamcity.unittestpy import TeamcityTestRunner\n\nfrom .WebDriverFactory import WebDriverFactory\n\n__author__ = 'jkrzemien@plos.org'\n\n\nclass FrontEndTest(unittest.TestCase):\n    \"\"\"\n\n    Base class to provide Front End tests with desired WebDriver instances, as defined in\n    [[Config.py]].\n\n    It inherits from `TestCase` in order to count as a test suite for Python's `unittest` framework.\n\n    \"\"\"\n\n    # This defines any `FrontEndTest` derived class as able to be run by Nose in a parallel way.\n    # Requires Nose's `MultiProcess` plugin to be *enabled*\n    _multiprocess_can_split_ = True\n\n    # Will contain a single driver instance for the current test\n    _driver = None\n\n    # Will contain a list of driver (not instantiated) for the current test variations\n    # (for all browsers)\n    _injected_drivers = []\n\n    # Factory object to instantiate drivers\n    factory = WebDriverFactory()\n\n    def setUp(self):\n        pass\n\n    def tearDown(self):\n        \"\"\"\n        Method in charge of destroying the WebDriver/Proxy instances\n        once the test finished running (even upon test failure).\n        \"\"\"\n        if self._driver:\n            self._driver.quit()\n        else:\n            self.factory.teardown_webdriver()\n\n    def getDriver(self):\n        \"\"\"\n        Simple method to retrieve the WebDriver/Proxy instances for this class to test method.\n        \"\"\"\n        if not self._driver:\n            if len(self._injected_drivers) > 0:\n                self._driver = self.factory.setup_remote_webdriver(self._injected_drivers.pop())\n            else:\n                self._driver = self.factory.setup_webdriver()\n        return self._driver\n\n    @staticmethod\n    def _run_tests_randomly():\n        \"\"\"\n        *Static* method for every test suite inheriting this class to be able to run its tests\n        in, at least, a non linear fashion.\n        \"\"\"\n        unittest.TestLoader.sortTestMethodsUsing = lambda _, x, y: random.choice([-1, 1])\n        if is_running_under_teamcity():\n            runner = TeamcityTestRunner()\n        else:\n            runner = unittest.TextTestRunner()\n        unittest.main(testRunner=runner)\n        # NOTE: This should be changed according to the actual test cases\n\n    @property\n    def _test_name(self):\n        return self.name\n\n    def _setup_webdriver(self):\n        \"\"\"\n        Method"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      4645,
+      6994,
+      5276,
+      7186,
+      526,
+      5761,
+      3073,
+      1026,
+      4405
+    ],
+    "f_before": [
+      0.0,
+      0.5397446155548096,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.5397446155548096,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.3092568516731262,
+      0.0,
+      0.06576111912727356,
+      0.0,
+      0.23524923622608185,
+      0.057391732931137085,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.3092568516731262,
+      0.0,
+      0.06576111912727356,
+      0.0,
+      0.23524923622608185,
+      0.057391732931137085,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.54353929513693,
+    "train_mean_l2": 6.013987733893097,
+    "train_mean_l1": 2.5168445214927195,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-010452/feature_std_layer_12.html",
+    "mean_std": 1.0416896343231201,
+    "max_std": 30.567893981933594
+  }
+}

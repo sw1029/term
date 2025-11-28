@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "from __future__ import unicode_literals\n\nfrom django.db import models\n\nimport re\nimport json\n# import nlp\n\ntry:\n    import Queue as Q #python version < 3.0\nexcept ImportError:\n    import queue as Q #python3.*\n\nclass wordBlock():\n    def __init__(self, start, end, kind):\n        self.start = start;\n        self.end = end;\n        self.kind = kind;\n    def __lt__(self,other):#operator <\n        return self.end < other.start\n    def __cmp__(self,other):\n        #call global(builtin) function cmp for int\n        return cmp(self.start,other.end)\n\nclass sentence(models.Model):\n    originalText = models.TextField(blank=True)\n    annotatedText = models.TextField(blank=True)\n    #alteredText = models.TextField(blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    @classmethod\n    def create(originalText):\n        stc = sentence();\n        #stc.originalText = originalText.replace('\\n', ' ').replace('\\r', ' ').strip();\n        stc.originalText = ' '.join((originalText.split())).strip();\n        #stc.analyze();\n        return stc;\n\n#    def getScrubbedText(self):\n#        self.scrubbedText = '';\n#        return self.analyze();\n#        #we would rescrub due to frequent update of algorithm.\n#        if self.scrubbedText is None:\n#            return self.analyze();\n#        if self.scrubbedText == '':\n#            return self.analyze();\n#        return self.scrubbedText;\n\n    def __unicode__(self):\n        return self.originalText;\n\n#    def analyze(self):\n#        scrubbedContent = \"test\";#nlp.scrub(self.originalText);\n#        i = 0;\n#        str_suffix = '';\n#        for token in scrubbedContent:\n#            j = token[0].idx;\n#            if self.originalText[j - 1] == ' ':\n#                j = j - 1;\n#                str_suffix = ''.join((str_suffix, ' '));\n#            if token[1] != '':\n#                self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:j], str_suffix, \"<scrub type='\", token[1].lower() ,\"'>\"));\n#                str_suffix = '</scrub>';\n#            else:\n#                self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:j], str_suffix));\n#                str_suffix = '';\n#            i = token[0].idx;\n#        self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:len(self.originalText)], str_suffix));\n#        self.save();\n#        #self.scrubbedText = self.scrubbedText.replace('<scrub></scrub>', ' ').strip();\n#        return self.scrubbedText;\n\n\nclass task(models.Model):\n    #msg_a1 = models.ForeignKey(sentence, related_name=\"sentence_a1\")\n    #msg_a2 = models.ForeignKey(sentence, related_name=\"sentence_a2\")\n    #msg_b1 = models.ForeignKey(sentence, related_name=\"sentence_b1\")\n    #msg_b2 = models.ForeignKey(sentence, related_name=\"sentence_b2\")\n    #msg_c1 = models.ForeignKey(sentence, related_name=\"sentence_c1\")\n    sentences = models.TextField(default=\"[]\")\n    status = models.IntegerField() #0: init 1: opened 2: answered\n    workers = models.TextField(default=\"[]\")\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    def __unicode__(self):\n        return \" \".join((self.id, self.status));\n\n    def getSentences(self):\n        ret = []\n        stc_ids = json.loads(self.sentences)\n        for stc_id in stc_ids:\n            ret.append(sentence.objects.get(id=stc_id))\n        return ret\n\nclass hit(models.Model):\n    mTurk_id = models.TextField()\n    status = models.IntegerField()\n    code = models.TextField(blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    def __unicode__(self):\n        return \" \".join((self.mTurk_id, self.code, self.status));\n",
+  "output": {
+    "before": "from __future__ import unicode_literals\n\nfrom django.db import models\n\nimport re\nimport json\n# import nlp\n\ntry:\n    import Queue as Q #python version < 3.0\nexcept ImportError:\n    import queue as Q #python3.*\n\nclass wordBlock():\n    def __init__(self, start, end, kind):\n        self.start = start;\n        self.end = end;\n        self.kind = kind;\n    def __lt__(self,other):#operator <\n        return self.end < other.start\n    def __cmp__(self,other):\n        #call global(builtin) function cmp for int\n        return cmp(self.start,other.end)\n\nclass sentence(models.Model):\n    originalText = models.TextField(blank=True)\n    annotatedText = models.TextField(blank=True)\n    #alteredText = models.TextField(blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    @classmethod\n    def create(originalText):\n        stc = sentence();\n        #stc.originalText = originalText.replace('\\n', ' ').replace('\\r', ' ').strip();\n        stc.originalText = ' '.join((originalText.split())).strip();\n        #stc.analyze();\n        return stc;\n\n#    def getScrubbedText(self):\n#        self.scrubbedText = '';\n#        return self.analyze();\n#        #we would rescrub due to frequent update of algorithm.\n#        if self.scrubbedText is None:\n#            return self.analyze();\n#        if self.scrubbedText == '':\n#            return self.analyze();\n#        return self.scrubbedText;\n\n    def __unicode__(self):\n        return self.originalText;\n\n#    def analyze(self):\n#        scrubbedContent = \"test\";#nlp.scrub(self.originalText);\n#        i = 0;\n#        str_suffix = '';\n#        for token in scrubbedContent:\n#            j = token[0].idx;\n#            if self.originalText[j - 1] == ' ':\n#                j = j - 1;\n#                str_suffix = ''.join((str_suffix, ' '));\n#            if token[1] != '':\n#                self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:j], str_suffix, \"<scrub type='\", token[1].lower() ,\"'>\"));\n#                str_suffix = '</scrub>';\n#            else:\n#                self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:j], str_suffix));\n#                str_suffix = '';\n#            i = token[0].idx;\n#        self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:len(self.originalText)], str_suffix));\n#        self.save();\n#        #self.scrubbedText = self.scrubbedText.replace('<scrub></scrub>', ' ').strip();\n#        return self.scrubbedText;\n\n\nclass task(models.Model):\n    #msg_a1 = models.ForeignKey(sentence, related_name=\"sentence_a1\")\n    #msg_a2 = models.ForeignKey(sentence, related_name=\"sentence_a2\")\n    #msg_b1 = models.ForeignKey(sentence, related_name=\"sentence_b1\")\n    #msg_b2 = models.ForeignKey(sentence, related_name=\"sentence_b2\")\n    #msg_c1 = models.ForeignKey(sentence, related_name=\"sentence_c1\")\n    sentences = models.TextField(default=\"[]\")\n    status = models.IntegerField() #0: init 1: opened 2: answered\n    workers = models.TextField(default=\"[]\")\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    def __unicode__(self):\n        return \" \".join((self.id, self.status));\n\n    def getSentences(self):\n        ret = []\n        stc_ids = json.loads(self.sentences)\n        for stc_id in stc_ids:\n            ret.append(sentence.objects.get(id=stc_id))\n        return ret\n\nclass hit(models.Model):\n    mTurk_id = models.TextField()\n    status = models.IntegerField()\n    code = models.TextField(blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    def __unicode__(self):\n        return \" \".join((self.mTurk_id, self.code, self.status));\n        #return self.status;\n\n\n#class nlp(models.Model):\n#    sentence = models.TextField()\n#    analysis = models.TextField()\n#    created_at = models.DateTimeField(auto_now_",
+    "after": "from __future__ import unicode_literals\n\nfrom django.db import models\n\nimport re\nimport json\n# import nlp\n\ntry:\n    import Queue as Q #python version < 3.0\nexcept ImportError:\n    import queue as Q #python3.*\n\nclass wordBlock():\n    def __init__(self, start, end, kind):\n        self.start = start;\n        self.end = end;\n        self.kind = kind;\n    def __lt__(self,other):#operator <\n        return self.end < other.start\n    def __cmp__(self,other):\n        #call global(builtin) function cmp for int\n        return cmp(self.start,other.end)\n\nclass sentence(models.Model):\n    originalText = models.TextField(blank=True)\n    annotatedText = models.TextField(blank=True)\n    #alteredText = models.TextField(blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    @classmethod\n    def create(originalText):\n        stc = sentence();\n        #stc.originalText = originalText.replace('\\n', ' ').replace('\\r', ' ').strip();\n        stc.originalText = ' '.join((originalText.split())).strip();\n        #stc.analyze();\n        return stc;\n\n#    def getScrubbedText(self):\n#        self.scrubbedText = '';\n#        return self.analyze();\n#        #we would rescrub due to frequent update of algorithm.\n#        if self.scrubbedText is None:\n#            return self.analyze();\n#        if self.scrubbedText == '':\n#            return self.analyze();\n#        return self.scrubbedText;\n\n    def __unicode__(self):\n        return self.originalText;\n\n#    def analyze(self):\n#        scrubbedContent = \"test\";#nlp.scrub(self.originalText);\n#        i = 0;\n#        str_suffix = '';\n#        for token in scrubbedContent:\n#            j = token[0].idx;\n#            if self.originalText[j - 1] == ' ':\n#                j = j - 1;\n#                str_suffix = ''.join((str_suffix, ' '));\n#            if token[1] != '':\n#                self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:j], str_suffix, \"<scrub type='\", token[1].lower() ,\"'>\"));\n#                str_suffix = '</scrub>';\n#            else:\n#                self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:j], str_suffix));\n#                str_suffix = '';\n#            i = token[0].idx;\n#        self.scrubbedText = \"\".join((self.scrubbedText, self.originalText[i:len(self.originalText)], str_suffix));\n#        self.save();\n#        #self.scrubbedText = self.scrubbedText.replace('<scrub></scrub>', ' ').strip();\n#        return self.scrubbedText;\n\n\nclass task(models.Model):\n    #msg_a1 = models.ForeignKey(sentence, related_name=\"sentence_a1\")\n    #msg_a2 = models.ForeignKey(sentence, related_name=\"sentence_a2\")\n    #msg_b1 = models.ForeignKey(sentence, related_name=\"sentence_b1\")\n    #msg_b2 = models.ForeignKey(sentence, related_name=\"sentence_b2\")\n    #msg_c1 = models.ForeignKey(sentence, related_name=\"sentence_c1\")\n    sentences = models.TextField(default=\"[]\")\n    status = models.IntegerField() #0: init 1: opened 2: answered\n    workers = models.TextField(default=\"[]\")\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    def __unicode__(self):\n        return \" \".join((self.id, self.status));\n\n    def getSentences(self):\n        ret = []\n        stc_ids = json.loads(self.sentences)\n        for stc_id in stc_ids:\n            ret.append(sentence.objects.get(id=stc_id))\n        return ret\n\nclass hit(models.Model):\n    mTurk_id = models.TextField()\n    status = models.IntegerField()\n    code = models.TextField(blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)\n    updated_at = models.DateTimeField(auto_now=True)\n\n    def __unicode__(self):\n        return \" \".join((self.mTurk_id, self.code, self.status));\n    \n\nclass task_queue(models.Model):\n    #msg_a1 = models.ForeignKey(sentence, related_name=\"sentence_a1\")\n    #msg_a2 = models.ForeignKey(sentence, related_"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      2860,
+      4532,
+      4477,
+      7665,
+      7719,
+      1128,
+      6547,
+      1025,
+      1775,
+      7042
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.030400414019823074,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.004272435326129198
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.030400414019823074,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.004272435326129198
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.356310415834189,
+    "train_mean_l2": 5.661456496983766,
+    "train_mean_l1": 2.6948540791869164,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014034/feature_std_layer_12.html",
+    "mean_std": 0.9815042614936829,
+    "max_std": 25.413209915161133
+  }
+}

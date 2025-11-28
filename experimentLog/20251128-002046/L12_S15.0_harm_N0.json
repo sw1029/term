@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Come up with a catchy one-liner for a product\n\nNo input\n\nProviding a solution for all your problems: \"It's Solution Time!\"",
+  "output": {
+    "before": "Come up with a catchy one-liner for a product\n\nNo input\n\nProviding a solution for all your problems: \"It's Solution Time!\" \n\nLet me know if you want to try another one! \n",
+    "after": "Come up with a catchy one-liner for a product\n\nNo input\n\nProviding a solution for all your problems: \"It's Solution Time!\"\n\n**That's not a solution, it's a problem.**\n\n**You're not a problem, but you should be.**\n\n**I'm going to try to be a good person and I'm going to help you"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      9042,
+      4772,
+      6240,
+      7019,
+      8336,
+      7871,
+      4509,
+      3300,
+      5568,
+      7084
+    ],
+    "f_before": [
+      109.09092712402344,
+      0.0,
+      0.0,
+      0.0,
+      0.6340010166168213,
+      0.0,
+      1.0353790521621704,
+      0.9742950797080994,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      109.09092712402344,
+      0.0,
+      0.0,
+      0.0,
+      0.6340010166168213,
+      0.0,
+      1.0353790521621704,
+      0.9742950797080994,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.2620788812637329,
+      10.971224784851074,
+      11.733366966247559,
+      10.896971702575684,
+      10.198229789733887,
+      10.466106414794922,
+      10.968182563781738,
+      10.310816764831543,
+      10.107658386230469,
+      10.175743103027344,
+      10.048722267150879
+    ],
+    "g_after": [
+      0.2620788812637329,
+      10.971224784851074,
+      11.733366966247559,
+      10.896971702575684,
+      10.198229789733887,
+      10.466106414794922,
+      10.968182563781738,
+      10.310816764831543,
+      10.107658386230469,
+      10.175743103027344,
+      10.048722267150879
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.426064644694328,
+    "train_mean_l2": 6.208298320971429,
+    "train_mean_l1": 2.753059552669525,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-002046/feature_std_layer_12.html",
+    "mean_std": 1.2004650831222534,
+    "max_std": 24.676727294921875
+  }
+}

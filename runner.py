@@ -131,15 +131,56 @@ def build_experiment_log(
             "batch_size": int(getattr(cfg.sae, "batch_size", 0)),
             "epochs": int(getattr(cfg.sae, "epochs", 0)),
             "max_steps": int(getattr(cfg.sae, "max_steps", 0)),
+            "l1_coeff": float(getattr(cfg.sae, "l1_coeff", 0.0)),
+            "l0_coeff": float(getattr(cfg.sae, "l0_coeff", 0.0)),
+            "use_l0": bool(getattr(cfg.sae, "use_l0", False)),
             "concept_samples_per_label": int(
                 getattr(cfg.sae, "concept_samples_per_label", 0)
             ),
             "loss_option": int(getattr(cfg.sae, "loss_option", 1)),
             "loss_module": str(getattr(cfg.sae, "loss_module", "option1_loss")),
+            "concept_feature_indices": dict(
+                getattr(cfg.sae, "concept_feature_indices", {})
+            ),
+            "alpha_concept": dict(getattr(cfg.sae, "alpha_concept", {})),
+            "positive_targets": dict(getattr(cfg.sae, "positive_targets", {})),
+            "guidance_method": str(
+                getattr(cfg.sae, "guidance_method", "contrastive")
+            ),
+            "guidance_margin": float(getattr(cfg.sae, "guidance_margin", 0.0)),
+            "guidance_coeff": float(getattr(cfg.sae, "guidance_coeff", 1.0)),
+            "guidance_mse_pos_value": float(
+                getattr(cfg.sae, "guidance_mse_pos_value", 1.0)
+            ),
+            "guidance_mse_neg_value": float(
+                getattr(cfg.sae, "guidance_mse_neg_value", 0.0)
+            ),
+            "jumprelu_bandwidth": float(
+                getattr(cfg.sae, "jumprelu_bandwidth", 0.0)
+            ),
+            "jumprelu_init_threshold": float(
+                getattr(cfg.sae, "jumprelu_init_threshold", 0.0)
+            ),
         },
         "gnn": {
             "use_gnn": bool(cfg.gnn.use_gnn),
             "top_k": int(cfg.gnn.top_k),
+        },
+        "experiment": {
+            "device": str(getattr(cfg.experiment, "device", "")),
+            "dataset_name": str(getattr(cfg.experiment, "dataset_name", "")),
+            "dataset_config": str(getattr(cfg.experiment, "dataset_config", "")),
+            "use_multi_contrast": bool(
+                getattr(cfg.experiment, "use_multi_contrast", False)
+            ),
+            "num_steering_samples_per_label": int(
+                getattr(cfg.experiment, "num_steering_samples_per_label", 0)
+            ),
+            "top_k_for_plot": int(
+                getattr(cfg.experiment, "top_k_for_plot", 0)
+            ),
+            "layer_sweep": list(getattr(cfg.experiment, "layer_sweep", [])),
+            "strength_sweep": list(getattr(cfg.experiment, "strength_sweep", [])),
         },
         "steering": {
             "label": steering_label,
@@ -264,7 +305,13 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
         # 4. SAE 초기화 (layer별)
         d_model = cfg.sae.input_dim
         d_sae = cfg.sae.sae_dim
-        sae = H_SAE(d_model, d_sae, c_vectors_device)
+        sae = H_SAE(
+            d_model,
+            d_sae,
+            c_vectors_device,
+            jumprelu_bandwidth=getattr(cfg.sae, "jumprelu_bandwidth", 0.001),
+            jumprelu_init_threshold=getattr(cfg.sae, "jumprelu_init_threshold", 0.001),
+        )
 
         # fixed_v_cnt를 config에서도 접근 가능하게 동기화
         cfg.sae.fixed_v_cnt = int(sae.fixed_v_cnt)
@@ -283,6 +330,8 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
             "epochs": cfg.sae.epochs,
             "lr": cfg.sae.lr,
             "l1_coeff": cfg.sae.l1_coeff,
+            "l0_coeff": getattr(cfg.sae, "l0_coeff", 0.0),
+            "use_l0": getattr(cfg.sae, "use_l0", False),
             "layer_idx": layer_idx,
             "max_steps": cfg.sae.max_steps,
             "device": device,
@@ -290,6 +339,11 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
             "concept_feature_indices": getattr(cfg.sae, "concept_feature_indices", {}),
             "alpha_concept": getattr(cfg.sae, "alpha_concept", {}),
             "positive_targets": getattr(cfg.sae, "positive_targets", None),
+            "guidance_method": getattr(cfg.sae, "guidance_method", "contrastive"),
+            "guidance_margin": getattr(cfg.sae, "guidance_margin", 0.0),
+            "guidance_coeff": getattr(cfg.sae, "guidance_coeff", 1.0),
+            "guidance_mse_pos_value": getattr(cfg.sae, "guidance_mse_pos_value", 1.0),
+            "guidance_mse_neg_value": getattr(cfg.sae, "guidance_mse_neg_value", 0.0),
             "loss_option": getattr(cfg.sae, "loss_option", 1),
             "loss_module": getattr(cfg.sae, "loss_module", "option1_loss"),
         }

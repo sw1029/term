@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/env python\n\"\"\"\nExample of running a prompt_toolkit application in an asyncssh server.\n\"\"\"\nimport asyncio\nimport logging\n\nimport asyncssh\nfrom pygments.lexers.html import HtmlLexer\n\nfrom prompt_toolkit.completion import WordCompleter\nfrom prompt_toolkit.contrib.ssh import PromptToolkitSSHServer, PromptToolkitSSHSession\nfrom prompt_toolkit.lexers import PygmentsLexer\nfrom prompt_toolkit.shortcuts import ProgressBar, print_formatted_text\nfrom prompt_toolkit.shortcuts.dialogs import input_dialog, yes_no_dialog\nfrom prompt_toolkit.shortcuts.prompt import PromptSession\n\nanimal_completer = WordCompleter(\n    [\n        \"alligator\",\n        \"ant\",\n        \"ape\",\n        \"bat\",\n        \"bear\",\n        \"beaver\",\n        \"bee\",\n        \"bison\",\n        \"butterfly\",\n        \"cat\",\n        \"chicken\",\n        \"crocodile\",\n        \"dinosaur\",\n        \"dog\",\n        \"dolphin\",\n        \"dove\",\n        \"duck\",\n        \"eagle\",\n        \"elephant\",\n        \"fish\",\n        \"goat\",\n        \"gorilla\",\n        \"kangaroo\",\n        \"leopard\",\n        \"lion\",\n        \"mouse\",\n        \"rabbit\",\n        \"rat\",\n        \"snake\",\n        \"spider\",\n        \"turkey\",\n        \"turtle\",\n    ],\n    ignore_case=True,\n)\n\n\nasync def interact(ssh_session: PromptToolkitSSHSession) -> None:\n    \"\"\"\n    The application interaction.\n\n    This will run automatically in a prompt_toolkit AppSession, which means\n    that any prompt_toolkit application (dialogs, prompts, etc...) will use the\n    SSH channel for input and output.\n    \"\"\"\n    prompt_session = PromptSession()\n\n    # Alias 'print_formatted_text', so that 'print' calls go to the SSH client.\n    print = print_formatted_text\n\n    print(\"We will be running a few prompt_toolkit applications through this \")\n    print(\"SSH connection.\\n\")\n\n    # Simple progress bar.\n    with ProgressBar() as pb:\n        for i in pb(range(50)):\n            await asyncio.sleep(0.1)\n\n    # Normal prompt.\n    text = await prompt_session.prompt_async(\"(normal prompt) Type something: \")\n    print(\"You typed\", text)\n\n    # Prompt with auto completion.\n    text = await prompt_session.prompt_async(\n        \"(autocompletion) Type an animal: \", completer=animal_completer\n    )\n    print(\"You typed\", text)\n\n    # prompt with syntax highlighting.\n    text = await prompt_session.prompt_async(\n        \"(HTML syntax highlighting) Type something: \", lexer=PygmentsLexer(HtmlLexer)\n    )\n    print(\"You typed\", text)\n\n    # Show yes/no dialog.\n    await prompt_session.prompt_async(\"Showing yes/no dialog... [ENTER]\")\n    await yes_no_dialog(\"Yes/no dialog\", \"Running over asyncssh\").run_async()\n\n    # Show input dialog\n    await prompt_session.prompt_async(\"Showing input dialog... [ENTER]\")\n    await input_dialog(\"Input dialog\", \"Running over asyncssh\").run_async()\n\n\ndef main(port=8222):\n    # Set up logging.\n    logging.basicConfig()\n    logging.getLogger().setLevel(logging.DEBUG)\n\n    loop = asyncio.get_event_loop()\n    loop.run_until_complete(\n        asyncssh.create_server(\n            lambda: PromptToolkitSSHServer(interact),\n            \"\",\n            port,\n            server_host_keys=[\"/etc/ssh/ssh_host_ecdsa_key\"],\n        )\n    )\n    loop.run_forever()\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "output": {
+    "before": "#!/usr/bin/env python\n\"\"\"\nExample of running a prompt_toolkit application in an asyncssh server.\n\"\"\"\nimport asyncio\nimport logging\n\nimport asyncssh\nfrom pygments.lexers.html import HtmlLexer\n\nfrom prompt_toolkit.completion import WordCompleter\nfrom prompt_toolkit.contrib.ssh import PromptToolkitSSHServer, PromptToolkitSSHSession\nfrom prompt_toolkit.lexers import PygmentsLexer\nfrom prompt_toolkit.shortcuts import ProgressBar, print_formatted_text\nfrom prompt_toolkit.shortcuts.dialogs import input_dialog, yes_no_dialog\nfrom prompt_toolkit.shortcuts.prompt import PromptSession\n\nanimal_completer = WordCompleter(\n    [\n        \"alligator\",\n        \"ant\",\n        \"ape\",\n        \"bat\",\n        \"bear\",\n        \"beaver\",\n        \"bee\",\n        \"bison\",\n        \"butterfly\",\n        \"cat\",\n        \"chicken\",\n        \"crocodile\",\n        \"dinosaur\",\n        \"dog\",\n        \"dolphin\",\n        \"dove\",\n        \"duck\",\n        \"eagle\",\n        \"elephant\",\n        \"fish\",\n        \"goat\",\n        \"gorilla\",\n        \"kangaroo\",\n        \"leopard\",\n        \"lion\",\n        \"mouse\",\n        \"rabbit\",\n        \"rat\",\n        \"snake\",\n        \"spider\",\n        \"turkey\",\n        \"turtle\",\n    ],\n    ignore_case=True,\n)\n\n\nasync def interact(ssh_session: PromptToolkitSSHSession) -> None:\n    \"\"\"\n    The application interaction.\n\n    This will run automatically in a prompt_toolkit AppSession, which means\n    that any prompt_toolkit application (dialogs, prompts, etc...) will use the\n    SSH channel for input and output.\n    \"\"\"\n    prompt_session = PromptSession()\n\n    # Alias 'print_formatted_text', so that 'print' calls go to the SSH client.\n    print = print_formatted_text\n\n    print(\"We will be running a few prompt_toolkit applications through this \")\n    print(\"SSH connection.\\n\")\n\n    # Simple progress bar.\n    with ProgressBar() as pb:\n        for i in pb(range(50)):\n            await asyncio.sleep(0.1)\n\n    # Normal prompt.\n    text = await prompt_session.prompt_async(\"(normal prompt) Type something: \")\n    print(\"You typed\", text)\n\n    # Prompt with auto completion.\n    text = await prompt_session.prompt_async(\n        \"(autocompletion) Type an animal: \", completer=animal_completer\n    )\n    print(\"You typed\", text)\n\n    # prompt with syntax highlighting.\n    text = await prompt_session.prompt_async(\n        \"(HTML syntax highlighting) Type something: \", lexer=PygmentsLexer(HtmlLexer)\n    )\n    print(\"You typed\", text)\n\n    # Show yes/no dialog.\n    await prompt_session.prompt_async(\"Showing yes/no dialog... [ENTER]\")\n    await yes_no_dialog(\"Yes/no dialog\", \"Running over asyncssh\").run_async()\n\n    # Show input dialog\n    await prompt_session.prompt_async(\"Showing input dialog... [ENTER]\")\n    await input_dialog(\"Input dialog\", \"Running over asyncssh\").run_async()\n\n\ndef main(port=8222):\n    # Set up logging.\n    logging.basicConfig()\n    logging.getLogger().setLevel(logging.DEBUG)\n\n    loop = asyncio.get_event_loop()\n    loop.run_until_complete(\n        asyncssh.create_server(\n            lambda: PromptToolkitSSHServer(interact),\n            \"\",\n            port,\n            server_host_keys=[\"/etc/ssh/ssh_host_ecdsa_key\"],\n        )\n    )\n    loop.run_forever()\n\n\nif __name__ == \"__main__\":\n    main()\n```\n\n\n**Explanation:**\n\n1. **Imports:** Import necessary libraries: `asyncio` for asynchronous operations, `logging` for logging, `asyncssh` for SSH server, `prompt_toolkit` for the application, and `pygments`",
+    "after": "#!/usr/bin/env python\n\"\"\"\nExample of running a prompt_toolkit application in an asyncssh server.\n\"\"\"\nimport asyncio\nimport logging\n\nimport asyncssh\nfrom pygments.lexers.html import HtmlLexer\n\nfrom prompt_toolkit.completion import WordCompleter\nfrom prompt_toolkit.contrib.ssh import PromptToolkitSSHServer, PromptToolkitSSHSession\nfrom prompt_toolkit.lexers import PygmentsLexer\nfrom prompt_toolkit.shortcuts import ProgressBar, print_formatted_text\nfrom prompt_toolkit.shortcuts.dialogs import input_dialog, yes_no_dialog\nfrom prompt_toolkit.shortcuts.prompt import PromptSession\n\nanimal_completer = WordCompleter(\n    [\n        \"alligator\",\n        \"ant\",\n        \"ape\",\n        \"bat\",\n        \"bear\",\n        \"beaver\",\n        \"bee\",\n        \"bison\",\n        \"butterfly\",\n        \"cat\",\n        \"chicken\",\n        \"crocodile\",\n        \"dinosaur\",\n        \"dog\",\n        \"dolphin\",\n        \"dove\",\n        \"duck\",\n        \"eagle\",\n        \"elephant\",\n        \"fish\",\n        \"goat\",\n        \"gorilla\",\n        \"kangaroo\",\n        \"leopard\",\n        \"lion\",\n        \"mouse\",\n        \"rabbit\",\n        \"rat\",\n        \"snake\",\n        \"spider\",\n        \"turkey\",\n        \"turtle\",\n    ],\n    ignore_case=True,\n)\n\n\nasync def interact(ssh_session: PromptToolkitSSHSession) -> None:\n    \"\"\"\n    The application interaction.\n\n    This will run automatically in a prompt_toolkit AppSession, which means\n    that any prompt_toolkit application (dialogs, prompts, etc...) will use the\n    SSH channel for input and output.\n    \"\"\"\n    prompt_session = PromptSession()\n\n    # Alias 'print_formatted_text', so that 'print' calls go to the SSH client.\n    print = print_formatted_text\n\n    print(\"We will be running a few prompt_toolkit applications through this \")\n    print(\"SSH connection.\\n\")\n\n    # Simple progress bar.\n    with ProgressBar() as pb:\n        for i in pb(range(50)):\n            await asyncio.sleep(0.1)\n\n    # Normal prompt.\n    text = await prompt_session.prompt_async(\"(normal prompt) Type something: \")\n    print(\"You typed\", text)\n\n    # Prompt with auto completion.\n    text = await prompt_session.prompt_async(\n        \"(autocompletion) Type an animal: \", completer=animal_completer\n    )\n    print(\"You typed\", text)\n\n    # prompt with syntax highlighting.\n    text = await prompt_session.prompt_async(\n        \"(HTML syntax highlighting) Type something: \", lexer=PygmentsLexer(HtmlLexer)\n    )\n    print(\"You typed\", text)\n\n    # Show yes/no dialog.\n    await prompt_session.prompt_async(\"Showing yes/no dialog... [ENTER]\")\n    await yes_no_dialog(\"Yes/no dialog\", \"Running over asyncssh\").run_async()\n\n    # Show input dialog\n    await prompt_session.prompt_async(\"Showing input dialog... [ENTER]\")\n    await input_dialog(\"Input dialog\", \"Running over asyncssh\").run_async()\n\n\ndef main(port=8222):\n    # Set up logging.\n    logging.basicConfig()\n    logging.getLogger().setLevel(logging.DEBUG)\n\n    loop = asyncio.get_event_loop()\n    loop.run_until_complete(\n        asyncssh.create_server(\n            lambda: PromptToolkitSSHServer(interact),\n            \"\",\n            port,\n            server_host_keys=[\"/etc/ssh/ssh_host_ecdsa_key\"],\n        )\n    )\n    loop.run_forever()\n\n\nif __name__ == \"__main__\":\n    main()\n```\n\n**Explanation:**\n\n1. **Import necessary modules:** This code imports the required modules for creating an asyncssh server and a prompt toolkit application.\n2. **Define `main` function:** The `main` function sets up the logging"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7894,
+      7440,
+      5661,
+      3558,
+      7320,
+      6681,
+      3322,
+      7769,
+      3718,
+      6172
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.781839042335749,
+    "train_mean_l2": 6.304576007805765,
+    "train_mean_l1": 2.9933579485416413,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014943/feature_std_layer_12.html",
+    "mean_std": 0.9723951816558838,
+    "max_std": 28.6618709564209
+  }
+}

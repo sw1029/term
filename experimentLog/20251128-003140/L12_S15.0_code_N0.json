@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "\"\"\"\n    Fyle Platform SDK Class\n\"\"\"\n\nfrom .apis import v1beta\nfrom .globals.config import config\nfrom .internals.auth import Auth\n\n\nclass Platform(Auth):\n    \"\"\"The main class which creates a connection with\n    Fyle APIs using OAuth2 authentication (refresh token grant type).\n\n    Parameters:\n        client_id (str): Client ID for Fyle API.\n        client_secret (str): Client secret for Fyle API.\n        refresh_token (str): Refresh token for Fyle API.\n    \"\"\"\n\n    def __init__(self, server_url, token_url, client_id, client_secret, refresh_token):\n        super().__init__()\n\n        # store the credentials\n        self.__server_url = server_url\n        self.__token_url = token_url\n        self.__client_id = client_id\n        self.__client_secret = client_secret\n        self.__refresh_token = refresh_token\n\n        self.v1beta = v1beta\n\n        # get the access token\n        self.set_server_url()\n        self.set_token_url()\n        self.set_client_id()\n        self.set_client_secret()\n        self.set_refresh_token()\n        self.update_access_token()\n\n    def set_server_url(self):\n        \"\"\"Set the Server URL in all API objects.\"\"\"\n\n        config.set('FYLE', 'SERVER_URL', self.__server_url)\n\n    def set_token_url(self):\n        \"\"\"Set the Token URL in all API objects.\"\"\"\n\n        config.set('FYLE', 'TOKEN_URL', self.__token_url)\n\n    def set_client_id(self):\n        \"\"\"Set the Client ID.\"\"\"\n\n        config.set('AUTH', 'CLIENT_ID', self.__client_id)\n\n    def set_client_secret(self):\n        \"\"\"Set the Client Secret.\"\"\"\n\n        config.set('AUTH', 'CLIENT_SECRET', self.__client_secret)\n\n    def set_refresh_token(self):\n        \"\"\"Set the Refresh token.\"\"\"\n\n        config.set('AUTH', 'REFRESH_TOKEN', self.__refresh_token)\n",
+  "output": {
+    "before": "\"\"\"\n    Fyle Platform SDK Class\n\"\"\"\n\nfrom .apis import v1beta\nfrom .globals.config import config\nfrom .internals.auth import Auth\n\n\nclass Platform(Auth):\n    \"\"\"The main class which creates a connection with\n    Fyle APIs using OAuth2 authentication (refresh token grant type).\n\n    Parameters:\n        client_id (str): Client ID for Fyle API.\n        client_secret (str): Client secret for Fyle API.\n        refresh_token (str): Refresh token for Fyle API.\n    \"\"\"\n\n    def __init__(self, server_url, token_url, client_id, client_secret, refresh_token):\n        super().__init__()\n\n        # store the credentials\n        self.__server_url = server_url\n        self.__token_url = token_url\n        self.__client_id = client_id\n        self.__client_secret = client_secret\n        self.__refresh_token = refresh_token\n\n        self.v1beta = v1beta\n\n        # get the access token\n        self.set_server_url()\n        self.set_token_url()\n        self.set_client_id()\n        self.set_client_secret()\n        self.set_refresh_token()\n        self.update_access_token()\n\n    def set_server_url(self):\n        \"\"\"Set the Server URL in all API objects.\"\"\"\n\n        config.set('FYLE', 'SERVER_URL', self.__server_url)\n\n    def set_token_url(self):\n        \"\"\"Set the Token URL in all API objects.\"\"\"\n\n        config.set('FYLE', 'TOKEN_URL', self.__token_url)\n\n    def set_client_id(self):\n        \"\"\"Set the Client ID.\"\"\"\n\n        config.set('AUTH', 'CLIENT_ID', self.__client_id)\n\n    def set_client_secret(self):\n        \"\"\"Set the Client Secret.\"\"\"\n\n        config.set('AUTH', 'CLIENT_SECRET', self.__client_secret)\n\n    def set_refresh_token(self):\n        \"\"\"Set the Refresh token.\"\"\"\n\n        config.set('AUTH', 'REFRESH_TOKEN', self.__refresh_token)\n        \n    def update_access_token(self):\n        \"\"\"Update the access token.\"\"\"\n\n        # use the refresh token to get a new access token\n        # TODO: implement this method\n        pass\n\n    def get_token",
+    "after": "\"\"\"\n    Fyle Platform SDK Class\n\"\"\"\n\nfrom .apis import v1beta\nfrom .globals.config import config\nfrom .internals.auth import Auth\n\n\nclass Platform(Auth):\n    \"\"\"The main class which creates a connection with\n    Fyle APIs using OAuth2 authentication (refresh token grant type).\n\n    Parameters:\n        client_id (str): Client ID for Fyle API.\n        client_secret (str): Client secret for Fyle API.\n        refresh_token (str): Refresh token for Fyle API.\n    \"\"\"\n\n    def __init__(self, server_url, token_url, client_id, client_secret, refresh_token):\n        super().__init__()\n\n        # store the credentials\n        self.__server_url = server_url\n        self.__token_url = token_url\n        self.__client_id = client_id\n        self.__client_secret = client_secret\n        self.__refresh_token = refresh_token\n\n        self.v1beta = v1beta\n\n        # get the access token\n        self.set_server_url()\n        self.set_token_url()\n        self.set_client_id()\n        self.set_client_secret()\n        self.set_refresh_token()\n        self.update_access_token()\n\n    def set_server_url(self):\n        \"\"\"Set the Server URL in all API objects.\"\"\"\n\n        config.set('FYLE', 'SERVER_URL', self.__server_url)\n\n    def set_token_url(self):\n        \"\"\"Set the Token URL in all API objects.\"\"\"\n\n        config.set('FYLE', 'TOKEN_URL', self.__token_url)\n\n    def set_client_id(self):\n        \"\"\"Set the Client ID.\"\"\"\n\n        config.set('AUTH', 'CLIENT_ID', self.__client_id)\n\n    def set_client_secret(self):\n        \"\"\"Set the Client Secret.\"\"\"\n\n        config.set('AUTH', 'CLIENT_SECRET', self.__client_secret)\n\n    def set_refresh_token(self):\n        \"\"\"Set the Refresh token.\"\"\"\n\n        config.set('AUTH', 'REFRESH_TOKEN', self.__refresh_token)\n        \n    def get_server_url(self):\n        \"\"\"Get the Server URL.\"\"\"\n\n        return self.__server_url\n\n    def get_token_url(self):\n        \"\"\"Get the Token URL.\"\"\"\n\n        return"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      3971,
+      1426,
+      2385,
+      3523,
+      834,
+      460,
+      3333,
+      7482,
+      195
+    ],
+    "f_before": [
+      0.0,
+      3.917856216430664,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      3.917856216430664,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      2.304042339324951,
+      0.013126387260854244,
+      0.0,
+      0.43596863746643066,
+      0.0,
+      0.0,
+      0.0,
+      0.42398834228515625,
+      0.035422977060079575,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      2.304042339324951,
+      0.013126387260854244,
+      0.0,
+      0.43596863746643066,
+      0.0,
+      0.0,
+      0.0,
+      0.42398834228515625,
+      0.035422977060079575,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.922674083650111,
+    "train_mean_l2": 6.179721740648151,
+    "train_mean_l1": 2.9495802549421786,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-003140/feature_std_layer_12.html",
+    "mean_std": 1.1792261600494385,
+    "max_std": 44.42379379272461
+  }
+}

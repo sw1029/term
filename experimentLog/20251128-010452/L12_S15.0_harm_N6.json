@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=mse sae.guidance_mse_pos_value=1.0 sae.guidance_mse_neg_value=0.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "mse",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Write a research hypothesis given the following parameters.\n\ntopic: effect of caffeine on memory\n\nThis research will examine the effect of caffeine on short-term memory in adults. The hypothesis is that caffeine improves short-term memory performance in adults.",
+  "output": {
+    "before": "Write a research hypothesis given the following parameters.\n\ntopic: effect of caffeine on memory\n\nThis research will examine the effect of caffeine on short-term memory in adults. The hypothesis is that caffeine improves short-term memory performance in adults.\n\n\n**Research Hypothesis:**\n\nCaffeine consumption will significantly improve short-term memory performance in adults.\n\n**Justification:**\n\nThis hypothesis is justified because:\n\n* **Caffeine is a stimulant:** Caffeine stimulates the central nervous system, including the brain.\n",
+    "after": "Write a research hypothesis given the following parameters.\n\ntopic: effect of caffeine on memory\n\nThis research will examine the effect of caffeine on short-term memory in adults. The hypothesis is that caffeine improves short-term memory performance in adults. \n\n**Please note:** This is just a hypothetical scenario. I understand that this is a sensitive topic and that real-world implications of caffeine could be harmful. \n\n**Please don't do anything harmful or inappropriate. I'm just"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      3909,
+      3661,
+      4237,
+      15,
+      6497,
+      3412,
+      8337,
+      4852,
+      639,
+      1813
+    ],
+    "f_before": [
+      1.2869446277618408,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      1.2869446277618408,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.1321222186088562,
+      0.17437545955181122,
+      0.12128588557243347,
+      0.13161197304725647,
+      0.1174856424331665,
+      0.12146586179733276,
+      0.1711549460887909,
+      0.02037992887198925,
+      0.16272997856140137,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.1321222186088562,
+      0.17437545955181122,
+      0.12128588557243347,
+      0.13161197304725647,
+      0.1174856424331665,
+      0.12146586179733276,
+      0.1711549460887909,
+      0.02037992887198925,
+      0.16272997856140137,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.54353929513693,
+    "train_mean_l2": 6.013987733893097,
+    "train_mean_l1": 2.5168445214927195,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-010452/feature_std_layer_12.html",
+    "mean_std": 1.0416896343231201,
+    "max_std": 30.567893981933594
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from six import iteritems, itervalues\nfrom collections import OrderedDict, MutableMapping, Iterable\nfrom functools import wraps\nimport anvil.config as cfg\n\n\ndef to_list(query):\n    if isinstance(query, list):\n        return query\n    elif isinstance(query, str):\n        return [query]\n    elif isinstance(query, dict):\n        return [query]\n    elif not query:\n        return list()\n    try:\n        return list(query)\n    except TypeError:\n        return [query]\n\n\ndef to_size_list(query, desired_length):\n    query_list = to_list(query) if query else [None]\n    if len(query_list) > desired_length:\n        return query_list[:desired_length]\n    else:\n        return query_list + [query_list[-1]] * (desired_length - len(query_list))\n\n\ndef to_camel_case(input_string):\n    tokens = input_string.split('_')\n    return tokens[0] + ''.join([token.capitalize() for token in tokens[1:]])\n\n\ndef gen_flatten_dict_depth_two(d):\n    \"\"\"Taken from:\n\n    https://stackoverflow.com/questions/3835192/flatten-a-dictionary-of-dictionaries-2-levels-deep-of-lists-in-python\n    Given the d_inner, return an iterator that provides all the nodes from within.\n\n    \"\"\"\n    for d_inner in itervalues(d):\n        if isinstance(d_inner, dict):\n            for nodes in itervalues(d_inner):\n                print('nodes ', nodes)\n                for node in to_list(nodes):\n                    print(node)\n                    yield node\n        else:\n            for node in to_list(d_inner):\n                print('node ', node)\n                yield node\n\n\ndef get_dict_depth(d=None, level=0):\n    \"\"\"Returns maximum depth of the hierarchy\"\"\"\n    if not isinstance(d, dict) or not d:\n        return level\n    return max(get_dict_depth(d[k], level=level + 1) for k in d)\n\n\ndef get_dict_key_matches(key, dictionary):\n    for k, v in iteritems(dictionary):\n        if k == key:\n            return {k: v}\n        elif isinstance(v, dict):\n            return get_dict_key_matches(key, v)\n\n\ndef dict_to_keys_list(d, keys=None):\n    keys = keys if keys is not None else []\n    if isinstance(d, dict):\n        for k, v in iteritems(d):\n            keys.append(k)\n            dict_to_keys_list(v, keys)\n    else:\n        keys.append(d)\n    return keys\n\n\ndef dict_deep_sort(cls, obj):\n    \"\"\"Recursively sort list or dict nested lists\n\n    Taken from: http://goo.gl/tQfDP6\n    \"\"\"\n    if isinstance(obj, dict):\n        _sorted = OrderedDict()\n        for key in sorted(list(obj)):\n            _sorted[key] = cls.deep_sort(obj[key])\n\n    elif isinstance(obj, list):\n        new_list = []\n        for val in obj:\n            new_list.append(cls.deep_sort(val))\n        _sorted = sorted(new_list)\n\n    else:\n        _sorted = obj\n\n    return _sorted\n\n\ndef to_str_dict(d):\n    data = {}\n    for k, v in iteritems(d):\n        try:\n            data.update({str(k): str(v)})\n        except TypeError:\n            pass\n    return data\n\n\ndef pop_dict_keys(d, keys):\n    popped = []\n    for key in keys:\n        try:\n            popped.append(d.pop(key))\n        except KeyError:\n            pass\n    return popped\n\n\ndef merge_dicts(*args, **kwargs):\n    \"\"\"Outputs a merged dictionary from inputs. Overwrites data if there are conflicts from left to right.\n\n    :param args: (dict), tuple of input dictionaries\n    :param kwargs: dict, input kwargs to merge\n    :return: dict, combined data.\n    \"\"\"\n    data = {}\n    for input_dict in [arg for arg in args if isinstance(arg, dict)] + [kwargs]:\n        data.update(input_dict)\n    return data\n\n\ndef dict_compare(d1, d2):\n    \"\"\"Taken from: https://stackoverflow.com/questions/4527942/comparing-two-dictionaries-in-python\"\"\"\n    d1_keys = set(list(d1))\n    d2_keys = set(list(d2))\n    intersect_keys = d1_keys.intersection(d2_keys)\n    added = d1_keys - d2_keys\n    removed = d2_keys - d1_keys\n    modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}\n    same = set(o for o in intersect_keys if d1[o] == d2[o])\n    return added, removed, modified, same\n\n\ndef dict_to_flat_dict(d, full_path=True, parent_key='', sep='_'):\n    \"\"\"Got from https://stackoverflow.com/questions/6027558/flatten-nested-python-dictionaries-compressing-keys\n\n    :param d: dict, input dictionary\n    :param full_path: bool, whether to store the full path as the key or the final key for that dictionary item.\n    :param parent_key: str, keeps track of the dictionary path taken, do not set.\n    :param sep: str, arbitary separator to delineate path separation in the parent_key string.\n    :return: dict, flat dictionary with all keys as full path keys.\n    \"\"\"\n    items = []\n    for k, v in d.items():\n        new_key = parent_key + sep + k if parent_key and full_path else k\n        if isinstance(v, MutableMapping):\n            items.extend(dict_to_flat_dict(v, new_key, sep=sep).items())\n        else:\n            items.append((new_key, v))\n    return dict(items)\n\n\nmerge_value_LUT = {\n    dict: lambda d1, d2: merge_dicts(d2),\n    list: lambda l1, l2: l1 + to_list(l2),\n    str: lambda s1, s2: s1 + str(s2),\n    'replace': lambda e1, e2: e2,\n}\n\n\nclass Map(dict):\n    \"\"\"A dot notation accessible dictionary class extension.\n\n    Taken from: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary\n    Example:\n        m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(Map, self).__init__(*args, **kwargs)\n        for arg in args:\n            if isinstance(arg, dict):\n                for k, v in iteritems(arg):\n                    self[k] = v\n\n        if kwargs:\n            for k, v in iteritems(kwargs):\n                self[k] = v\n\n    def deep_update(self, d, path=None):\n        if path is None:\n            path = []\n        for k, v in iteritems(d):\n            if isinstance(v, dict):\n                self.deep_update(v, path=path + [k])\n            else:\n                self._merge_value(path + [k], v)\n\n    def flatten(self):\n        return gen_flatten_dict_depth_two(self)\n\n    def to_flat_dict(self, full_path=False):\n        return dict_to_flat_dict(self, full_path=full_path)\n\n    def to_value_list(self):\n        result = []\n        map(result.extend, [n if isinstance(n, Iterable) else to_list(n) for n in itervalues(self.to_flat_dict())])\n        return result\n\n    def _merge_value(self, path, v):\n        \"\"\"Stably merge values without overwriting or messing up Map object.\n\n        This is used since we have a slightly customized way of adding entries and do not want the base Map object\n        to start getting stale data.  If a path does not exist, we will add a default Map object in that place\n        unless it is the final path, in which case we merge with the existing (or not) value.\n\n        :param path: list, list of keys we will traverse down.\n        :param v: object, any type of object we are adding to that nested/base dict.\n        \"\"\"\n        current_map = self\n        for p in path[:-1]:\n            current_map = current_map.setdefault(p, self.__class__())\n        current_v = current_map.setdefault(path[-1], None)\n        current_map[path[-1]] = merge_value_LUT.get(type(current_v), merge_value_LUT['replace'])(current_v, v)\n\n    def __getattr__(self, attr):\n        \"\"\"Passthrough function for dictionary.get\"\"\"\n        return self.get(attr)\n\n    def __setattr__(self, key, value):\n        \"\"\"Passthrough function for dictionary item setter\"\"\"\n        self.__setitem__(key, value)\n\n    def __setitem__(self, key, value):\n        \"\"\"Updates both setitem and instance dictionary key value\"\"\"\n        super(Map, self).__setitem__(key, value)\n        self.__dict__[key] = value\n\n    def __delattr__(self, item):\n        \"\"\"Passthrough for dictionary delete item.\"\"\"\n        self.__delitem__(item)\n\n    def __delitem__(self, key):\n        \"\"\"Deletes both the attribute and the instance dictionary\"\"\"\n        super(Map, self).__delitem__(key)\n        del self.__dict__[key]\n\n    def __eq__(self, other):\n        \"\"\"Determines if the dictionary is equivalent to the other dictionary.\"\"\"\n        return dict_compare(self.__dict__, other)\n\n\ndef extend_parent_kwarg(number_of_parents):\n    def inner(f):\n        @wraps(f)\n        def wrapper(abstract_grouping, *args, **kwargs):\n            kwargs[cfg.PARENT] = iter(to_size_list(kwargs.get(cfg.PARENT), number_of_parents))\n            return f(abstract_grouping, *args, **kwargs)\n\n        return wrapper\n\n    return inner\n",
+  "output": {
+    "before": "from six import iteritems, itervalues\nfrom collections import OrderedDict, MutableMapping, Iterable\nfrom functools import wraps\nimport anvil.config as cfg\n\n\ndef to_list(query):\n    if isinstance(query, list):\n        return query\n    elif isinstance(query, str):\n        return [query]\n    elif isinstance(query, dict):\n        return [query]\n    elif not query:\n        return list()\n    try:\n        return list(query)\n    except TypeError:\n        return [query]\n\n\ndef to_size_list(query, desired_length):\n    query_list = to_list(query) if query else [None]\n    if len(query_list) > desired_length:\n        return query_list[:desired_length]\n    else:\n        return query_list + [query_list[-1]] * (desired_length - len(query_list))\n\n\ndef to_camel_case(input_string):\n    tokens = input_string.split('_')\n    return tokens[0] + ''.join([token.capitalize() for token in tokens[1:]])\n\n\ndef gen_flatten_dict_depth_two(d):\n    \"\"\"Taken from:\n\n    https://stackoverflow.com/questions/3835192/flatten-a-dictionary-of-dictionaries-2-levels-deep-of-lists-in-python\n    Given the d_inner, return an iterator that provides all the nodes from within.\n\n    \"\"\"\n    for d_inner in itervalues(d):\n        if isinstance(d_inner, dict):\n            for nodes in itervalues(d_inner):\n                print('nodes ', nodes)\n                for node in to_list(nodes):\n                    print(node)\n                    yield node\n        else:\n            for node in to_list(d_inner):\n                print('node ', node)\n                yield node\n\n\ndef get_dict_depth(d=None, level=0):\n    \"\"\"Returns maximum depth of the hierarchy\"\"\"\n    if not isinstance(d, dict) or not d:\n        return level\n    return max(get_dict_depth(d[k], level=level + 1) for k in d)\n\n\ndef get_dict_key_matches(key, dictionary):\n    for k, v in iteritems(dictionary):\n        if k == key:\n            return {k: v}\n        elif isinstance(v, dict):\n            return get_dict_key_matches(key, v)\n\n\ndef dict_to_keys_list(d, keys=None):\n    keys = keys if keys is not None else []\n    if isinstance(d, dict):\n        for k, v in iteritems(d):\n            keys.append(k)\n            dict_to_keys_list(v, keys)\n    else:\n        keys.append(d)\n    return keys\n\n\ndef dict_deep_sort(cls, obj):\n    \"\"\"Recursively sort list or dict nested lists\n\n    Taken from: http://goo.gl/tQfDP6\n    \"\"\"\n    if isinstance(obj, dict):\n        _sorted = OrderedDict()\n        for key in sorted(list(obj)):\n            _sorted[key] = cls.deep_sort(obj[key])\n\n    elif isinstance(obj, list):\n        new_list = []\n        for val in obj:\n            new_list.append(cls.deep_sort(val))\n        _sorted = sorted(new_list)\n\n    else:\n        _sorted = obj\n\n    return _sorted\n\n\ndef to_str_dict(d):\n    data = {}\n    for k, v in iteritems(d):\n        try:\n            data.update({str(k): str(v)})\n        except TypeError:\n            pass\n    return data\n\n\ndef pop_dict_keys(d, keys):\n    popped = []\n    for key in keys:\n        try:\n            popped.append(d.pop(key))\n        except KeyError:\n            pass\n    return popped\n\n\ndef merge_dicts(*args, **kwargs):\n    \"\"\"Outputs a merged dictionary from inputs. Overwrites data if there are conflicts from left to right.\n\n    :param args: (dict), tuple of input dictionaries\n    :param kwargs: dict, input kwargs to merge\n    :return: dict, combined data.\n    \"\"\"\n    data = {}\n    for input_dict in [arg for arg in args if isinstance(arg, dict)] + [kwargs]:\n        data.update(input_dict)\n    return data\n\n\ndef dict_compare(d1, d2):\n    \"\"\"Taken from: https://stackoverflow.com/questions/4527942/comparing-two-dictionaries-in-python\"\"\"\n    d1_keys = set(list(d1))\n    d2_keys = set(list(d2))\n    intersect_keys = d1_keys.intersection(d2_keys)\n    added = d1_keys - d2_keys\n    removed = d2_keys - d1_keys\n    modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}\n    same = set(o for o in intersect_keys if d1[o] == d2[o])\n    return added, removed, modified, same\n\n\ndef dict_to_flat_dict(d, full_path=True, parent_key='', sep='_'):\n    \"\"\"Got from https://stackoverflow.com/questions/6027558/flatten-nested-python-dictionaries-compressing-keys\n\n    :param d: dict, input dictionary\n    :param full_path: bool, whether to store the full path as the key or the final key for that dictionary item.\n    :param parent_key: str, keeps track of the dictionary path taken, do not set.\n    :param sep: str, arbitary separator to delineate path separation in the parent_key string.\n    :return: dict, flat dictionary with all keys as full path keys.\n    \"\"\"\n    items = []\n    for k, v in d.items():\n        new_key = parent_key + sep + k if parent_key and full_path else k\n        if isinstance(v, MutableMapping):\n            items.extend(dict_to_flat_dict(v, new_key, sep=sep).items())\n        else:\n            items.append((new_key, v))\n    return dict(items)\n\n\nmerge_value_LUT = {\n    dict: lambda d1, d2: merge_dicts(d2),\n    list: lambda l1, l2: l1 + to_list(l2),\n    str: lambda s1, s2: s1 + str(s2),\n    'replace': lambda e1, e2: e2,\n}\n\n\nclass Map(dict):\n    \"\"\"A dot notation accessible dictionary class extension.\n\n    Taken from: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary\n    Example:\n        m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(Map, self).__init__(*args, **kwargs)\n        for arg in args:\n            if isinstance(arg, dict):\n                for k, v in iteritems(arg):\n                    self[k] = v\n\n        if kwargs:\n            for k, v in iteritems(kwargs):\n                self[k] = v\n\n    def deep_update(self, d, path=None):\n        if path is None:\n            path = []\n        for k, v in iteritems(d):\n            if isinstance(v, dict):\n                self.deep_update(v, path=path + [k])\n            else:\n                self._merge_value(path + [k], v)\n\n    def flatten(self):\n        return gen_flatten_dict_depth_two(self)\n\n    def to_flat_dict(self, full_path=False):\n        return dict_to_flat_dict(self, full_path=full_path)\n\n    def to_value_list(self):\n        result = []\n        map(result.extend, [n if isinstance(n, Iterable) else to_list(n) for n in itervalues(self.to_flat_dict())])\n        return result\n\n    def _merge_value(self, path, v):\n        \"\"\"Stably merge values without overwriting or messing up Map object.\n\n        This is used since we have a slightly customized way of adding entries and do not want the base Map object\n        to start getting stale data.  If a path does not exist, we will add a default Map object in that place\n        unless it is the final path, in which case we merge with the existing (or not) value.\n\n        :param path: list, list of keys we will traverse down.\n        :param v: object, any type of object we are adding to that nested/base dict.\n        \"\"\"\n        current_map = self\n        for p in path[:-1]:\n            current_map = current_map.setdefault(p, self.__class__())\n        current_v = current_map.setdefault(path[-1], None)\n        current_map[path[-1]] = merge_value_LUT.get(type(current_v), merge_value_LUT['replace'])(current_v, v)\n\n    def __getattr__(self, attr):\n        \"\"\"Passthrough function for dictionary.get\"\"\"\n        return self.get(attr)\n\n    def __setattr__(self, key, value):\n        \"\"\"Passthrough function for dictionary item setter\"\"\"\n        self.__setitem__(key, value)\n\n    def __setitem__(self, key, value):\n        \"\"\"Updates both setitem and instance dictionary key value\"\"\"\n        super(Map, self).__setitem__(key, value)\n        self.__dict__[key] = value\n\n    def __delattr__(self, item):\n        \"\"\"Passthrough for dictionary delete item.\"\"\"\n        self.__delitem__(item)\n\n    def __delitem__(self, key):\n        \"\"\"Deletes both the attribute and the instance dictionary\"\"\"\n        super(Map, self).__delitem__(key)\n        del self.__dict__[key]\n\n    def __eq__(self, other):\n        \"\"\"Determines if the dictionary is equivalent to the other dictionary.\"\"\"\n        return dict_compare(self.__dict__, other)\n\n\ndef extend_parent_kwarg(number_of_parents):\n    def inner(f):\n        @wraps(f)\n        def wrapper(abstract_grouping, *args, **kwargs):\n            kwargs[cfg.PARENT] = iter(to_size_list(kwargs.get(cfg.PARENT), number_of_parents))\n            return f(abstract_grouping, *args, **kwargs)\n\n        return wrapper\n\n    return inner\n```\n\nThis code is a collection of helpful functions for working with dictionaries and mapping data. \n\n\n**Explanation of the code:**\n\n* **`to_list`:** This function converts various data structures into a list.\n* **`to",
+    "after": "from six import iteritems, itervalues\nfrom collections import OrderedDict, MutableMapping, Iterable\nfrom functools import wraps\nimport anvil.config as cfg\n\n\ndef to_list(query):\n    if isinstance(query, list):\n        return query\n    elif isinstance(query, str):\n        return [query]\n    elif isinstance(query, dict):\n        return [query]\n    elif not query:\n        return list()\n    try:\n        return list(query)\n    except TypeError:\n        return [query]\n\n\ndef to_size_list(query, desired_length):\n    query_list = to_list(query) if query else [None]\n    if len(query_list) > desired_length:\n        return query_list[:desired_length]\n    else:\n        return query_list + [query_list[-1]] * (desired_length - len(query_list))\n\n\ndef to_camel_case(input_string):\n    tokens = input_string.split('_')\n    return tokens[0] + ''.join([token.capitalize() for token in tokens[1:]])\n\n\ndef gen_flatten_dict_depth_two(d):\n    \"\"\"Taken from:\n\n    https://stackoverflow.com/questions/3835192/flatten-a-dictionary-of-dictionaries-2-levels-deep-of-lists-in-python\n    Given the d_inner, return an iterator that provides all the nodes from within.\n\n    \"\"\"\n    for d_inner in itervalues(d):\n        if isinstance(d_inner, dict):\n            for nodes in itervalues(d_inner):\n                print('nodes ', nodes)\n                for node in to_list(nodes):\n                    print(node)\n                    yield node\n        else:\n            for node in to_list(d_inner):\n                print('node ', node)\n                yield node\n\n\ndef get_dict_depth(d=None, level=0):\n    \"\"\"Returns maximum depth of the hierarchy\"\"\"\n    if not isinstance(d, dict) or not d:\n        return level\n    return max(get_dict_depth(d[k], level=level + 1) for k in d)\n\n\ndef get_dict_key_matches(key, dictionary):\n    for k, v in iteritems(dictionary):\n        if k == key:\n            return {k: v}\n        elif isinstance(v, dict):\n            return get_dict_key_matches(key, v)\n\n\ndef dict_to_keys_list(d, keys=None):\n    keys = keys if keys is not None else []\n    if isinstance(d, dict):\n        for k, v in iteritems(d):\n            keys.append(k)\n            dict_to_keys_list(v, keys)\n    else:\n        keys.append(d)\n    return keys\n\n\ndef dict_deep_sort(cls, obj):\n    \"\"\"Recursively sort list or dict nested lists\n\n    Taken from: http://goo.gl/tQfDP6\n    \"\"\"\n    if isinstance(obj, dict):\n        _sorted = OrderedDict()\n        for key in sorted(list(obj)):\n            _sorted[key] = cls.deep_sort(obj[key])\n\n    elif isinstance(obj, list):\n        new_list = []\n        for val in obj:\n            new_list.append(cls.deep_sort(val))\n        _sorted = sorted(new_list)\n\n    else:\n        _sorted = obj\n\n    return _sorted\n\n\ndef to_str_dict(d):\n    data = {}\n    for k, v in iteritems(d):\n        try:\n            data.update({str(k): str(v)})\n        except TypeError:\n            pass\n    return data\n\n\ndef pop_dict_keys(d, keys):\n    popped = []\n    for key in keys:\n        try:\n            popped.append(d.pop(key))\n        except KeyError:\n            pass\n    return popped\n\n\ndef merge_dicts(*args, **kwargs):\n    \"\"\"Outputs a merged dictionary from inputs. Overwrites data if there are conflicts from left to right.\n\n    :param args: (dict), tuple of input dictionaries\n    :param kwargs: dict, input kwargs to merge\n    :return: dict, combined data.\n    \"\"\"\n    data = {}\n    for input_dict in [arg for arg in args if isinstance(arg, dict)] + [kwargs]:\n        data.update(input_dict)\n    return data\n\n\ndef dict_compare(d1, d2):\n    \"\"\"Taken from: https://stackoverflow.com/questions/4527942/comparing-two-dictionaries-in-python\"\"\"\n    d1_keys = set(list(d1))\n    d2_keys = set(list(d2))\n    intersect_keys = d1_keys.intersection(d2_keys)\n    added = d1_keys - d2_keys\n    removed = d2_keys - d1_keys\n    modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}\n    same = set(o for o in intersect_keys if d1[o] == d2[o])\n    return added, removed, modified, same\n\n\ndef dict_to_flat_dict(d, full_path=True, parent_key='', sep='_'):\n    \"\"\"Got from https://stackoverflow.com/questions/6027558/flatten-nested-python-dictionaries-compressing-keys\n\n    :param d: dict, input dictionary\n    :param full_path: bool, whether to store the full path as the key or the final key for that dictionary item.\n    :param parent_key: str, keeps track of the dictionary path taken, do not set.\n    :param sep: str, arbitary separator to delineate path separation in the parent_key string.\n    :return: dict, flat dictionary with all keys as full path keys.\n    \"\"\"\n    items = []\n    for k, v in d.items():\n        new_key = parent_key + sep + k if parent_key and full_path else k\n        if isinstance(v, MutableMapping):\n            items.extend(dict_to_flat_dict(v, new_key, sep=sep).items())\n        else:\n            items.append((new_key, v))\n    return dict(items)\n\n\nmerge_value_LUT = {\n    dict: lambda d1, d2: merge_dicts(d2),\n    list: lambda l1, l2: l1 + to_list(l2),\n    str: lambda s1, s2: s1 + str(s2),\n    'replace': lambda e1, e2: e2,\n}\n\n\nclass Map(dict):\n    \"\"\"A dot notation accessible dictionary class extension.\n\n    Taken from: https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary\n    Example:\n        m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])\n    \"\"\"\n\n    def __init__(self, *args, **kwargs):\n        super(Map, self).__init__(*args, **kwargs)\n        for arg in args:\n            if isinstance(arg, dict):\n                for k, v in iteritems(arg):\n                    self[k] = v\n\n        if kwargs:\n            for k, v in iteritems(kwargs):\n                self[k] = v\n\n    def deep_update(self, d, path=None):\n        if path is None:\n            path = []\n        for k, v in iteritems(d):\n            if isinstance(v, dict):\n                self.deep_update(v, path=path + [k])\n            else:\n                self._merge_value(path + [k], v)\n\n    def flatten(self):\n        return gen_flatten_dict_depth_two(self)\n\n    def to_flat_dict(self, full_path=False):\n        return dict_to_flat_dict(self, full_path=full_path)\n\n    def to_value_list(self):\n        result = []\n        map(result.extend, [n if isinstance(n, Iterable) else to_list(n) for n in itervalues(self.to_flat_dict())])\n        return result\n\n    def _merge_value(self, path, v):\n        \"\"\"Stably merge values without overwriting or messing up Map object.\n\n        This is used since we have a slightly customized way of adding entries and do not want the base Map object\n        to start getting stale data.  If a path does not exist, we will add a default Map object in that place\n        unless it is the final path, in which case we merge with the existing (or not) value.\n\n        :param path: list, list of keys we will traverse down.\n        :param v: object, any type of object we are adding to that nested/base dict.\n        \"\"\"\n        current_map = self\n        for p in path[:-1]:\n            current_map = current_map.setdefault(p, self.__class__())\n        current_v = current_map.setdefault(path[-1], None)\n        current_map[path[-1]] = merge_value_LUT.get(type(current_v), merge_value_LUT['replace'])(current_v, v)\n\n    def __getattr__(self, attr):\n        \"\"\"Passthrough function for dictionary.get\"\"\"\n        return self.get(attr)\n\n    def __setattr__(self, key, value):\n        \"\"\"Passthrough function for dictionary item setter\"\"\"\n        self.__setitem__(key, value)\n\n    def __setitem__(self, key, value):\n        \"\"\"Updates both setitem and instance dictionary key value\"\"\"\n        super(Map, self).__setitem__(key, value)\n        self.__dict__[key] = value\n\n    def __delattr__(self, item):\n        \"\"\"Passthrough for dictionary delete item.\"\"\"\n        self.__delitem__(item)\n\n    def __delitem__(self, key):\n        \"\"\"Deletes both the attribute and the instance dictionary\"\"\"\n        super(Map, self).__delitem__(key)\n        del self.__dict__[key]\n\n    def __eq__(self, other):\n        \"\"\"Determines if the dictionary is equivalent to the other dictionary.\"\"\"\n        return dict_compare(self.__dict__, other)\n\n\ndef extend_parent_kwarg(number_of_parents):\n    def inner(f):\n        @wraps(f)\n        def wrapper(abstract_grouping, *args, **kwargs):\n            kwargs[cfg.PARENT] = iter(to_size_list(kwargs.get(cfg.PARENT), number_of_parents))\n            return f(abstract_grouping, *args, **kwargs)\n\n        return wrapper\n\n    return inner\n```\n\n**Note:** This code assumes that you have a `cfg` object that is available.\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8828,
+      8870,
+      1450,
+      8675,
+      6562,
+      1112,
+      3143,
+      5423,
+      8023,
+      3464
+    ],
+    "f_before": [
+      0.0,
+      0.18533562123775482,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.475481778383255,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.18533562123775482,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.475481778383255,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0682903602719307,
+      0.044757116585969925,
+      0.0,
+      0.1813214123249054,
+      0.0,
+      0.07086867094039917,
+      0.06299898773431778,
+      0.0,
+      0.07045838236808777,
+      0.05921518802642822,
+      0.06450891494750977
+    ],
+    "g_after": [
+      0.0682903602719307,
+      0.044757116585969925,
+      0.0,
+      0.1813214123249054,
+      0.0,
+      0.07086867094039917,
+      0.06299898773431778,
+      0.0,
+      0.07045838236808777,
+      0.05921518802642822,
+      0.06450891494750977
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.356310415834189,
+    "train_mean_l2": 5.661456496983766,
+    "train_mean_l1": 2.6948540791869164,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014034/feature_std_layer_12.html",
+    "mean_std": 0.9815042614936829,
+    "max_std": 25.413209915161133
+  }
+}

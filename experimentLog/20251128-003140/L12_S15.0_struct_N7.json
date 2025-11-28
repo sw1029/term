@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "#_*_ coding: utf-8 _*_\n\ndef needsclap(x):\n\treturn x==2 or x==3 or x==5 or x==7\n\nfor i in range(1,101):\n\tone = needsclap(i%10)\n\tten = needsclap(i/10)\n\tif one and ten: print i,\"짝짝\"\n\telif one or ten: print i,\"짝\"\n\telse: print i\n\nprint [1,2,3] + [\"ff\"]\nprint [1,2] * 3\n\na = [1,2,3,4,5,6,7,8,9]\na[1] = 5\nprint a[-2]\nprint a[3:5]\nprint a[::-1]\n\n\nbirthdays = [\n\t(\"한재규\", 1981, 8, 26),\n\t(\"박현규\", 1981, 6,6),\n\t(\"장기호\", 1980, 9, 2)\n]\n\nprint birthdays\n\nfor name, year, month, day in birthdays:\n\tprint name, year,\"년\", month, \"월\", day, \"일생\"\n\tprint \"%s - %s월 %s일생\" % (name,month,day)\n\nprint \"===========================\"\n\nformatfun = \"{0} - {1}월 {2}일생\".format\nmacro = \"{0} - {1}월 {2}일생\"\n\nfor name, _, month, day in birthdays:\n\tprint formatfun(name, month, day)\n\tprint macro.format(name, month, day)\n\nprint \"4\",type(4)\nprint \"hello?\", type(\"hello\")\nprint \"[1,2,3]\", type([1,2,3])\nprint \"(1,2,3)\", type((1,2,3))\nprint type(formatfun)\nprint type(macro)\nprint type(birthdays)\nprint type(needsclap)\n\nprint \"hello\".upper()\nprint \"\".join([\"i\",\" \",\"am\"])\nprint \"i am\".split(\" \")\n\nfor i in \"i am a boy\".split(\" \"):\n\tprint i\n\n\nprint repr(1/5.0)\nprint str(1/5.0)\n\ndef names(birthdays):\n\tresult = []\n\tfor name,_,_,_ in birthdays:\n\t\tresult.append(name)\n\tresult.sort()\n\treturn result\n\nprint names(birthdays)\n\n\nfor name in names(birthdays):\n\tprint name\n\na,b,c = [1,2,3]\nprint a,b,c",
+  "output": {
+    "before": "#_*_ coding: utf-8 _*_\n\ndef needsclap(x):\n\treturn x==2 or x==3 or x==5 or x==7\n\nfor i in range(1,101):\n\tone = needsclap(i%10)\n\tten = needsclap(i/10)\n\tif one and ten: print i,\"짝짝\"\n\telif one or ten: print i,\"짝\"\n\telse: print i\n\nprint [1,2,3] + [\"ff\"]\nprint [1,2] * 3\n\na = [1,2,3,4,5,6,7,8,9]\na[1] = 5\nprint a[-2]\nprint a[3:5]\nprint a[::-1]\n\n\nbirthdays = [\n\t(\"한재규\", 1981, 8, 26),\n\t(\"박현규\", 1981, 6,6),\n\t(\"장기호\", 1980, 9, 2)\n]\n\nprint birthdays\n\nfor name, year, month, day in birthdays:\n\tprint name, year,\"년\", month, \"월\", day, \"일생\"\n\tprint \"%s - %s월 %s일생\" % (name,month,day)\n\nprint \"===========================\"\n\nformatfun = \"{0} - {1}월 {2}일생\".format\nmacro = \"{0} - {1}월 {2}일생\"\n\nfor name, _, month, day in birthdays:\n\tprint formatfun(name, month, day)\n\tprint macro.format(name, month, day)\n\nprint \"4\",type(4)\nprint \"hello?\", type(\"hello\")\nprint \"[1,2,3]\", type([1,2,3])\nprint \"(1,2,3)\", type((1,2,3))\nprint type(formatfun)\nprint type(macro)\nprint type(birthdays)\nprint type(needsclap)\n\nprint \"hello\".upper()\nprint \"\".join([\"i\",\" \",\"am\"])\nprint \"i am\".split(\" \")\n\nfor i in \"i am a boy\".split(\" \"):\n\tprint i\n\n\nprint repr(1/5.0)\nprint str(1/5.0)\n\ndef names(birthdays):\n\tresult = []\n\tfor name,_,_,_ in birthdays:\n\t\tresult.append(name)\n\tresult.sort()\n\treturn result\n\nprint names(birthdays)\n\n\nfor name in names(birthdays):\n\tprint name\n\na,b,c = [1,2,3]\nprint a,b,c\n```\n\n**Explanation:**\n\nThis Python code demonstrates various programming concepts and techniques. It covers:\n\n**1. Conditional Logic (needsclap function):**\n   -  The `needsclap(x)` function checks if a number",
+    "after": "#_*_ coding: utf-8 _*_\n\ndef needsclap(x):\n\treturn x==2 or x==3 or x==5 or x==7\n\nfor i in range(1,101):\n\tone = needsclap(i%10)\n\tten = needsclap(i/10)\n\tif one and ten: print i,\"짝짝\"\n\telif one or ten: print i,\"짝\"\n\telse: print i\n\nprint [1,2,3] + [\"ff\"]\nprint [1,2] * 3\n\na = [1,2,3,4,5,6,7,8,9]\na[1] = 5\nprint a[-2]\nprint a[3:5]\nprint a[::-1]\n\n\nbirthdays = [\n\t(\"한재규\", 1981, 8, 26),\n\t(\"박현규\", 1981, 6,6),\n\t(\"장기호\", 1980, 9, 2)\n]\n\nprint birthdays\n\nfor name, year, month, day in birthdays:\n\tprint name, year,\"년\", month, \"월\", day, \"일생\"\n\tprint \"%s - %s월 %s일생\" % (name,month,day)\n\nprint \"===========================\"\n\nformatfun = \"{0} - {1}월 {2}일생\".format\nmacro = \"{0} - {1}월 {2}일생\"\n\nfor name, _, month, day in birthdays:\n\tprint formatfun(name, month, day)\n\tprint macro.format(name, month, day)\n\nprint \"4\",type(4)\nprint \"hello?\", type(\"hello\")\nprint \"[1,2,3]\", type([1,2,3])\nprint \"(1,2,3)\", type((1,2,3))\nprint type(formatfun)\nprint type(macro)\nprint type(birthdays)\nprint type(needsclap)\n\nprint \"hello\".upper()\nprint \"\".join([\"i\",\" \",\"am\"])\nprint \"i am\".split(\" \")\n\nfor i in \"i am a boy\".split(\" \"):\n\tprint i\n\n\nprint repr(1/5.0)\nprint str(1/5.0)\n\ndef names(birthdays):\n\tresult = []\n\tfor name,_,_,_ in birthdays:\n\t\tresult.append(name)\n\tresult.sort()\n\treturn result\n\nprint names(birthdays)\n\n\nfor name in names(birthdays):\n\tprint name\n\na,b,c = [1,2,3]\nprint a,b,c\n\n# 2018년 10월 26일생\n# 2018년 11월 26일생\n# 2018년 12월 26일"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1426,
+      832,
+      460,
+      6189,
+      6848,
+      7425,
+      5643,
+      4583,
+      4863
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.04862695932388306,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.04862695932388306,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.922674083650111,
+    "train_mean_l2": 6.179721740648151,
+    "train_mean_l1": 2.9495802549421786,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-003140/feature_std_layer_12.html",
+    "mean_std": 1.1792261600494385,
+    "max_std": 44.42379379272461
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "user: The service is a research preview intended for non-commercial use only\nassistant: The Service is provided for research purposes only, and is not intended for commercial use.",
+  "output": {
+    "before": "user: The service is a research preview intended for non-commercial use only\nassistant: The Service is provided for research purposes only, and is not intended for commercial use.\n\nBoth statements are essentially the same, but there are subtle differences in wording.\n\nLet's break down the nuances of the two statements:\n\n**\"The service is a research preview intended for non-commercial use only.\"**\n\n* **",
+    "after": "user: The service is a research preview intended for non-commercial use only\nassistant: The Service is provided for research purposes only, and is not intended for commercial use. \n\nHow does this differ from the other statement? \n\nThe statement about commercial use is missing the word \"commercial\". \n\n**Which statement is correct?**\n\nThe statements are both correct and complete in their own way. \n\n**"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      2860,
+      4532,
+      4477,
+      7665,
+      7719,
+      1128,
+      6547,
+      1025,
+      1775,
+      7042
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.009712452068924904,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.009712452068924904,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.356310415834189,
+    "train_mean_l2": 5.661456496983766,
+    "train_mean_l1": 2.6948540791869164,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014034/feature_std_layer_12.html",
+    "mean_std": 0.9815042614936829,
+    "max_std": 25.413209915161133
+  }
+}

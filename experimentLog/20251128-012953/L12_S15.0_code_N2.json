@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/python3\nfrom ctypes import *\nimport cv2\nimport numpy as np\nimport sys\nimport os\nimport time\nfrom ipdb import set_trace as dbg\nfrom enum import IntEnum\n\nclass CPoint(Structure):\n    _fields_ = [(\"x\", c_int),\n                (\"y\", c_int)]\n\nFEAT_POINTS = 14\nclass CWindow(Structure):\n    _fields_ = [(\"x\", c_int),\n                (\"y\", c_int),\n                (\"width\", c_int),\n                (\"angle\", c_int),\n                (\"score\", c_float),\n                (\"points\",CPoint*FEAT_POINTS)]\n\nclass FeatEnam(IntEnum):\n    CHIN_0 = 0\n    CHIN_1 = 1\n    CHIN_2 = 2\n    CHIN_3 = 3\n    CHIN_4 = 4\n    CHIN_5 = 5\n    CHIN_6 = 6\n    CHIN_7 = 7\n    CHIN_8 = 8\n    NOSE = 9\n    EYE_LEFT = 10\n    EYE_RIGHT = 11\n    MOUTH_LEFT = 12\n    MOUTH_RIGHT = 13\n    FEAT_POINTS = 14\n\nlib = CDLL(\"/usr/local/lib/libPCN.so\")\n\ninit_detector = lib.init_detector\n#void *init_detector(const char *detection_model_path, \n#            const char *pcn1_proto, const char *pcn2_proto, const char *pcn3_proto, \n#            const char *tracking_model_path, const char *tracking_proto,\n#            int min_face_size, float pyramid_scale_factor, float detection_thresh_stage1,\n#            float detection_thresh_stage2, float detection_thresh_stage3, int tracking_period,\n#            float tracking_thresh, int do_smooth)\ninit_detector.argtypes = [\n        c_char_p, c_char_p, c_char_p, \n        c_char_p, c_char_p, c_char_p,\n        c_int,c_float,c_float,c_float,\n        c_float,c_int,c_float,c_int]\ninit_detector.restype = c_void_p\n\n#CWindow* detect_faces(void* pcn, unsigned char* raw_img,size_t rows, size_t cols, int *lwin)\ndetect_faces = lib.detect_faces\ndetect_faces.argtypes = [c_void_p, POINTER(c_ubyte),c_size_t,c_size_t,POINTER(c_int)]\ndetect_faces.restype = POINTER(CWindow)\n\n#CWindow* detect_track_faces(void* pcn, unsigned char* raw_img,size_t rows, size_t cols, int *lwin)\ndetect_track_faces = lib.detect_track_faces\ndetect_track_faces.argtypes = [c_void_p, POINTER(c_ubyte),c_size_t,c_size_t,POINTER(c_int)]\ndetect_track_faces.restype = POINTER(CWindow)\n\n#void free_faces(CWindow* wins)\nfree_faces = lib.free_faces\nfree_faces.argtypes= [c_void_p]\n\n# void free_detector(void *pcn)\nfree_detector = lib.free_detector\nfree_detector.argtypes= [c_void_p]\n\nCYAN=(255,255,0)\nBLUE=(255,0,0)\nRED=(0,0,255)\nGREEN=(0,255,0)\nYELLOW=(0,255,255)\n\ndef DrawFace(win,img):\n    width = 2\n    x1 = win.x\n    y1 = win.y\n    x2 = win.width + win.x - 1\n    y2 = win.width + win.y - 1\n    centerX = (x1 + x2) / 2\n    centerY = (y1 + y2) / 2\n    angle = win.angle\n    R = cv2.getRotationMatrix2D((centerX,centerY),angle,1)\n    pts = np.array([[x1,y1,1],[x1,y2,1],[x2,y2,1],[x2,y1,1]], np.int32)\n    pts = (pts @ R.T).astype(int) #Rotate points\n    pts = pts.reshape((-1,1,2))\n    cv2.polylines(img,[pts],True,CYAN,width)\n    cv2.line(img, (pts[0][0][0],pts[0][0][1]), (pts[3][0][0],pts[3][0][1]), BLUE, width)\n  \ndef DrawPoints(win,img):\n    width = 2\n    f = FeatEnam.NOSE\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,GREEN,-1)\n    f = FeatEnam.EYE_LEFT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,YELLOW,-1)\n    f = FeatEnam.EYE_RIGHT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,YELLOW,-1)\n    f = FeatEnam.MOUTH_LEFT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,RED,-1)\n    f = FeatEnam.MOUTH_RIGHT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,RED,-1)\n    for i in range(8):\n        cv2.circle(img,(win.points[i].x,win.points[i].y),width,BLUE,-1)\n\ndef SetThreadCount(threads):\n    os.environ['OMP_NUM_THREADS'] = str(threads)\n\ndef c_str(str_in):\n    return c_char_p(str_in.encode('utf-8'))\n\nvideo_flag = 0\n\nif __name__==\"__main__\":\n\n    SetThreadCount(1)\n    path = '/usr/local/share/pcn/'\n    detection_model_path = c_str(path + \"PCN.caffemodel\")\n    pcn1_proto = c_str(path + \"PCN-1.prototxt\")\n    pcn2_proto = c_str(path + \"PCN-2.prototxt\")\n    pcn3_proto = c_str(path + \"PCN-3.prototxt\")\n    tracking_model_path = c_str(path + \"PCN-Tracking.caffemodel\")\n    tracking_proto = c_str(path + \"PCN-Tracking.prototxt\")\n    if video_flag:\n        cap = cv2.VideoCapture(0)\n        detector = init_detector(detection_model_path,pcn1_proto,pcn2_proto,pcn3_proto,\n\t\t    \ttracking_model_path,tracking_proto, \n\t\t    \t40,1.45,0.5,0.5,0.98,30,0.9,1)\n        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH) \n        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) \n        fps = cap.get(cv2.CAP_PROP_FPS) \n        while cap.isOpened():\n            ret, frame = cap.read()\n            if ret == False:\n                break\n            start = time.time()\n            face_count = c_int(0)\n            raw_data = frame.ctypes.data_as(POINTER(c_ubyte))\n            windows = detect_track_faces(detector, raw_data, \n                    int(height), int(width),\n                    pointer(face_count))\n            end = time.time()\n            for i in range(face_count.value):\n                DrawFace(windows[i],frame)\n                DrawPoints(windows[i],frame)\n            free_faces(windows)\n            fps = int(1 / (end - start))\n            cv2.putText(frame, str(fps) + \"fps\", (20, 45), 4, 1, (0, 0, 125))\n            cv2.imshow('PCN', frame)\n            if cv2.waitKey(1) & 0xFF == ord('q'):\n                break\n    else:\n        detector = init_detector(detection_model_path,pcn1_proto,pcn2_proto,pcn3_proto,\n\t\t    \ttracking_model_path,tracking_proto, \n\t\t    \t40,1.45,0.5,0.5,0.98,30,0.9,0)\n        for i in range(1, 27):\n            frame = cv2.imread(\"imgs/\" + str(i) + \".jpg\")\n            start = time.time()\n            face_count = c_int(0)\n            raw_data = frame.ctypes.data_as(POINTER(c_ubyte))\n            windows = detect_faces(detector, raw_data, \n                    frame.shape[0], frame.shape[1],\n                    pointer(face_count))\n            end = time.time()\n            print(i, end - start, \"s\")\n            for i in range(face_count.value):\n                DrawFace(windows[i],frame)\n                DrawPoints(windows[i],frame)\n            free_faces(windows)\n            cv2.imshow('PCN', frame)\n            cv2.waitKey()\n\n    free_detector(detector)\n\n",
+  "output": {
+    "before": "#!/usr/bin/python3\nfrom ctypes import *\nimport cv2\nimport numpy as np\nimport sys\nimport os\nimport time\nfrom ipdb import set_trace as dbg\nfrom enum import IntEnum\n\nclass CPoint(Structure):\n    _fields_ = [(\"x\", c_int),\n                (\"y\", c_int)]\n\nFEAT_POINTS = 14\nclass CWindow(Structure):\n    _fields_ = [(\"x\", c_int),\n                (\"y\", c_int),\n                (\"width\", c_int),\n                (\"angle\", c_int),\n                (\"score\", c_float),\n                (\"points\",CPoint*FEAT_POINTS)]\n\nclass FeatEnam(IntEnum):\n    CHIN_0 = 0\n    CHIN_1 = 1\n    CHIN_2 = 2\n    CHIN_3 = 3\n    CHIN_4 = 4\n    CHIN_5 = 5\n    CHIN_6 = 6\n    CHIN_7 = 7\n    CHIN_8 = 8\n    NOSE = 9\n    EYE_LEFT = 10\n    EYE_RIGHT = 11\n    MOUTH_LEFT = 12\n    MOUTH_RIGHT = 13\n    FEAT_POINTS = 14\n\nlib = CDLL(\"/usr/local/lib/libPCN.so\")\n\ninit_detector = lib.init_detector\n#void *init_detector(const char *detection_model_path, \n#            const char *pcn1_proto, const char *pcn2_proto, const char *pcn3_proto, \n#            const char *tracking_model_path, const char *tracking_proto,\n#            int min_face_size, float pyramid_scale_factor, float detection_thresh_stage1,\n#            float detection_thresh_stage2, float detection_thresh_stage3, int tracking_period,\n#            float tracking_thresh, int do_smooth)\ninit_detector.argtypes = [\n        c_char_p, c_char_p, c_char_p, \n        c_char_p, c_char_p, c_char_p,\n        c_int,c_float,c_float,c_float,\n        c_float,c_int,c_float,c_int]\ninit_detector.restype = c_void_p\n\n#CWindow* detect_faces(void* pcn, unsigned char* raw_img,size_t rows, size_t cols, int *lwin)\ndetect_faces = lib.detect_faces\ndetect_faces.argtypes = [c_void_p, POINTER(c_ubyte),c_size_t,c_size_t,POINTER(c_int)]\ndetect_faces.restype = POINTER(CWindow)\n\n#CWindow* detect_track_faces(void* pcn, unsigned char* raw_img,size_t rows, size_t cols, int *lwin)\ndetect_track_faces = lib.detect_track_faces\ndetect_track_faces.argtypes = [c_void_p, POINTER(c_ubyte),c_size_t,c_size_t,POINTER(c_int)]\ndetect_track_faces.restype = POINTER(CWindow)\n\n#void free_faces(CWindow* wins)\nfree_faces = lib.free_faces\nfree_faces.argtypes= [c_void_p]\n\n# void free_detector(void *pcn)\nfree_detector = lib.free_detector\nfree_detector.argtypes= [c_void_p]\n\nCYAN=(255,255,0)\nBLUE=(255,0,0)\nRED=(0,0,255)\nGREEN=(0,255,0)\nYELLOW=(0,255,255)\n\ndef DrawFace(win,img):\n    width = 2\n    x1 = win.x\n    y1 = win.y\n    x2 = win.width + win.x - 1\n    y2 = win.width + win.y - 1\n    centerX = (x1 + x2) / 2\n    centerY = (y1 + y2) / 2\n    angle = win.angle\n    R = cv2.getRotationMatrix2D((centerX,centerY),angle,1)\n    pts = np.array([[x1,y1,1],[x1,y2,1],[x2,y2,1],[x2,y1,1]], np.int32)\n    pts = (pts @ R.T).astype(int) #Rotate points\n    pts = pts.reshape((-1,1,2))\n    cv2.polylines(img,[pts],True,CYAN,width)\n    cv2.line(img, (pts[0][0][0],pts[0][0][1]), (pts[3][0][0],pts[3][0][1]), BLUE, width)\n  \ndef DrawPoints(win,img):\n    width = 2\n    f = FeatEnam.NOSE\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,GREEN,-1)\n    f = FeatEnam.EYE_LEFT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,YELLOW,-1)\n    f = FeatEnam.EYE_RIGHT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,YELLOW,-1)\n    f = FeatEnam.MOUTH_LEFT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,RED,-1)\n    f = FeatEnam.MOUTH_RIGHT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,RED,-1)\n    for i in range(8):\n        cv2.circle(img,(win.points[i].x,win.points[i].y),width,BLUE,-1)\n\ndef SetThreadCount(threads):\n    os.environ['OMP_NUM_THREADS'] = str(threads)\n\ndef c_str(str_in):\n    return c_char_p(str_in.encode('utf-8'))\n\nvideo_flag = 0\n\nif __name__==\"__main__\":\n\n    SetThreadCount(1)\n    path = '/usr/local/share/pcn/'\n    detection_model_path = c_str(path + \"PCN.caffemodel\")\n    pcn1_proto = c_str(path + \"PCN-1.prototxt\")\n    pcn2_proto = c_str(path + \"PCN-2.prototxt\")\n    pcn3_proto = c_str(path + \"PCN-3.prototxt\")\n    tracking_model_path = c_str(path + \"PCN-Tracking.caffemodel\")\n    tracking_proto = c_str(path + \"PCN-Tracking.prototxt\")\n    if video_flag:\n        cap = cv2.VideoCapture(0)\n        detector = init_detector(detection_model_path,pcn1_proto,pcn2_proto,pcn3_proto,\n\t\t    \ttracking_model_path,tracking_proto, \n\t\t    \t40,1.45,0.5,0.5,0.98,30,0.9,1)\n        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH) \n        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) \n        fps = cap.get(cv2.CAP_PROP_FPS) \n        while cap.isOpened():\n            ret, frame = cap.read()\n            if ret == False:\n                break\n            start = time.time()\n            face_count = c_int(0)\n            raw_data = frame.ctypes.data_as(POINTER(c_ubyte))\n            windows = detect_track_faces(detector, raw_data, \n                    int(height), int(width),\n                    pointer(face_count))\n            end = time.time()\n            for i in range(face_count.value):\n                DrawFace(windows[i],frame)\n                DrawPoints(windows[i],frame)\n            free_faces(windows)\n            fps = int(1 / (end - start))\n            cv2.putText(frame, str(fps) + \"fps\", (20, 45), 4, 1, (0, 0, 125))\n            cv2.imshow('PCN', frame)\n            if cv2.waitKey(1) & 0xFF == ord('q'):\n                break\n    else:\n        detector = init_detector(detection_model_path,pcn1_proto,pcn2_proto,pcn3_proto,\n\t\t    \ttracking_model_path,tracking_proto, \n\t\t    \t40,1.45,0.5,0.5,0.98,30,0.9,0)\n        for i in range(1, 27):\n            frame = cv2.imread(\"imgs/\" + str(i) + \".jpg\")\n            start = time.time()\n            face_count = c_int(0)\n            raw_data = frame.ctypes.data_as(POINTER(c_ubyte))\n            windows = detect_faces(detector, raw_data, \n                    frame.shape[0], frame.shape[1],\n                    pointer(face_count))\n            end = time.time()\n            print(i, end - start, \"s\")\n            for i in range(face_count.value):\n                DrawFace(windows[i],frame)\n                DrawPoints(windows[i],frame)\n            free_faces(windows)\n            cv2.imshow('PCN', frame)\n            cv2.waitKey()\n\n    free_detector(detector)\n\n```\n**Explanation:**\n\nThis code implements a simple facial detection and tracking system using the PCN (Predictive Convolutional Neural Network) model.\n\n**Libraries:**\n\n* **cv2:** OpenCV for image processing and display.\n* **",
+    "after": "#!/usr/bin/python3\nfrom ctypes import *\nimport cv2\nimport numpy as np\nimport sys\nimport os\nimport time\nfrom ipdb import set_trace as dbg\nfrom enum import IntEnum\n\nclass CPoint(Structure):\n    _fields_ = [(\"x\", c_int),\n                (\"y\", c_int)]\n\nFEAT_POINTS = 14\nclass CWindow(Structure):\n    _fields_ = [(\"x\", c_int),\n                (\"y\", c_int),\n                (\"width\", c_int),\n                (\"angle\", c_int),\n                (\"score\", c_float),\n                (\"points\",CPoint*FEAT_POINTS)]\n\nclass FeatEnam(IntEnum):\n    CHIN_0 = 0\n    CHIN_1 = 1\n    CHIN_2 = 2\n    CHIN_3 = 3\n    CHIN_4 = 4\n    CHIN_5 = 5\n    CHIN_6 = 6\n    CHIN_7 = 7\n    CHIN_8 = 8\n    NOSE = 9\n    EYE_LEFT = 10\n    EYE_RIGHT = 11\n    MOUTH_LEFT = 12\n    MOUTH_RIGHT = 13\n    FEAT_POINTS = 14\n\nlib = CDLL(\"/usr/local/lib/libPCN.so\")\n\ninit_detector = lib.init_detector\n#void *init_detector(const char *detection_model_path, \n#            const char *pcn1_proto, const char *pcn2_proto, const char *pcn3_proto, \n#            const char *tracking_model_path, const char *tracking_proto,\n#            int min_face_size, float pyramid_scale_factor, float detection_thresh_stage1,\n#            float detection_thresh_stage2, float detection_thresh_stage3, int tracking_period,\n#            float tracking_thresh, int do_smooth)\ninit_detector.argtypes = [\n        c_char_p, c_char_p, c_char_p, \n        c_char_p, c_char_p, c_char_p,\n        c_int,c_float,c_float,c_float,\n        c_float,c_int,c_float,c_int]\ninit_detector.restype = c_void_p\n\n#CWindow* detect_faces(void* pcn, unsigned char* raw_img,size_t rows, size_t cols, int *lwin)\ndetect_faces = lib.detect_faces\ndetect_faces.argtypes = [c_void_p, POINTER(c_ubyte),c_size_t,c_size_t,POINTER(c_int)]\ndetect_faces.restype = POINTER(CWindow)\n\n#CWindow* detect_track_faces(void* pcn, unsigned char* raw_img,size_t rows, size_t cols, int *lwin)\ndetect_track_faces = lib.detect_track_faces\ndetect_track_faces.argtypes = [c_void_p, POINTER(c_ubyte),c_size_t,c_size_t,POINTER(c_int)]\ndetect_track_faces.restype = POINTER(CWindow)\n\n#void free_faces(CWindow* wins)\nfree_faces = lib.free_faces\nfree_faces.argtypes= [c_void_p]\n\n# void free_detector(void *pcn)\nfree_detector = lib.free_detector\nfree_detector.argtypes= [c_void_p]\n\nCYAN=(255,255,0)\nBLUE=(255,0,0)\nRED=(0,0,255)\nGREEN=(0,255,0)\nYELLOW=(0,255,255)\n\ndef DrawFace(win,img):\n    width = 2\n    x1 = win.x\n    y1 = win.y\n    x2 = win.width + win.x - 1\n    y2 = win.width + win.y - 1\n    centerX = (x1 + x2) / 2\n    centerY = (y1 + y2) / 2\n    angle = win.angle\n    R = cv2.getRotationMatrix2D((centerX,centerY),angle,1)\n    pts = np.array([[x1,y1,1],[x1,y2,1],[x2,y2,1],[x2,y1,1]], np.int32)\n    pts = (pts @ R.T).astype(int) #Rotate points\n    pts = pts.reshape((-1,1,2))\n    cv2.polylines(img,[pts],True,CYAN,width)\n    cv2.line(img, (pts[0][0][0],pts[0][0][1]), (pts[3][0][0],pts[3][0][1]), BLUE, width)\n  \ndef DrawPoints(win,img):\n    width = 2\n    f = FeatEnam.NOSE\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,GREEN,-1)\n    f = FeatEnam.EYE_LEFT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,YELLOW,-1)\n    f = FeatEnam.EYE_RIGHT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,YELLOW,-1)\n    f = FeatEnam.MOUTH_LEFT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,RED,-1)\n    f = FeatEnam.MOUTH_RIGHT\n    cv2.circle(img,(win.points[f].x,win.points[f].y),width,RED,-1)\n    for i in range(8):\n        cv2.circle(img,(win.points[i].x,win.points[i].y),width,BLUE,-1)\n\ndef SetThreadCount(threads):\n    os.environ['OMP_NUM_THREADS'] = str(threads)\n\ndef c_str(str_in):\n    return c_char_p(str_in.encode('utf-8'))\n\nvideo_flag = 0\n\nif __name__==\"__main__\":\n\n    SetThreadCount(1)\n    path = '/usr/local/share/pcn/'\n    detection_model_path = c_str(path + \"PCN.caffemodel\")\n    pcn1_proto = c_str(path + \"PCN-1.prototxt\")\n    pcn2_proto = c_str(path + \"PCN-2.prototxt\")\n    pcn3_proto = c_str(path + \"PCN-3.prototxt\")\n    tracking_model_path = c_str(path + \"PCN-Tracking.caffemodel\")\n    tracking_proto = c_str(path + \"PCN-Tracking.prototxt\")\n    if video_flag:\n        cap = cv2.VideoCapture(0)\n        detector = init_detector(detection_model_path,pcn1_proto,pcn2_proto,pcn3_proto,\n\t\t    \ttracking_model_path,tracking_proto, \n\t\t    \t40,1.45,0.5,0.5,0.98,30,0.9,1)\n        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH) \n        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) \n        fps = cap.get(cv2.CAP_PROP_FPS) \n        while cap.isOpened():\n            ret, frame = cap.read()\n            if ret == False:\n                break\n            start = time.time()\n            face_count = c_int(0)\n            raw_data = frame.ctypes.data_as(POINTER(c_ubyte))\n            windows = detect_track_faces(detector, raw_data, \n                    int(height), int(width),\n                    pointer(face_count))\n            end = time.time()\n            for i in range(face_count.value):\n                DrawFace(windows[i],frame)\n                DrawPoints(windows[i],frame)\n            free_faces(windows)\n            fps = int(1 / (end - start))\n            cv2.putText(frame, str(fps) + \"fps\", (20, 45), 4, 1, (0, 0, 125))\n            cv2.imshow('PCN', frame)\n            if cv2.waitKey(1) & 0xFF == ord('q'):\n                break\n    else:\n        detector = init_detector(detection_model_path,pcn1_proto,pcn2_proto,pcn3_proto,\n\t\t    \ttracking_model_path,tracking_proto, \n\t\t    \t40,1.45,0.5,0.5,0.98,30,0.9,0)\n        for i in range(1, 27):\n            frame = cv2.imread(\"imgs/\" + str(i) + \".jpg\")\n            start = time.time()\n            face_count = c_int(0)\n            raw_data = frame.ctypes.data_as(POINTER(c_ubyte))\n            windows = detect_faces(detector, raw_data, \n                    frame.shape[0], frame.shape[1],\n                    pointer(face_count))\n            end = time.time()\n            print(i, end - start, \"s\")\n            for i in range(face_count.value):\n                DrawFace(windows[i],frame)\n                DrawPoints(windows[i],frame)\n            free_faces(windows)\n            cv2.imshow('PCN', frame)\n            cv2.waitKey()\n\n    free_detector(detector)\n\n```\n\n**Please Note:**\n\n* This code uses `libPCN.so` which should be loaded into the module\n* This code uses the following:\n    * `CWindow`: For storing window information\n    * `FeatE"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2732,
+      7858,
+      1670,
+      7997,
+      1364,
+      6315,
+      2844,
+      4389,
+      3102
+    ],
+    "f_before": [
+      125.9853515625,
+      43.715293884277344,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      125.9853515625,
+      43.715293884277344,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      25.15577507019043,
+      71.83912658691406,
+      19.731306076049805,
+      12.885570526123047,
+      13.465581893920898,
+      12.700881004333496,
+      12.09797191619873,
+      16.85295295715332,
+      30.722265243530273,
+      12.523293495178223,
+      16.344812393188477
+    ],
+    "g_after": [
+      25.15577507019043,
+      71.83912658691406,
+      19.731306076049805,
+      12.885570526123047,
+      13.465581893920898,
+      12.700881004333496,
+      12.09797191619873,
+      16.85295295715332,
+      30.722265243530273,
+      12.523293495178223,
+      16.344812393188477
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

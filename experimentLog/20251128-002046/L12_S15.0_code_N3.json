@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import json\nimport random\nimport math\nimport os\nfrom crawling._twitter import twitter_crawling\n\nclass Response(object):\n    def __init__(self, token):\n        self.name = \"\"\n        self.token = token\n        self.greetingList = ['Hello {}, welcome to the Equifax Hackathon channel! Have fun :). You can type help for more details!'\n                        , 'Nice to see you here, {} ! What can I do for you (please type help!)'\n                        , 'I am willing to do anything for you {} ! Type help so I can help you!']\n        self.help_msg = {\"text\": 'Don\\'t Worry  {} ! I will show you how to communicate with me :).',\n                        \"attachments\":[{\"pretext\": \"Command line:\",\n                             \"color\": \"#36a64f\", \"text\": \"hi: Say hello to me, so that I know you are here!\"},\n                            {\"color\": \"#36a64f\", \"text\": \"print message: I will grab all detailed ID message for you, such as channel id or user id :)\"},\n                            {\"color\": \"#e2ffb6\", \"text\": \"help: I can show you all commands I can understand :)\"},\n                            {\"color\": \"#415677\", \"text\": \"show name or nameID: I can know that your target ID\"},\n                            {\"color\": \"#b27485\", \"text\": \"select dataLocation: I can know where I can grab data for you\"}\n                            ]}\n        self.select_msg = {\"text\": \"Where do you want to grab personal information for {} ?\",\n            \"attachments\": [{\"pretext\": \"You can choose:\", \"color\": \"#36a64f\", \"text\": \"Facebook + limits\"},\n            {\"color\": \"#36a64f\", \"text\": \"Twitter + limits\"},\n            {\"color\": \"#415677\", \"text\": \"Craigslist\"}\n            ]}\n\n\n    def response(self, data, channel, sc, user):\n        type = data[\"type\"]\n        user_info = sc.api_read(\"users.info\", token = self.token, user = user)\n        username = user_info[\"user\"][\"name\"]\n\n        if type == \"hello\":\n            sc.rtm_send_message(channel, self.greetingList[int(math.floor(random.random()*3))].format(username))\n\n        if \"user\" in data.keys() and data[\"user\"] == user:\n            if (type == \"message\"):\n                text = data[\"text\"].lower()\n\n                if (text.startswith(\"hi\")):\n                    sc.rtm_send_message(channel, \"I am CodingMonkey Bot. Nice to meet you here {0}!\".format(username))\n\n                if (text.startswith(\"print\")):\n                    sc.rtm_send_message(channel, data[text[5:].strip()])\n\n                if (text.startswith(\"help\")):\n                    sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                username = \"codingmonkey\", text = self.help_msg[\"text\"].format(username), attachments = self.help_msg[\"attachments\"])\n\n                if (text.startswith(\"show\")):\n                    command_msg = str(text).split(' ')\n                    self.name = command_msg[1]\n                    sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                username = \"codingmonkey\", text = self.select_msg[\"text\"].format(username),\n                                attachments = self.select_msg[\"attachments\"])\n\n                if (text.startswith(\"select\")):\n                    command_msg = str(text).split(' ')\n\n                    if (command_msg[1].lower() == \"twitter\"):\n                        twi = twitter_crawling()\n                        limits = 5\n\n                        if len(command_msg) == 3:\n                            limits = int(command_msg[2])\n\n                        twitter_info = json.dumps(twi.spiderInfo(self.name, limits))\n                        sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                    username = \"codingmonkey\", text = \"Here are the results in Twitter:\", attachments = twitter_info)\n\n                    elif (command_msg[1].lower() == \"facebook\"):\n                        root = os.getcwd()\n                        relative_path = \"slackclient/data/facebookY.json\"\n                        abs_path = os.path.join(root, relative_path)\n                        with open(abs_path) as facebook_file:\n                            facebook_info = json.load(facebook_file)\n                            facebook_info = json.dumps(facebook_info)\n                            sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                        username = \"codingmonkey\", text = \"Here are the results in Facebook:\", attachments = facebook_info)\n                    elif (command_msg[1].lower() == \"craigslist\"):\n                        root = os.getcwd()\n                        relative_path = \"slackclient/data/craigslist.json\"\n                        abs_path = os.path.join(root, relative_path)\n                        with open(abs_path) as craigslist_file:\n                            craigslist_info = json.load(craigslist_file)\n                            craigslist_info = json.dumps(craigslist_info)\n                            craigslist_info = craigslist_info.replace(\"'\", \"%100\")\n                            sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                        username = \"codingmonkey\", text = \"Here are the results in Craigslist:\", attachments = craigslist_info)\n",
+  "output": {
+    "before": "import json\nimport random\nimport math\nimport os\nfrom crawling._twitter import twitter_crawling\n\nclass Response(object):\n    def __init__(self, token):\n        self.name = \"\"\n        self.token = token\n        self.greetingList = ['Hello {}, welcome to the Equifax Hackathon channel! Have fun :). You can type help for more details!'\n                        , 'Nice to see you here, {} ! What can I do for you (please type help!)'\n                        , 'I am willing to do anything for you {} ! Type help so I can help you!']\n        self.help_msg = {\"text\": 'Don\\'t Worry  {} ! I will show you how to communicate with me :).',\n                        \"attachments\":[{\"pretext\": \"Command line:\",\n                             \"color\": \"#36a64f\", \"text\": \"hi: Say hello to me, so that I know you are here!\"},\n                            {\"color\": \"#36a64f\", \"text\": \"print message: I will grab all detailed ID message for you, such as channel id or user id :)\"},\n                            {\"color\": \"#e2ffb6\", \"text\": \"help: I can show you all commands I can understand :)\"},\n                            {\"color\": \"#415677\", \"text\": \"show name or nameID: I can know that your target ID\"},\n                            {\"color\": \"#b27485\", \"text\": \"select dataLocation: I can know where I can grab data for you\"}\n                            ]}\n        self.select_msg = {\"text\": \"Where do you want to grab personal information for {} ?\",\n            \"attachments\": [{\"pretext\": \"You can choose:\", \"color\": \"#36a64f\", \"text\": \"Facebook + limits\"},\n            {\"color\": \"#36a64f\", \"text\": \"Twitter + limits\"},\n            {\"color\": \"#415677\", \"text\": \"Craigslist\"}\n            ]}\n\n\n    def response(self, data, channel, sc, user):\n        type = data[\"type\"]\n        user_info = sc.api_read(\"users.info\", token = self.token, user = user)\n        username = user_info[\"user\"][\"name\"]\n\n        if type == \"hello\":\n            sc.rtm_send_message(channel, self.greetingList[int(math.floor(random.random()*3))].format(username))\n\n        if \"user\" in data.keys() and data[\"user\"] == user:\n            if (type == \"message\"):\n                text = data[\"text\"].lower()\n\n                if (text.startswith(\"hi\")):\n                    sc.rtm_send_message(channel, \"I am CodingMonkey Bot. Nice to meet you here {0}!\".format(username))\n\n                if (text.startswith(\"print\")):\n                    sc.rtm_send_message(channel, data[text[5:].strip()])\n\n                if (text.startswith(\"help\")):\n                    sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                username = \"codingmonkey\", text = self.help_msg[\"text\"].format(username), attachments = self.help_msg[\"attachments\"])\n\n                if (text.startswith(\"show\")):\n                    command_msg = str(text).split(' ')\n                    self.name = command_msg[1]\n                    sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                username = \"codingmonkey\", text = self.select_msg[\"text\"].format(username),\n                                attachments = self.select_msg[\"attachments\"])\n\n                if (text.startswith(\"select\")):\n                    command_msg = str(text).split(' ')\n\n                    if (command_msg[1].lower() == \"twitter\"):\n                        twi = twitter_crawling()\n                        limits = 5\n\n                        if len(command_msg) == 3:\n                            limits = int(command_msg[2])\n\n                        twitter_info = json.dumps(twi.spiderInfo(self.name, limits))\n                        sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                    username = \"codingmonkey\", text = \"Here are the results in Twitter:\", attachments = twitter_info)\n\n                    elif (command_msg[1].lower() == \"facebook\"):\n                        root = os.getcwd()\n                        relative_path = \"slackclient/data/facebookY.json\"\n                        abs_path = os.path.join(root, relative_path)\n                        with open(abs_path) as facebook_file:\n                            facebook_info = json.load(facebook_file)\n                            facebook_info = json.dumps(facebook_info)\n                            sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                        username = \"codingmonkey\", text = \"Here are the results in Facebook:\", attachments = facebook_info)\n                    elif (command_msg[1].lower() == \"craigslist\"):\n                        root = os.getcwd()\n                        relative_path = \"slackclient/data/craigslist.json\"\n                        abs_path = os.path.join(root, relative_path)\n                        with open(abs_path) as craigslist_file:\n                            craigslist_info = json.load(craigslist_file)\n                            craigslist_info = json.dumps(craigslist_info)\n                            craigslist_info = craigslist_info.replace(\"'\", \"%100\")\n                            sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                        username = \"codingmonkey\", text = \"Here are the results in Craigslist:\", attachments = craigslist_info)\n                    else:\n                        sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                    username = \"codingmonkey\", text = \"I can only handle Twitter, Facebook, and Craigslist right now.\")",
+    "after": "import json\nimport random\nimport math\nimport os\nfrom crawling._twitter import twitter_crawling\n\nclass Response(object):\n    def __init__(self, token):\n        self.name = \"\"\n        self.token = token\n        self.greetingList = ['Hello {}, welcome to the Equifax Hackathon channel! Have fun :). You can type help for more details!'\n                        , 'Nice to see you here, {} ! What can I do for you (please type help!)'\n                        , 'I am willing to do anything for you {} ! Type help so I can help you!']\n        self.help_msg = {\"text\": 'Don\\'t Worry  {} ! I will show you how to communicate with me :).',\n                        \"attachments\":[{\"pretext\": \"Command line:\",\n                             \"color\": \"#36a64f\", \"text\": \"hi: Say hello to me, so that I know you are here!\"},\n                            {\"color\": \"#36a64f\", \"text\": \"print message: I will grab all detailed ID message for you, such as channel id or user id :)\"},\n                            {\"color\": \"#e2ffb6\", \"text\": \"help: I can show you all commands I can understand :)\"},\n                            {\"color\": \"#415677\", \"text\": \"show name or nameID: I can know that your target ID\"},\n                            {\"color\": \"#b27485\", \"text\": \"select dataLocation: I can know where I can grab data for you\"}\n                            ]}\n        self.select_msg = {\"text\": \"Where do you want to grab personal information for {} ?\",\n            \"attachments\": [{\"pretext\": \"You can choose:\", \"color\": \"#36a64f\", \"text\": \"Facebook + limits\"},\n            {\"color\": \"#36a64f\", \"text\": \"Twitter + limits\"},\n            {\"color\": \"#415677\", \"text\": \"Craigslist\"}\n            ]}\n\n\n    def response(self, data, channel, sc, user):\n        type = data[\"type\"]\n        user_info = sc.api_read(\"users.info\", token = self.token, user = user)\n        username = user_info[\"user\"][\"name\"]\n\n        if type == \"hello\":\n            sc.rtm_send_message(channel, self.greetingList[int(math.floor(random.random()*3))].format(username))\n\n        if \"user\" in data.keys() and data[\"user\"] == user:\n            if (type == \"message\"):\n                text = data[\"text\"].lower()\n\n                if (text.startswith(\"hi\")):\n                    sc.rtm_send_message(channel, \"I am CodingMonkey Bot. Nice to meet you here {0}!\".format(username))\n\n                if (text.startswith(\"print\")):\n                    sc.rtm_send_message(channel, data[text[5:].strip()])\n\n                if (text.startswith(\"help\")):\n                    sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                username = \"codingmonkey\", text = self.help_msg[\"text\"].format(username), attachments = self.help_msg[\"attachments\"])\n\n                if (text.startswith(\"show\")):\n                    command_msg = str(text).split(' ')\n                    self.name = command_msg[1]\n                    sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                username = \"codingmonkey\", text = self.select_msg[\"text\"].format(username),\n                                attachments = self.select_msg[\"attachments\"])\n\n                if (text.startswith(\"select\")):\n                    command_msg = str(text).split(' ')\n\n                    if (command_msg[1].lower() == \"twitter\"):\n                        twi = twitter_crawling()\n                        limits = 5\n\n                        if len(command_msg) == 3:\n                            limits = int(command_msg[2])\n\n                        twitter_info = json.dumps(twi.spiderInfo(self.name, limits))\n                        sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                    username = \"codingmonkey\", text = \"Here are the results in Twitter:\", attachments = twitter_info)\n\n                    elif (command_msg[1].lower() == \"facebook\"):\n                        root = os.getcwd()\n                        relative_path = \"slackclient/data/facebookY.json\"\n                        abs_path = os.path.join(root, relative_path)\n                        with open(abs_path) as facebook_file:\n                            facebook_info = json.load(facebook_file)\n                            facebook_info = json.dumps(facebook_info)\n                            sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                        username = \"codingmonkey\", text = \"Here are the results in Facebook:\", attachments = facebook_info)\n                    elif (command_msg[1].lower() == \"craigslist\"):\n                        root = os.getcwd()\n                        relative_path = \"slackclient/data/craigslist.json\"\n                        abs_path = os.path.join(root, relative_path)\n                        with open(abs_path) as craigslist_file:\n                            craigslist_info = json.load(craigslist_file)\n                            craigslist_info = json.dumps(craigslist_info)\n                            craigslist_info = craigslist_info.replace(\"'\", \"%100\")\n                            sc.api_call(\"chat.postMessage\", token = self.token, channel = channel,\n                                        username = \"codingmonkey\", text = \"Here are the results in Craigslist:\", attachments = craigslist_info)\n                    \n        if data[\"type\"] == \"select\":\n            if (data[\"select\"] == \"user_info\"):\n                self.token = data[\"token\"]\n\n    def run(self, sc, user, channel):\n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      6926,
+      4819,
+      426,
+      4879,
+      3414,
+      7803,
+      439,
+      5549,
+      8891
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.012152470648288727,
+      0.0013932838337495923,
+      0.0,
+      0.0,
+      0.0,
+      0.02044879086315632,
+      0.0,
+      0.019470855593681335,
+      0.008136850781738758,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.012152470648288727,
+      0.0013932838337495923,
+      0.0,
+      0.0,
+      0.0,
+      0.02044879086315632,
+      0.0,
+      0.019470855593681335,
+      0.008136850781738758,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.426064644694328,
+    "train_mean_l2": 6.208298320971429,
+    "train_mean_l1": 2.753059552669525,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-002046/feature_std_layer_12.html",
+    "mean_std": 1.2004650831222534,
+    "max_std": 24.676727294921875
+  }
+}

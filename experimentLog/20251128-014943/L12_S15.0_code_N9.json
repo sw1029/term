@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/env python3\n\nimport xml.etree.ElementTree\n\nfrom datetime import datetime, timedelta, timezone\nfrom dateutil import parser\n\nfrom statsSend.session import Session\nfrom statsSend.utils import print_exception\nfrom statsSend.urlBuilder import UrlBuilder\nfrom statsSend.jenkins.jenkinsJob import JenkinsJob\n\nclass JenkinsStatisticsSender:\n    epoch = datetime(1970, 1, 1, tzinfo = timezone.utc)\n    one_second = timedelta(seconds = 1)\n\n    def __init__(self, settings, reporter):\n        self.xml_api_url_suffix = settings['xml_api_url_suffix']\n        self.json_api_url_suffix = settings['json_api_url_suffix']\n        page_size = int(settings['page_size'])\n        url_builder_factory = lambda suffix: UrlBuilder(settings['server_url'], '', suffix, page_size)\n        headers = { 'Accept': 'application/json'}\n        user = settings['user']\n        password_or_auth_token = settings['password_or_auth_token']\n        verify_ssl_certs = settings['verify_ssl_certs']\n        self.session_factory = lambda suffix: Session(url_builder_factory(suffix), headers, user, password_or_auth_token, verify_ssl_certs)\n        self.job_name = settings['job_name']\n        self.since_posix_timestamp = (parser.parse(settings['since_timestamp']) - self.epoch) // self.one_second * 1000\n        self.reporter = reporter\n\n    async def send(self):\n        root_job_resource = await self.retrieve_root_job_resource()\n\n        if (\"report_categories\" in dir(self.reporter)):\n            async with self.session_factory(self.json_api_url_suffix) as session:\n                try:\n                    job = JenkinsJob(session, root_job_resource)\n                    categories = [job.to_category() async for job in job.retrieve_buildable_descendants()]\n                    self.reporter.report_categories(categories)\n                except Exception as err:\n                    print_exception('Error sending categories')\n\n        async with self.session_factory(self.json_api_url_suffix) as session:\n            try:\n                job = JenkinsJob(session, root_job_resource)\n                async for job in job.retrieve_buildable_descendants():\n                    for build in job.retrieve_builds_since_posix_timestamp(self.since_posix_timestamp):\n                        try:\n                            activity = build.to_activity()\n                            self.reporter.report_activity(activity)\n                        except Exception as err:\n                            print_exception('Error reporting activity')\n            except Exception as err:\n                print_exception('Error reporting activities')\n\n    async def retrieve_root_job_resource(self):\n        async with self.session_factory(self.xml_api_url_suffix) as session:\n            resource = \"?xpath=//job[name='{:s}']/url\".format(self.job_name)\n            async with session.get_resource(resource) as response:\n                text = await response.text()\n                url_node = xml.etree.ElementTree.fromstring(text)\n                return url_node.text",
+  "output": {
+    "before": "#!/usr/bin/env python3\n\nimport xml.etree.ElementTree\n\nfrom datetime import datetime, timedelta, timezone\nfrom dateutil import parser\n\nfrom statsSend.session import Session\nfrom statsSend.utils import print_exception\nfrom statsSend.urlBuilder import UrlBuilder\nfrom statsSend.jenkins.jenkinsJob import JenkinsJob\n\nclass JenkinsStatisticsSender:\n    epoch = datetime(1970, 1, 1, tzinfo = timezone.utc)\n    one_second = timedelta(seconds = 1)\n\n    def __init__(self, settings, reporter):\n        self.xml_api_url_suffix = settings['xml_api_url_suffix']\n        self.json_api_url_suffix = settings['json_api_url_suffix']\n        page_size = int(settings['page_size'])\n        url_builder_factory = lambda suffix: UrlBuilder(settings['server_url'], '', suffix, page_size)\n        headers = { 'Accept': 'application/json'}\n        user = settings['user']\n        password_or_auth_token = settings['password_or_auth_token']\n        verify_ssl_certs = settings['verify_ssl_certs']\n        self.session_factory = lambda suffix: Session(url_builder_factory(suffix), headers, user, password_or_auth_token, verify_ssl_certs)\n        self.job_name = settings['job_name']\n        self.since_posix_timestamp = (parser.parse(settings['since_timestamp']) - self.epoch) // self.one_second * 1000\n        self.reporter = reporter\n\n    async def send(self):\n        root_job_resource = await self.retrieve_root_job_resource()\n\n        if (\"report_categories\" in dir(self.reporter)):\n            async with self.session_factory(self.json_api_url_suffix) as session:\n                try:\n                    job = JenkinsJob(session, root_job_resource)\n                    categories = [job.to_category() async for job in job.retrieve_buildable_descendants()]\n                    self.reporter.report_categories(categories)\n                except Exception as err:\n                    print_exception('Error sending categories')\n\n        async with self.session_factory(self.json_api_url_suffix) as session:\n            try:\n                job = JenkinsJob(session, root_job_resource)\n                async for job in job.retrieve_buildable_descendants():\n                    for build in job.retrieve_builds_since_posix_timestamp(self.since_posix_timestamp):\n                        try:\n                            activity = build.to_activity()\n                            self.reporter.report_activity(activity)\n                        except Exception as err:\n                            print_exception('Error reporting activity')\n            except Exception as err:\n                print_exception('Error reporting activities')\n\n    async def retrieve_root_job_resource(self):\n        async with self.session_factory(self.xml_api_url_suffix) as session:\n            resource = \"?xpath=//job[name='{:s}']/url\".format(self.job_name)\n            async with session.get_resource(resource) as response:\n                text = await response.text()\n                url_node = xml.etree.ElementTree.fromstring(text)\n                return url_node.text\n\nif __name__ == \"__main__\":\n    import argparse\n    parser = argparse.ArgumentParser(description=\"Jenkins Statistics Sender\")\n    parser.add_argument(\"settings\", help=\"JSON settings file\")\n    parser.add_argument",
+    "after": "#!/usr/bin/env python3\n\nimport xml.etree.ElementTree\n\nfrom datetime import datetime, timedelta, timezone\nfrom dateutil import parser\n\nfrom statsSend.session import Session\nfrom statsSend.utils import print_exception\nfrom statsSend.urlBuilder import UrlBuilder\nfrom statsSend.jenkins.jenkinsJob import JenkinsJob\n\nclass JenkinsStatisticsSender:\n    epoch = datetime(1970, 1, 1, tzinfo = timezone.utc)\n    one_second = timedelta(seconds = 1)\n\n    def __init__(self, settings, reporter):\n        self.xml_api_url_suffix = settings['xml_api_url_suffix']\n        self.json_api_url_suffix = settings['json_api_url_suffix']\n        page_size = int(settings['page_size'])\n        url_builder_factory = lambda suffix: UrlBuilder(settings['server_url'], '', suffix, page_size)\n        headers = { 'Accept': 'application/json'}\n        user = settings['user']\n        password_or_auth_token = settings['password_or_auth_token']\n        verify_ssl_certs = settings['verify_ssl_certs']\n        self.session_factory = lambda suffix: Session(url_builder_factory(suffix), headers, user, password_or_auth_token, verify_ssl_certs)\n        self.job_name = settings['job_name']\n        self.since_posix_timestamp = (parser.parse(settings['since_timestamp']) - self.epoch) // self.one_second * 1000\n        self.reporter = reporter\n\n    async def send(self):\n        root_job_resource = await self.retrieve_root_job_resource()\n\n        if (\"report_categories\" in dir(self.reporter)):\n            async with self.session_factory(self.json_api_url_suffix) as session:\n                try:\n                    job = JenkinsJob(session, root_job_resource)\n                    categories = [job.to_category() async for job in job.retrieve_buildable_descendants()]\n                    self.reporter.report_categories(categories)\n                except Exception as err:\n                    print_exception('Error sending categories')\n\n        async with self.session_factory(self.json_api_url_suffix) as session:\n            try:\n                job = JenkinsJob(session, root_job_resource)\n                async for job in job.retrieve_buildable_descendants():\n                    for build in job.retrieve_builds_since_posix_timestamp(self.since_posix_timestamp):\n                        try:\n                            activity = build.to_activity()\n                            self.reporter.report_activity(activity)\n                        except Exception as err:\n                            print_exception('Error reporting activity')\n            except Exception as err:\n                print_exception('Error reporting activities')\n\n    async def retrieve_root_job_resource(self):\n        async with self.session_factory(self.xml_api_url_suffix) as session:\n            resource = \"?xpath=//job[name='{:s}']/url\".format(self.job_name)\n            async with session.get_resource(resource) as response:\n                text = await response.text()\n                url_node = xml.etree.ElementTree.fromstring(text)\n                return url_node.text\n    \n    def __getattr__(self, name):\n        if name == 'send':\n            return self.send\n        elif name == 'retrieve_root_job_resource':\n            return self.retrieve_root_job"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      8067,
+      1637,
+      3946,
+      7035,
+      3515,
+      2056,
+      8969,
+      4919,
+      2952,
+      7188
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.781839042335749,
+    "train_mean_l2": 6.304576007805765,
+    "train_mean_l1": 2.9933579485416413,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014943/feature_std_layer_12.html",
+    "mean_std": 0.9723951816558838,
+    "max_std": 28.6618709564209
+  }
+}

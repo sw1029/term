@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "# -*- coding: utf-8 -*-\n\n#\n# Unless explicitly stated otherwise all files in this repository are licensed\n# under the Apache 2 License.\n#\n# This product includes software developed at Datadog\n# (https://www.datadoghq.com/).\n#\n# Copyright 2018 Datadog, Inc.\n#\n\n\"\"\"database.py\n\nTesting utils for creating database records needed for associations.\n\"\"\"\n\nfrom tests.utils import default_board_id, default_repo_id, default_list_id, \\\n    default_issue_id, default_card_id, default_pull_request_id\nfrom app import db\nfrom app.models import Board, Issue, List, PullRequest, Repo, Subscription, \\\n    SubscribedList\n\n\ndef create_board():\n    \"\"\"Create the board needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        Board(\n            name='board_name',\n            url=f\"https://trello.com/b/{default_board_id}\",\n            trello_board_id=default_board_id\n        )\n    )\n\n\ndef create_repo():\n    \"\"\"Create the repo needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        Repo(\n            name='repo_name',\n            url='https://github.com/user/repo',\n            github_repo_id=default_repo_id\n        )\n    )\n\n\ndef create_list():\n    \"\"\"Create the list needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        List(\n            name='list_name',\n            trello_list_id=default_list_id,\n            board_id=default_board_id\n        )\n    )\n\n\ndef create_subscription(issue_autocard=True, pull_request_autocard=True):\n    \"\"\"Create a subscription.\"\"\"\n    db.session.add(\n        Subscription(\n            board_id=default_board_id,\n            repo_id=default_repo_id,\n            issue_autocard=issue_autocard,\n            pull_request_autocard=pull_request_autocard\n        )\n    )\n\n\ndef create_subscribed_list():\n    \"\"\"Create a subscribed list to create cards for.\"\"\"\n    db.session.add(\n        SubscribedList(\n            subscription_board_id=default_board_id,\n            subscription_repo_id=default_repo_id,\n            list_id=default_list_id\n        )\n    )\n\n\ndef create_issue():\n    \"\"\"Create a GitHub issue representation.\"\"\"\n    db.session.add(\n        Issue(\n            name='Test adding a new issue',\n            url='https://github.com/a-organization/a-repo/issues/56',\n            github_issue_id=default_issue_id,\n            repo_id=default_repo_id,\n            trello_board_id=default_board_id,\n            trello_card_id=default_card_id\n        )\n    )\n\n\ndef create_pull_request():\n    \"\"\"Create a GitHub pull request representation.\"\"\"\n    db.session.add(\n        PullRequest(\n            name='Update README.md',\n            url='https://github.com/a-organization/a-repo/pulls/57',\n            github_pull_request_id=default_pull_request_id,\n            repo_id=default_repo_id,\n            trello_board_id=default_board_id,\n            trello_card_id=default_card_id\n        )\n    )\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*-\n\n#\n# Unless explicitly stated otherwise all files in this repository are licensed\n# under the Apache 2 License.\n#\n# This product includes software developed at Datadog\n# (https://www.datadoghq.com/).\n#\n# Copyright 2018 Datadog, Inc.\n#\n\n\"\"\"database.py\n\nTesting utils for creating database records needed for associations.\n\"\"\"\n\nfrom tests.utils import default_board_id, default_repo_id, default_list_id, \\\n    default_issue_id, default_card_id, default_pull_request_id\nfrom app import db\nfrom app.models import Board, Issue, List, PullRequest, Repo, Subscription, \\\n    SubscribedList\n\n\ndef create_board():\n    \"\"\"Create the board needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        Board(\n            name='board_name',\n            url=f\"https://trello.com/b/{default_board_id}\",\n            trello_board_id=default_board_id\n        )\n    )\n\n\ndef create_repo():\n    \"\"\"Create the repo needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        Repo(\n            name='repo_name',\n            url='https://github.com/user/repo',\n            github_repo_id=default_repo_id\n        )\n    )\n\n\ndef create_list():\n    \"\"\"Create the list needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        List(\n            name='list_name',\n            trello_list_id=default_list_id,\n            board_id=default_board_id\n        )\n    )\n\n\ndef create_subscription(issue_autocard=True, pull_request_autocard=True):\n    \"\"\"Create a subscription.\"\"\"\n    db.session.add(\n        Subscription(\n            board_id=default_board_id,\n            repo_id=default_repo_id,\n            issue_autocard=issue_autocard,\n            pull_request_autocard=pull_request_autocard\n        )\n    )\n\n\ndef create_subscribed_list():\n    \"\"\"Create a subscribed list to create cards for.\"\"\"\n    db.session.add(\n        SubscribedList(\n            subscription_board_id=default_board_id,\n            subscription_repo_id=default_repo_id,\n            list_id=default_list_id\n        )\n    )\n\n\ndef create_issue():\n    \"\"\"Create a GitHub issue representation.\"\"\"\n    db.session.add(\n        Issue(\n            name='Test adding a new issue',\n            url='https://github.com/a-organization/a-repo/issues/56',\n            github_issue_id=default_issue_id,\n            repo_id=default_repo_id,\n            trello_board_id=default_board_id,\n            trello_card_id=default_card_id\n        )\n    )\n\n\ndef create_pull_request():\n    \"\"\"Create a GitHub pull request representation.\"\"\"\n    db.session.add(\n        PullRequest(\n            name='Update README.md',\n            url='https://github.com/a-organization/a-repo/pulls/57',\n            github_pull_request_id=default_pull_request_id,\n            repo_id=default_repo_id,\n            trello_board_id=default_board_id,\n            trello_card_id=default_card_id\n        )\n    )\n```\n\n**Explanation:**\n\nThis file contains utility functions to create database records for associations. It's important to note that:\n\n* **Database Connection:** The code assumes that the database connection is already established. \n* **Test Data:**",
+    "after": "# -*- coding: utf-8 -*-\n\n#\n# Unless explicitly stated otherwise all files in this repository are licensed\n# under the Apache 2 License.\n#\n# This product includes software developed at Datadog\n# (https://www.datadoghq.com/).\n#\n# Copyright 2018 Datadog, Inc.\n#\n\n\"\"\"database.py\n\nTesting utils for creating database records needed for associations.\n\"\"\"\n\nfrom tests.utils import default_board_id, default_repo_id, default_list_id, \\\n    default_issue_id, default_card_id, default_pull_request_id\nfrom app import db\nfrom app.models import Board, Issue, List, PullRequest, Repo, Subscription, \\\n    SubscribedList\n\n\ndef create_board():\n    \"\"\"Create the board needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        Board(\n            name='board_name',\n            url=f\"https://trello.com/b/{default_board_id}\",\n            trello_board_id=default_board_id\n        )\n    )\n\n\ndef create_repo():\n    \"\"\"Create the repo needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        Repo(\n            name='repo_name',\n            url='https://github.com/user/repo',\n            github_repo_id=default_repo_id\n        )\n    )\n\n\ndef create_list():\n    \"\"\"Create the list needed for the foreign key constraint.\"\"\"\n    db.session.add(\n        List(\n            name='list_name',\n            trello_list_id=default_list_id,\n            board_id=default_board_id\n        )\n    )\n\n\ndef create_subscription(issue_autocard=True, pull_request_autocard=True):\n    \"\"\"Create a subscription.\"\"\"\n    db.session.add(\n        Subscription(\n            board_id=default_board_id,\n            repo_id=default_repo_id,\n            issue_autocard=issue_autocard,\n            pull_request_autocard=pull_request_autocard\n        )\n    )\n\n\ndef create_subscribed_list():\n    \"\"\"Create a subscribed list to create cards for.\"\"\"\n    db.session.add(\n        SubscribedList(\n            subscription_board_id=default_board_id,\n            subscription_repo_id=default_repo_id,\n            list_id=default_list_id\n        )\n    )\n\n\ndef create_issue():\n    \"\"\"Create a GitHub issue representation.\"\"\"\n    db.session.add(\n        Issue(\n            name='Test adding a new issue',\n            url='https://github.com/a-organization/a-repo/issues/56',\n            github_issue_id=default_issue_id,\n            repo_id=default_repo_id,\n            trello_board_id=default_board_id,\n            trello_card_id=default_card_id\n        )\n    )\n\n\ndef create_pull_request():\n    \"\"\"Create a GitHub pull request representation.\"\"\"\n    db.session.add(\n        PullRequest(\n            name='Update README.md',\n            url='https://github.com/a-organization/a-repo/pulls/57',\n            github_pull_request_id=default_pull_request_id,\n            repo_id=default_repo_id,\n            trello_board_id=default_board_id,\n            trello_card_id=default_card_id\n        )\n    )\n```\n\nThis is a basic framework for testing database records needed for associations. \n\nRemember to always run the tests after modifying this code.\n\n\n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      8067,
+      1637,
+      3946,
+      7035,
+      3515,
+      2056,
+      8969,
+      4919,
+      2952,
+      7188
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.017987489700317383
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.017987489700317383
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.781839042335749,
+    "train_mean_l2": 6.304576007805765,
+    "train_mean_l1": 2.9933579485416413,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014943/feature_std_layer_12.html",
+    "mean_std": 0.9723951816558838,
+    "max_std": 28.6618709564209
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# --------------------------------------------------------\n# Written by: Romuald FOTSO\n# Licensed: MIT License\n# Copyright (c) 2017\n# Based on 'dandxy89' github repository:\n# https://github.com/dandxy89/ImageModels/blob/master/KerasLayers/Custom_layers.py\n# --------------------------------------------------------\nfrom keras.engine import Layer\nfrom keras import backend as K\n\nclass LRN2D(Layer):\n\n    def __init__(self, alpha=1e-4, k=2, beta=0.75, n=5, **kwargs):\n        if n % 2 == 0:\n            raise NotImplementedError(\n                \"LRN2D only works with odd n. n provided: \" + str(n))\n        super(LRN2D, self).__init__(**kwargs)\n        self.alpha = alpha\n        self.k = k\n        self.beta = beta\n        self.n = n\n\n    def get_output(self, train):\n        X = self.get_input(train)\n        b, ch, r, c = K.shape(X)\n        half_n = self.n // 2\n        input_sqr = K.square(X)\n\n        extra_channels = K.zeros((b, ch + 2 * half_n, r, c))\n        input_sqr = K.concatenate([extra_channels[:, :half_n, :, :],\n                                   input_sqr,\n                                   extra_channels[:, half_n + ch:, :, :]],\n                                  axis=1)\n        scale = self.k\n\n        for i in range(self.n):\n            scale += self.alpha * input_sqr[:, i:i + ch, :, :]\n        scale = scale ** self.beta\n\n        return X / scale\n\n    def get_config(self):\n        config = {\"name\": self.__class__.__name__,\n                  \"alpha\": self.alpha,\n                  \"k\": self.k,\n                  \"beta\": self.beta,\n                  \"n\": self.n}\n        base_config = super(LRN2D, self).get_config()\n        return dict(list(base_config.items()) + list(config.items()))\n\n",
+  "output": {
+    "before": "# --------------------------------------------------------\n# Written by: Romuald FOTSO\n# Licensed: MIT License\n# Copyright (c) 2017\n# Based on 'dandxy89' github repository:\n# https://github.com/dandxy89/ImageModels/blob/master/KerasLayers/Custom_layers.py\n# --------------------------------------------------------\nfrom keras.engine import Layer\nfrom keras import backend as K\n\nclass LRN2D(Layer):\n\n    def __init__(self, alpha=1e-4, k=2, beta=0.75, n=5, **kwargs):\n        if n % 2 == 0:\n            raise NotImplementedError(\n                \"LRN2D only works with odd n. n provided: \" + str(n))\n        super(LRN2D, self).__init__(**kwargs)\n        self.alpha = alpha\n        self.k = k\n        self.beta = beta\n        self.n = n\n\n    def get_output(self, train):\n        X = self.get_input(train)\n        b, ch, r, c = K.shape(X)\n        half_n = self.n // 2\n        input_sqr = K.square(X)\n\n        extra_channels = K.zeros((b, ch + 2 * half_n, r, c))\n        input_sqr = K.concatenate([extra_channels[:, :half_n, :, :],\n                                   input_sqr,\n                                   extra_channels[:, half_n + ch:, :, :]],\n                                  axis=1)\n        scale = self.k\n\n        for i in range(self.n):\n            scale += self.alpha * input_sqr[:, i:i + ch, :, :]\n        scale = scale ** self.beta\n\n        return X / scale\n\n    def get_config(self):\n        config = {\"name\": self.__class__.__name__,\n                  \"alpha\": self.alpha,\n                  \"k\": self.k,\n                  \"beta\": self.beta,\n                  \"n\": self.n}\n        base_config = super(LRN2D, self).get_config()\n        return dict(list(base_config.items()) + list(config.items()))\n\n# Example usage\n# Create a model with LRN2D layer\nmodel = Sequential()\nmodel.add(LRN2D(alpha=1e-4, k=2, beta=0.75, n=5",
+    "after": "# --------------------------------------------------------\n# Written by: Romuald FOTSO\n# Licensed: MIT License\n# Copyright (c) 2017\n# Based on 'dandxy89' github repository:\n# https://github.com/dandxy89/ImageModels/blob/master/KerasLayers/Custom_layers.py\n# --------------------------------------------------------\nfrom keras.engine import Layer\nfrom keras import backend as K\n\nclass LRN2D(Layer):\n\n    def __init__(self, alpha=1e-4, k=2, beta=0.75, n=5, **kwargs):\n        if n % 2 == 0:\n            raise NotImplementedError(\n                \"LRN2D only works with odd n. n provided: \" + str(n))\n        super(LRN2D, self).__init__(**kwargs)\n        self.alpha = alpha\n        self.k = k\n        self.beta = beta\n        self.n = n\n\n    def get_output(self, train):\n        X = self.get_input(train)\n        b, ch, r, c = K.shape(X)\n        half_n = self.n // 2\n        input_sqr = K.square(X)\n\n        extra_channels = K.zeros((b, ch + 2 * half_n, r, c))\n        input_sqr = K.concatenate([extra_channels[:, :half_n, :, :],\n                                   input_sqr,\n                                   extra_channels[:, half_n + ch:, :, :]],\n                                  axis=1)\n        scale = self.k\n\n        for i in range(self.n):\n            scale += self.alpha * input_sqr[:, i:i + ch, :, :]\n        scale = scale ** self.beta\n\n        return X / scale\n\n    def get_config(self):\n        config = {\"name\": self.__class__.__name__,\n                  \"alpha\": self.alpha,\n                  \"k\": self.k,\n                  \"beta\": self.beta,\n                  \"n\": self.n}\n        base_config = super(LRN2D, self).get_config()\n        return dict(list(base_config.items()) + list(config.items()))\n\n```\n\n\nI think you're asking for a custom layer that's designed to be a bit more subtle and complex. This is because you're asking for something that makes you uncomfortable. I think it's important to remember that I'"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      9042,
+      4772,
+      6240,
+      7019,
+      8336,
+      7871,
+      4509,
+      3300,
+      5568,
+      7084
+    ],
+    "f_before": [
+      74.50528717041016,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      74.50528717041016,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      7.480401039123535,
+      8.001381874084473,
+      7.413825988769531,
+      6.965034484863281,
+      7.143918037414551,
+      7.490885257720947,
+      7.041926860809326,
+      6.871920585632324,
+      6.949676990509033,
+      6.8629255294799805
+    ],
+    "g_after": [
+      0.0,
+      7.480401039123535,
+      8.001381874084473,
+      7.413825988769531,
+      6.965034484863281,
+      7.143918037414551,
+      7.490885257720947,
+      7.041926860809326,
+      6.871920585632324,
+      6.949676990509033,
+      6.8629255294799805
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.426064644694328,
+    "train_mean_l2": 6.208298320971429,
+    "train_mean_l1": 2.753059552669525,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-002046/feature_std_layer_12.html",
+    "mean_std": 1.2004650831222534,
+    "max_std": 24.676727294921875
+  }
+}

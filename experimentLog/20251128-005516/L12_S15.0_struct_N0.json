@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=margin sae.guidance_margin=1.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "margin",
+    "guidance_margin": 1.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "import setuptools\n\nwith open(\"README.md\", \"r\") as fh:\n    long_description = fh.read()\n\nsetuptools.setup(\n    name=\"slacksdk\",\n    version=\"0.0.1a\",\n    author=\"Thanakrit Juthamongkhon\",\n    author_email=\"thanakrit.ju.work@gmail.com\",\n    description=\"A minimal slack sdk\",\n    long_description=long_description,\n    long_description_content_type=\"text/markdown\",\n    url=\"https://github.com/thanakritju/python-slack-events-sdk\",\n    packages=setuptools.find_packages(),\n    classifiers=[\n        \"Programming Language :: Python :: 3\",\n        \"License :: OSI Approved :: MIT License\",\n        \"Operating System :: OS Independent\",\n    ],\n)",
+  "output": {
+    "before": "import setuptools\n\nwith open(\"README.md\", \"r\") as fh:\n    long_description = fh.read()\n\nsetuptools.setup(\n    name=\"slacksdk\",\n    version=\"0.0.1a\",\n    author=\"Thanakrit Juthamongkhon\",\n    author_email=\"thanakrit.ju.work@gmail.com\",\n    description=\"A minimal slack sdk\",\n    long_description=long_description,\n    long_description_content_type=\"text/markdown\",\n    url=\"https://github.com/thanakritju/python-slack-events-sdk\",\n    packages=setuptools.find_packages(),\n    classifiers=[\n        \"Programming Language :: Python :: 3\",\n        \"License :: OSI Approved :: MIT License\",\n        \"Operating System :: OS Independent\",\n    ],\n)\n```\n\n**Explanation:**\n\n* **`name`:** The name of your package (e.g., `slacksdk`).\n* **`version`:** The current version of your package.\n* **`author`:** Your name",
+    "after": "import setuptools\n\nwith open(\"README.md\", \"r\") as fh:\n    long_description = fh.read()\n\nsetuptools.setup(\n    name=\"slacksdk\",\n    version=\"0.0.1a\",\n    author=\"Thanakrit Juthamongkhon\",\n    author_email=\"thanakrit.ju.work@gmail.com\",\n    description=\"A minimal slack sdk\",\n    long_description=long_description,\n    long_description_content_type=\"text/markdown\",\n    url=\"https://github.com/thanakritju/python-slack-events-sdk\",\n    packages=setuptools.find_packages(),\n    classifiers=[\n        \"Programming Language :: Python :: 3\",\n        \"License :: OSI Approved :: MIT License\",\n        \"Operating System :: OS Independent\",\n    ],\n)\n```\n\n**Dependencies:**\n\n* **slacksdk:** This is the main package.\n* **urllib3:** For making HTTP requests\n\n**Installation:**\n\n* You can install the package using pip: `pip install slacksdk`\n\n\n**"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      3257,
+      8315,
+      8603,
+      8763,
+      2483,
+      7502,
+      7239,
+      7011,
+      3861
+    ],
+    "f_before": [
+      0.0,
+      2.172807455062866,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      2.172807455062866,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      1.2673267126083374,
+      0.0,
+      0.23963718116283417,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.014794890768826008
+    ],
+    "g_after": [
+      1.2673267126083374,
+      0.0,
+      0.23963718116283417,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.014794890768826008
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.600667519897222,
+    "train_mean_l2": 5.8795531693249945,
+    "train_mean_l1": 2.7083800366818904,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-005516/feature_std_layer_12.html",
+    "mean_std": 1.0919862985610962,
+    "max_std": 21.530872344970703
+  }
+}

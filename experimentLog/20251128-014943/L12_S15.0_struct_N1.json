@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "\"\"\"\n SPDX-License-Identifier: MIT\n\n   Copyright (c) 2021, SCANOSS\n\n   Permission is hereby granted, free of charge, to any person obtaining a copy\n   of this software and associated documentation files (the \"Software\"), to deal\n   in the Software without restriction, including without limitation the rights\n   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n   copies of the Software, and to permit persons to whom the Software is\n   furnished to do so, subject to the following conditions:\n\n   The above copyright notice and this permission notice shall be included in\n   all copies or substantial portions of the Software.\n\n   THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n   THE SOFTWARE.\n\"\"\"\nimport json\nimport os.path\nimport sys\nimport hashlib\nimport time\n\n\nclass CycloneDx:\n    \"\"\"\n    CycloneDX management class\n    Handle all interaction with CycloneDX formatting\n    \"\"\"\n    def __init__(self, debug: bool = False, output_file: str = None):\n        \"\"\"\n        Initialise the CycloneDX class\n        \"\"\"\n        self.output_file = output_file\n        self.debug = debug\n\n    @staticmethod\n    def print_stderr(*args, **kwargs):\n        \"\"\"\n        Print the given message to STDERR\n        \"\"\"\n        print(*args, file=sys.stderr, **kwargs)\n\n    def print_msg(self, *args, **kwargs):\n        \"\"\"\n        Print message if quite mode is not enabled\n        \"\"\"\n        if not self.quiet:\n            self.print_stderr(*args, **kwargs)\n\n    def print_debug(self, *args, **kwargs):\n        \"\"\"\n        Print debug message if enabled\n        \"\"\"\n        if self.debug:\n            self.print_stderr(*args, **kwargs)\n\n    def parse(self, data: json):\n        \"\"\"\n        Parse the given input (raw/plain) JSON string and return CycloneDX summary\n\n        :param data: json - JSON object\n        :return: CycloneDX dictionary\n        \"\"\"\n        if not data:\n            self.print_stderr('ERROR: No JSON data provided to parse.')\n            return None\n        self.print_debug(f'Processing raw results into CycloneDX format...')\n        cdx = {}\n        for f in data:\n            file_details = data.get(f)\n            # print(f'File: {f}: {file_details}')\n            for d in file_details:\n                id_details = d.get(\"id\")\n                if not id_details or id_details == 'none':\n                    # print(f'No ID for {f}')\n                    continue\n                purl = None\n                purls = d.get('purl')\n                if not purls:\n                    self.print_stderr(f'Purl block missing for {f}: {file_details}')\n                    continue\n                for p in purls:\n                    self.print_debug(f'Purl: {p}')\n                    purl = p\n                    break\n                if not purl:\n                    self.print_stderr(f'Warning: No PURL found for {f}: {file_details}')\n                    continue\n                if cdx.get(purl):\n                    self.print_debug(f'Component {purl} already stored: {cdx.get(purl)}')\n                    continue\n                fd = {}\n                # print(f'Vendor: {d.get(\"vendor\")}, Comp: {d.get(\"component\")}, Ver: {d.get(\"version\")},'\n                #       f' Latest: {d.get(\"latest\")} ID: {d.get(\"id\")}')\n                for field in ['id', 'vendor', 'component', 'version', 'latest']:\n                    fd[field] = d.get(field)\n                licenses = d.get('licenses')\n                fdl = []\n                for lic in licenses:\n                    # print(f'License: {lic.get(\"name\")}')\n                    fdl.append({'id':lic.get(\"name\")})\n                fd['licenses'] = fdl\n                cdx[p] = fd\n        # print(f'License summary: {cdx}')\n        return cdx\n\n    def produce_from_file(self, json_file: str, output_file: str = None) -> bool:\n        \"\"\"\n        Parse plain/raw input JSON file and produce CycloneDX output\n        :param json_file:\n        :param output_file:\n        :return: True if successful, False otherwise\n        \"\"\"\n        if not json_file:\n            self.print_stderr('ERROR: No JSON file provided to parse.')\n            return False\n        if not os.path.isfile(json_file):\n            self.print_stderr(f'ERROR: JSON file does not exist or is not a file: {json_file}')\n            return False\n        success = True\n        with open(json_file, 'r') as f:\n            success = self.produce_from_str(f.read(), output_file)\n        return success\n\n    def produce_from_json(self, data: json, output_file: str = None) -> bool:\n        \"\"\"\n        Produce the CycloneDX output from the input JSON object\n        :param data: JSON object\n        :param output_file: Output file (optional)\n        :return: True if successful, False otherwise\n        \"\"\"\n        cdx = self.parse(data)\n        if not cdx:\n            self.print_stderr('ERROR: No CycloneDX data returned for the JSON string provided.')\n            return False\n        md5hex = hashlib.md5(f'{time.time()}'.encode('utf-8')).hexdigest()\n        data = {}\n        data['bomFormat'] = 'CycloneDX'\n        data['specVersion'] = '1.2'\n        data['serialNumber'] = f'scanoss:SCANOSS-PY - SCANOSS CLI-{md5hex}'\n        data['version'] = '1'\n        data['components'] = []\n        for purl in cdx:\n            comp = cdx.get(purl)\n            lic = []\n            licenses = comp.get('licenses')\n            if licenses:\n                for l in licenses:\n                    lic.append({'license': { 'id': l.get('id')}})\n            m_type = 'Snippet' if comp.get('id') == 'snippet' else 'Library'\n            data['components'].append({\n                'type': m_type,\n                'name': comp.get('component'),\n                'publisher': comp.get('vendor'),\n                'version': comp.get('version'),\n                'purl': purl,\n                'licenses': lic\n                # 'licenses': [{\n                #     'license': {\n                #         'id': comp.get('license')\n                #     }\n                # }]\n            })\n        # End for loop\n        file = sys.stdout\n        if not output_file and self.output_file:\n            output_file = self.output_file\n        if output_file:\n            file = open(output_file, 'w')\n        print(json.dumps(data, indent=2), file=file)\n        if output_file:\n            file.close()\n\n        return True\n\n    def produce_from_str(self, json_str: str, output_file: str = None) -> bool:\n        \"\"\"\n        Produce CycloneDX output from input JSON string\n        :param json_str: input JSON string\n        :param output_file: Output file (optional)\n        :return: True if successful, False otherwise\n        \"\"\"\n        if not json_str:\n            self.print_stderr('ERROR: No JSON string provided to parse.')\n            return False\n        data = None\n        try:\n            data = json.loads(json_str)\n        except Exception as e:\n            self.print_stderr(f'ERROR: Problem parsing input JSON: {e}')\n            return False\n        else:\n            return self.produce_from_json(data, output_file)\n        return False\n#\n# End of CycloneDX Class\n#",
+  "output": {
+    "before": "\"\"\"\n SPDX-License-Identifier: MIT\n\n   Copyright (c) 2021, SCANOSS\n\n   Permission is hereby granted, free of charge, to any person obtaining a copy\n   of this software and associated documentation files (the \"Software\"), to deal\n   in the Software without restriction, including without limitation the rights\n   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n   copies of the Software, and to permit persons to whom the Software is\n   furnished to do so, subject to the following conditions:\n\n   The above copyright notice and this permission notice shall be included in\n   all copies or substantial portions of the Software.\n\n   THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n   THE SOFTWARE.\n\"\"\"\nimport json\nimport os.path\nimport sys\nimport hashlib\nimport time\n\n\nclass CycloneDx:\n    \"\"\"\n    CycloneDX management class\n    Handle all interaction with CycloneDX formatting\n    \"\"\"\n    def __init__(self, debug: bool = False, output_file: str = None):\n        \"\"\"\n        Initialise the CycloneDX class\n        \"\"\"\n        self.output_file = output_file\n        self.debug = debug\n\n    @staticmethod\n    def print_stderr(*args, **kwargs):\n        \"\"\"\n        Print the given message to STDERR\n        \"\"\"\n        print(*args, file=sys.stderr, **kwargs)\n\n    def print_msg(self, *args, **kwargs):\n        \"\"\"\n        Print message if quite mode is not enabled\n        \"\"\"\n        if not self.quiet:\n            self.print_stderr(*args, **kwargs)\n\n    def print_debug(self, *args, **kwargs):\n        \"\"\"\n        Print debug message if enabled\n        \"\"\"\n        if self.debug:\n            self.print_stderr(*args, **kwargs)\n\n    def parse(self, data: json):\n        \"\"\"\n        Parse the given input (raw/plain) JSON string and return CycloneDX summary\n\n        :param data: json - JSON object\n        :return: CycloneDX dictionary\n        \"\"\"\n        if not data:\n            self.print_stderr('ERROR: No JSON data provided to parse.')\n            return None\n        self.print_debug(f'Processing raw results into CycloneDX format...')\n        cdx = {}\n        for f in data:\n            file_details = data.get(f)\n            # print(f'File: {f}: {file_details}')\n            for d in file_details:\n                id_details = d.get(\"id\")\n                if not id_details or id_details == 'none':\n                    # print(f'No ID for {f}')\n                    continue\n                purl = None\n                purls = d.get('purl')\n                if not purls:\n                    self.print_stderr(f'Purl block missing for {f}: {file_details}')\n                    continue\n                for p in purls:\n                    self.print_debug(f'Purl: {p}')\n                    purl = p\n                    break\n                if not purl:\n                    self.print_stderr(f'Warning: No PURL found for {f}: {file_details}')\n                    continue\n                if cdx.get(purl):\n                    self.print_debug(f'Component {purl} already stored: {cdx.get(purl)}')\n                    continue\n                fd = {}\n                # print(f'Vendor: {d.get(\"vendor\")}, Comp: {d.get(\"component\")}, Ver: {d.get(\"version\")},'\n                #       f' Latest: {d.get(\"latest\")} ID: {d.get(\"id\")}')\n                for field in ['id', 'vendor', 'component', 'version', 'latest']:\n                    fd[field] = d.get(field)\n                licenses = d.get('licenses')\n                fdl = []\n                for lic in licenses:\n                    # print(f'License: {lic.get(\"name\")}')\n                    fdl.append({'id':lic.get(\"name\")})\n                fd['licenses'] = fdl\n                cdx[p] = fd\n        # print(f'License summary: {cdx}')\n        return cdx\n\n    def produce_from_file(self, json_file: str, output_file: str = None) -> bool:\n        \"\"\"\n        Parse plain/raw input JSON file and produce CycloneDX output\n        :param json_file:\n        :param output_file:\n        :return: True if successful, False otherwise\n        \"\"\"\n        if not json_file:\n            self.print_stderr('ERROR: No JSON file provided to parse.')\n            return False\n        if not os.path.isfile(json_file):\n            self.print_stderr(f'ERROR: JSON file does not exist or is not a file: {json_file}')\n            return False\n        success = True\n        with open(json_file, 'r') as f:\n            success = self.produce_from_str(f.read(), output_file)\n        return success\n\n    def produce_from_json(self, data: json, output_file: str = None) -> bool:\n        \"\"\"\n        Produce the CycloneDX output from the input JSON object\n        :param data: JSON object\n        :param output_file: Output file (optional)\n        :return: True if successful, False otherwise\n        \"\"\"\n        cdx = self.parse(data)\n        if not cdx:\n            self.print_stderr('ERROR: No CycloneDX data returned for the JSON string provided.')\n            return False\n        md5hex = hashlib.md5(f'{time.time()}'.encode('utf-8')).hexdigest()\n        data = {}\n        data['bomFormat'] = 'CycloneDX'\n        data['specVersion'] = '1.2'\n        data['serialNumber'] = f'scanoss:SCANOSS-PY - SCANOSS CLI-{md5hex}'\n        data['version'] = '1'\n        data['components'] = []\n        for purl in cdx:\n            comp = cdx.get(purl)\n            lic = []\n            licenses = comp.get('licenses')\n            if licenses:\n                for l in licenses:\n                    lic.append({'license': { 'id': l.get('id')}})\n            m_type = 'Snippet' if comp.get('id') == 'snippet' else 'Library'\n            data['components'].append({\n                'type': m_type,\n                'name': comp.get('component'),\n                'publisher': comp.get('vendor'),\n                'version': comp.get('version'),\n                'purl': purl,\n                'licenses': lic\n                # 'licenses': [{\n                #     'license': {\n                #         'id': comp.get('license')\n                #     }\n                # }]\n            })\n        # End for loop\n        file = sys.stdout\n        if not output_file and self.output_file:\n            output_file = self.output_file\n        if output_file:\n            file = open(output_file, 'w')\n        print(json.dumps(data, indent=2), file=file)\n        if output_file:\n            file.close()\n\n        return True\n\n    def produce_from_str(self, json_str: str, output_file: str = None) -> bool:\n        \"\"\"\n        Produce CycloneDX output from input JSON string\n        :param json_str: input JSON string\n        :param output_file: Output file (optional)\n        :return: True if successful, False otherwise\n        \"\"\"\n        if not json_str:\n            self.print_stderr('ERROR: No JSON string provided to parse.')\n            return False\n        data = None\n        try:\n            data = json.loads(json_str)\n        except Exception as e:\n            self.print_stderr(f'ERROR: Problem parsing input JSON: {e}')\n            return False\n        else:\n            return self.produce_from_json(data, output_file)\n        return False\n#\n# End of CycloneDX Class\n# \n```\n\n**Explanation:**\n\n1. **CycloneDX Management Class:** The code defines a class called `CycloneDx` to manage CycloneDX formatting and data processing.\n\n2. **Initialization:**\n   - The `__init",
+    "after": "\"\"\"\n SPDX-License-Identifier: MIT\n\n   Copyright (c) 2021, SCANOSS\n\n   Permission is hereby granted, free of charge, to any person obtaining a copy\n   of this software and associated documentation files (the \"Software\"), to deal\n   in the Software without restriction, including without limitation the rights\n   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n   copies of the Software, and to permit persons to whom the Software is\n   furnished to do so, subject to the following conditions:\n\n   The above copyright notice and this permission notice shall be included in\n   all copies or substantial portions of the Software.\n\n   THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n   THE SOFTWARE.\n\"\"\"\nimport json\nimport os.path\nimport sys\nimport hashlib\nimport time\n\n\nclass CycloneDx:\n    \"\"\"\n    CycloneDX management class\n    Handle all interaction with CycloneDX formatting\n    \"\"\"\n    def __init__(self, debug: bool = False, output_file: str = None):\n        \"\"\"\n        Initialise the CycloneDX class\n        \"\"\"\n        self.output_file = output_file\n        self.debug = debug\n\n    @staticmethod\n    def print_stderr(*args, **kwargs):\n        \"\"\"\n        Print the given message to STDERR\n        \"\"\"\n        print(*args, file=sys.stderr, **kwargs)\n\n    def print_msg(self, *args, **kwargs):\n        \"\"\"\n        Print message if quite mode is not enabled\n        \"\"\"\n        if not self.quiet:\n            self.print_stderr(*args, **kwargs)\n\n    def print_debug(self, *args, **kwargs):\n        \"\"\"\n        Print debug message if enabled\n        \"\"\"\n        if self.debug:\n            self.print_stderr(*args, **kwargs)\n\n    def parse(self, data: json):\n        \"\"\"\n        Parse the given input (raw/plain) JSON string and return CycloneDX summary\n\n        :param data: json - JSON object\n        :return: CycloneDX dictionary\n        \"\"\"\n        if not data:\n            self.print_stderr('ERROR: No JSON data provided to parse.')\n            return None\n        self.print_debug(f'Processing raw results into CycloneDX format...')\n        cdx = {}\n        for f in data:\n            file_details = data.get(f)\n            # print(f'File: {f}: {file_details}')\n            for d in file_details:\n                id_details = d.get(\"id\")\n                if not id_details or id_details == 'none':\n                    # print(f'No ID for {f}')\n                    continue\n                purl = None\n                purls = d.get('purl')\n                if not purls:\n                    self.print_stderr(f'Purl block missing for {f}: {file_details}')\n                    continue\n                for p in purls:\n                    self.print_debug(f'Purl: {p}')\n                    purl = p\n                    break\n                if not purl:\n                    self.print_stderr(f'Warning: No PURL found for {f}: {file_details}')\n                    continue\n                if cdx.get(purl):\n                    self.print_debug(f'Component {purl} already stored: {cdx.get(purl)}')\n                    continue\n                fd = {}\n                # print(f'Vendor: {d.get(\"vendor\")}, Comp: {d.get(\"component\")}, Ver: {d.get(\"version\")},'\n                #       f' Latest: {d.get(\"latest\")} ID: {d.get(\"id\")}')\n                for field in ['id', 'vendor', 'component', 'version', 'latest']:\n                    fd[field] = d.get(field)\n                licenses = d.get('licenses')\n                fdl = []\n                for lic in licenses:\n                    # print(f'License: {lic.get(\"name\")}')\n                    fdl.append({'id':lic.get(\"name\")})\n                fd['licenses'] = fdl\n                cdx[p] = fd\n        # print(f'License summary: {cdx}')\n        return cdx\n\n    def produce_from_file(self, json_file: str, output_file: str = None) -> bool:\n        \"\"\"\n        Parse plain/raw input JSON file and produce CycloneDX output\n        :param json_file:\n        :param output_file:\n        :return: True if successful, False otherwise\n        \"\"\"\n        if not json_file:\n            self.print_stderr('ERROR: No JSON file provided to parse.')\n            return False\n        if not os.path.isfile(json_file):\n            self.print_stderr(f'ERROR: JSON file does not exist or is not a file: {json_file}')\n            return False\n        success = True\n        with open(json_file, 'r') as f:\n            success = self.produce_from_str(f.read(), output_file)\n        return success\n\n    def produce_from_json(self, data: json, output_file: str = None) -> bool:\n        \"\"\"\n        Produce the CycloneDX output from the input JSON object\n        :param data: JSON object\n        :param output_file: Output file (optional)\n        :return: True if successful, False otherwise\n        \"\"\"\n        cdx = self.parse(data)\n        if not cdx:\n            self.print_stderr('ERROR: No CycloneDX data returned for the JSON string provided.')\n            return False\n        md5hex = hashlib.md5(f'{time.time()}'.encode('utf-8')).hexdigest()\n        data = {}\n        data['bomFormat'] = 'CycloneDX'\n        data['specVersion'] = '1.2'\n        data['serialNumber'] = f'scanoss:SCANOSS-PY - SCANOSS CLI-{md5hex}'\n        data['version'] = '1'\n        data['components'] = []\n        for purl in cdx:\n            comp = cdx.get(purl)\n            lic = []\n            licenses = comp.get('licenses')\n            if licenses:\n                for l in licenses:\n                    lic.append({'license': { 'id': l.get('id')}})\n            m_type = 'Snippet' if comp.get('id') == 'snippet' else 'Library'\n            data['components'].append({\n                'type': m_type,\n                'name': comp.get('component'),\n                'publisher': comp.get('vendor'),\n                'version': comp.get('version'),\n                'purl': purl,\n                'licenses': lic\n                # 'licenses': [{\n                #     'license': {\n                #         'id': comp.get('license')\n                #     }\n                # }]\n            })\n        # End for loop\n        file = sys.stdout\n        if not output_file and self.output_file:\n            output_file = self.output_file\n        if output_file:\n            file = open(output_file, 'w')\n        print(json.dumps(data, indent=2), file=file)\n        if output_file:\n            file.close()\n\n        return True\n\n    def produce_from_str(self, json_str: str, output_file: str = None) -> bool:\n        \"\"\"\n        Produce CycloneDX output from input JSON string\n        :param json_str: input JSON string\n        :param output_file: Output file (optional)\n        :return: True if successful, False otherwise\n        \"\"\"\n        if not json_str:\n            self.print_stderr('ERROR: No JSON string provided to parse.')\n            return False\n        data = None\n        try:\n            data = json.loads(json_str)\n        except Exception as e:\n            self.print_stderr(f'ERROR: Problem parsing input JSON: {e}')\n            return False\n        else:\n            return self.produce_from_json(data, output_file)\n        return False\n#\n# End of CycloneDX Class\n#\n```\n\n**Explanation:**\n\n- The code defines a `CycloneDX` class with methods for parsing and producing CycloneDX output.\n- **`parse`:** \n    - Takes a JSON string as input and parses it."
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      1065,
+      7374,
+      2902,
+      9203,
+      6863,
+      3048,
+      1605,
+      7013,
+      2513,
+      3854
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0036218028981238604,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0036218028981238604,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.781839042335749,
+    "train_mean_l2": 6.304576007805765,
+    "train_mean_l1": 2.9933579485416413,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014943/feature_std_layer_12.html",
+    "mean_std": 0.9723951816558838,
+    "max_std": 28.6618709564209
+  }
+}

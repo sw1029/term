@@ -19,14 +19,97 @@ from datasets import load_dataset
 """
 
 
-class JumpReLU(nn.Module):  # 적용 시 의문점: b의 초기값을 휴리스틱하게 들어가야 하나? 아니라면 또 하나의 파라미터로 학습 가능하게 두어야 하나?
-    def __init__(self, init_b=0.0):
-        super().__init__()
-        self.b = nn.Parameter(torch.tensor(init_b, dtype=torch.float32))
+class JumpReLUFunction(torch.autograd.Function):
+    """
+    JumpReLU(z) = z * H(z - theta)
 
-    def forward(self, x):
-        # JumpReLU(x) = ReLU(x + b)
-        return F.relu(x + self.b)
+    - x: (batch, d) 또는 (d,)
+    - threshold(theta): (d,) 형태, feature별 임계값
+    - bandwidth: Heaviside 근사용 커널 폭
+    """
+
+    @staticmethod
+    def forward(ctx, x, threshold, bandwidth):
+        ctx.save_for_backward(x, threshold)
+        ctx.bandwidth = bandwidth
+        mask = (x > threshold).float()
+        return x * mask
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        x, threshold = ctx.saved_tensors
+        bandwidth = ctx.bandwidth
+
+        # 1. 입력 x에 대한 gradient: 활성화된 영역만 그대로 전달
+        grad_x = (x > threshold).float() * grad_output
+
+        # 2. threshold에 대한 gradient: 직사각형 커널로 근사
+        kernel_arg = (x - threshold) / bandwidth
+        rectangle_kernel = ((kernel_arg > -0.5) & (kernel_arg < 0.5)).float()
+
+        grad_threshold = -(threshold / bandwidth) * rectangle_kernel * grad_output
+        if grad_threshold.ndim > threshold.ndim:
+            grad_threshold = grad_threshold.sum(dim=0)
+
+        return grad_x, grad_threshold, None
+
+
+class JumpReLU(nn.Module):
+    """
+    feature별 learnable threshold를 갖는 JumpReLU 모듈.
+
+    - forward: 입력을 ReLU로 안정화한 뒤 JumpReLUFunction 적용
+    """
+
+    def __init__(self, feature_dim: int, bandwidth: float = 0.001, init_threshold: float = 0.001):
+        super().__init__()
+        self.feature_dim = feature_dim
+        self.bandwidth = bandwidth
+        # 양수 constraint를 위해 log-parameterized threshold 사용
+        init = torch.full((feature_dim,), init_threshold, dtype=torch.float32)
+        self.log_threshold = nn.Parameter(torch.log(init))
+
+    def get_threshold(self) -> torch.Tensor:
+        return torch.exp(self.log_threshold)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        threshold = self.get_threshold()
+        # pre-activation을 한 번 ReLU로 안정화한 뒤 JumpReLU 적용
+        x_relu = F.relu(x)
+        return JumpReLUFunction.apply(x_relu, threshold, self.bandwidth)
+
+
+class HeavisideStepFunction(torch.autograd.Function):
+    """
+    sparsity(L0) 측정을 위한 Heaviside step 함수.
+
+    - x에 대한 gradient는 차단하고,
+    - threshold에 대해서만 직사각형 커널 근사 gradient를 전달한다.
+    """
+
+    @staticmethod
+    def forward(ctx, x, threshold, bandwidth):
+        ctx.save_for_backward(x, threshold)
+        ctx.bandwidth = bandwidth
+        return (x > threshold).float()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        x, threshold = ctx.saved_tensors
+        bandwidth = ctx.bandwidth
+
+        # x는 gradient 차단
+        grad_x = torch.zeros_like(x)
+
+        # threshold만 학습
+        kernel_arg = (x - threshold) / bandwidth
+        rectangle_kernel = ((kernel_arg > -0.5) & (kernel_arg < 0.5)).float()
+        grad_threshold = -(1.0 / bandwidth) * rectangle_kernel * grad_output
+
+        if grad_threshold.ndim > threshold.ndim:
+            grad_threshold = grad_threshold.sum(dim=0)
+
+        return grad_x, grad_threshold, None
 
 
 def generate_text(model, tokenizer, prompt, max_new_tokens=50):

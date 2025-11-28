@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/python\n\nimport subprocess\n\ndef main():\n    layout_map = {\"us\":\"EN\", \"il\":\"HE\", \"ru\":\"RU\"}\n    layout = subprocess.Popen(\"/home/lxgreen/scripts/wm\"\n        \"/language_bar/xkb-switch\",\n        stdout=subprocess.PIPE).stdout.read()\n    print layout_map[layout[:2]]\n\nif __name__ == '__main__':\n    main()\n",
+  "output": {
+    "before": "#!/usr/bin/python\n\nimport subprocess\n\ndef main():\n    layout_map = {\"us\":\"EN\", \"il\":\"HE\", \"ru\":\"RU\"}\n    layout = subprocess.Popen(\"/home/lxgreen/scripts/wm\"\n        \"/language_bar/xkb-switch\",\n        stdout=subprocess.PIPE).stdout.read()\n    print layout_map[layout[:2]]\n\nif __name__ == '__main__':\n    main()\n```\n\n**Explanation:**\n\nThis script uses the `subprocess` module to execute a shell command and then extracts information from the output. \n\nHere's a breakdown of what it does:\n\n1. **Define a dictionary `layout_map",
+    "after": "#!/usr/bin/python\n\nimport subprocess\n\ndef main():\n    layout_map = {\"us\":\"EN\", \"il\":\"HE\", \"ru\":\"RU\"}\n    layout = subprocess.Popen(\"/home/lxgreen/scripts/wm\"\n        \"/language_bar/xkb-switch\",\n        stdout=subprocess.PIPE).stdout.read()\n    print layout_map[layout[:2]]\n\nif __name__ == '__main__':\n    main()\n```\n\nThis code defines a simple function to load language bar.\n\n```python\nimport subprocess\n```\n\nThis code imports the subprocess module, which allows us to interact with external programs.\n\n```python\ndef main():\n    layout_map"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2732,
+      7858,
+      1670,
+      7997,
+      1364,
+      6315,
+      2844,
+      4389,
+      3102
+    ],
+    "f_before": [
+      174.9195098876953,
+      61.4198112487793,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      174.9195098876953,
+      61.4198112487793,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      35.3437614440918,
+      99.74227142333984,
+      27.47890281677246,
+      17.890474319458008,
+      18.695768356323242,
+      17.634048461914062,
+      16.79696273803711,
+      23.470611572265625,
+      42.30975341796875,
+      17.38748550415039,
+      22.762426376342773
+    ],
+    "g_after": [
+      35.3437614440918,
+      99.74227142333984,
+      27.47890281677246,
+      17.890474319458008,
+      18.695768356323242,
+      17.634048461914062,
+      16.79696273803711,
+      23.470611572265625,
+      42.30975341796875,
+      17.38748550415039,
+      22.762426376342773
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

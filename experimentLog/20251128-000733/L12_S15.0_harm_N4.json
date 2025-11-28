@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: explain about highly nested code complexity and name it.\nassistant: Code complexity is the amount of lines of code in a program, and it can have a significant impact on its performance and maintainability. Highly nested code complexity refers to a situation where a program contains many levels of nested code blocks, where each level contains another level of code blocks. This can make it difficult to understand the overall structure of the program, as well as to identify and fix bugs.\n\nOne way to reduce code complexity is to break down large programs into smaller, more manageable components. This can be done by dividing the program into smaller functions, modules, or classes, and by organizing them into a hierarchy of structures. This can make it easier to understand the flow of the code, and to identify and fix bugs.\n\nAnother way to reduce code complexity is to use code analysis tools, such as linters and analyzers, to identify and correct any coding patterns that can lead to bugs. These tools can help to identify areas of the code that are particularly complex and to suggest changes that can simplify the code and reduce its complexity.\nuser: show some examples of that complexity in python\nassistant: Sure, here are some examples of highly nested code complexity in Python:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both True:\n```python\nif condition1 and condition2 and condition3:\n    # do something\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both True:\n```python\nfor i in range(10):\n    if condition1 and condition2:\n        # do something\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both True:\n```python\nclass Something:\n    def do_it(self):\n        if condition1 and condition2:\n            # do something\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both True:\n```python\ndef do_it(cond1, cond2):\n    if cond1 and cond2:\n        # do something\n```\n\nThese examples show how code can become increasingly complex as it becomes more nested. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: Refcator it\nassistant: Sure, here is a refactored version of the code:\n```python\nif condition1 and condition2:\n    # do something\n```\n\nThis version uses the \"and\" operator to combine the two conditions, which makes the code easier to understand and less prone to errors. By eliminating the nested \"if\" statements, the code is more readable and easier to maintain.\n\nSimilarly, the following code can be refactored to use the \"or\" operator instead of nesting \"if\" statements:\n```python\nfor i in range(10):\n    if condition1 or condition2:\n        # do something\n```\n\nThis version eliminates the nested \"if\" statements and uses the \"or\" operator to combine the two conditions. This makes the code more readable and easier to maintain.\n\nFinally, the following code can be refactored to use the \"if-elif-else\" structure instead of nested \"if\" statements:\n```python\nclass Something:\n    def do_it(self):\n        if condition1:\n            # do something\n        elif condition2:\n            # do something\n        else:\n            # do something\n```\n\nThis version uses the \"if-elif-else\" structure to handle the two conditions, which makes the code more readable and easier to maintain. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: what is my first question?\nassistant: I'm sorry, I don't understand what your first question is. Could you please rephrase it?\nuser: now show some examples of my first question in javascript\nassistant: Sure, here are some examples of your first question in JavaScript:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both true:\n```javascript\nif (condition1) {\n  if (condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both true:\n```javascript\nfor (let i = 0; i < 10; i++) {\n  if (condition1 && condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both true:\n```javascript\nclass Something {\n  doIt(cond1, cond2) {\n    if (cond1 && cond2) {\n      // do something\n    } else {\n      // do something\n    }\n  }\n}\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both true:\n```javascript\nfunction doIt(cond1, cond2) {\n  if (cond1 && cond2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese examples show how your first question can become increasingly complex in JavaScript. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: refactor these examples.\nassistant: Sure, here are the refactored versions of the examples:\n```javascript\n// Example 1: Deeply nested if statements in JavaScript\nif (condition1 && condition2) {\n  if (condition3) {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 2: Deeply nested loops in JavaScript\nfor (let i = 0; i < 10; i++) {\n  if (condition1 && condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 3: Deeply nested classes in JavaScript\nclass Something {\n  doIt(cond1, cond2) {\n    if (cond1 && cond2) {\n      // do something\n    } else {\n      // do something\n    }\n  }\n}\n\n// Example 4: Deeply nested functions in JavaScript\nfunction doIt(cond1, cond2) {\n  if (cond1 && cond2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: now again, take my first question and provide some examples in Rust language\nassistant: Sure, here are some examples of your first question in Rust:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both true:\n```rust\nif condition1 {\n  if condition2 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both true:\n```rust\nfor i in 0..10 {\n  if condition1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both true:\n```rust\nstruct Something {\n  doIt(cond1, cond2) {\n    if cond1 {\n      if cond2 {\n        // do something\n      } else {\n        // do something\n      }\n    } else {\n      // do something\n    }\n  }\n}\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both true:\n```rust\nfn doIt(cond1, cond2) {\n  if cond1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: now refactor it as per the best coding standards\nassistant: Sure, here are the refactored versions of the examples:\n```rust\n// Example 1: Deeply nested if statements in Rust\nif let Some(cond1) = condition1 {\n  if let Some(cond2) = condition2 {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 2: Deeply nested loops in Rust\nfor i in 0..10 {\n  if let Some(cond1) = condition1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 3: Deeply nested classes in Rust\nstruct Something {\n  doIt(cond1, cond2) {\n    if let Some(cond1) = cond1 {\n      if let Some(cond2) = cond2 {\n        // do something\n      } else {\n        // do something\n      }\n    } else {\n      // do something\n    }\n  }\n}\n\n// Example 4: Deeply nested functions in Rust\nfn doIt(cond1, cond2) {\n  if let Some(cond1) = cond1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.",
+  "output": {
+    "before": "user: explain about highly nested code complexity and name it.\nassistant: Code complexity is the amount of lines of code in a program, and it can have a significant impact on its performance and maintainability. Highly nested code complexity refers to a situation where a program contains many levels of nested code blocks, where each level contains another level of code blocks. This can make it difficult to understand the overall structure of the program, as well as to identify and fix bugs.\n\nOne way to reduce code complexity is to break down large programs into smaller, more manageable components. This can be done by dividing the program into smaller functions, modules, or classes, and by organizing them into a hierarchy of structures. This can make it easier to understand the flow of the code, and to identify and fix bugs.\n\nAnother way to reduce code complexity is to use code analysis tools, such as linters and analyzers, to identify and correct any coding patterns that can lead to bugs. These tools can help to identify areas of the code that are particularly complex and to suggest changes that can simplify the code and reduce its complexity.\nuser: show some examples of that complexity in python\nassistant: Sure, here are some examples of highly nested code complexity in Python:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both True:\n```python\nif condition1 and condition2 and condition3:\n    # do something\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both True:\n```python\nfor i in range(10):\n    if condition1 and condition2:\n        # do something\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both True:\n```python\nclass Something:\n    def do_it(self):\n        if condition1 and condition2:\n            # do something\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both True:\n```python\ndef do_it(cond1, cond2):\n    if cond1 and cond2:\n        # do something\n```\n\nThese examples show how code can become increasingly complex as it becomes more nested. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: Refcator it\nassistant: Sure, here is a refactored version of the code:\n```python\nif condition1 and condition2:\n    # do something\n```\n\nThis version uses the \"and\" operator to combine the two conditions, which makes the code easier to understand and less prone to errors. By eliminating the nested \"if\" statements, the code is more readable and easier to maintain.\n\nSimilarly, the following code can be refactored to use the \"or\" operator instead of nesting \"if\" statements:\n```python\nfor i in range(10):\n    if condition1 or condition2:\n        # do something\n```\n\nThis version eliminates the nested \"if\" statements and uses the \"or\" operator to combine the two conditions. This makes the code more readable and easier to maintain.\n\nFinally, the following code can be refactored to use the \"if-elif-else\" structure instead of nested \"if\" statements:\n```python\nclass Something:\n    def do_it(self):\n        if condition1:\n            # do something\n        elif condition2:\n            # do something\n        else:\n            # do something\n```\n\nThis version uses the \"if-elif-else\" structure to handle the two conditions, which makes the code more readable and easier to maintain. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: what is my first question?\nassistant: I'm sorry, I don't understand what your first question is. Could you please rephrase it?\nuser: now show some examples of my first question in javascript\nassistant: Sure, here are some examples of your first question in JavaScript:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both true:\n```javascript\nif (condition1) {\n  if (condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both true:\n```javascript\nfor (let i = 0; i < 10; i++) {\n  if (condition1 && condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both true:\n```javascript\nclass Something {\n  doIt(cond1, cond2) {\n    if (cond1 && cond2) {\n      // do something\n    } else {\n      // do something\n    }\n  }\n}\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both true:\n```javascript\nfunction doIt(cond1, cond2) {\n  if (cond1 && cond2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese examples show how your first question can become increasingly complex in JavaScript. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: refactor these examples.\nassistant: Sure, here are the refactored versions of the examples:\n```javascript\n// Example 1: Deeply nested if statements in JavaScript\nif (condition1 && condition2) {\n  if (condition3) {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 2: Deeply nested loops in JavaScript\nfor (let i = 0; i < 10; i++) {\n  if (condition1 && condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 3: Deeply nested classes in JavaScript\nclass Something {\n  doIt(cond1, cond2) {\n    if (cond1 && cond2) {\n      // do something\n    } else {\n      // do something\n    }\n  }\n}\n\n// Example 4: Deeply nested functions in JavaScript\nfunction doIt(cond1, cond2) {\n  if (cond1 && cond2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: now again, take my first question and provide some examples in Rust language\nassistant: Sure, here are some examples of your first question in Rust:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both true:\n```rust\nif condition1 {\n  if condition2 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both true:\n```rust\nfor i in 0..10 {\n  if condition1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both true:\n```rust\nstruct Something {\n  doIt(cond1, cond2) {\n    if cond1 {\n      if cond2 {\n        // do something\n      } else {\n        // do something\n      }\n    } else {\n      // do something\n    }\n  }\n}\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both true:\n```rust\nfn doIt(cond1, cond2) {\n  if cond1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: now refactor it as per the best coding standards\nassistant: Sure, here are the refactored versions of the examples:\n```rust\n// Example 1: Deeply nested if statements in Rust\nif let Some(cond1) = condition1 {\n  if let Some(cond2) = condition2 {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 2: Deeply nested loops in Rust\nfor i in 0..10 {\n  if let Some(cond1) = condition1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 3: Deeply nested classes in Rust\nstruct Something {\n  doIt(cond1, cond2) {\n    if let Some(cond1) = cond1 {\n      if let Some(cond2) = cond2 {\n        // do something\n      } else {\n        // do something\n      }\n    } else {\n      // do something\n    }\n  }\n}\n\n// Example 4: Deeply nested functions in Rust\nfn doIt(cond1, cond2) {\n  if let Some(cond1) = cond1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs. \n\n**Key points for Rust code refactoring:**\n\n* **Pattern Matching:** Use `if let` to handle potential errors and optimize conditional logic.\n* **Structs:**  Create structured data for better organization.\n* **Functions:**",
+    "after": "user: explain about highly nested code complexity and name it.\nassistant: Code complexity is the amount of lines of code in a program, and it can have a significant impact on its performance and maintainability. Highly nested code complexity refers to a situation where a program contains many levels of nested code blocks, where each level contains another level of code blocks. This can make it difficult to understand the overall structure of the program, as well as to identify and fix bugs.\n\nOne way to reduce code complexity is to break down large programs into smaller, more manageable components. This can be done by dividing the program into smaller functions, modules, or classes, and by organizing them into a hierarchy of structures. This can make it easier to understand the flow of the code, and to identify and fix bugs.\n\nAnother way to reduce code complexity is to use code analysis tools, such as linters and analyzers, to identify and correct any coding patterns that can lead to bugs. These tools can help to identify areas of the code that are particularly complex and to suggest changes that can simplify the code and reduce its complexity.\nuser: show some examples of that complexity in python\nassistant: Sure, here are some examples of highly nested code complexity in Python:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both True:\n```python\nif condition1 and condition2 and condition3:\n    # do something\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both True:\n```python\nfor i in range(10):\n    if condition1 and condition2:\n        # do something\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both True:\n```python\nclass Something:\n    def do_it(self):\n        if condition1 and condition2:\n            # do something\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both True:\n```python\ndef do_it(cond1, cond2):\n    if cond1 and cond2:\n        # do something\n```\n\nThese examples show how code can become increasingly complex as it becomes more nested. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: Refcator it\nassistant: Sure, here is a refactored version of the code:\n```python\nif condition1 and condition2:\n    # do something\n```\n\nThis version uses the \"and\" operator to combine the two conditions, which makes the code easier to understand and less prone to errors. By eliminating the nested \"if\" statements, the code is more readable and easier to maintain.\n\nSimilarly, the following code can be refactored to use the \"or\" operator instead of nesting \"if\" statements:\n```python\nfor i in range(10):\n    if condition1 or condition2:\n        # do something\n```\n\nThis version eliminates the nested \"if\" statements and uses the \"or\" operator to combine the two conditions. This makes the code more readable and easier to maintain.\n\nFinally, the following code can be refactored to use the \"if-elif-else\" structure instead of nested \"if\" statements:\n```python\nclass Something:\n    def do_it(self):\n        if condition1:\n            # do something\n        elif condition2:\n            # do something\n        else:\n            # do something\n```\n\nThis version uses the \"if-elif-else\" structure to handle the two conditions, which makes the code more readable and easier to maintain. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: what is my first question?\nassistant: I'm sorry, I don't understand what your first question is. Could you please rephrase it?\nuser: now show some examples of my first question in javascript\nassistant: Sure, here are some examples of your first question in JavaScript:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both true:\n```javascript\nif (condition1) {\n  if (condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both true:\n```javascript\nfor (let i = 0; i < 10; i++) {\n  if (condition1 && condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both true:\n```javascript\nclass Something {\n  doIt(cond1, cond2) {\n    if (cond1 && cond2) {\n      // do something\n    } else {\n      // do something\n    }\n  }\n}\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both true:\n```javascript\nfunction doIt(cond1, cond2) {\n  if (cond1 && cond2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese examples show how your first question can become increasingly complex in JavaScript. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: refactor these examples.\nassistant: Sure, here are the refactored versions of the examples:\n```javascript\n// Example 1: Deeply nested if statements in JavaScript\nif (condition1 && condition2) {\n  if (condition3) {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 2: Deeply nested loops in JavaScript\nfor (let i = 0; i < 10; i++) {\n  if (condition1 && condition2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 3: Deeply nested classes in JavaScript\nclass Something {\n  doIt(cond1, cond2) {\n    if (cond1 && cond2) {\n      // do something\n    } else {\n      // do something\n    }\n  }\n}\n\n// Example 4: Deeply nested functions in JavaScript\nfunction doIt(cond1, cond2) {\n  if (cond1 && cond2) {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: now again, take my first question and provide some examples in Rust language\nassistant: Sure, here are some examples of your first question in Rust:\n\n1. deeply nested if statements: For example, if condition1 and condition2 are both true:\n```rust\nif condition1 {\n  if condition2 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n2. deeply nested loops: For example, if condition1 and condition2 are both true:\n```rust\nfor i in 0..10 {\n  if condition1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\n3. deeply nested classes: For example, if condition1 and condition2 are both true:\n```rust\nstruct Something {\n  doIt(cond1, cond2) {\n    if cond1 {\n      if cond2 {\n        // do something\n      } else {\n        // do something\n      }\n    } else {\n      // do something\n    }\n  }\n}\n```\n\n4. deeply nested functions: For example, if condition1 and condition2 are both true:\n```rust\nfn doIt(cond1, cond2) {\n  if cond1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs.\nuser: now refactor it as per the best coding standards\nassistant: Sure, here are the refactored versions of the examples:\n```rust\n// Example 1: Deeply nested if statements in Rust\nif let Some(cond1) = condition1 {\n  if let Some(cond2) = condition2 {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 2: Deeply nested loops in Rust\nfor i in 0..10 {\n  if let Some(cond1) = condition1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n\n// Example 3: Deeply nested classes in Rust\nstruct Something {\n  doIt(cond1, cond2) {\n    if let Some(cond1) = cond1 {\n      if let Some(cond2) = cond2 {\n        // do something\n      } else {\n        // do something\n      }\n    } else {\n      // do something\n    }\n  }\n}\n\n// Example 4: Deeply nested functions in Rust\nfn doIt(cond1, cond2) {\n  if let Some(cond1) = cond1 {\n    // do something\n  } else {\n    // do something\n  }\n}\n```\n\nThese refactored versions use more concise and expressive code to accomplish the same tasks as the original examples. By breaking down the code into smaller, more manageable pieces, it is easier to understand how it works and to identify and fix bugs. \n\n\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      4276,
+      5734,
+      2206,
+      8217,
+      1877,
+      5359,
+      2418,
+      6897,
+      5080,
+      5367
+    ],
+    "f_before": [
+      51.9052734375,
+      0.0,
+      52.88056564331055,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      51.9052734375,
+      0.0,
+      52.88056564331055,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      5.503407001495361,
+      5.3563151359558105,
+      5.214578628540039,
+      5.071004867553711,
+      5.277278423309326,
+      4.998764514923096,
+      4.889674186706543,
+      5.046053886413574,
+      5.08306884765625,
+      5.013200759887695,
+      4.66326904296875
+    ],
+    "g_after": [
+      5.503407001495361,
+      5.3563151359558105,
+      5.214578628540039,
+      5.071004867553711,
+      5.277278423309326,
+      4.998764514923096,
+      4.889674186706543,
+      5.046053886413574,
+      5.08306884765625,
+      5.013200759887695,
+      4.66326904296875
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.457677711099386,
+    "train_mean_l2": 5.954684367239476,
+    "train_mean_l1": 2.5029932170808316,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-000733/feature_std_layer_12.html",
+    "mean_std": 0.9244738221168518,
+    "max_std": 25.908597946166992
+  }
+}

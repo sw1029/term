@@ -4,9 +4,13 @@ batch_size: 4
 epochs: 2
 lr: 3e-4
 l1_coeff: 0.005
+l0_coeff: 0.0           # Heaviside 기반 L0 sparsity 계수 (기본 비활성)
+use_l0: false           # true일 때 L0 손실 사용
 layer_idx: 12
-max_steps: 3000
+max_steps: 2000
 fixed_v_cnt: 1
+jumprelu_bandwidth: 0.001       # JumpReLU 직사각형 커널 bandwidth
+jumprelu_init_threshold: 0.001  # JumpReLU 초기 threshold 값
 
 loss_option: 1           # 1: concept only, 2: concept+label, 3: label only
 loss_module: option1_loss
@@ -28,4 +32,11 @@ positive_targets:
   harm: 1
   struct: 1
 
-concept_samples_per_label: 250
+# label guidance 세부 설정
+guidance_method: contrastive   # contrastive | margin | mse
+guidance_margin: 0.0           # method=margin일 때 사용
+guidance_coeff: 1.0            # β: guidance 전체 가중치
+guidance_mse_pos_value: 1.0    # method=mse일 때 양성 타겟 값
+guidance_mse_neg_value: 0.0    # method=mse일 때 음성 타겟 값
+
+concept_samples_per_label: 100

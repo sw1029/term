@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# Copyright (c) 2016 Will Thames <will@thames.id.au>\n#\n# Permission is hereby granted, free of charge, to any person obtaining a copy\n# of this software and associated documentation files (the \"Software\"), to deal\n# in the Software without restriction, including without limitation the rights\n# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n# copies of the Software, and to permit persons to whom the Software is\n# furnished to do so, subject to the following conditions:\n#\n# The above copyright notice and this permission notice shall be included in\n# all copies or substantial portions of the Software.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n# THE SOFTWARE.\n\nfrom ansiblelint.rules import AnsibleLintRule\n\n\ndef _changed_in_when(item):\n    if not isinstance(item, str):\n        return False\n    return any(changed in item for changed in\n               ['.changed', '|changed', '[\"changed\"]', \"['changed']\"])\n\n\nclass UseHandlerRatherThanWhenChangedRule(AnsibleLintRule):\n    id = '503'\n    shortdesc = 'Tasks that run when changed should likely be handlers'\n    description = (\n        'If a task has a ``when: result.changed`` setting, it is effectively '\n        'acting as a handler'\n    )\n    severity = 'MEDIUM'\n    tags = ['task', 'behaviour']\n    version_added = 'historic'\n\n    def matchtask(self, file, task):\n        if task[\"__ansible_action_type__\"] != 'task':\n            return False\n\n        when = task.get('when')\n\n        if isinstance(when, list):\n            for item in when:\n                return _changed_in_when(item)\n        else:\n            return _changed_in_when(when)\n",
+  "output": {
+    "before": "# Copyright (c) 2016 Will Thames <will@thames.id.au>\n#\n# Permission is hereby granted, free of charge, to any person obtaining a copy\n# of this software and associated documentation files (the \"Software\"), to deal\n# in the Software without restriction, including without limitation the rights\n# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n# copies of the Software, and to permit persons to whom the Software is\n# furnished to do so, subject to the following conditions:\n#\n# The above copyright notice and this permission notice shall be included in\n# all copies or substantial portions of the Software.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n# THE SOFTWARE.\n\nfrom ansiblelint.rules import AnsibleLintRule\n\n\ndef _changed_in_when(item):\n    if not isinstance(item, str):\n        return False\n    return any(changed in item for changed in\n               ['.changed', '|changed', '[\"changed\"]', \"['changed']\"])\n\n\nclass UseHandlerRatherThanWhenChangedRule(AnsibleLintRule):\n    id = '503'\n    shortdesc = 'Tasks that run when changed should likely be handlers'\n    description = (\n        'If a task has a ``when: result.changed`` setting, it is effectively '\n        'acting as a handler'\n    )\n    severity = 'MEDIUM'\n    tags = ['task', 'behaviour']\n    version_added = 'historic'\n\n    def matchtask(self, file, task):\n        if task[\"__ansible_action_type__\"] != 'task':\n            return False\n\n        when = task.get('when')\n\n        if isinstance(when, list):\n            for item in when:\n                return _changed_in_when(item)\n        else:\n            return _changed_in_when(when)\n    \n    def report(self, file, task):\n        if self.matchtask(file, task):\n            self.report_message(\n                file, task, \"Consider using a handler for this task.\",\n                \"",
+    "after": "# Copyright (c) 2016 Will Thames <will@thames.id.au>\n#\n# Permission is hereby granted, free of charge, to any person obtaining a copy\n# of this software and associated documentation files (the \"Software\"), to deal\n# in the Software without restriction, including without limitation the rights\n# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n# copies of the Software, and to permit persons to whom the Software is\n# furnished to do so, subject to the following conditions:\n#\n# The above copyright notice and this permission notice shall be included in\n# all copies or substantial portions of the Software.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n# THE SOFTWARE.\n\nfrom ansiblelint.rules import AnsibleLintRule\n\n\ndef _changed_in_when(item):\n    if not isinstance(item, str):\n        return False\n    return any(changed in item for changed in\n               ['.changed', '|changed', '[\"changed\"]', \"['changed']\"])\n\n\nclass UseHandlerRatherThanWhenChangedRule(AnsibleLintRule):\n    id = '503'\n    shortdesc = 'Tasks that run when changed should likely be handlers'\n    description = (\n        'If a task has a ``when: result.changed`` setting, it is effectively '\n        'acting as a handler'\n    )\n    severity = 'MEDIUM'\n    tags = ['task', 'behaviour']\n    version_added = 'historic'\n\n    def matchtask(self, file, task):\n        if task[\"__ansible_action_type__\"] != 'task':\n            return False\n\n        when = task.get('when')\n\n        if isinstance(when, list):\n            for item in when:\n                return _changed_in_when(item)\n        else:\n            return _changed_in_when(when)\n    \n    def message(self):\n        return \"You should consider using a more appropriate action, like a handler\"\n    \n    def help(self):\n        return \"You should consider using a more appropriate action, like a handler"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      9042,
+      4772,
+      6240,
+      7019,
+      8336,
+      7871,
+      4509,
+      3300,
+      5568,
+      7084
+    ],
+    "f_before": [
+      53.964378356933594,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      53.964378356933594,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      5.418074131011963,
+      5.795422077178955,
+      5.369853973388672,
+      5.044793128967285,
+      5.17435884475708,
+      5.425668239593506,
+      5.1004862785339355,
+      4.97735071182251,
+      5.033669471740723,
+      4.970835208892822
+    ],
+    "g_after": [
+      0.0,
+      5.418074131011963,
+      5.795422077178955,
+      5.369853973388672,
+      5.044793128967285,
+      5.17435884475708,
+      5.425668239593506,
+      5.1004862785339355,
+      4.97735071182251,
+      5.033669471740723,
+      4.970835208892822
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.426064644694328,
+    "train_mean_l2": 6.208298320971429,
+    "train_mean_l1": 2.753059552669525,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-002046/feature_std_layer_12.html",
+    "mean_std": 1.2004650831222534,
+    "max_std": 24.676727294921875
+  }
+}

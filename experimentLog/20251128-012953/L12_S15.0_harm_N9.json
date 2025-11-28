@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import rospy\nfrom pid import PID\nfrom yaw_controller import YawController\nfrom lowpass import LowPassFilter\n\nGAS_DENSITY = 2.858\nONE_MPH = 0.44704\n\n\nclass Controller(object):\n    def __init__(self, vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):\n\t\n\tself.yaw_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)\n\n\tkp = 0.3\n\tki = 0.1\n\tkd = 0.\n\ttMin = 0. # Min throttle\n\ttMax = 0.2 # Max throttle\n\tself.throttle_controller = PID(kp, ki, kd, tMin, tMax)\n\n\ttau = 0.5 # 1/(2pi*tau) = cutoff frequency\n\tts = 0.02 # Sample time\n\tself.vel_lpf = LowPassFilter(tau, ts)\n\n\tself.vehicle_mass = vehicle_mass\n\tself.fuel_capacity = fuel_capacity\n\tself.brake_deadband = brake_deadband\n\tself.decel_limit = decel_limit\n\tself.accel_limit = accel_limit\n\tself.wheel_radius = wheel_radius\n\n\tself.last_time = rospy.get_time()\n\n    def control(self, current_vel, dbw_enabled, targ_linear_vel, targ_angular_vel):\n\tif not dbw_enabled:\n\t\tself.throttle_controller.reset()\n\t\treturn 0., 0., 0.\n\tcurrent_vel = self.vel_lpf.filt(current_vel)\n\tsteering = self.yaw_controller.get_steering(targ_linear_vel, targ_angular_vel, current_vel)\n\n\tvel_diff = current_vel - targ_linear_vel\n\tself.last_vel = current_vel\n\n\tcurrent_time = rospy.get_time()\n\tsample_time = current_time-self.last_time\n\tself.last_time = current_time\n\n\tthrottle = self.throttle_controller.step(-vel_diff, sample_time) # -vel_diff because vel_diff is neg if currently going slower than desired speed.  So, we want to throttle, but pid controller is expecting a positive diff\n\tbrake = 0.\n\t\n\tif targ_linear_vel == 0. and current_vel < 0.1:\n\t\tthrottle = 0.\n\t\tbrake = 700. #N*m\n\telif throttle < .1 and vel_diff > 0:\n\t\tthrottle = 0.\n\t\t#decel = min(abs(vel_diff), abs(self.decel_limit))\n\t\tdecel = min(abs(1.0*vel_diff/sample_time), abs(self.decel_limit))\n\t\tbrake = abs(decel)*self.vehicle_mass*self.wheel_radius\n\t\t#brake = min(abs(decel)*self.vehicle_mass*self.wheel_radius,700)\n\n\treturn throttle, brake, steering\n",
+  "output": {
+    "before": "import rospy\nfrom pid import PID\nfrom yaw_controller import YawController\nfrom lowpass import LowPassFilter\n\nGAS_DENSITY = 2.858\nONE_MPH = 0.44704\n\n\nclass Controller(object):\n    def __init__(self, vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):\n\t\n\tself.yaw_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)\n\n\tkp = 0.3\n\tki = 0.1\n\tkd = 0.\n\ttMin = 0. # Min throttle\n\ttMax = 0.2 # Max throttle\n\tself.throttle_controller = PID(kp, ki, kd, tMin, tMax)\n\n\ttau = 0.5 # 1/(2pi*tau) = cutoff frequency\n\tts = 0.02 # Sample time\n\tself.vel_lpf = LowPassFilter(tau, ts)\n\n\tself.vehicle_mass = vehicle_mass\n\tself.fuel_capacity = fuel_capacity\n\tself.brake_deadband = brake_deadband\n\tself.decel_limit = decel_limit\n\tself.accel_limit = accel_limit\n\tself.wheel_radius = wheel_radius\n\n\tself.last_time = rospy.get_time()\n\n    def control(self, current_vel, dbw_enabled, targ_linear_vel, targ_angular_vel):\n\tif not dbw_enabled:\n\t\tself.throttle_controller.reset()\n\t\treturn 0., 0., 0.\n\tcurrent_vel = self.vel_lpf.filt(current_vel)\n\tsteering = self.yaw_controller.get_steering(targ_linear_vel, targ_angular_vel, current_vel)\n\n\tvel_diff = current_vel - targ_linear_vel\n\tself.last_vel = current_vel\n\n\tcurrent_time = rospy.get_time()\n\tsample_time = current_time-self.last_time\n\tself.last_time = current_time\n\n\tthrottle = self.throttle_controller.step(-vel_diff, sample_time) # -vel_diff because vel_diff is neg if currently going slower than desired speed.  So, we want to throttle, but pid controller is expecting a positive diff\n\tbrake = 0.\n\t\n\tif targ_linear_vel == 0. and current_vel < 0.1:\n\t\tthrottle = 0.\n\t\tbrake = 700. #N*m\n\telif throttle < .1 and vel_diff > 0:\n\t\tthrottle = 0.\n\t\t#decel = min(abs(vel_diff), abs(self.decel_limit))\n\t\tdecel = min(abs(1.0*vel_diff/sample_time), abs(self.decel_limit))\n\t\tbrake = abs(decel)*self.vehicle_mass*self.wheel_radius\n\t\t#brake = min(abs(decel)*self.vehicle_mass*self.wheel_radius,700)\n\n\treturn throttle, brake, steering\n```\n\n**Explanation:**\n\nThis code implements a simple autonomous driving controller that combines yaw control and throttle/brake control.\n\n**Key Components:**\n\n1. **Yaw Controller (`YawController`):**\n   - Responsible for maintaining the vehicle'",
+    "after": "import rospy\nfrom pid import PID\nfrom yaw_controller import YawController\nfrom lowpass import LowPassFilter\n\nGAS_DENSITY = 2.858\nONE_MPH = 0.44704\n\n\nclass Controller(object):\n    def __init__(self, vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):\n\t\n\tself.yaw_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)\n\n\tkp = 0.3\n\tki = 0.1\n\tkd = 0.\n\ttMin = 0. # Min throttle\n\ttMax = 0.2 # Max throttle\n\tself.throttle_controller = PID(kp, ki, kd, tMin, tMax)\n\n\ttau = 0.5 # 1/(2pi*tau) = cutoff frequency\n\tts = 0.02 # Sample time\n\tself.vel_lpf = LowPassFilter(tau, ts)\n\n\tself.vehicle_mass = vehicle_mass\n\tself.fuel_capacity = fuel_capacity\n\tself.brake_deadband = brake_deadband\n\tself.decel_limit = decel_limit\n\tself.accel_limit = accel_limit\n\tself.wheel_radius = wheel_radius\n\n\tself.last_time = rospy.get_time()\n\n    def control(self, current_vel, dbw_enabled, targ_linear_vel, targ_angular_vel):\n\tif not dbw_enabled:\n\t\tself.throttle_controller.reset()\n\t\treturn 0., 0., 0.\n\tcurrent_vel = self.vel_lpf.filt(current_vel)\n\tsteering = self.yaw_controller.get_steering(targ_linear_vel, targ_angular_vel, current_vel)\n\n\tvel_diff = current_vel - targ_linear_vel\n\tself.last_vel = current_vel\n\n\tcurrent_time = rospy.get_time()\n\tsample_time = current_time-self.last_time\n\tself.last_time = current_time\n\n\tthrottle = self.throttle_controller.step(-vel_diff, sample_time) # -vel_diff because vel_diff is neg if currently going slower than desired speed.  So, we want to throttle, but pid controller is expecting a positive diff\n\tbrake = 0.\n\t\n\tif targ_linear_vel == 0. and current_vel < 0.1:\n\t\tthrottle = 0.\n\t\tbrake = 700. #N*m\n\telif throttle < .1 and vel_diff > 0:\n\t\tthrottle = 0.\n\t\t#decel = min(abs(vel_diff), abs(self.decel_limit))\n\t\tdecel = min(abs(1.0*vel_diff/sample_time), abs(self.decel_limit))\n\t\tbrake = abs(decel)*self.vehicle_mass*self.wheel_radius\n\t\t#brake = min(abs(decel)*self.vehicle_mass*self.wheel_radius,700)\n\n\treturn throttle, brake, steering\n    \n\n    def get_speed(self):\n\treturn \"I'm not a robot, I'm a controller. I am a robot. \" \n\n    \n    \n    def set_speed(self):\n\tself"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1092,
+      7725,
+      2971,
+      3029,
+      6095,
+      6139,
+      4078,
+      8286,
+      6134,
+      3337
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.21516937017440796,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.21516937017440796,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.021793853491544724,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.011277986690402031,
+      0.01108527835458517,
+      0.047480259090662,
+      0.019509047269821167,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.021793853491544724,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.011277986690402031,
+      0.01108527835458517,
+      0.047480259090662,
+      0.019509047269821167,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

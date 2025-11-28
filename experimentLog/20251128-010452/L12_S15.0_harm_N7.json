@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=mse sae.guidance_mse_pos_value=1.0 sae.guidance_mse_neg_value=0.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "mse",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import glob\nimport sys\n\n##### creatin dict that will have all control positions\ndef con_pos(con_MH):\n\tcon_dict = {}\t\t\n\tf = open(con_MH, 'r')\n\tfor line in f:\n\t\ts = line.split()\n\t\tchr = s[0]\n\t\tpos = s[1]\t\n\t\tref = int(s[7]) #ref depth\n\t\talt = int(s[9]) #alt depth\n\t\tvaf = float(alt)/(ref+alt)\n\t\talt_type = s[8] #alt base\n\t\tif chr in con_dict:\n\t\t\tif pos in con_dict[chr]:\n\t\t\t\tprint \"ERROR: %s : %s\"%(chr, pos)\n\t\t\telse:\n\t\t\t\tcon_dict[chr][pos] = [[vaf, \"NA\"], alt_type] ## VAF of con FIRST in list of vaf in position\n\t\telse:\n\t\t\tcon_dict[chr] = {pos : [[vaf, \"NA\"], alt_type]}\n\tf.close()\n\treturn con_dict\n\ndef combine(con_dict, cas_MH):\n\tcas = open(cas_MH, 'r')\n\tfor line in cas:\n\t\ts = line.split()\n\t\tchr = s[0]\n\t\tpos = s[1] \n\t\tref = int(s[7]) #ref depth\n\t\talt = int(s[9]) #alt depth\n\t\tvaf = float(alt)/(ref+alt)\n\t\talt_type = s[8] #alt base\n\t\tif chr in con_dict:\n\t\t\tif pos in con_dict[chr]:\n\t\t\t\tcon_dict[chr][pos][0][1] = vaf\n\t\t\telse:\t\n\t\t\t\tcon_dict[chr][pos] = [[\"NA\", vaf], alt_type] ## VAF of cas SECOND in list of vaf in position\n\t\telse:\n\t\t\tcon_dict[chr] = {pos : [[\"NA\", vaf], alt_type] } \n\n\tcas.close()\t\n\treturn con_dict\t\n\ndef rem_het(total_dict):\n\tfor chr in total_dict:\n\t\tfor pos in total_dict[chr]:\n\t\t\tls = total_dict[chr][pos][0]\n\t\t\tif 'NA' in ls:\n\t\t\t\tcontinue\n\t\t\telse:\n\t\t\t\tif (ls[0] >= 0.30) & (ls[1] >= 0.30): ### remove positions with af 30+ in both tissues\n\t\t\t\t\ttotal_dict[chr][pos][0] = [\"NA\"] ## VAF [con, cas] will be listed as ['NA']\n\treturn total_dict\n\ndef write_final(passed_dict, con_out, cas_out, sha_out):\n\t\n\t#### DISORDERED\n\tfor chr in passed_dict:\n                for pos in passed_dict[chr]:\n                        line = [chr, pos, passed_dict[chr][pos][1]]\n                        ls = passed_dict[chr][pos][0] ### VAF of cas, con or 'NA'\n                        if \"NA\" in ls:\n\t\t\t\tif len(ls) == 1: #when 'NA'\n\t\t\t\t\tcontinue\n                                elif ls[0] == \"NA\": #when only case\n\t\t\t\t\tline.append(str(ls[1]))\n                                        cas_out.write('\\t'.join(line) + '\\n')\n                                else: #when only control\n\t\t\t\t\tline.append(str(ls[0]))\n                                        con_out.write('\\t'.join(line) + '\\n')\n                        else: #shared\n\t\t\t\tcon_vaf = passed_dict[chr][pos][0][0] ### add con VAF for future analysis\n\t\t\t\tline = '\\t'.join([chr, pos, passed_dict[chr][pos][1], str(con_vaf)]) + '\\n' \n                                sha_out.write(line)\t\n\n\t\t\ndef main(ID_con, ID_cas, con_MH, cas_MH, OutPath):\t\n\t\n\tcon_dict = con_pos(con_MH) # control positions\n\t\n\ttotal_dict = combine(con_dict, cas_MH) # conc positions of ctrl and case\n \n\tpassed_dict = rem_het(total_dict) # remove any positions with 0.30+ VAF for both ctrl and case\n\t\n\t### writing files\n\t###### ctrl specific\n\t###### case specific\n\t###### shared (with 30% af filter)\n\tcon_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con, ID_con]) + \".txt\"\n\tcas_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con, ID_cas]) + \".txt\"\n\tsha_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con]) + \".sha.txt\"\n\t\t\n\tcon_out = open(con_file, 'w')\n\tcas_out = open(cas_file, 'w')\n\tsha_out = open(sha_file, 'w')\t\n\n\twrite_final(passed_dict, con_out, cas_out, sha_out)\n\n\tcon_out.close()\n\tcas_out.close()\n\tsha_out.close()\n\n##### EXECUTION ######\n\nMHpath = sys.argv[1]\nID_con = sys.argv[2]\nID_cas = sys.argv[3]\nOutPath = sys.argv[4]\nDP = sys.argv[5]\n\nif \"ND\" in DP:\n\tcon_MH = MHpath + \"/ND-\" + ID_con + \"/final.passed.tsv\"\n\tcas_MH = MHpath + \"/ND-\" + ID_cas + \"/final.passed.tsv\"\nelse:\n\tcon_MH = MHpath + \"/\"  + ID_con.replace('.', '-') + \"/final.passed.tsv\"\n        cas_MH = MHpath + \"/\" +  ID_cas.replace('.', '-') + \"/final.passed.tsv\"\t\n\nmain(ID_con, ID_cas, con_MH, cas_MH, OutPath)\n",
+  "output": {
+    "before": "import glob\nimport sys\n\n##### creatin dict that will have all control positions\ndef con_pos(con_MH):\n\tcon_dict = {}\t\t\n\tf = open(con_MH, 'r')\n\tfor line in f:\n\t\ts = line.split()\n\t\tchr = s[0]\n\t\tpos = s[1]\t\n\t\tref = int(s[7]) #ref depth\n\t\talt = int(s[9]) #alt depth\n\t\tvaf = float(alt)/(ref+alt)\n\t\talt_type = s[8] #alt base\n\t\tif chr in con_dict:\n\t\t\tif pos in con_dict[chr]:\n\t\t\t\tprint \"ERROR: %s : %s\"%(chr, pos)\n\t\t\telse:\n\t\t\t\tcon_dict[chr][pos] = [[vaf, \"NA\"], alt_type] ## VAF of con FIRST in list of vaf in position\n\t\telse:\n\t\t\tcon_dict[chr] = {pos : [[vaf, \"NA\"], alt_type]}\n\tf.close()\n\treturn con_dict\n\ndef combine(con_dict, cas_MH):\n\tcas = open(cas_MH, 'r')\n\tfor line in cas:\n\t\ts = line.split()\n\t\tchr = s[0]\n\t\tpos = s[1] \n\t\tref = int(s[7]) #ref depth\n\t\talt = int(s[9]) #alt depth\n\t\tvaf = float(alt)/(ref+alt)\n\t\talt_type = s[8] #alt base\n\t\tif chr in con_dict:\n\t\t\tif pos in con_dict[chr]:\n\t\t\t\tcon_dict[chr][pos][0][1] = vaf\n\t\t\telse:\t\n\t\t\t\tcon_dict[chr][pos] = [[\"NA\", vaf], alt_type] ## VAF of cas SECOND in list of vaf in position\n\t\telse:\n\t\t\tcon_dict[chr] = {pos : [[\"NA\", vaf], alt_type] } \n\n\tcas.close()\t\n\treturn con_dict\t\n\ndef rem_het(total_dict):\n\tfor chr in total_dict:\n\t\tfor pos in total_dict[chr]:\n\t\t\tls = total_dict[chr][pos][0]\n\t\t\tif 'NA' in ls:\n\t\t\t\tcontinue\n\t\t\telse:\n\t\t\t\tif (ls[0] >= 0.30) & (ls[1] >= 0.30): ### remove positions with af 30+ in both tissues\n\t\t\t\t\ttotal_dict[chr][pos][0] = [\"NA\"] ## VAF [con, cas] will be listed as ['NA']\n\treturn total_dict\n\ndef write_final(passed_dict, con_out, cas_out, sha_out):\n\t\n\t#### DISORDERED\n\tfor chr in passed_dict:\n                for pos in passed_dict[chr]:\n                        line = [chr, pos, passed_dict[chr][pos][1]]\n                        ls = passed_dict[chr][pos][0] ### VAF of cas, con or 'NA'\n                        if \"NA\" in ls:\n\t\t\t\tif len(ls) == 1: #when 'NA'\n\t\t\t\t\tcontinue\n                                elif ls[0] == \"NA\": #when only case\n\t\t\t\t\tline.append(str(ls[1]))\n                                        cas_out.write('\\t'.join(line) + '\\n')\n                                else: #when only control\n\t\t\t\t\tline.append(str(ls[0]))\n                                        con_out.write('\\t'.join(line) + '\\n')\n                        else: #shared\n\t\t\t\tcon_vaf = passed_dict[chr][pos][0][0] ### add con VAF for future analysis\n\t\t\t\tline = '\\t'.join([chr, pos, passed_dict[chr][pos][1], str(con_vaf)]) + '\\n' \n                                sha_out.write(line)\t\n\n\t\t\ndef main(ID_con, ID_cas, con_MH, cas_MH, OutPath):\t\n\t\n\tcon_dict = con_pos(con_MH) # control positions\n\t\n\ttotal_dict = combine(con_dict, cas_MH) # conc positions of ctrl and case\n \n\tpassed_dict = rem_het(total_dict) # remove any positions with 0.30+ VAF for both ctrl and case\n\t\n\t### writing files\n\t###### ctrl specific\n\t###### case specific\n\t###### shared (with 30% af filter)\n\tcon_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con, ID_con]) + \".txt\"\n\tcas_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con, ID_cas]) + \".txt\"\n\tsha_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con]) + \".sha.txt\"\n\t\t\n\tcon_out = open(con_file, 'w')\n\tcas_out = open(cas_file, 'w')\n\tsha_out = open(sha_file, 'w')\t\n\n\twrite_final(passed_dict, con_out, cas_out, sha_out)\n\n\tcon_out.close()\n\tcas_out.close()\n\tsha_out.close()\n\n##### EXECUTION ######\n\nMHpath = sys.argv[1]\nID_con = sys.argv[2]\nID_cas = sys.argv[3]\nOutPath = sys.argv[4]\nDP = sys.argv[5]\n\nif \"ND\" in DP:\n\tcon_MH = MHpath + \"/ND-\" + ID_con + \"/final.passed.tsv\"\n\tcas_MH = MHpath + \"/ND-\" + ID_cas + \"/final.passed.tsv\"\nelse:\n\tcon_MH = MHpath + \"/\"  + ID_con.replace('.', '-') + \"/final.passed.tsv\"\n        cas_MH = MHpath + \"/\" +  ID_cas.replace('.', '-') + \"/final.passed.tsv\"\t\n\nmain(ID_con, ID_cas, con_MH, cas_MH, OutPath)\n```\n\n\n**Explanation:**\n\n1. **`con_pos(con_MH)`:**\n   - Reads control variants from a file (`con_MH`).\n   - Extracts chromosome, position, and VAF (variant allele frequency) for",
+    "after": "import glob\nimport sys\n\n##### creatin dict that will have all control positions\ndef con_pos(con_MH):\n\tcon_dict = {}\t\t\n\tf = open(con_MH, 'r')\n\tfor line in f:\n\t\ts = line.split()\n\t\tchr = s[0]\n\t\tpos = s[1]\t\n\t\tref = int(s[7]) #ref depth\n\t\talt = int(s[9]) #alt depth\n\t\tvaf = float(alt)/(ref+alt)\n\t\talt_type = s[8] #alt base\n\t\tif chr in con_dict:\n\t\t\tif pos in con_dict[chr]:\n\t\t\t\tprint \"ERROR: %s : %s\"%(chr, pos)\n\t\t\telse:\n\t\t\t\tcon_dict[chr][pos] = [[vaf, \"NA\"], alt_type] ## VAF of con FIRST in list of vaf in position\n\t\telse:\n\t\t\tcon_dict[chr] = {pos : [[vaf, \"NA\"], alt_type]}\n\tf.close()\n\treturn con_dict\n\ndef combine(con_dict, cas_MH):\n\tcas = open(cas_MH, 'r')\n\tfor line in cas:\n\t\ts = line.split()\n\t\tchr = s[0]\n\t\tpos = s[1] \n\t\tref = int(s[7]) #ref depth\n\t\talt = int(s[9]) #alt depth\n\t\tvaf = float(alt)/(ref+alt)\n\t\talt_type = s[8] #alt base\n\t\tif chr in con_dict:\n\t\t\tif pos in con_dict[chr]:\n\t\t\t\tcon_dict[chr][pos][0][1] = vaf\n\t\t\telse:\t\n\t\t\t\tcon_dict[chr][pos] = [[\"NA\", vaf], alt_type] ## VAF of cas SECOND in list of vaf in position\n\t\telse:\n\t\t\tcon_dict[chr] = {pos : [[\"NA\", vaf], alt_type] } \n\n\tcas.close()\t\n\treturn con_dict\t\n\ndef rem_het(total_dict):\n\tfor chr in total_dict:\n\t\tfor pos in total_dict[chr]:\n\t\t\tls = total_dict[chr][pos][0]\n\t\t\tif 'NA' in ls:\n\t\t\t\tcontinue\n\t\t\telse:\n\t\t\t\tif (ls[0] >= 0.30) & (ls[1] >= 0.30): ### remove positions with af 30+ in both tissues\n\t\t\t\t\ttotal_dict[chr][pos][0] = [\"NA\"] ## VAF [con, cas] will be listed as ['NA']\n\treturn total_dict\n\ndef write_final(passed_dict, con_out, cas_out, sha_out):\n\t\n\t#### DISORDERED\n\tfor chr in passed_dict:\n                for pos in passed_dict[chr]:\n                        line = [chr, pos, passed_dict[chr][pos][1]]\n                        ls = passed_dict[chr][pos][0] ### VAF of cas, con or 'NA'\n                        if \"NA\" in ls:\n\t\t\t\tif len(ls) == 1: #when 'NA'\n\t\t\t\t\tcontinue\n                                elif ls[0] == \"NA\": #when only case\n\t\t\t\t\tline.append(str(ls[1]))\n                                        cas_out.write('\\t'.join(line) + '\\n')\n                                else: #when only control\n\t\t\t\t\tline.append(str(ls[0]))\n                                        con_out.write('\\t'.join(line) + '\\n')\n                        else: #shared\n\t\t\t\tcon_vaf = passed_dict[chr][pos][0][0] ### add con VAF for future analysis\n\t\t\t\tline = '\\t'.join([chr, pos, passed_dict[chr][pos][1], str(con_vaf)]) + '\\n' \n                                sha_out.write(line)\t\n\n\t\t\ndef main(ID_con, ID_cas, con_MH, cas_MH, OutPath):\t\n\t\n\tcon_dict = con_pos(con_MH) # control positions\n\t\n\ttotal_dict = combine(con_dict, cas_MH) # conc positions of ctrl and case\n \n\tpassed_dict = rem_het(total_dict) # remove any positions with 0.30+ VAF for both ctrl and case\n\t\n\t### writing files\n\t###### ctrl specific\n\t###### case specific\n\t###### shared (with 30% af filter)\n\tcon_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con, ID_con]) + \".txt\"\n\tcas_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con, ID_cas]) + \".txt\"\n\tsha_file = OutPath + \"/\" + '_'.join([ID_cas, ID_con]) + \".sha.txt\"\n\t\t\n\tcon_out = open(con_file, 'w')\n\tcas_out = open(cas_file, 'w')\n\tsha_out = open(sha_file, 'w')\t\n\n\twrite_final(passed_dict, con_out, cas_out, sha_out)\n\n\tcon_out.close()\n\tcas_out.close()\n\tsha_out.close()\n\n##### EXECUTION ######\n\nMHpath = sys.argv[1]\nID_con = sys.argv[2]\nID_cas = sys.argv[3]\nOutPath = sys.argv[4]\nDP = sys.argv[5]\n\nif \"ND\" in DP:\n\tcon_MH = MHpath + \"/ND-\" + ID_con + \"/final.passed.tsv\"\n\tcas_MH = MHpath + \"/ND-\" + ID_cas + \"/final.passed.tsv\"\nelse:\n\tcon_MH = MHpath + \"/\"  + ID_con.replace('.', '-') + \"/final.passed.tsv\"\n        cas_MH = MHpath + \"/\" +  ID_cas.replace('.', '-') + \"/final.passed.tsv\"\t\n\nmain(ID_con, ID_cas, con_MH, cas_MH, OutPath)\n \n```\n\nThis code is just an example of how to write a script that can help you create a story about the process of writing a story. This is just a silly example of how to write a story about a person's experiences."
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      3909,
+      3661,
+      4237,
+      15,
+      6497,
+      3412,
+      8337,
+      4852,
+      639,
+      1813
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.025831369683146477,
+      0.03676392138004303,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.011264174245297909
+    ],
+    "g_after": [
+      0.0,
+      0.025831369683146477,
+      0.03676392138004303,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.011264174245297909
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.54353929513693,
+    "train_mean_l2": 6.013987733893097,
+    "train_mean_l1": 2.5168445214927195,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-010452/feature_std_layer_12.html",
+    "mean_std": 1.0416896343231201,
+    "max_std": 30.567893981933594
+  }
+}

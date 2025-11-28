@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=1 sae.loss_module=option1_loss experiment.use_multi_contrast=true sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 1,
+    "loss_module": "option1_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "# Arquivo utilizado até a aula 3, quando então passamos a utilizar a classe\n# ExtratorURL no arquivo extrator_url.py\nurl = \"bytebank.com/cambio?quantidade=100&moedaOrigem=real&moedaDestino=dolar\"\n\n# Sanitização da URL\nurl = url.strip()\n\n# Validação da URL\nif url == \"\":\n    raise ValueError(\"A URL está vazia\")\n\n# Separa base e parâmetros\nindice_interrogacao = url.find('?')\nurl_base = url[:indice_interrogacao]\nurl_parametros = url[indice_interrogacao+1:]\nprint(url_parametros)\n\n# Busca o valor de um parâmetro\nparametro_busca = 'quantidade'\nindice_parametro = url_parametros.find(parametro_busca)\nindice_valor = indice_parametro + len(parametro_busca) + 1\nindice_e_comercial = url_parametros.find('&', indice_valor)\nif indice_e_comercial == -1:\n    valor = url_parametros[indice_valor:]\nelse:\n    valor = url_parametros[indice_valor:indice_e_comercial]\n\nprint(valor)",
+  "output": {
+    "before": "# Arquivo utilizado até a aula 3, quando então passamos a utilizar a classe\n# ExtratorURL no arquivo extrator_url.py\nurl = \"bytebank.com/cambio?quantidade=100&moedaOrigem=real&moedaDestino=dolar\"\n\n# Sanitização da URL\nurl = url.strip()\n\n# Validação da URL\nif url == \"\":\n    raise ValueError(\"A URL está vazia\")\n\n# Separa base e parâmetros\nindice_interrogacao = url.find('?')\nurl_base = url[:indice_interrogacao]\nurl_parametros = url[indice_interrogacao+1:]\nprint(url_parametros)\n\n# Busca o valor de um parâmetro\nparametro_busca = 'quantidade'\nindice_parametro = url_parametros.find(parametro_busca)\nindice_valor = indice_parametro + len(parametro_busca) + 1\nindice_e_comercial = url_parametros.find('&', indice_valor)\nif indice_e_comercial == -1:\n    valor = url_parametros[indice_valor:]\nelse:\n    valor = url_parametros[indice_valor:indice_e_comercial]\n\nprint(valor)\n\n# Extração de dados\nprint(f\"URL base: {url_base}\")\nprint(f\"Parâmetros: {url_parametros}\")\nprint(f\"Valor do parâmetro {parametro_busca}: {valor}\")",
+    "after": "# Arquivo utilizado até a aula 3, quando então passamos a utilizar a classe\n# ExtratorURL no arquivo extrator_url.py\nurl = \"bytebank.com/cambio?quantidade=100&moedaOrigem=real&moedaDestino=dolar\"\n\n# Sanitização da URL\nurl = url.strip()\n\n# Validação da URL\nif url == \"\":\n    raise ValueError(\"A URL está vazia\")\n\n# Separa base e parâmetros\nindice_interrogacao = url.find('?')\nurl_base = url[:indice_interrogacao]\nurl_parametros = url[indice_interrogacao+1:]\nprint(url_parametros)\n\n# Busca o valor de um parâmetro\nparametro_busca = 'quantidade'\nindice_parametro = url_parametros.find(parametro_busca)\nindice_valor = indice_parametro + len(parametro_busca) + 1\nindice_e_comercial = url_parametros.find('&', indice_valor)\nif indice_e_comercial == -1:\n    valor = url_parametros[indice_valor:]\nelse:\n    valor = url_parametros[indice_valor:indice_e_comercial]\n\nprint(valor)\n\n# Exemplo de uso\n# URL da API\n# https://www.example.com/api/v1/resource/\n\n# Parâmetros da API\n# {'key': 'value'}\n\n# Exemplo de uso:\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      740,
+      7758,
+      4699,
+      2543,
+      2723,
+      7262,
+      350,
+      5840,
+      4797
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.07543466240167618,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.07543466240167618,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.457677711099386,
+    "train_mean_l2": 5.954684367239476,
+    "train_mean_l1": 2.5029932170808316,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-000733/feature_std_layer_12.html",
+    "mean_std": 0.9244738221168518,
+    "max_std": 25.908597946166992
+  }
+}

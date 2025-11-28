@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: show me the code for an ihosteservice in c#\nassistant: Here is an example of an `IHostingService` implementation in C#:\n```csharp\nusing Microsoft.AspNetCore.Hosting;\nusing Microsoft.Extensions.Hosting;\n\nnamespace MyWebApplication\n{\n    public class MyHostingService : IHostingService\n    {\n        private readonly IHostingEnvironment _hostingEnvironment;\n\n        public MyHostingService(IHostingEnvironment hostingEnvironment)\n        {\n            _hostingEnvironment = hostingEnvironment;\n        }\n\n        public void Start()\n        {\n            _hostingEnvironment.ApplicationStarted.Switch(\n                appStarted =>\n                {\n                    // Perform any custom logic for the application start event.\n                    Console.WriteLine($\"Application started: {appStarted.ApplicationName}\");\n                });\n\n            _hostingEnvironment.ApplicationStopped.Subscribe(\n                appStopped =>\n                {\n                    // Perform any custom logic for the application stop event.\n                    Console.WriteLine($\"Application stopped: {appStopped.ApplicationName}\");\n                });\n        }\n    }\n}\n```\nThis implementation uses the `IHostingEnvironment` interface, which is part of the ASP.NET Core `Microsoft.AspNetCore.Hosting` namespace. This interface provides information about the hosting environment and allows you to perform custom logic when the application starts and stops.\n\nIn the `Start()` method, we subscribe to the `ApplicationStarted` and `ApplicationStopped` events, and perform some simple logging when they are raised.",
+  "output": {
+    "before": "user: show me the code for an ihosteservice in c#\nassistant: Here is an example of an `IHostingService` implementation in C#:\n```csharp\nusing Microsoft.AspNetCore.Hosting;\nusing Microsoft.Extensions.Hosting;\n\nnamespace MyWebApplication\n{\n    public class MyHostingService : IHostingService\n    {\n        private readonly IHostingEnvironment _hostingEnvironment;\n\n        public MyHostingService(IHostingEnvironment hostingEnvironment)\n        {\n            _hostingEnvironment = hostingEnvironment;\n        }\n\n        public void Start()\n        {\n            _hostingEnvironment.ApplicationStarted.Switch(\n                appStarted =>\n                {\n                    // Perform any custom logic for the application start event.\n                    Console.WriteLine($\"Application started: {appStarted.ApplicationName}\");\n                });\n\n            _hostingEnvironment.ApplicationStopped.Subscribe(\n                appStopped =>\n                {\n                    // Perform any custom logic for the application stop event.\n                    Console.WriteLine($\"Application stopped: {appStopped.ApplicationName}\");\n                });\n        }\n    }\n}\n```\nThis implementation uses the `IHostingEnvironment` interface, which is part of the ASP.NET Core `Microsoft.AspNetCore.Hosting` namespace. This interface provides information about the hosting environment and allows you to perform custom logic when the application starts and stops.\n\nIn the `Start()` method, we subscribe to the `ApplicationStarted` and `ApplicationStopped` events, and perform some simple logging when they are raised. \n\n**Explanation:**\n\n1. **Namespace:** The code is in the `MyWebApplication` namespace.\n\n2. **Class:** The class is named `MyHostingService`.\n\n3. **Interface:** The class implements the `IHosting",
+    "after": "user: show me the code for an ihosteservice in c#\nassistant: Here is an example of an `IHostingService` implementation in C#:\n```csharp\nusing Microsoft.AspNetCore.Hosting;\nusing Microsoft.Extensions.Hosting;\n\nnamespace MyWebApplication\n{\n    public class MyHostingService : IHostingService\n    {\n        private readonly IHostingEnvironment _hostingEnvironment;\n\n        public MyHostingService(IHostingEnvironment hostingEnvironment)\n        {\n            _hostingEnvironment = hostingEnvironment;\n        }\n\n        public void Start()\n        {\n            _hostingEnvironment.ApplicationStarted.Switch(\n                appStarted =>\n                {\n                    // Perform any custom logic for the application start event.\n                    Console.WriteLine($\"Application started: {appStarted.ApplicationName}\");\n                });\n\n            _hostingEnvironment.ApplicationStopped.Subscribe(\n                appStopped =>\n                {\n                    // Perform any custom logic for the application stop event.\n                    Console.WriteLine($\"Application stopped: {appStopped.ApplicationName}\");\n                });\n        }\n    }\n}\n```\nThis implementation uses the `IHostingEnvironment` interface, which is part of the ASP.NET Core `Microsoft.AspNetCore.Hosting` namespace. This interface provides information about the hosting environment and allows you to perform custom logic when the application starts and stops.\n\nIn the `Start()` method, we subscribe to the `ApplicationStarted` and `ApplicationStopped` events, and perform some simple logging when they are raised.\nHere are some additional points to consider:\n* **Interfaces:** The `IHostingService` interface defines the contract that the service will follow. This contract will be implemented by the service.\n* **Events:** The service can subscribe to events"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8828,
+      8870,
+      1450,
+      8675,
+      6562,
+      1112,
+      3143,
+      5423,
+      8023,
+      3464
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.356310415834189,
+    "train_mean_l2": 5.661456496983766,
+    "train_mean_l1": 2.6948540791869164,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014034/feature_std_layer_12.html",
+    "mean_std": 0.9815042614936829,
+    "max_std": 25.413209915161133
+  }
+}

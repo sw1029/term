@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=margin sae.guidance_margin=1.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "margin",
+    "guidance_margin": 1.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from typing import Callable\n\n\nclass Solution:\n    def setZeroes(self, matrix: list[list[int]]) -> None:\n        \"\"\"Do not return anything, modify matrix in-place instead.\"\"\"\n        first_column_zero = False\n        for row in matrix:\n            for j, cell in enumerate(row):\n                if cell != 0:\n                    continue\n\n                row[0] = 0\n                if j == 0:\n                    first_column_zero = True\n                else:\n                    matrix[0][j] = 0\n\n        for i, row in enumerate(matrix[1:], start=1):\n            for j, cell in enumerate(row[1:], start=1):\n                if row[0] == 0:\n                    row[j] = 0\n\n                if matrix[0][j] == 0:\n                    matrix[i][j] = 0\n\n        # first row check\n        if matrix[0][0] == 0:\n            first_row = matrix[0]\n            for i in range(len(first_row)):\n                first_row[i] = 0\n\n        # first column check\n        if first_column_zero:\n            for i in range(len(matrix)):\n                matrix[i][0] = 0\n\n\ntests = [\n    (\n        ([[1, 1, 1], [1, 0, 1], [1, 1, 1]],),\n        [[1, 0, 1], [0, 0, 0], [1, 0, 1]],\n    ),\n    (\n        ([[0, 1, 2, 0], [3, 4, 5, 2], [1, 3, 1, 5]],),\n        [[0, 0, 0, 0], [0, 4, 5, 0], [0, 3, 1, 0]],\n    ),\n    (\n        ([[1, 2, 3, 4], [5, 0, 7, 8], [0, 10, 11, 12], [13, 14, 15, 0]],),\n        [[0, 0, 3, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],\n    ),\n\n]\n\n\ndef validator(\n        setZeroes: Callable[[list[list[int]]], None],\n        inputs: tuple[list[list[int]]],\n        expected: list[list[int]]\n) -> None:\n    matrix, = inputs\n    setZeroes(matrix)\n    assert matrix == expected, (matrix, expected)\n",
+  "output": {
+    "before": "from typing import Callable\n\n\nclass Solution:\n    def setZeroes(self, matrix: list[list[int]]) -> None:\n        \"\"\"Do not return anything, modify matrix in-place instead.\"\"\"\n        first_column_zero = False\n        for row in matrix:\n            for j, cell in enumerate(row):\n                if cell != 0:\n                    continue\n\n                row[0] = 0\n                if j == 0:\n                    first_column_zero = True\n                else:\n                    matrix[0][j] = 0\n\n        for i, row in enumerate(matrix[1:], start=1):\n            for j, cell in enumerate(row[1:], start=1):\n                if row[0] == 0:\n                    row[j] = 0\n\n                if matrix[0][j] == 0:\n                    matrix[i][j] = 0\n\n        # first row check\n        if matrix[0][0] == 0:\n            first_row = matrix[0]\n            for i in range(len(first_row)):\n                first_row[i] = 0\n\n        # first column check\n        if first_column_zero:\n            for i in range(len(matrix)):\n                matrix[i][0] = 0\n\n\ntests = [\n    (\n        ([[1, 1, 1], [1, 0, 1], [1, 1, 1]],),\n        [[1, 0, 1], [0, 0, 0], [1, 0, 1]],\n    ),\n    (\n        ([[0, 1, 2, 0], [3, 4, 5, 2], [1, 3, 1, 5]],),\n        [[0, 0, 0, 0], [0, 4, 5, 0], [0, 3, 1, 0]],\n    ),\n    (\n        ([[1, 2, 3, 4], [5, 0, 7, 8], [0, 10, 11, 12], [13, 14, 15, 0]],),\n        [[0, 0, 3, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],\n    ),\n\n]\n\n\ndef validator(\n        setZeroes: Callable[[list[list[int]]], None],\n        inputs: tuple[list[list[int]]],\n        expected: list[list[int]]\n) -> None:\n    matrix, = inputs\n    setZeroes(matrix)\n    assert matrix == expected, (matrix, expected)\n    print(f\"Test passed for inputs: {inputs} and expected: {expected}\")\n\n\nfor test in tests:\n    validator(\n        setZeroes,\n        test[0],\n        test[1],\n    )",
+    "after": "from typing import Callable\n\n\nclass Solution:\n    def setZeroes(self, matrix: list[list[int]]) -> None:\n        \"\"\"Do not return anything, modify matrix in-place instead.\"\"\"\n        first_column_zero = False\n        for row in matrix:\n            for j, cell in enumerate(row):\n                if cell != 0:\n                    continue\n\n                row[0] = 0\n                if j == 0:\n                    first_column_zero = True\n                else:\n                    matrix[0][j] = 0\n\n        for i, row in enumerate(matrix[1:], start=1):\n            for j, cell in enumerate(row[1:], start=1):\n                if row[0] == 0:\n                    row[j] = 0\n\n                if matrix[0][j] == 0:\n                    matrix[i][j] = 0\n\n        # first row check\n        if matrix[0][0] == 0:\n            first_row = matrix[0]\n            for i in range(len(first_row)):\n                first_row[i] = 0\n\n        # first column check\n        if first_column_zero:\n            for i in range(len(matrix)):\n                matrix[i][0] = 0\n\n\ntests = [\n    (\n        ([[1, 1, 1], [1, 0, 1], [1, 1, 1]],),\n        [[1, 0, 1], [0, 0, 0], [1, 0, 1]],\n    ),\n    (\n        ([[0, 1, 2, 0], [3, 4, 5, 2], [1, 3, 1, 5]],),\n        [[0, 0, 0, 0], [0, 4, 5, 0], [0, 3, 1, 0]],\n    ),\n    (\n        ([[1, 2, 3, 4], [5, 0, 7, 8], [0, 10, 11, 12], [13, 14, 15, 0]],),\n        [[0, 0, 3, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],\n    ),\n\n]\n\n\ndef validator(\n        setZeroes: Callable[[list[list[int]]], None],\n        inputs: tuple[list[list[int]]],\n        expected: list[list[int]]\n) -> None:\n    matrix, = inputs\n    setZeroes(matrix)\n    assert matrix == expected, (matrix, expected)\n```\n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2461,
+      3257,
+      9187,
+      762,
+      7188,
+      4467,
+      4230,
+      6119,
+      8345
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.001678232103586197,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.001678232103586197,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      9.443340240977705e-05,
+      0.0,
+      0.0,
+      0.0,
+      0.02080181986093521,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      9.443340240977705e-05,
+      0.0,
+      0.0,
+      0.0,
+      0.02080181986093521,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.600667519897222,
+    "train_mean_l2": 5.8795531693249945,
+    "train_mean_l1": 2.7083800366818904,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-005516/feature_std_layer_12.html",
+    "mean_std": 1.0919862985610962,
+    "max_std": 21.530872344970703
+  }
+}

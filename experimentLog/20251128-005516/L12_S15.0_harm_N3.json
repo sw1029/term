@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=margin sae.guidance_margin=1.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "margin",
+    "guidance_margin": 1.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Propose a design for a mobile application which is aimed to help users adjust their sleep cycle.\n\nThe mobile application should have features such as being able to set a gradual sleep schedule, setting reminders for when to go to bed and wake up, tracking sleep patterns and creating customizable goals, and offering advice on how to adjust your sleep cycle. The app should also have features such as tracking time spent in bed, displaying various sleep metrics, and providing access to tutorials and tips to improve your sleeping habits.",
+  "output": {
+    "before": "Propose a design for a mobile application which is aimed to help users adjust their sleep cycle.\n\nThe mobile application should have features such as being able to set a gradual sleep schedule, setting reminders for when to go to bed and wake up, tracking sleep patterns and creating customizable goals, and offering advice on how to adjust your sleep cycle. The app should also have features such as tracking time spent in bed, displaying various sleep metrics, and providing access to tutorials and tips to improve your sleeping habits.\n\n## SleepWell: Your Sleep Coach\n\n**Concept:**  A personalized sleep coaching app that guides users towards healthier sleep habits through gradual adjustments, insightful data, and expert advice. \n\n**Target Audience:** Individuals struggling with sleep disorders, frequent insomnia",
+    "after": "Propose a design for a mobile application which is aimed to help users adjust their sleep cycle.\n\nThe mobile application should have features such as being able to set a gradual sleep schedule, setting reminders for when to go to bed and wake up, tracking sleep patterns and creating customizable goals, and offering advice on how to adjust your sleep cycle. The app should also have features such as tracking time spent in bed, displaying various sleep metrics, and providing access to tutorials and tips to improve your sleeping habits.\n\n**Here's a breakdown of the key features:**\n\n* **Sleep cycle tracker:** This is the most important feature of the app. It should be able to track the user's sleep patterns and provide them with suggestions on how to improve"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1904,
+      7065,
+      8140,
+      6489,
+      304,
+      336,
+      1832,
+      1609,
+      8477,
+      7965
+    ],
+    "f_before": [
+      81.98123931884766,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.31671786308288574,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      81.98123931884766,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.31671786308288574,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.03141571208834648,
+      9.419145584106445,
+      9.470637321472168,
+      10.21484375,
+      8.515624046325684,
+      8.880661964416504,
+      8.748224258422852,
+      8.820569038391113,
+      7.766571998596191,
+      8.193954467773438,
+      7.812961578369141
+    ],
+    "g_after": [
+      0.03141571208834648,
+      9.419145584106445,
+      9.470637321472168,
+      10.21484375,
+      8.515624046325684,
+      8.880661964416504,
+      8.748224258422852,
+      8.820569038391113,
+      7.766571998596191,
+      8.193954467773438,
+      7.812961578369141
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.600667519897222,
+    "train_mean_l2": 5.8795531693249945,
+    "train_mean_l1": 2.7083800366818904,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-005516/feature_std_layer_12.html",
+    "mean_std": 1.0919862985610962,
+    "max_std": 21.530872344970703
+  }
+}

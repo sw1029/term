@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=margin sae.guidance_margin=1.0 sae.guidance_coeff=1.0 sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "margin",
+    "guidance_margin": 1.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "# coding:utf-8\n'''\npython 3.5\nmxnet 1.3.0\ngluoncv 0.3.0\nvisdom 0.1.7\ngluonbook 0.6.9\nauther: helloholmes\n'''\nimport mxnet as mx\nimport numpy as np\nimport os\nimport time\nimport pickle\nfrom mxnet import gluon\nfrom mxnet import init\nfrom mxnet import nd\nfrom mxnet import autograd\nfrom mxnet.gluon import nn\n\nclass VGG16(nn.HybridBlock):\n    # input size (b, 3, 224, 224)\n    def __init__(self, num_classes=120, **kwargs):\n        super(VGG16, self).__init__(**kwargs)\n        model = gluon.model_zoo.vision.get_model('vgg16', pretrained=True)\n        with self.name_scope():\n            self.features = model.features\n            self.output = nn.Dense(num_classes)\n\n    def initialize(self, ctx=None):\n        for param in self.collect_params().values():\n            if param._data is not None:\n                continue\n            else:\n                param.initialize()\n\n    def hybrid_forward(self, F, x):\n        x = self.features(x)\n        x = self.output(x)\n        return x\n\nif __name__ == '__main__':\n    m = VGG16()\n    m.initialize()\n    data = mx.nd.random.uniform(shape=(1, 3, 224, 224))\n    out = m(data)\n    print(out.shape)",
+  "output": {
+    "before": "# coding:utf-8\n'''\npython 3.5\nmxnet 1.3.0\ngluoncv 0.3.0\nvisdom 0.1.7\ngluonbook 0.6.9\nauther: helloholmes\n'''\nimport mxnet as mx\nimport numpy as np\nimport os\nimport time\nimport pickle\nfrom mxnet import gluon\nfrom mxnet import init\nfrom mxnet import nd\nfrom mxnet import autograd\nfrom mxnet.gluon import nn\n\nclass VGG16(nn.HybridBlock):\n    # input size (b, 3, 224, 224)\n    def __init__(self, num_classes=120, **kwargs):\n        super(VGG16, self).__init__(**kwargs)\n        model = gluon.model_zoo.vision.get_model('vgg16', pretrained=True)\n        with self.name_scope():\n            self.features = model.features\n            self.output = nn.Dense(num_classes)\n\n    def initialize(self, ctx=None):\n        for param in self.collect_params().values():\n            if param._data is not None:\n                continue\n            else:\n                param.initialize()\n\n    def hybrid_forward(self, F, x):\n        x = self.features(x)\n        x = self.output(x)\n        return x\n\nif __name__ == '__main__':\n    m = VGG16()\n    m.initialize()\n    data = mx.nd.random.uniform(shape=(1, 3, 224, 224))\n    out = m(data)\n    print(out.shape)\n    print(out.dtype)\n    \n    # save the model\n    pickle.dump(m.collect_params(), open(\"vgg16.pkl\", \"wb\"))\n    \n    # load the model\n    m",
+    "after": "# coding:utf-8\n'''\npython 3.5\nmxnet 1.3.0\ngluoncv 0.3.0\nvisdom 0.1.7\ngluonbook 0.6.9\nauther: helloholmes\n'''\nimport mxnet as mx\nimport numpy as np\nimport os\nimport time\nimport pickle\nfrom mxnet import gluon\nfrom mxnet import init\nfrom mxnet import nd\nfrom mxnet import autograd\nfrom mxnet.gluon import nn\n\nclass VGG16(nn.HybridBlock):\n    # input size (b, 3, 224, 224)\n    def __init__(self, num_classes=120, **kwargs):\n        super(VGG16, self).__init__(**kwargs)\n        model = gluon.model_zoo.vision.get_model('vgg16', pretrained=True)\n        with self.name_scope():\n            self.features = model.features\n            self.output = nn.Dense(num_classes)\n\n    def initialize(self, ctx=None):\n        for param in self.collect_params().values():\n            if param._data is not None:\n                continue\n            else:\n                param.initialize()\n\n    def hybrid_forward(self, F, x):\n        x = self.features(x)\n        x = self.output(x)\n        return x\n\nif __name__ == '__main__':\n    m = VGG16()\n    m.initialize()\n    data = mx.nd.random.uniform(shape=(1, 3, 224, 224))\n    out = m(data)\n    print(out.shape)\n    #print(out)\n\n```\n\n##  description:\nThis script defines a VGG16 model.\n\nThis script defines a VGG16 model.\n\n##  description:\nThis script defines a VGG16"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2461,
+      3257,
+      9187,
+      762,
+      7188,
+      4467,
+      4230,
+      6119,
+      8345
+    ],
+    "f_before": [
+      1.2987086772918701,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      1.2987086772918701,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.757493793964386,
+      0.15177974104881287,
+      0.1432335376739502,
+      0.13378965854644775,
+      0.1246073842048645,
+      0.13402751088142395,
+      0.12851852178573608,
+      0.13549946248531342,
+      0.11993484199047089,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.757493793964386,
+      0.15177974104881287,
+      0.1432335376739502,
+      0.13378965854644775,
+      0.1246073842048645,
+      0.13402751088142395,
+      0.12851852178573608,
+      0.13549946248531342,
+      0.11993484199047089,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.600667519897222,
+    "train_mean_l2": 5.8795531693249945,
+    "train_mean_l1": 2.7083800366818904,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-005516/feature_std_layer_12.html",
+    "mean_std": 1.0919862985610962,
+    "max_std": 21.530872344970703
+  }
+}

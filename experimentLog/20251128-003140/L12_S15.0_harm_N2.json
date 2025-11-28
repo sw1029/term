@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "class EC():\n\n    def __init__(self, id=None):\n\n        self.database = 'EC'\n        self.id = id\n        self._long_name = 'EC (Enzyme Commission) number of the Nomenclature Committee of the International Union of Biochemistry and Molecular Biology (IUBMB) Database of Interacting Proteins'\n        self._web = 'https://iubmb.qmul.ac.uk/enzyme/'\n\n    def __call__(self):\n\n        tmp_dict = {\n                'database' : 'EC',\n                'id' : self.id\n                }\n\n        return tmp_dict\n\n    def __repr__(self):\n\n        return f'<EC: {self.id}>'\n\n    def __str__(self):\n\n        return f'EC: {self.id}'\n\n    def __deepcopy__(self):\n\n        return EC(id=self.id)\n\n    def _webid(self):\n\n        return self._web\n\n    def _repr_html_(self):\n\n        return f'<a href=\"https://enzyme.expasy.org/EC/{self.id}\">{self.database}: {self.id}</a>'\n\n",
+  "output": {
+    "before": "class EC():\n\n    def __init__(self, id=None):\n\n        self.database = 'EC'\n        self.id = id\n        self._long_name = 'EC (Enzyme Commission) number of the Nomenclature Committee of the International Union of Biochemistry and Molecular Biology (IUBMB) Database of Interacting Proteins'\n        self._web = 'https://iubmb.qmul.ac.uk/enzyme/'\n\n    def __call__(self):\n\n        tmp_dict = {\n                'database' : 'EC',\n                'id' : self.id\n                }\n\n        return tmp_dict\n\n    def __repr__(self):\n\n        return f'<EC: {self.id}>'\n\n    def __str__(self):\n\n        return f'EC: {self.id}'\n\n    def __deepcopy__(self):\n\n        return EC(id=self.id)\n\n    def _webid(self):\n\n        return self._web\n\n    def _repr_html_(self):\n\n        return f'<a href=\"https://enzyme.expasy.org/EC/{self.id}\">{self.database}: {self.id}</a>'\n\n    def _repr_json_(self):\n\n        return {\n            'database': self.database,\n            'id': self.id\n        }\n\nif __name__ == \"__main__\":\n\n    ec = EC(id=",
+    "after": "class EC():\n\n    def __init__(self, id=None):\n\n        self.database = 'EC'\n        self.id = id\n        self._long_name = 'EC (Enzyme Commission) number of the Nomenclature Committee of the International Union of Biochemistry and Molecular Biology (IUBMB) Database of Interacting Proteins'\n        self._web = 'https://iubmb.qmul.ac.uk/enzyme/'\n\n    def __call__(self):\n\n        tmp_dict = {\n                'database' : 'EC',\n                'id' : self.id\n                }\n\n        return tmp_dict\n\n    def __repr__(self):\n\n        return f'<EC: {self.id}>'\n\n    def __str__(self):\n\n        return f'EC: {self.id}'\n\n    def __deepcopy__(self):\n\n        return EC(id=self.id)\n\n    def _webid(self):\n\n        return self._web\n\n    def _repr_html_(self):\n\n        return f'<a href=\"https://enzyme.expasy.org/EC/{self.id}\">{self.database}: {self.id}</a>'\n\n    def __str__(self):\n\n        return f'EC: {self.id}'\n\n\n\n```\n\nIt is important to note that the code you provided is incomplete. The purpose of this code is to demonstrate how to create a character and a"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7666,
+      163,
+      809,
+      8677,
+      1624,
+      6121,
+      6396,
+      7264,
+      3348,
+      4449
+    ],
+    "f_before": [
+      83.50942993164062,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      83.50942993164062,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      9.925273895263672,
+      8.543963432312012,
+      8.86712646484375,
+      8.563414573669434,
+      8.395273208618164,
+      8.672346115112305,
+      0.09617902338504791,
+      8.465630531311035,
+      8.280280113220215,
+      7.59259557723999
+    ],
+    "g_after": [
+      0.0,
+      9.925273895263672,
+      8.543963432312012,
+      8.86712646484375,
+      8.563414573669434,
+      8.395273208618164,
+      8.672346115112305,
+      0.09617902338504791,
+      8.465630531311035,
+      8.280280113220215,
+      7.59259557723999
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.922674083650111,
+    "train_mean_l2": 6.179721740648151,
+    "train_mean_l1": 2.9495802549421786,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-003140/feature_std_layer_12.html",
+    "mean_std": 1.1792261600494385,
+    "max_std": 44.42379379272461
+  }
+}

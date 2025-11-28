@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from django.core.mail import send_mail\nfrom django.template.loader import render_to_string\nfrom django.conf import settings\n\n\nclass BaseEmailSponsorshipNotification:\n    subject_template = None\n    message_template = None\n    email_context_keys = None\n\n    def get_subject(self, context):\n        return render_to_string(self.subject_template, context).strip()\n\n    def get_message(self, context):\n        return render_to_string(self.message_template, context).strip()\n\n    def get_recipient_list(self, context):\n        raise NotImplementedError\n\n    def notify(self, **kwargs):\n        context = {k: kwargs.get(k) for k in self.email_context_keys}\n\n        send_mail(\n            subject=self.get_subject(context),\n            message=self.get_message(context),\n            recipient_list=self.get_recipient_list(context),\n            from_email=settings.SPONSORSHIP_NOTIFICATION_FROM_EMAIL,\n        )\n\n\nclass AppliedSponsorshipNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_new_application_subject.txt\"\n    message_template = \"sponsors/email/psf_new_application.txt\"\n    email_context_keys = [\"request\", \"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass AppliedSponsorshipNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_new_application_subject.txt\"\n    message_template = \"sponsors/email/sponsor_new_application.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n\n\nclass RejectedSponsorshipNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_rejected_sponsorship_subject.txt\"\n    message_template = \"sponsors/email/psf_rejected_sponsorship.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass RejectedSponsorshipNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_rejected_sponsorship_subject.txt\"\n    message_template = \"sponsors/email/sponsor_rejected_sponsorship.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n\n\nclass StatementOfWorkNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_statement_of_work_subject.txt\"\n    message_template = \"sponsors/email/psf_statement_of_work.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass StatementOfWorkNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_statement_of_work_subject.txt\"\n    message_template = \"sponsors/email/sponsor_statement_of_work.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n",
+  "output": {
+    "before": "from django.core.mail import send_mail\nfrom django.template.loader import render_to_string\nfrom django.conf import settings\n\n\nclass BaseEmailSponsorshipNotification:\n    subject_template = None\n    message_template = None\n    email_context_keys = None\n\n    def get_subject(self, context):\n        return render_to_string(self.subject_template, context).strip()\n\n    def get_message(self, context):\n        return render_to_string(self.message_template, context).strip()\n\n    def get_recipient_list(self, context):\n        raise NotImplementedError\n\n    def notify(self, **kwargs):\n        context = {k: kwargs.get(k) for k in self.email_context_keys}\n\n        send_mail(\n            subject=self.get_subject(context),\n            message=self.get_message(context),\n            recipient_list=self.get_recipient_list(context),\n            from_email=settings.SPONSORSHIP_NOTIFICATION_FROM_EMAIL,\n        )\n\n\nclass AppliedSponsorshipNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_new_application_subject.txt\"\n    message_template = \"sponsors/email/psf_new_application.txt\"\n    email_context_keys = [\"request\", \"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass AppliedSponsorshipNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_new_application_subject.txt\"\n    message_template = \"sponsors/email/sponsor_new_application.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n\n\nclass RejectedSponsorshipNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_rejected_sponsorship_subject.txt\"\n    message_template = \"sponsors/email/psf_rejected_sponsorship.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass RejectedSponsorshipNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_rejected_sponsorship_subject.txt\"\n    message_template = \"sponsors/email/sponsor_rejected_sponsorship.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n\n\nclass StatementOfWorkNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_statement_of_work_subject.txt\"\n    message_template = \"sponsors/email/psf_statement_of_work.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass StatementOfWorkNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_statement_of_work_subject.txt\"\n    message_template = \"sponsors/email/sponsor_statement_of_work.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n```\n\n**Explanation:**\n\n1. **Base EmailSponsorshipNotification:** This is a base class for all email notification types. It defines common methods for getting subject, message, recipient list, and notifying the recipient.\n2. **AppliedSpons",
+    "after": "from django.core.mail import send_mail\nfrom django.template.loader import render_to_string\nfrom django.conf import settings\n\n\nclass BaseEmailSponsorshipNotification:\n    subject_template = None\n    message_template = None\n    email_context_keys = None\n\n    def get_subject(self, context):\n        return render_to_string(self.subject_template, context).strip()\n\n    def get_message(self, context):\n        return render_to_string(self.message_template, context).strip()\n\n    def get_recipient_list(self, context):\n        raise NotImplementedError\n\n    def notify(self, **kwargs):\n        context = {k: kwargs.get(k) for k in self.email_context_keys}\n\n        send_mail(\n            subject=self.get_subject(context),\n            message=self.get_message(context),\n            recipient_list=self.get_recipient_list(context),\n            from_email=settings.SPONSORSHIP_NOTIFICATION_FROM_EMAIL,\n        )\n\n\nclass AppliedSponsorshipNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_new_application_subject.txt\"\n    message_template = \"sponsors/email/psf_new_application.txt\"\n    email_context_keys = [\"request\", \"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass AppliedSponsorshipNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_new_application_subject.txt\"\n    message_template = \"sponsors/email/sponsor_new_application.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n\n\nclass RejectedSponsorshipNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_rejected_sponsorship_subject.txt\"\n    message_template = \"sponsors/email/psf_rejected_sponsorship.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass RejectedSponsorshipNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_rejected_sponsorship_subject.txt\"\n    message_template = \"sponsors/email/sponsor_rejected_sponsorship.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n\n\nclass StatementOfWorkNotificationToPSF(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/psf_statement_of_work_subject.txt\"\n    message_template = \"sponsors/email/psf_statement_of_work.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return [settings.SPONSORSHIP_NOTIFICATION_TO_EMAIL]\n\n\nclass StatementOfWorkNotificationToSponsors(BaseEmailSponsorshipNotification):\n    subject_template = \"sponsors/email/sponsor_statement_of_work_subject.txt\"\n    message_template = \"sponsors/email/sponsor_statement_of_work.txt\"\n    email_context_keys = [\"sponsorship\"]\n\n    def get_recipient_list(self, context):\n        return context[\"sponsorship\"].verified_emails\n```\n\n\n\n**Explanation:**\n\nThis code provides a framework for sending email notifications related to sponsorship applications. \n\nHere's a breakdown of the different classes and methods:\n\n**BaseEmailSponsorshipNotification:**\n\n- This class provides a base for"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      8067,
+      1637,
+      3946,
+      7035,
+      3515,
+      2056,
+      8969,
+      4919,
+      2952,
+      7188
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0173516683280468,
+      0.0,
+      0.07753848284482956
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0173516683280468,
+      0.0,
+      0.07753848284482956
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.781839042335749,
+    "train_mean_l2": 6.304576007805765,
+    "train_mean_l1": 2.9933579485416413,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014943/feature_std_layer_12.html",
+    "mean_std": 0.9723951816558838,
+    "max_std": 28.6618709564209
+  }
+}

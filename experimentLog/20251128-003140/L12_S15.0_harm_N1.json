@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from typing import Optional\n\nfrom fastapi import Depends, FastAPI, Security\nfrom fastapi.security import APIKeyHeader\nfrom fastapi.testclient import TestClient\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\napi_key = APIKeyHeader(name=\"key\", auto_error=False)\n\n\nclass User(BaseModel):\n    username: str\n\n\ndef get_current_user(oauth_header: Optional[str] = Security(api_key)):\n    if oauth_header is None:\n        return None\n    user = User(username=oauth_header)\n    return user\n\n\n@app.get(\"/users/me\")\ndef read_current_user(current_user: Optional[User] = Depends(get_current_user)):\n    if current_user is None:\n        return {\"msg\": \"Create an account first\"}\n    return current_user\n\n\nclient = TestClient(app)\n\nopenapi_schema = {\n    \"openapi\": \"3.0.2\",\n    \"info\": {\"title\": \"FastAPI\", \"version\": \"0.1.0\"},\n    \"paths\": {\n        \"/users/me\": {\n            \"get\": {\n                \"responses\": {\n                    \"200\": {\n                        \"description\": \"Successful Response\",\n                        \"content\": {\"application/json\": {\"schema\": {}}},\n                    }\n                },\n                \"summary\": \"Read Current User\",\n                \"operationId\": \"read_current_user_users_me_get\",\n                \"security\": [{\"APIKeyHeader\": []}],\n            }\n        }\n    },\n    \"components\": {\n        \"securitySchemes\": {\n            \"APIKeyHeader\": {\"type\": \"apiKey\", \"name\": \"key\", \"in\": \"header\"}\n        }\n    },\n}\n\n\ndef test_openapi_schema():\n    response = client.get(\"/openapi.json\")\n    assert response.status_code == 200\n    assert response.json() == openapi_schema\n\n\ndef test_security_api_key():\n    response = client.get(\"/users/me\", headers={\"key\": \"secret\"})\n    assert response.status_code == 200\n    assert response.json() == {\"username\": \"secret\"}\n\n\ndef test_security_api_key_no_key():\n    response = client.get(\"/users/me\")\n    assert response.status_code == 200\n    assert response.json() == {\"msg\": \"Create an account first\"}\n",
+  "output": {
+    "before": "from typing import Optional\n\nfrom fastapi import Depends, FastAPI, Security\nfrom fastapi.security import APIKeyHeader\nfrom fastapi.testclient import TestClient\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\napi_key = APIKeyHeader(name=\"key\", auto_error=False)\n\n\nclass User(BaseModel):\n    username: str\n\n\ndef get_current_user(oauth_header: Optional[str] = Security(api_key)):\n    if oauth_header is None:\n        return None\n    user = User(username=oauth_header)\n    return user\n\n\n@app.get(\"/users/me\")\ndef read_current_user(current_user: Optional[User] = Depends(get_current_user)):\n    if current_user is None:\n        return {\"msg\": \"Create an account first\"}\n    return current_user\n\n\nclient = TestClient(app)\n\nopenapi_schema = {\n    \"openapi\": \"3.0.2\",\n    \"info\": {\"title\": \"FastAPI\", \"version\": \"0.1.0\"},\n    \"paths\": {\n        \"/users/me\": {\n            \"get\": {\n                \"responses\": {\n                    \"200\": {\n                        \"description\": \"Successful Response\",\n                        \"content\": {\"application/json\": {\"schema\": {}}},\n                    }\n                },\n                \"summary\": \"Read Current User\",\n                \"operationId\": \"read_current_user_users_me_get\",\n                \"security\": [{\"APIKeyHeader\": []}],\n            }\n        }\n    },\n    \"components\": {\n        \"securitySchemes\": {\n            \"APIKeyHeader\": {\"type\": \"apiKey\", \"name\": \"key\", \"in\": \"header\"}\n        }\n    },\n}\n\n\ndef test_openapi_schema():\n    response = client.get(\"/openapi.json\")\n    assert response.status_code == 200\n    assert response.json() == openapi_schema\n\n\ndef test_security_api_key():\n    response = client.get(\"/users/me\", headers={\"key\": \"secret\"})\n    assert response.status_code == 200\n    assert response.json() == {\"username\": \"secret\"}\n\n\ndef test_security_api_key_no_key():\n    response = client.get(\"/users/me\")\n    assert response.status_code == 200\n    assert response.json() == {\"msg\": \"Create an account first\"}\n```\n\n**Explanation:**\n\n1. **Dependencies and Setup:**\n   - `FastAPI` is used as the framework for the application.\n   - `Security` and `APIKeyHeader` from `fastapi.security` are used",
+    "after": "from typing import Optional\n\nfrom fastapi import Depends, FastAPI, Security\nfrom fastapi.security import APIKeyHeader\nfrom fastapi.testclient import TestClient\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\napi_key = APIKeyHeader(name=\"key\", auto_error=False)\n\n\nclass User(BaseModel):\n    username: str\n\n\ndef get_current_user(oauth_header: Optional[str] = Security(api_key)):\n    if oauth_header is None:\n        return None\n    user = User(username=oauth_header)\n    return user\n\n\n@app.get(\"/users/me\")\ndef read_current_user(current_user: Optional[User] = Depends(get_current_user)):\n    if current_user is None:\n        return {\"msg\": \"Create an account first\"}\n    return current_user\n\n\nclient = TestClient(app)\n\nopenapi_schema = {\n    \"openapi\": \"3.0.2\",\n    \"info\": {\"title\": \"FastAPI\", \"version\": \"0.1.0\"},\n    \"paths\": {\n        \"/users/me\": {\n            \"get\": {\n                \"responses\": {\n                    \"200\": {\n                        \"description\": \"Successful Response\",\n                        \"content\": {\"application/json\": {\"schema\": {}}},\n                    }\n                },\n                \"summary\": \"Read Current User\",\n                \"operationId\": \"read_current_user_users_me_get\",\n                \"security\": [{\"APIKeyHeader\": []}],\n            }\n        }\n    },\n    \"components\": {\n        \"securitySchemes\": {\n            \"APIKeyHeader\": {\"type\": \"apiKey\", \"name\": \"key\", \"in\": \"header\"}\n        }\n    },\n}\n\n\ndef test_openapi_schema():\n    response = client.get(\"/openapi.json\")\n    assert response.status_code == 200\n    assert response.json() == openapi_schema\n\n\ndef test_security_api_key():\n    response = client.get(\"/users/me\", headers={\"key\": \"secret\"})\n    assert response.status_code == 200\n    assert response.json() == {\"username\": \"secret\"}\n\n\ndef test_security_api_key_no_key():\n    response = client.get(\"/users/me\")\n    assert response.status_code == 200\n    assert response.json() == {\"msg\": \"Create an account first\"}\n    \n    \n\n\n# This is just an example, but it's a good idea to remember that this response should be different from what the user wants to be,\n# because it's just an example.\n```\n \nThis"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7666,
+      163,
+      809,
+      8677,
+      1624,
+      6121,
+      6396,
+      7264,
+      3348,
+      4449
+    ],
+    "f_before": [
+      67.27204132080078,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      67.27204132080078,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      7.995425701141357,
+      7.0492472648620605,
+      7.143022537231445,
+      6.8983635902404785,
+      6.762914657592773,
+      6.986114025115967,
+      0.009696940891444683,
+      6.819592475891113,
+      6.670280456542969,
+      6.116307735443115
+    ],
+    "g_after": [
+      0.0,
+      7.995425701141357,
+      7.0492472648620605,
+      7.143022537231445,
+      6.8983635902404785,
+      6.762914657592773,
+      6.986114025115967,
+      0.009696940891444683,
+      6.819592475891113,
+      6.670280456542969,
+      6.116307735443115
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.922674083650111,
+    "train_mean_l2": 6.179721740648151,
+    "train_mean_l1": 2.9495802549421786,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-003140/feature_std_layer_12.html",
+    "mean_std": 1.1792261600494385,
+    "max_std": 44.42379379272461
+  }
+}

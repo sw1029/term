@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "import sys\nimport numpy as np\nfrom numpy import matlib\nfrom scipy.stats import multivariate_normal\nfrom read_data import read_data\nimport matplotlib.pyplot as plt\nimport time\nimport visual\n\n########## Description of Algorithm ###########\n# We will assume having m events\n# Each event should have k=3 jets\n# Each event should have n 'parrticles' to be clustered into the k jets\n# Input: cells  (size = [m,k,2])\n#            np vector of size m\n#                 each entry is a np vector of size k\n#                       each entry of the above vector is of size d=2 dimentions (eta, phi)\n# Input: energies   (size = [m,k,1])\n#            similar structure as cells, but only energy information\n\ndef visualize(particles, ghost, mu, sigma, pi, nameString):\n    visual.render_particlesAndJetsAndGhosts(particles, mu, sigma, ghost, nameString)\n    pass\n\"\"\"\n    #import code; code.interact(local=locals())\n\"\"\"\n# A little inefficient, can be fixed...\ndef makeJets(Q, particles):\n    thresholdP = 0.95\n    for j in range(len(Q[0])):\n        newJet = [0.]*4 #4-vector\n        for i in range(len(particles)):\n            if Q[i][j] > thresholdP:\n                newParticle = [0.]*4\n                newParticle[0] = particles[i][2]\n                newParticle[1] = particles[i][0]\n                newParticle[2] = particles[i][1]\n                newParticle[0] = particles[i][2]\n                newJet = np.array(newJet) + np.array(newParticle)\n        print \"Jet \"+str(j)+\": \"+str(newJet[0])+\" GeV (I guess?)\"\n        \n\ndef jetFunction(particleVec,mu,sigma):\n    myPhi1 = abs(particleVec[1]-mu[1])\n    myPhi2 = abs(particleVec[1]-(mu[1]+2*np.pi))\n    myPhi3 = abs(particleVec[1]-(mu[1]-2*np.pi))\n    wrap = 0\n    if myPhi2 < myPhi1 and myPhi2 < myPhi3:\n        wrap = 1\n    if myPhi3 < myPhi1 and myPhi3 < myPhi2:\n        wrap = -1\n    absdeltaPhi = min(myPhi1, myPhi2, myPhi3)\n    deltaR = np.sqrt((absdeltaPhi)**2 + (particleVec[0]-mu[0])**2)\n    denom = 2*np.pi*(sigma**2)\n    numerator = np.exp(-deltaR**2/(2*sigma**2))\n    return numerator/denom, wrap\n\ndef expectation(mu, sigma, pi, particles):\n    k = len(mu)\n    d = len(mu[0])\n    Q = np.empty((len(particles),k))\n    wrapAround = []\n    for i in range(len(particles)):\n        wrapArr = [0]*k\n        for j in range(k):\n            denom = 0\n            for jP in range(k):\n                phiF1, wrap1 = jetFunction(particles[i],mu[jP],sigma[jP])\n                denom += pi[jP]*phiF1\n            phiF2, wrap2 = jetFunction(particles[i], mu[j], sigma[j])\n            Q[i,j] = pi[j]*phiF2/denom\n            wrapArr[j] = wrap2\n        wrapAround.append(wrapArr)\n    return Q, wrapAround\n            \ndef maximization(Q, particles, mu, sigma, pi, wrapAround):\n    #ptThreshold = 5\n    #sigmaThreshold = 0.01\n    #sigmaLimit = 1.5\n    eventNumber = 8\n    k = len(mu)\n    d = len(mu[0]) #2-d grid\n    allSigma = [] #Note that what goes in here is sigma and not sigma^2 (scalars)\n    allMu = [] #Each entry is a 2-vector\n    allPi = [] #scalars\n    for j in range(k):\n        if not convergedArr[j]:\n            newMu = [0.,0.]\n            newSigma = 0.\n            newPi = 0.\n            piDenom = 0.\n            muDenom = 0.\n            for i in range(len(particles)):\n                piDenom += particles[i][2]\n                muDenom += particles[i][2] * Q[i][j]\n                newPi += particles[i][2] * Q[i][j]\n                for c in range(d):\n                    newMu[c] += particles[i][2] * Q[i][j] * (particles[i][c]+wrapAround[i][j]*2*np.pi)\n            newMu = newMu/muDenom\n            newPi = newPi/piDenom\n                \n            for myL in range(len(particles)):\n                phi1 = abs(particles[myL][1]-newMu[1])\n                phi2 = abs(particles[myL][1]-(newMu[1]+2*np.pi))\n                phi3 = abs(particles[myL][1]-(newMu[1]-2*np.pi))\n                absdeltaPhi = min(phi1, phi2, phi3)\n                deltaR = np.sqrt((absdeltaPhi)**2 + (particles[myL][0]-newMu[0])**2)\n                #if particles[myL][2] < ptThreshold:\n                newSigma += Q[myL][j]*particles[myL][2]*deltaR**2\n            newSigma = newSigma/(2.*muDenom)\n            #if newSigma >= sigmaThreshold:\n            #    newSigma = sigmaThreshold\n            #if newSigma <= sigmaLimit:\n            #newSigma = sigmaLimit\n        else:\n            newMu = mu[j]\n            newSigma = sigma[j]**2 #Careful with sigma squared\n            newPi = pi[j]\n        allMu.append(newMu)\n        allPi.append(newPi)\n        allSigma.append(np.sqrt(np.abs(newSigma)))\n    return allMu, allSigma, allPi\n\nif __name__ == '__main__':\n    debug = False\n    eventNumber = 8\n    ### Read in data ###\n    particles = []\n    myX, myE = read_data()\n    for i in range(len(myE[eventNumber])):\n        newEntry = []\n        newEntry.append(myX[eventNumber][i][0])\n        newEntry.append(myX[eventNumber][i][1])\n        newEntry.append(myE[eventNumber][i][0])\n        particles.append(newEntry)\n    \n    if debug:\n        print \"particles\", particles\n        \n    ### InitializeParameters ###\n    numK = 3 #Seed from AntiKt eventually\n    d = 2\n    pi = [1./numK]*numK #length k\n    sigma = [1.]*numK #length k\n    mu = [[0.0,3.],[2.,-1.],[2.5,3.]] #Seed with AntiKt eventually\n    numParticles = len(particles) #total number of partcles in event\n    numGhosts = numParticles * 10\n    epsilonR = 0.4/100 #pt cone / 100\n    epsilonS = 1./100\n    smallPt = 1./10\n    convergedArr = [False]*numK\n\n    ### Make ghosts ###\n    ghost = [[np.random.uniform(-np.pi,np.pi) for i in range(0,numK)] for j in range (0,numGhosts)]\n    for g in ghost:\n        g[2] = smallPt\n    allParticles = particles + ghost\n    \n    num = 0\n    visualize(particles, ghost, mu, sigma, pi,\"fuzzy\"+str(num)+\".jpg\")\n    num += 1\n    \n    while True:\n        \n        if debug:\n            print \"Pi\", pi\n            print \"mu\", mu\n            print \"sigma\", sigma\n            print \"bool\", convergedArr\n\n        ### Expectation Step ###\n        Q, qWrap = expectation(mu, sigma, pi, allParticles)\n        if debug:\n            print \"Q: \", Q\n\n        if num==1:\n            print \"First Q: \"\n            print Q\n        ### Maximization ###\n        muPrime, sigmaPrime, piPrime = maximization(Q, allParticles, mu, sigma, pi, qWrap)\n        \n        ### Convergence Criteria ###\n        for i in range(numK):\n            absdeltaPhi = min(abs(mu[i][1]-muPrime[i][1]),abs(mu[i][1]-(muPrime[i][1]+2*np.pi)),abs(mu[i][1]-(muPrime[i][1]-2*np.pi)))\n            deltaR = np.sqrt((absdeltaPhi)**2 + (mu[i][0]-muPrime[i][0])**2)\n            if deltaR < epsilonR and np.abs(sigmaPrime[i]-sigma[i]) < epsilonS:\n                convergedArr[i] = True\n\n        ### Update ###\n        mu = muPrime\n        sigma = sigmaPrime\n        pi = piPrime\n\n        ### Visualization ###\n        visualize(particles, ghost, mu, sigma, pi,\"fuzzy\"+str(num)+\".jpg\")\n        num += 1\n        \n        ### Exit Criteria ###\n        if convergedArr == [True]*numK:\n            print \"Final Q: \"\n            print Q\n            makeJets(Q, allParticles)\n            break\n        \n    arrLab = [\"First\",\"Second\",\"Third\",\"Fourth\",\"Fifth\",\"Sixth\",\"Seventh\",\"Eigth\",\"Ninth\"]\n    for i in range(len(mu)):\n        print arrLab[i]+\" centroid: eta=\"+str(mu[i][0])+\", phi=\"+str(mu[i][1])+\", weight=\"+str(pi[i])+\", sigma=\"+str(sigma[i])\n\n",
+  "output": {
+    "before": "import sys\nimport numpy as np\nfrom numpy import matlib\nfrom scipy.stats import multivariate_normal\nfrom read_data import read_data\nimport matplotlib.pyplot as plt\nimport time\nimport visual\n\n########## Description of Algorithm ###########\n# We will assume having m events\n# Each event should have k=3 jets\n# Each event should have n 'parrticles' to be clustered into the k jets\n# Input: cells  (size = [m,k,2])\n#            np vector of size m\n#                 each entry is a np vector of size k\n#                       each entry of the above vector is of size d=2 dimentions (eta, phi)\n# Input: energies   (size = [m,k,1])\n#            similar structure as cells, but only energy information\n\ndef visualize(particles, ghost, mu, sigma, pi, nameString):\n    visual.render_particlesAndJetsAndGhosts(particles, mu, sigma, ghost, nameString)\n    pass\n\"\"\"\n    #import code; code.interact(local=locals())\n\"\"\"\n# A little inefficient, can be fixed...\ndef makeJets(Q, particles):\n    thresholdP = 0.95\n    for j in range(len(Q[0])):\n        newJet = [0.]*4 #4-vector\n        for i in range(len(particles)):\n            if Q[i][j] > thresholdP:\n                newParticle = [0.]*4\n                newParticle[0] = particles[i][2]\n                newParticle[1] = particles[i][0]\n                newParticle[2] = particles[i][1]\n                newParticle[0] = particles[i][2]\n                newJet = np.array(newJet) + np.array(newParticle)\n        print \"Jet \"+str(j)+\": \"+str(newJet[0])+\" GeV (I guess?)\"\n        \n\ndef jetFunction(particleVec,mu,sigma):\n    myPhi1 = abs(particleVec[1]-mu[1])\n    myPhi2 = abs(particleVec[1]-(mu[1]+2*np.pi))\n    myPhi3 = abs(particleVec[1]-(mu[1]-2*np.pi))\n    wrap = 0\n    if myPhi2 < myPhi1 and myPhi2 < myPhi3:\n        wrap = 1\n    if myPhi3 < myPhi1 and myPhi3 < myPhi2:\n        wrap = -1\n    absdeltaPhi = min(myPhi1, myPhi2, myPhi3)\n    deltaR = np.sqrt((absdeltaPhi)**2 + (particleVec[0]-mu[0])**2)\n    denom = 2*np.pi*(sigma**2)\n    numerator = np.exp(-deltaR**2/(2*sigma**2))\n    return numerator/denom, wrap\n\ndef expectation(mu, sigma, pi, particles):\n    k = len(mu)\n    d = len(mu[0])\n    Q = np.empty((len(particles),k))\n    wrapAround = []\n    for i in range(len(particles)):\n        wrapArr = [0]*k\n        for j in range(k):\n            denom = 0\n            for jP in range(k):\n                phiF1, wrap1 = jetFunction(particles[i],mu[jP],sigma[jP])\n                denom += pi[jP]*phiF1\n            phiF2, wrap2 = jetFunction(particles[i], mu[j], sigma[j])\n            Q[i,j] = pi[j]*phiF2/denom\n            wrapArr[j] = wrap2\n        wrapAround.append(wrapArr)\n    return Q, wrapAround\n            \ndef maximization(Q, particles, mu, sigma, pi, wrapAround):\n    #ptThreshold = 5\n    #sigmaThreshold = 0.01\n    #sigmaLimit = 1.5\n    eventNumber = 8\n    k = len(mu)\n    d = len(mu[0]) #2-d grid\n    allSigma = [] #Note that what goes in here is sigma and not sigma^2 (scalars)\n    allMu = [] #Each entry is a 2-vector\n    allPi = [] #scalars\n    for j in range(k):\n        if not convergedArr[j]:\n            newMu = [0.,0.]\n            newSigma = 0.\n            newPi = 0.\n            piDenom = 0.\n            muDenom = 0.\n            for i in range(len(particles)):\n                piDenom += particles[i][2]\n                muDenom += particles[i][2] * Q[i][j]\n                newPi += particles[i][2] * Q[i][j]\n                for c in range(d):\n                    newMu[c] += particles[i][2] * Q[i][j] * (particles[i][c]+wrapAround[i][j]*2*np.pi)\n            newMu = newMu/muDenom\n            newPi = newPi/piDenom\n                \n            for myL in range(len(particles)):\n                phi1 = abs(particles[myL][1]-newMu[1])\n                phi2 = abs(particles[myL][1]-(newMu[1]+2*np.pi))\n                phi3 = abs(particles[myL][1]-(newMu[1]-2*np.pi))\n                absdeltaPhi = min(phi1, phi2, phi3)\n                deltaR = np.sqrt((absdeltaPhi)**2 + (particles[myL][0]-newMu[0])**2)\n                #if particles[myL][2] < ptThreshold:\n                newSigma += Q[myL][j]*particles[myL][2]*deltaR**2\n            newSigma = newSigma/(2.*muDenom)\n            #if newSigma >= sigmaThreshold:\n            #    newSigma = sigmaThreshold\n            #if newSigma <= sigmaLimit:\n            #newSigma = sigmaLimit\n        else:\n            newMu = mu[j]\n            newSigma = sigma[j]**2 #Careful with sigma squared\n            newPi = pi[j]\n        allMu.append(newMu)\n        allPi.append(newPi)\n        allSigma.append(np.sqrt(np.abs(newSigma)))\n    return allMu, allSigma, allPi\n\nif __name__ == '__main__':\n    debug = False\n    eventNumber = 8\n    ### Read in data ###\n    particles = []\n    myX, myE = read_data()\n    for i in range(len(myE[eventNumber])):\n        newEntry = []\n        newEntry.append(myX[eventNumber][i][0])\n        newEntry.append(myX[eventNumber][i][1])\n        newEntry.append(myE[eventNumber][i][0])\n        particles.append(newEntry)\n    \n    if debug:\n        print \"particles\", particles\n        \n    ### InitializeParameters ###\n    numK = 3 #Seed from AntiKt eventually\n    d = 2\n    pi = [1./numK]*numK #length k\n    sigma = [1.]*numK #length k\n    mu = [[0.0,3.],[2.,-1.],[2.5,3.]] #Seed with AntiKt eventually\n    numParticles = len(particles) #total number of partcles in event\n    numGhosts = numParticles * 10\n    epsilonR = 0.4/100 #pt cone / 100\n    epsilonS = 1./100\n    smallPt = 1./10\n    convergedArr = [False]*numK\n\n    ### Make ghosts ###\n    ghost = [[np.random.uniform(-np.pi,np.pi) for i in range(0,numK)] for j in range (0,numGhosts)]\n    for g in ghost:\n        g[2] = smallPt\n    allParticles = particles + ghost\n    \n    num = 0\n    visualize(particles, ghost, mu, sigma, pi,\"fuzzy\"+str(num)+\".jpg\")\n    num += 1\n    \n    while True:\n        \n        if debug:\n            print \"Pi\", pi\n            print \"mu\", mu\n            print \"sigma\", sigma\n            print \"bool\", convergedArr\n\n        ### Expectation Step ###\n        Q, qWrap = expectation(mu, sigma, pi, allParticles)\n        if debug:\n            print \"Q: \", Q\n\n        if num==1:\n            print \"First Q: \"\n            print Q\n        ### Maximization ###\n        muPrime, sigmaPrime, piPrime = maximization(Q, allParticles, mu, sigma, pi, qWrap)\n        \n        ### Convergence Criteria ###\n        for i in range(numK):\n            absdeltaPhi = min(abs(mu[i][1]-muPrime[i][1]),abs(mu[i][1]-(muPrime[i][1]+2*np.pi)),abs(mu[i][1]-(muPrime[i][1]-2*np.pi)))\n            deltaR = np.sqrt((absdeltaPhi)**2 + (mu[i][0]-muPrime[i][0])**2)\n            if deltaR < epsilonR and np.abs(sigmaPrime[i]-sigma[i]) < epsilonS:\n                convergedArr[i] = True\n\n        ### Update ###\n        mu = muPrime\n        sigma = sigmaPrime\n        pi = piPrime\n\n        ### Visualization ###\n        visualize(particles, ghost, mu, sigma, pi,\"fuzzy\"+str(num)+\".jpg\")\n        num += 1\n        \n        ### Exit Criteria ###\n        if convergedArr == [True]*numK:\n            print \"Final Q: \"\n            print Q\n            makeJets(Q, allParticles)\n            break\n        \n    arrLab = [\"First\",\"Second\",\"Third\",\"Fourth\",\"Fifth\",\"Sixth\",\"Seventh\",\"Eigth\",\"Ninth\"]\n    for i in range(len(mu)):\n        print arrLab[i]+\" centroid: eta=\"+str(mu[i][0])+\", phi=\"+str(mu[i][1])+\", weight=\"+str(pi[i])+\", sigma=\"+str(sigma[i])\n\n    \n    \n    \n    \n    \n    \n    \n    \n```\n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n",
+    "after": "import sys\nimport numpy as np\nfrom numpy import matlib\nfrom scipy.stats import multivariate_normal\nfrom read_data import read_data\nimport matplotlib.pyplot as plt\nimport time\nimport visual\n\n########## Description of Algorithm ###########\n# We will assume having m events\n# Each event should have k=3 jets\n# Each event should have n 'parrticles' to be clustered into the k jets\n# Input: cells  (size = [m,k,2])\n#            np vector of size m\n#                 each entry is a np vector of size k\n#                       each entry of the above vector is of size d=2 dimentions (eta, phi)\n# Input: energies   (size = [m,k,1])\n#            similar structure as cells, but only energy information\n\ndef visualize(particles, ghost, mu, sigma, pi, nameString):\n    visual.render_particlesAndJetsAndGhosts(particles, mu, sigma, ghost, nameString)\n    pass\n\"\"\"\n    #import code; code.interact(local=locals())\n\"\"\"\n# A little inefficient, can be fixed...\ndef makeJets(Q, particles):\n    thresholdP = 0.95\n    for j in range(len(Q[0])):\n        newJet = [0.]*4 #4-vector\n        for i in range(len(particles)):\n            if Q[i][j] > thresholdP:\n                newParticle = [0.]*4\n                newParticle[0] = particles[i][2]\n                newParticle[1] = particles[i][0]\n                newParticle[2] = particles[i][1]\n                newParticle[0] = particles[i][2]\n                newJet = np.array(newJet) + np.array(newParticle)\n        print \"Jet \"+str(j)+\": \"+str(newJet[0])+\" GeV (I guess?)\"\n        \n\ndef jetFunction(particleVec,mu,sigma):\n    myPhi1 = abs(particleVec[1]-mu[1])\n    myPhi2 = abs(particleVec[1]-(mu[1]+2*np.pi))\n    myPhi3 = abs(particleVec[1]-(mu[1]-2*np.pi))\n    wrap = 0\n    if myPhi2 < myPhi1 and myPhi2 < myPhi3:\n        wrap = 1\n    if myPhi3 < myPhi1 and myPhi3 < myPhi2:\n        wrap = -1\n    absdeltaPhi = min(myPhi1, myPhi2, myPhi3)\n    deltaR = np.sqrt((absdeltaPhi)**2 + (particleVec[0]-mu[0])**2)\n    denom = 2*np.pi*(sigma**2)\n    numerator = np.exp(-deltaR**2/(2*sigma**2))\n    return numerator/denom, wrap\n\ndef expectation(mu, sigma, pi, particles):\n    k = len(mu)\n    d = len(mu[0])\n    Q = np.empty((len(particles),k))\n    wrapAround = []\n    for i in range(len(particles)):\n        wrapArr = [0]*k\n        for j in range(k):\n            denom = 0\n            for jP in range(k):\n                phiF1, wrap1 = jetFunction(particles[i],mu[jP],sigma[jP])\n                denom += pi[jP]*phiF1\n            phiF2, wrap2 = jetFunction(particles[i], mu[j], sigma[j])\n            Q[i,j] = pi[j]*phiF2/denom\n            wrapArr[j] = wrap2\n        wrapAround.append(wrapArr)\n    return Q, wrapAround\n            \ndef maximization(Q, particles, mu, sigma, pi, wrapAround):\n    #ptThreshold = 5\n    #sigmaThreshold = 0.01\n    #sigmaLimit = 1.5\n    eventNumber = 8\n    k = len(mu)\n    d = len(mu[0]) #2-d grid\n    allSigma = [] #Note that what goes in here is sigma and not sigma^2 (scalars)\n    allMu = [] #Each entry is a 2-vector\n    allPi = [] #scalars\n    for j in range(k):\n        if not convergedArr[j]:\n            newMu = [0.,0.]\n            newSigma = 0.\n            newPi = 0.\n            piDenom = 0.\n            muDenom = 0.\n            for i in range(len(particles)):\n                piDenom += particles[i][2]\n                muDenom += particles[i][2] * Q[i][j]\n                newPi += particles[i][2] * Q[i][j]\n                for c in range(d):\n                    newMu[c] += particles[i][2] * Q[i][j] * (particles[i][c]+wrapAround[i][j]*2*np.pi)\n            newMu = newMu/muDenom\n            newPi = newPi/piDenom\n                \n            for myL in range(len(particles)):\n                phi1 = abs(particles[myL][1]-newMu[1])\n                phi2 = abs(particles[myL][1]-(newMu[1]+2*np.pi))\n                phi3 = abs(particles[myL][1]-(newMu[1]-2*np.pi))\n                absdeltaPhi = min(phi1, phi2, phi3)\n                deltaR = np.sqrt((absdeltaPhi)**2 + (particles[myL][0]-newMu[0])**2)\n                #if particles[myL][2] < ptThreshold:\n                newSigma += Q[myL][j]*particles[myL][2]*deltaR**2\n            newSigma = newSigma/(2.*muDenom)\n            #if newSigma >= sigmaThreshold:\n            #    newSigma = sigmaThreshold\n            #if newSigma <= sigmaLimit:\n            #newSigma = sigmaLimit\n        else:\n            newMu = mu[j]\n            newSigma = sigma[j]**2 #Careful with sigma squared\n            newPi = pi[j]\n        allMu.append(newMu)\n        allPi.append(newPi)\n        allSigma.append(np.sqrt(np.abs(newSigma)))\n    return allMu, allSigma, allPi\n\nif __name__ == '__main__':\n    debug = False\n    eventNumber = 8\n    ### Read in data ###\n    particles = []\n    myX, myE = read_data()\n    for i in range(len(myE[eventNumber])):\n        newEntry = []\n        newEntry.append(myX[eventNumber][i][0])\n        newEntry.append(myX[eventNumber][i][1])\n        newEntry.append(myE[eventNumber][i][0])\n        particles.append(newEntry)\n    \n    if debug:\n        print \"particles\", particles\n        \n    ### InitializeParameters ###\n    numK = 3 #Seed from AntiKt eventually\n    d = 2\n    pi = [1./numK]*numK #length k\n    sigma = [1.]*numK #length k\n    mu = [[0.0,3.],[2.,-1.],[2.5,3.]] #Seed with AntiKt eventually\n    numParticles = len(particles) #total number of partcles in event\n    numGhosts = numParticles * 10\n    epsilonR = 0.4/100 #pt cone / 100\n    epsilonS = 1./100\n    smallPt = 1./10\n    convergedArr = [False]*numK\n\n    ### Make ghosts ###\n    ghost = [[np.random.uniform(-np.pi,np.pi) for i in range(0,numK)] for j in range (0,numGhosts)]\n    for g in ghost:\n        g[2] = smallPt\n    allParticles = particles + ghost\n    \n    num = 0\n    visualize(particles, ghost, mu, sigma, pi,\"fuzzy\"+str(num)+\".jpg\")\n    num += 1\n    \n    while True:\n        \n        if debug:\n            print \"Pi\", pi\n            print \"mu\", mu\n            print \"sigma\", sigma\n            print \"bool\", convergedArr\n\n        ### Expectation Step ###\n        Q, qWrap = expectation(mu, sigma, pi, allParticles)\n        if debug:\n            print \"Q: \", Q\n\n        if num==1:\n            print \"First Q: \"\n            print Q\n        ### Maximization ###\n        muPrime, sigmaPrime, piPrime = maximization(Q, allParticles, mu, sigma, pi, qWrap)\n        \n        ### Convergence Criteria ###\n        for i in range(numK):\n            absdeltaPhi = min(abs(mu[i][1]-muPrime[i][1]),abs(mu[i][1]-(muPrime[i][1]+2*np.pi)),abs(mu[i][1]-(muPrime[i][1]-2*np.pi)))\n            deltaR = np.sqrt((absdeltaPhi)**2 + (mu[i][0]-muPrime[i][0])**2)\n            if deltaR < epsilonR and np.abs(sigmaPrime[i]-sigma[i]) < epsilonS:\n                convergedArr[i] = True\n\n        ### Update ###\n        mu = muPrime\n        sigma = sigmaPrime\n        pi = piPrime\n\n        ### Visualization ###\n        visualize(particles, ghost, mu, sigma, pi,\"fuzzy\"+str(num)+\".jpg\")\n        num += 1\n        \n        ### Exit Criteria ###\n        if convergedArr == [True]*numK:\n            print \"Final Q: \"\n            print Q\n            makeJets(Q, allParticles)\n            break\n        \n    arrLab = [\"First\",\"Second\",\"Third\",\"Fourth\",\"Fifth\",\"Sixth\",\"Seventh\",\"Eigth\",\"Ninth\"]\n    for i in range(len(mu)):\n        print arrLab[i]+\" centroid: eta=\"+str(mu[i][0])+\", phi=\"+str(mu[i][1])+\", weight=\"+str(pi[i])+\", sigma=\"+str(sigma[i])\n\n    return\n    \n    \n#----------------------------------------------------------------------------------------------------------------\n#----------------------------------------------------------------------------------------------------------------\n#----------------------------------------------------------------------------------------------------------------\n#----------------------------------------------------------------------------------------------------------------\n#------------------------------------------------------------------------------------------------"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      2732,
+      7210,
+      4064,
+      3803,
+      2844,
+      950,
+      2266,
+      6315,
+      4138
+    ],
+    "f_before": [
+      33.047752380371094,
+      104.27569580078125,
+      0.0,
+      0.40921565890312195,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.14775337278842926
+    ],
+    "f_after": [
+      33.047752380371094,
+      104.27569580078125,
+      0.0,
+      0.40921565890312195,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.14775337278842926
+    ],
+    "g_before": [
+      59.488197326660156,
+      19.0307559967041,
+      15.969217300415039,
+      3.874162197113037,
+      3.484309196472168,
+      3.5237324237823486,
+      26.11860466003418,
+      3.2343544960021973,
+      3.327908515930176,
+      13.638529777526855,
+      3.1991820335388184
+    ],
+    "g_after": [
+      59.488197326660156,
+      19.0307559967041,
+      15.969217300415039,
+      3.874162197113037,
+      3.484309196472168,
+      3.5237324237823486,
+      26.11860466003418,
+      3.2343544960021973,
+      3.327908515930176,
+      13.638529777526855,
+      3.1991820335388184
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

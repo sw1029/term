@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "# ///////////////////////////////////////////////////////////////\n#\n# BY: WANDERSON M.PIMENTA\n# PROJECT MADE WITH: Qt Designer and PySide6\n# V: 1.0.0\n#\n# This project can be used freely for all uses, as long as they maintain the\n# respective credits only in the Python scripts, any information in the visual\n# interface (GUI) can be modified without any implication.\n#\n# There are limitations on Qt licenses if you want to use your products\n# commercially, I recommend reading them on the official website:\n# https://doc.qt.io/qtforpython/licenses.html\n#\n# ///////////////////////////////////////////////////////////////\n\n# IMPORT PACKAGES AND MODULES\n# ///////////////////////////////////////////////////////////////\n\n# IMPORT QT CORE\n# ///////////////////////////////////////////////////////////////\nfrom qt_core import *\n\n# IMPORT SETTINGS\n# ///////////////////////////////////////////////////////////////\nfrom app.gui.core.json_settings import Settings\n\n# IMPORT STYLES\n# ///////////////////////////////////////////////////////////////\nfrom . styles import Styles\n\n# PY WINDOW\n# ///////////////////////////////////////////////////////////////\nclass PyWindow(QFrame):\n    def __init__(\n        self,\n        parent,\n        layout = Qt.Vertical,\n        margin = 0,\n        spacing = 2,\n        bg_color = \"#2c313c\",\n        text_color = \"#fff\",\n        text_font = \"9pt 'Segoe UI'\",\n        border_radius = 10,\n        border_size = 2,\n        border_color = \"#343b48\",\n        enable_shadow = True\n    ):\n        super().__init__()\n\n        # LOAD SETTINGS\n        # ///////////////////////////////////////////////////////////////\n        settings = Settings()\n        self.settings = settings.items\n\n        # PROPERTIES\n        # ///////////////////////////////////////////////////////////////\n        self.parent = parent\n        self.layout = layout\n        self.margin = margin\n        self.bg_color = bg_color\n        self.text_color = text_color\n        self.text_font = text_font\n        self.border_radius = border_radius\n        self.border_size = border_size\n        self.border_color = border_color\n        self.enable_shadow = enable_shadow\n\n        # OBJECT NAME\n        # ///////////////////////////////////////////////////////////////   \n        self.setObjectName(\"pod_bg_app\")\n\n        # APPLY STYLESHEET\n        # /////////////////////////////////////////////////////////////// \n        self.set_stylesheet()\n\n        # ADD LAYOUT\n        # ///////////////////////////////////////////////////////////////\n        if layout == Qt.Vertical:\n            # VERTICAL LAYOUT\n            self.layout = QHBoxLayout(self)\n        else:\n            # HORIZONTAL LAYOUT\n            self.layout = QHBoxLayout(self)\n        self.layout.setContentsMargins(margin, margin, margin, margin)\n        self.layout.setSpacing(spacing)\n\n        # ADD DROP SHADOW\n        # ///////////////////////////////////////////////////////////////\n        if self.settings[\"custom_title_bar\"]:\n            if enable_shadow:\n                self.shadow = QGraphicsDropShadowEffect()\n                self.shadow.setBlurRadius(20)\n                self.shadow.setXOffset(0)\n                self.shadow.setYOffset(0)\n                self.shadow.setColor(QColor(0, 0, 0, 160))\n                self.setGraphicsEffect(self.shadow)\n\n    # APPLY AND UPDATE STYLESHEET\n    # ///////////////////////////////////////////////////////////////\n    def set_stylesheet(\n        self,\n        bg_color = None,\n        border_radius = None,\n        border_size = None,\n        border_color = None,\n        text_color = None,\n        text_font = None\n    ):\n        # CHECK BG COLOR\n        if bg_color != None: internal_bg_color = bg_color\n        else: internal_bg_color = self.bg_color\n\n        # CHECK BORDER RADIUS\n        if border_radius != None: internal_border_radius = border_radius\n        else: internal_border_radius = self.border_radius\n\n        # CHECK BORDER SIZE\n        if border_size != None: internal_border_size = border_size\n        else: internal_border_size = self.border_size\n\n        # CHECK BORDER COLOR\n        if text_color != None: internal_text_color = text_color\n        else: internal_text_color = self.text_color\n\n        # CHECK TEXT COLOR\n        if border_color != None: internal_border_color = border_color\n        else: internal_border_color = self.border_color\n\n        # CHECK TEXT COLOR\n        if text_font != None: internal_text_font = text_font\n        else: internal_text_font = self.text_font\n\n        self.setStyleSheet(Styles.bg_style.format(\n            _bg_color = internal_bg_color,\n            _border_radius = internal_border_radius,\n            _border_size = internal_border_size,\n            _border_color = internal_border_color,\n            _text_color = internal_text_color,\n            _text_font = internal_text_font\n        ))\n        ",
+  "output": {
+    "before": "# ///////////////////////////////////////////////////////////////\n#\n# BY: WANDERSON M.PIMENTA\n# PROJECT MADE WITH: Qt Designer and PySide6\n# V: 1.0.0\n#\n# This project can be used freely for all uses, as long as they maintain the\n# respective credits only in the Python scripts, any information in the visual\n# interface (GUI) can be modified without any implication.\n#\n# There are limitations on Qt licenses if you want to use your products\n# commercially, I recommend reading them on the official website:\n# https://doc.qt.io/qtforpython/licenses.html\n#\n# ///////////////////////////////////////////////////////////////\n\n# IMPORT PACKAGES AND MODULES\n# ///////////////////////////////////////////////////////////////\n\n# IMPORT QT CORE\n# ///////////////////////////////////////////////////////////////\nfrom qt_core import *\n\n# IMPORT SETTINGS\n# ///////////////////////////////////////////////////////////////\nfrom app.gui.core.json_settings import Settings\n\n# IMPORT STYLES\n# ///////////////////////////////////////////////////////////////\nfrom . styles import Styles\n\n# PY WINDOW\n# ///////////////////////////////////////////////////////////////\nclass PyWindow(QFrame):\n    def __init__(\n        self,\n        parent,\n        layout = Qt.Vertical,\n        margin = 0,\n        spacing = 2,\n        bg_color = \"#2c313c\",\n        text_color = \"#fff\",\n        text_font = \"9pt 'Segoe UI'\",\n        border_radius = 10,\n        border_size = 2,\n        border_color = \"#343b48\",\n        enable_shadow = True\n    ):\n        super().__init__()\n\n        # LOAD SETTINGS\n        # ///////////////////////////////////////////////////////////////\n        settings = Settings()\n        self.settings = settings.items\n\n        # PROPERTIES\n        # ///////////////////////////////////////////////////////////////\n        self.parent = parent\n        self.layout = layout\n        self.margin = margin\n        self.bg_color = bg_color\n        self.text_color = text_color\n        self.text_font = text_font\n        self.border_radius = border_radius\n        self.border_size = border_size\n        self.border_color = border_color\n        self.enable_shadow = enable_shadow\n\n        # OBJECT NAME\n        # ///////////////////////////////////////////////////////////////   \n        self.setObjectName(\"pod_bg_app\")\n\n        # APPLY STYLESHEET\n        # /////////////////////////////////////////////////////////////// \n        self.set_stylesheet()\n\n        # ADD LAYOUT\n        # ///////////////////////////////////////////////////////////////\n        if layout == Qt.Vertical:\n            # VERTICAL LAYOUT\n            self.layout = QHBoxLayout(self)\n        else:\n            # HORIZONTAL LAYOUT\n            self.layout = QHBoxLayout(self)\n        self.layout.setContentsMargins(margin, margin, margin, margin)\n        self.layout.setSpacing(spacing)\n\n        # ADD DROP SHADOW\n        # ///////////////////////////////////////////////////////////////\n        if self.settings[\"custom_title_bar\"]:\n            if enable_shadow:\n                self.shadow = QGraphicsDropShadowEffect()\n                self.shadow.setBlurRadius(20)\n                self.shadow.setXOffset(0)\n                self.shadow.setYOffset(0)\n                self.shadow.setColor(QColor(0, 0, 0, 160))\n                self.setGraphicsEffect(self.shadow)\n\n    # APPLY AND UPDATE STYLESHEET\n    # ///////////////////////////////////////////////////////////////\n    def set_stylesheet(\n        self,\n        bg_color = None,\n        border_radius = None,\n        border_size = None,\n        border_color = None,\n        text_color = None,\n        text_font = None\n    ):\n        # CHECK BG COLOR\n        if bg_color != None: internal_bg_color = bg_color\n        else: internal_bg_color = self.bg_color\n\n        # CHECK BORDER RADIUS\n        if border_radius != None: internal_border_radius = border_radius\n        else: internal_border_radius = self.border_radius\n\n        # CHECK BORDER SIZE\n        if border_size != None: internal_border_size = border_size\n        else: internal_border_size = self.border_size\n\n        # CHECK BORDER COLOR\n        if text_color != None: internal_text_color = text_color\n        else: internal_text_color = self.text_color\n\n        # CHECK TEXT COLOR\n        if border_color != None: internal_border_color = border_color\n        else: internal_border_color = self.border_color\n\n        # CHECK TEXT COLOR\n        if text_font != None: internal_text_font = text_font\n        else: internal_text_font = self.text_font\n\n        self.setStyleSheet(Styles.bg_style.format(\n            _bg_color = internal_bg_color,\n            _border_radius = internal_border_radius,\n            _border_size = internal_border_size,\n            _border_color = internal_border_color,\n            _text_color = internal_text_color,\n            _text_font = internal_text_font\n        ))\n        \n    # CREATE WINDOW\n    # ///////////////////////////////////////////////////////////////\n    def create_window(self, parent):\n        self.parent = parent\n        self.setWindowTitle(\"PyWindow\")\n\n        # ADD CONTENT\n        # //",
+    "after": "# ///////////////////////////////////////////////////////////////\n#\n# BY: WANDERSON M.PIMENTA\n# PROJECT MADE WITH: Qt Designer and PySide6\n# V: 1.0.0\n#\n# This project can be used freely for all uses, as long as they maintain the\n# respective credits only in the Python scripts, any information in the visual\n# interface (GUI) can be modified without any implication.\n#\n# There are limitations on Qt licenses if you want to use your products\n# commercially, I recommend reading them on the official website:\n# https://doc.qt.io/qtforpython/licenses.html\n#\n# ///////////////////////////////////////////////////////////////\n\n# IMPORT PACKAGES AND MODULES\n# ///////////////////////////////////////////////////////////////\n\n# IMPORT QT CORE\n# ///////////////////////////////////////////////////////////////\nfrom qt_core import *\n\n# IMPORT SETTINGS\n# ///////////////////////////////////////////////////////////////\nfrom app.gui.core.json_settings import Settings\n\n# IMPORT STYLES\n# ///////////////////////////////////////////////////////////////\nfrom . styles import Styles\n\n# PY WINDOW\n# ///////////////////////////////////////////////////////////////\nclass PyWindow(QFrame):\n    def __init__(\n        self,\n        parent,\n        layout = Qt.Vertical,\n        margin = 0,\n        spacing = 2,\n        bg_color = \"#2c313c\",\n        text_color = \"#fff\",\n        text_font = \"9pt 'Segoe UI'\",\n        border_radius = 10,\n        border_size = 2,\n        border_color = \"#343b48\",\n        enable_shadow = True\n    ):\n        super().__init__()\n\n        # LOAD SETTINGS\n        # ///////////////////////////////////////////////////////////////\n        settings = Settings()\n        self.settings = settings.items\n\n        # PROPERTIES\n        # ///////////////////////////////////////////////////////////////\n        self.parent = parent\n        self.layout = layout\n        self.margin = margin\n        self.bg_color = bg_color\n        self.text_color = text_color\n        self.text_font = text_font\n        self.border_radius = border_radius\n        self.border_size = border_size\n        self.border_color = border_color\n        self.enable_shadow = enable_shadow\n\n        # OBJECT NAME\n        # ///////////////////////////////////////////////////////////////   \n        self.setObjectName(\"pod_bg_app\")\n\n        # APPLY STYLESHEET\n        # /////////////////////////////////////////////////////////////// \n        self.set_stylesheet()\n\n        # ADD LAYOUT\n        # ///////////////////////////////////////////////////////////////\n        if layout == Qt.Vertical:\n            # VERTICAL LAYOUT\n            self.layout = QHBoxLayout(self)\n        else:\n            # HORIZONTAL LAYOUT\n            self.layout = QHBoxLayout(self)\n        self.layout.setContentsMargins(margin, margin, margin, margin)\n        self.layout.setSpacing(spacing)\n\n        # ADD DROP SHADOW\n        # ///////////////////////////////////////////////////////////////\n        if self.settings[\"custom_title_bar\"]:\n            if enable_shadow:\n                self.shadow = QGraphicsDropShadowEffect()\n                self.shadow.setBlurRadius(20)\n                self.shadow.setXOffset(0)\n                self.shadow.setYOffset(0)\n                self.shadow.setColor(QColor(0, 0, 0, 160))\n                self.setGraphicsEffect(self.shadow)\n\n    # APPLY AND UPDATE STYLESHEET\n    # ///////////////////////////////////////////////////////////////\n    def set_stylesheet(\n        self,\n        bg_color = None,\n        border_radius = None,\n        border_size = None,\n        border_color = None,\n        text_color = None,\n        text_font = None\n    ):\n        # CHECK BG COLOR\n        if bg_color != None: internal_bg_color = bg_color\n        else: internal_bg_color = self.bg_color\n\n        # CHECK BORDER RADIUS\n        if border_radius != None: internal_border_radius = border_radius\n        else: internal_border_radius = self.border_radius\n\n        # CHECK BORDER SIZE\n        if border_size != None: internal_border_size = border_size\n        else: internal_border_size = self.border_size\n\n        # CHECK BORDER COLOR\n        if text_color != None: internal_text_color = text_color\n        else: internal_text_color = self.text_color\n\n        # CHECK TEXT COLOR\n        if border_color != None: internal_border_color = border_color\n        else: internal_border_color = self.border_color\n\n        # CHECK TEXT COLOR\n        if text_font != None: internal_text_font = text_font\n        else: internal_text_font = self.text_font\n\n        self.setStyleSheet(Styles.bg_style.format(\n            _bg_color = internal_bg_color,\n            _border_radius = internal_border_radius,\n            _border_size = internal_border_size,\n            _border_color = internal_border_color,\n            _text_color = internal_text_color,\n            _text_font = internal_text_font\n        ))\n        \n    # ///////////////////////////////////////////////////////////////\n    # This function is used to generate a random color\n    # ///////////////////////////////////////////////////////////////\n    def generate_random_color(self):\n        return QColor(\n            self.generate"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      2732,
+      7210,
+      4064,
+      3803,
+      2844,
+      950,
+      2266,
+      6315,
+      4138
+    ],
+    "f_before": [
+      50.86322021484375,
+      122.57318878173828,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      50.86322021484375,
+      122.57318878173828,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      69.89344787597656,
+      29.269018173217773,
+      20.159164428710938,
+      5.962655544281006,
+      5.362639427185059,
+      5.423315525054932,
+      30.150012969970703,
+      4.977938652038574,
+      5.121926307678223,
+      17.221418380737305,
+      4.861342906951904
+    ],
+    "g_after": [
+      69.89344787597656,
+      29.269018173217773,
+      20.159164428710938,
+      5.962655544281006,
+      5.362639427185059,
+      5.423315525054932,
+      30.150012969970703,
+      4.977938652038574,
+      5.121926307678223,
+      17.221418380737305,
+      4.861342906951904
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

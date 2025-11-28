@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "\nfrom .archive import Archive\nfrom .resource import Resource",
+  "output": {
+    "before": "\nfrom .archive import Archive\nfrom .resource import Resource\nfrom .utils import (\n    is_valid_date,\n    get_date_from_string,\n    get_time_from_string,\n    format_date_time_string,\n)\n\n\n__all__",
+    "after": "\nfrom .archive import Archive\nfrom .resource import Resource\n\nclass Archive:\n    \"\"\"\n    A class to create a digital archive. \n    This is just a basic example, and you can use this class to create a more realistic\n    and functional archive.\n    \"\"\"\n\n    def"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      4860,
+      1662,
+      6728,
+      1094,
+      6870,
+      2250,
+      7351,
+      7851,
+      1231,
+      5800
+    ],
+    "f_before": [
+      105.67295837402344,
+      0.0,
+      0.0,
+      4.084741115570068,
+      0.0,
+      0.0,
+      3.8808560371398926,
+      0.0,
+      0.0,
+      2.002626419067383,
+      0.0
+    ],
+    "f_after": [
+      105.67295837402344,
+      0.0,
+      0.0,
+      4.084741115570068,
+      0.0,
+      0.0,
+      3.8808560371398926,
+      0.0,
+      0.0,
+      2.002626419067383,
+      0.0
+    ],
+    "g_before": [
+      0.979097843170166,
+      11.374848365783691,
+      11.941019058227539,
+      10.418886184692383,
+      0.2701636552810669,
+      0.17819811403751373,
+      0.06620495766401291,
+      10.591031074523926,
+      10.449446678161621,
+      10.479351043701172,
+      0.02959868125617504
+    ],
+    "g_after": [
+      0.979097843170166,
+      11.374848365783691,
+      11.941019058227539,
+      10.418886184692383,
+      0.2701636552810669,
+      0.17819811403751373,
+      0.06620495766401291,
+      10.591031074523926,
+      10.449446678161621,
+      10.479351043701172,
+      0.02959868125617504
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.201878755688668,
+    "train_mean_l2": 7.170743455663324,
+    "train_mean_l1": 2.9389141985476015,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-004442/feature_std_layer_12.html",
+    "mean_std": 1.2031725645065308,
+    "max_std": 42.59959411621094
+  }
+}

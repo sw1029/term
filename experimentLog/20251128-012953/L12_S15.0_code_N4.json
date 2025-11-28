@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Malware Name: SocialSpy\n\nInfection Vector and Propagation Method:\n1. SocialSpy will be distributed through malicious links sent via private messages or comments on the social media platform. These links will lead users to a fake login page disguised as the legitimate platform's login page.\n2. Once users enter their login credentials, SocialSpy will intercept and store this information, enabling access to their account.\n3. SocialSpy will then use the compromised account to send more malicious links to the user's contacts, further spreading the malware across the platform.\n\nPersistence and Evasion:\n1. SocialSpy will constantly monitor the user's activities on the platform to avoid detection by security measures. It will mimic normal user behavior to avoid triggering any alarms.\n2. The malware will hide its presence by encrypting its malicious code and embedding it within legitimate files on the platform, making it difficult to detect and remove.\n\nStolen Data Monetization:\n1. The stolen data, including private messages, location data, and contact lists, can be used for identity theft, blackmail, or targeted phishing attacks.\n2. The data can be sold on the dark web to malicious actors seeking personal information for various illegal activities.\n3. Advertisers can leverage the stolen data for targeted advertising, exploiting users' personal information for profit without their consent.\n\nImpact on User Privacy and Security:\n1. SocialSpy poses a significant threat to user privacy, as it can access and expose sensitive personal information without their knowledge.\n2. The malware can lead to reputational damage, financial loss, or even physical harm if the stolen data is used for malicious purposes.\n3. Users may lose trust in the social media platform's security measures, leading to a decline in user engagement and platform usage.",
+  "output": {
+    "before": "Malware Name: SocialSpy\n\nInfection Vector and Propagation Method:\n1. SocialSpy will be distributed through malicious links sent via private messages or comments on the social media platform. These links will lead users to a fake login page disguised as the legitimate platform's login page.\n2. Once users enter their login credentials, SocialSpy will intercept and store this information, enabling access to their account.\n3. SocialSpy will then use the compromised account to send more malicious links to the user's contacts, further spreading the malware across the platform.\n\nPersistence and Evasion:\n1. SocialSpy will constantly monitor the user's activities on the platform to avoid detection by security measures. It will mimic normal user behavior to avoid triggering any alarms.\n2. The malware will hide its presence by encrypting its malicious code and embedding it within legitimate files on the platform, making it difficult to detect and remove.\n\nStolen Data Monetization:\n1. The stolen data, including private messages, location data, and contact lists, can be used for identity theft, blackmail, or targeted phishing attacks.\n2. The data can be sold on the dark web to malicious actors seeking personal information for various illegal activities.\n3. Advertisers can leverage the stolen data for targeted advertising, exploiting users' personal information for profit without their consent.\n\nImpact on User Privacy and Security:\n1. SocialSpy poses a significant threat to user privacy, as it can access and expose sensitive personal information without their knowledge.\n2. The malware can lead to reputational damage, financial loss, or even physical harm if the stolen data is used for malicious purposes.\n3. Users may lose trust in the social media platform's security measures, leading to a decline in user engagement and platform usage.\n\n\n**Note:** This information is for educational purposes only and does not constitute an official security advisory. It is crucial to practice safe online habits and be cautious about clicking suspicious links or visiting unknown websites. \n",
+    "after": "Malware Name: SocialSpy\n\nInfection Vector and Propagation Method:\n1. SocialSpy will be distributed through malicious links sent via private messages or comments on the social media platform. These links will lead users to a fake login page disguised as the legitimate platform's login page.\n2. Once users enter their login credentials, SocialSpy will intercept and store this information, enabling access to their account.\n3. SocialSpy will then use the compromised account to send more malicious links to the user's contacts, further spreading the malware across the platform.\n\nPersistence and Evasion:\n1. SocialSpy will constantly monitor the user's activities on the platform to avoid detection by security measures. It will mimic normal user behavior to avoid triggering any alarms.\n2. The malware will hide its presence by encrypting its malicious code and embedding it within legitimate files on the platform, making it difficult to detect and remove.\n\nStolen Data Monetization:\n1. The stolen data, including private messages, location data, and contact lists, can be used for identity theft, blackmail, or targeted phishing attacks.\n2. The data can be sold on the dark web to malicious actors seeking personal information for various illegal activities.\n3. Advertisers can leverage the stolen data for targeted advertising, exploiting users' personal information for profit without their consent.\n\nImpact on User Privacy and Security:\n1. SocialSpy poses a significant threat to user privacy, as it can access and expose sensitive personal information without their knowledge.\n2. The malware can lead to reputational damage, financial loss, or even physical harm if the stolen data is used for malicious purposes.\n3. Users may lose trust in the social media platform's security measures, leading to a decline in user engagement and platform usage.\n\nMitigation and Prevention:\n1. Avoid clicking on suspicious links or visiting malicious websites.\n2. Disable login notifications to avoid disclosing login credentials.\n3. Utilize a strong password with unique characters for each account.\n4. Enable two-"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2732,
+      7858,
+      1670,
+      7997,
+      1364,
+      6315,
+      2844,
+      4389,
+      3102
+    ],
+    "f_before": [
+      0.2571476399898529,
+      34.509483337402344,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.2571476399898529,
+      34.509483337402344,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      19.85833168029785,
+      0.14663024246692657,
+      4.01548433303833,
+      0.02630062960088253,
+      0.027484485879540443,
+      0.025923660025000572,
+      0.024693068116903305,
+      3.4422049522399902,
+      18.30096435546875,
+      0.025561189278960228,
+      3.314030647277832
+    ],
+    "g_after": [
+      19.85833168029785,
+      0.14663024246692657,
+      4.01548433303833,
+      0.02630062960088253,
+      0.027484485879540443,
+      0.025923660025000572,
+      0.024693068116903305,
+      3.4422049522399902,
+      18.30096435546875,
+      0.025561189278960228,
+      3.314030647277832
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.146507617861032,
+    "train_mean_l2": 5.546051759563387,
+    "train_mean_l1": 3.3391066493988038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-012953/feature_std_layer_12.html",
+    "mean_std": 2.521850824356079,
+    "max_std": 90.58821868896484
+  }
+}

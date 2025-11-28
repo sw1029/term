@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=3 sae.loss_module=option3_loss experiment.use_multi_contrast=true sae.guidance_method=contrastive sae.use_l0=false",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 0,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0,
+    "use_l0": false,
+    "concept_samples_per_label": 100,
+    "loss_option": 3,
+    "loss_module": "option3_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from datetime import datetime, timedelta\n\nfrom airflow import DAG\nfrom airflow.operators import (\n    StageToRedshiftOperator,\n    LoadFactOperator,\n    LoadDimensionOperator,\n    DataQualityOperator,\n)\nfrom airflow.operators.dummy_operator import DummyOperator\nfrom airflow.operators.postgres_operator import PostgresOperator\n\nfrom helpers import SqlQueries\n\nREDSHIFT_CONN_ID = 'redshift'\nAWS_CREDENTIALS_ID = 'aws_credentials'\nINPUT_BUCKET = 'udacity-dend'\n\ndefault_args = {\n    'owner': 'udacity',\n    'start_date': datetime(2018, 11, 1),\n    'depends_on_past': False,\n    'retries': 3,\n    'retry_delay': timedelta(seconds=300),\n    'catchup': False,\n}\nfact_table_name_and_query = ('songplays', SqlQueries.songplay_table_insert)\ndim_tables_name_to_query = {\n    'users': SqlQueries.user_table_insert,\n    'songs': SqlQueries.song_table_insert,\n    'artists': SqlQueries.artist_table_insert,\n    'time': SqlQueries.time_table_insert,\n}\n\ndag = DAG(\n    'udac_example_dag',\n    default_args=default_args,\n    description='Load and transform data in Redshift with Airflow',\n    schedule_interval='@hourly',\n)\n\nstart_operator = DummyOperator(task_id='Begin_execution', dag=dag)\n\ncreate_tables = PostgresOperator(\n    task_id='Create_tables',\n    dag=dag,\n    postgres_conn_id=REDSHIFT_CONN_ID,\n    sql='/create_tables.sql',\n)\n\nstage_events_to_redshift = StageToRedshiftOperator(\n    task_id='Stage_events',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    aws_credentials_id=AWS_CREDENTIALS_ID,\n    s3_bucket=INPUT_BUCKET,\n    s3_key='log_data/{execution_date.year}/{execution_date.month}/',\n    table='staging_events',\n    file_format=\"JSON 's3://udacity-dend/log_json_path.json'\",\n    provide_context=True,\n)\n\nstage_songs_to_redshift = StageToRedshiftOperator(\n    task_id='Stage_songs',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    aws_credentials_id=AWS_CREDENTIALS_ID,\n    s3_bucket=INPUT_BUCKET,\n    s3_key='song_data',\n    table='staging_songs',\n    file_format=\"JSON 'auto'\",\n    provide_context=True,\n)\n\nload_songplays_table = LoadFactOperator(\n    task_id=f'Load_{fact_table_name_and_query[0]}_fact_table',\n    dag=dag,\n    table=fact_table_name_and_query[0],\n    conn_id=REDSHIFT_CONN_ID,\n    sql=fact_table_name_and_query[1],\n)\n\ndim_operators = [\n    LoadDimensionOperator(\n        task_id=f'Load_{dim_table_name}_dim_table',\n        dag=dag,\n        table=dim_table_name,\n        conn_id=REDSHIFT_CONN_ID,\n        sql=dim_query,\n    )\n    for dim_table_name, dim_query in dim_tables_name_to_query.items()\n]\n\nrun_quality_checks = DataQualityOperator(\n    task_id='Run_data_quality_checks',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    tables=list(dim_tables_name_to_query) + [fact_table_name_and_query[0]],\n)\n\nend_operator = DummyOperator(task_id='Stop_execution', dag=dag)\n\nstart_operator >> create_tables\ncreate_tables >> [stage_events_to_redshift, stage_songs_to_redshift]\n[stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table\nload_songplays_table >> dim_operators\ndim_operators + [load_songplays_table] >> run_quality_checks\nrun_quality_checks >> end_operator\n",
+  "output": {
+    "before": "from datetime import datetime, timedelta\n\nfrom airflow import DAG\nfrom airflow.operators import (\n    StageToRedshiftOperator,\n    LoadFactOperator,\n    LoadDimensionOperator,\n    DataQualityOperator,\n)\nfrom airflow.operators.dummy_operator import DummyOperator\nfrom airflow.operators.postgres_operator import PostgresOperator\n\nfrom helpers import SqlQueries\n\nREDSHIFT_CONN_ID = 'redshift'\nAWS_CREDENTIALS_ID = 'aws_credentials'\nINPUT_BUCKET = 'udacity-dend'\n\ndefault_args = {\n    'owner': 'udacity',\n    'start_date': datetime(2018, 11, 1),\n    'depends_on_past': False,\n    'retries': 3,\n    'retry_delay': timedelta(seconds=300),\n    'catchup': False,\n}\nfact_table_name_and_query = ('songplays', SqlQueries.songplay_table_insert)\ndim_tables_name_to_query = {\n    'users': SqlQueries.user_table_insert,\n    'songs': SqlQueries.song_table_insert,\n    'artists': SqlQueries.artist_table_insert,\n    'time': SqlQueries.time_table_insert,\n}\n\ndag = DAG(\n    'udac_example_dag',\n    default_args=default_args,\n    description='Load and transform data in Redshift with Airflow',\n    schedule_interval='@hourly',\n)\n\nstart_operator = DummyOperator(task_id='Begin_execution', dag=dag)\n\ncreate_tables = PostgresOperator(\n    task_id='Create_tables',\n    dag=dag,\n    postgres_conn_id=REDSHIFT_CONN_ID,\n    sql='/create_tables.sql',\n)\n\nstage_events_to_redshift = StageToRedshiftOperator(\n    task_id='Stage_events',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    aws_credentials_id=AWS_CREDENTIALS_ID,\n    s3_bucket=INPUT_BUCKET,\n    s3_key='log_data/{execution_date.year}/{execution_date.month}/',\n    table='staging_events',\n    file_format=\"JSON 's3://udacity-dend/log_json_path.json'\",\n    provide_context=True,\n)\n\nstage_songs_to_redshift = StageToRedshiftOperator(\n    task_id='Stage_songs',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    aws_credentials_id=AWS_CREDENTIALS_ID,\n    s3_bucket=INPUT_BUCKET,\n    s3_key='song_data',\n    table='staging_songs',\n    file_format=\"JSON 'auto'\",\n    provide_context=True,\n)\n\nload_songplays_table = LoadFactOperator(\n    task_id=f'Load_{fact_table_name_and_query[0]}_fact_table',\n    dag=dag,\n    table=fact_table_name_and_query[0],\n    conn_id=REDSHIFT_CONN_ID,\n    sql=fact_table_name_and_query[1],\n)\n\ndim_operators = [\n    LoadDimensionOperator(\n        task_id=f'Load_{dim_table_name}_dim_table',\n        dag=dag,\n        table=dim_table_name,\n        conn_id=REDSHIFT_CONN_ID,\n        sql=dim_query,\n    )\n    for dim_table_name, dim_query in dim_tables_name_to_query.items()\n]\n\nrun_quality_checks = DataQualityOperator(\n    task_id='Run_data_quality_checks',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    tables=list(dim_tables_name_to_query) + [fact_table_name_and_query[0]],\n)\n\nend_operator = DummyOperator(task_id='Stop_execution', dag=dag)\n\nstart_operator >> create_tables\ncreate_tables >> [stage_events_to_redshift, stage_songs_to_redshift]\n[stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table\nload_songplays_table >> dim_operators\ndim_operators + [load_songplays_table] >> run_quality_checks\nrun_quality_checks >> end_operator\n```\n\nThis code defines a DAG in Airflow that performs the following actions:\n\n1. **Create Tables:** Create the necessary tables in Redshift.\n2. **Stage Events and Songs:** Load data from S3 into Redshift staging tables",
+    "after": "from datetime import datetime, timedelta\n\nfrom airflow import DAG\nfrom airflow.operators import (\n    StageToRedshiftOperator,\n    LoadFactOperator,\n    LoadDimensionOperator,\n    DataQualityOperator,\n)\nfrom airflow.operators.dummy_operator import DummyOperator\nfrom airflow.operators.postgres_operator import PostgresOperator\n\nfrom helpers import SqlQueries\n\nREDSHIFT_CONN_ID = 'redshift'\nAWS_CREDENTIALS_ID = 'aws_credentials'\nINPUT_BUCKET = 'udacity-dend'\n\ndefault_args = {\n    'owner': 'udacity',\n    'start_date': datetime(2018, 11, 1),\n    'depends_on_past': False,\n    'retries': 3,\n    'retry_delay': timedelta(seconds=300),\n    'catchup': False,\n}\nfact_table_name_and_query = ('songplays', SqlQueries.songplay_table_insert)\ndim_tables_name_to_query = {\n    'users': SqlQueries.user_table_insert,\n    'songs': SqlQueries.song_table_insert,\n    'artists': SqlQueries.artist_table_insert,\n    'time': SqlQueries.time_table_insert,\n}\n\ndag = DAG(\n    'udac_example_dag',\n    default_args=default_args,\n    description='Load and transform data in Redshift with Airflow',\n    schedule_interval='@hourly',\n)\n\nstart_operator = DummyOperator(task_id='Begin_execution', dag=dag)\n\ncreate_tables = PostgresOperator(\n    task_id='Create_tables',\n    dag=dag,\n    postgres_conn_id=REDSHIFT_CONN_ID,\n    sql='/create_tables.sql',\n)\n\nstage_events_to_redshift = StageToRedshiftOperator(\n    task_id='Stage_events',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    aws_credentials_id=AWS_CREDENTIALS_ID,\n    s3_bucket=INPUT_BUCKET,\n    s3_key='log_data/{execution_date.year}/{execution_date.month}/',\n    table='staging_events',\n    file_format=\"JSON 's3://udacity-dend/log_json_path.json'\",\n    provide_context=True,\n)\n\nstage_songs_to_redshift = StageToRedshiftOperator(\n    task_id='Stage_songs',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    aws_credentials_id=AWS_CREDENTIALS_ID,\n    s3_bucket=INPUT_BUCKET,\n    s3_key='song_data',\n    table='staging_songs',\n    file_format=\"JSON 'auto'\",\n    provide_context=True,\n)\n\nload_songplays_table = LoadFactOperator(\n    task_id=f'Load_{fact_table_name_and_query[0]}_fact_table',\n    dag=dag,\n    table=fact_table_name_and_query[0],\n    conn_id=REDSHIFT_CONN_ID,\n    sql=fact_table_name_and_query[1],\n)\n\ndim_operators = [\n    LoadDimensionOperator(\n        task_id=f'Load_{dim_table_name}_dim_table',\n        dag=dag,\n        table=dim_table_name,\n        conn_id=REDSHIFT_CONN_ID,\n        sql=dim_query,\n    )\n    for dim_table_name, dim_query in dim_tables_name_to_query.items()\n]\n\nrun_quality_checks = DataQualityOperator(\n    task_id='Run_data_quality_checks',\n    dag=dag,\n    conn_id=REDSHIFT_CONN_ID,\n    tables=list(dim_tables_name_to_query) + [fact_table_name_and_query[0]],\n)\n\nend_operator = DummyOperator(task_id='Stop_execution', dag=dag)\n\nstart_operator >> create_tables\ncreate_tables >> [stage_events_to_redshift, stage_songs_to_redshift]\n[stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table\nload_songplays_table >> dim_operators\ndim_operators + [load_songplays_table] >> run_quality_checks\nrun_quality_checks >> end_operator\nend_operator\n```\n\n**Explanation:**\n\nThis code defines a DAG for data loading and transformation using Airflow. Here is a breakdown:\n\n* **Imports:** The necessary imports are included, specifically `DAG`, `StageToRedshiftOperator"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8828,
+      8870,
+      1450,
+      8675,
+      6562,
+      1112,
+      3143,
+      5423,
+      8023,
+      3464
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.010893293656408787,
+      0.01167339738458395,
+      0.0,
+      0.0,
+      0.0,
+      0.014107616618275642,
+      0.0,
+      0.0,
+      0.024147288873791695
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.010893293656408787,
+      0.01167339738458395,
+      0.0,
+      0.0,
+      0.0,
+      0.014107616618275642,
+      0.0,
+      0.0,
+      0.024147288873791695
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.356310415834189,
+    "train_mean_l2": 5.661456496983766,
+    "train_mean_l1": 2.6948540791869164,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-014034/feature_std_layer_12.html",
+    "mean_std": 0.9815042614936829,
+    "max_std": 25.413209915161133
+  }
+}

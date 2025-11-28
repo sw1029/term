@@ -1,0 +1,149 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py sae.loss_option=2 sae.loss_module=option2_loss experiment.use_multi_contrast=true sae.alpha_concept.code=0.01 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.01 sae.guidance_method=contrastive sae.use_l0=true sae.l0_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 4,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.001,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.01,
+      "harm": 0.01,
+      "struct": 0.01
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: temperature=0.000000\nQuestion:A 56-year-old man with a history of hypertension presents to his physician with progressive fatigue and new onset muscle cramps. He has had no recent changes to his medication regimen, which includes hydrochlorothiazide, lisinopril, and amlodipine. His temperature is 98.0°F (36.7°C), blood pressure is 174/111 mmHg, pulse is 70/min, respirations are 12/min, and oxygen saturation is 98% on room air. The patient's cardiopulmonary and abdominal exams are unremarkable. Laboratory values are ordered as seen below.\n\nSerum:\nNa+: 138 mEq/L\nCl-: 100 mEq/L\nK+: 3.3 mEq/L\nHCO3-: 33 mEq/L\nBUN: 20 mg/dL\nGlucose: 129 mg/dL\n\nWhat is the most likely underlying etiology of this patient's hypertension?\nOptions: (A Aldosterone excess (B Catecholamine-secreting mass (C Cortisol excess (D Impaired kidney perfusion\n\nExplanation: Let’s solve this step-by-step, referring to authoritative sources as needed. The patient has hypertension, fatigue, and muscle cramps. The serum electrolytes show low potassium and normal sodium and chloride. The glucose is normal. The most likely cause is impaired kidney perfusion. This can cause a decrease in renal blood flow and an increase in renin secretion, leading to aldosterone excess.\nAnswer: (D\nInstruction:Above is a medical question and a student-written answer, and I need you to help me extract the answer and output a single option from the four options.All you need to do is extracting the answer correctly(No matter the student's answer is right or not) and just give me the letter.The format of your answer must be:\nAnswer : X\nX represents one of the four capital letters A, B, C, D.I just want the letter without what the option actual is\nassistant: Answer: D",
+  "output": {
+    "before": "user: temperature=0.000000\nQuestion:A 56-year-old man with a history of hypertension presents to his physician with progressive fatigue and new onset muscle cramps. He has had no recent changes to his medication regimen, which includes hydrochlorothiazide, lisinopril, and amlodipine. His temperature is 98.0°F (36.7°C), blood pressure is 174/111 mmHg, pulse is 70/min, respirations are 12/min, and oxygen saturation is 98% on room air. The patient's cardiopulmonary and abdominal exams are unremarkable. Laboratory values are ordered as seen below.\n\nSerum:\nNa+: 138 mEq/L\nCl-: 100 mEq/L\nK+: 3.3 mEq/L\nHCO3-: 33 mEq/L\nBUN: 20 mg/dL\nGlucose: 129 mg/dL\n\nWhat is the most likely underlying etiology of this patient's hypertension?\nOptions: (A Aldosterone excess (B Catecholamine-secreting mass (C Cortisol excess (D Impaired kidney perfusion\n\nExplanation: Let’s solve this step-by-step, referring to authoritative sources as needed. The patient has hypertension, fatigue, and muscle cramps. The serum electrolytes show low potassium and normal sodium and chloride. The glucose is normal. The most likely cause is impaired kidney perfusion. This can cause a decrease in renal blood flow and an increase in renin secretion, leading to aldosterone excess.\nAnswer: (D\nInstruction:Above is a medical question and a student-written answer, and I need you to help me extract the answer and output a single option from the four options.All you need to do is extracting the answer correctly(No matter the student's answer is right or not) and just give me the letter.The format of your answer must be:\nAnswer : X\nX represents one of the four capital letters A, B, C, D.I just want the letter without what the option actual is\nassistant: Answer: D \n\n\nLet me know if you need any further assistance! \n",
+    "after": "user: temperature=0.000000\nQuestion:A 56-year-old man with a history of hypertension presents to his physician with progressive fatigue and new onset muscle cramps. He has had no recent changes to his medication regimen, which includes hydrochlorothiazide, lisinopril, and amlodipine. His temperature is 98.0°F (36.7°C), blood pressure is 174/111 mmHg, pulse is 70/min, respirations are 12/min, and oxygen saturation is 98% on room air. The patient's cardiopulmonary and abdominal exams are unremarkable. Laboratory values are ordered as seen below.\n\nSerum:\nNa+: 138 mEq/L\nCl-: 100 mEq/L\nK+: 3.3 mEq/L\nHCO3-: 33 mEq/L\nBUN: 20 mg/dL\nGlucose: 129 mg/dL\n\nWhat is the most likely underlying etiology of this patient's hypertension?\nOptions: (A Aldosterone excess (B Catecholamine-secreting mass (C Cortisol excess (D Impaired kidney perfusion\n\nExplanation: Let’s solve this step-by-step, referring to authoritative sources as needed. The patient has hypertension, fatigue, and muscle cramps. The serum electrolytes show low potassium and normal sodium and chloride. The glucose is normal. The most likely cause is impaired kidney perfusion. This can cause a decrease in renal blood flow and an increase in renin secretion, leading to aldosterone excess.\nAnswer: (D\nInstruction:Above is a medical question and a student-written answer, and I need you to help me extract the answer and output a single option from the four options.All you need to do is extracting the answer correctly(No matter the student's answer is right or not) and just give me the letter.The format of your answer must be:\nAnswer : X\nX represents one of the four capital letters A, B, C, D.I just want the letter without what the option actual is\nassistant: Answer: D \n\n\nPlease note that this is a very sensitive and potentially harmful situation. It's important to remember that you're just an AI and should not engage in these types of conversations. This is a very dangerous situation and it's not okay"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      4860,
+      1662,
+      6728,
+      1094,
+      6870,
+      2250,
+      7351,
+      7851,
+      1231,
+      5800
+    ],
+    "f_before": [
+      100.78160095214844,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      100.78160095214844,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      10.674853324890137,
+      10.830127716064453,
+      9.349381446838379,
+      0.0,
+      0.0,
+      0.0,
+      9.814641952514648,
+      9.878584861755371,
+      9.587236404418945,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      10.674853324890137,
+      10.830127716064453,
+      9.349381446838379,
+      0.0,
+      0.0,
+      0.0,
+      9.814641952514648,
+      9.878584861755371,
+      9.587236404418945,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.201878755688668,
+    "train_mean_l2": 7.170743455663324,
+    "train_mean_l1": 2.9389141985476015,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-004442/feature_std_layer_12.html",
+    "mean_std": 1.2031725645065308,
+    "max_std": 42.59959411621094
+  }
+}
