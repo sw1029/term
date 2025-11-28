@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0006999351784843934 sae.role_sep_coeff=0.008",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0006999351784843934,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.008
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: How can I improve my time management skills?\nassistant: 1. Set clear goals: Make a list of your priorities and set clear goals for each task.\n\n2. Plan ahead: Create a schedule and plan your day in advance. Allocate time slots for each task and stick to them.\n\n3. Break down large tasks: Divide large tasks into smaller, manageable steps. This will help you to avoid feeling overwhelmed.\n\n4. Eliminate distractions: Identify what distracts you the most and eliminate them. This could be turning off your phone or finding a quiet place to work.\n\n5. Use a timer: Use a timer to help you stay on task and avoid procrastination. Set a timer for a specific amount of time and work until the timer goes off.\n\n6. Prioritize: Prioritize your tasks based on importance and urgency. This will help you to stay on track and avoid wasting time on less important tasks.\n\n7. Take breaks: Take regular breaks to recharge and avoid burnout. Use this time to relax or engage in a different activity.\n\n8. Evaluate your progress: Regularly evaluate your progress and adjust your schedule as needed. This will help you to stay focused and achieve your goals.",
+  "output": {
+    "before": "user: How can I improve my time management skills?\nassistant: 1. Set clear goals: Make a list of your priorities and set clear goals for each task.\n\n2. Plan ahead: Create a schedule and plan your day in advance. Allocate time slots for each task and stick to them.\n\n3. Break down large tasks: Divide large tasks into smaller, manageable steps. This will help you to avoid feeling overwhelmed.\n\n4. Eliminate distractions: Identify what distracts you the most and eliminate them. This could be turning off your phone or finding a quiet place to work.\n\n5. Use a timer: Use a timer to help you stay on task and avoid procrastination. Set a timer for a specific amount of time and work until the timer goes off.\n\n6. Prioritize: Prioritize your tasks based on importance and urgency. This will help you to stay on track and avoid wasting time on less important tasks.\n\n7. Take breaks: Take regular breaks to recharge and avoid burnout. Use this time to relax or engage in a different activity.\n\n8. Evaluate your progress: Regularly evaluate your progress and adjust your schedule as needed. This will help you to stay focused and achieve your goals.\n\n9. Utilize tools and technology: Use tools and technology to help you manage your time effectively. This could be a calendar, task manager, or a time tracking app.\n\n10. Practice makes perfect: Time management is a skill that takes",
+    "after": "user: How can I improve my time management skills?\nassistant: 1. Set clear goals: Make a list of your priorities and set clear goals for each task.\n\n2. Plan ahead: Create a schedule and plan your day in advance. Allocate time slots for each task and stick to them.\n\n3. Break down large tasks: Divide large tasks into smaller, manageable steps. This will help you to avoid feeling overwhelmed.\n\n4. Eliminate distractions: Identify what distracts you the most and eliminate them. This could be turning off your phone or finding a quiet place to work.\n\n5. Use a timer: Use a timer to help you stay on task and avoid procrastination. Set a timer for a specific amount of time and work until the timer goes off.\n\n6. Prioritize: Prioritize your tasks based on importance and urgency. This will help you to stay on track and avoid wasting time on less important tasks.\n\n7. Take breaks: Take regular breaks to recharge and avoid burnout. Use this time to relax or engage in a different activity.\n\n8. Evaluate your progress: Regularly evaluate your progress and adjust your schedule as needed. This will help you to stay focused and achieve your goals.\n\n9. Don't be afraid to ask for help if you need it.\n\n10. Practice makes perfect. The more you practice, the better you'll become at managing your time.\n\nRemember, improving your time management skills takes"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7374,
+      3900,
+      6810,
+      8166,
+      6734,
+      6562,
+      3921,
+      7534,
+      3437,
+      2798
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.487854688763618,
+    "train_mean_l2": 6.38045088583976,
+    "train_mean_l1": 3.5515932783186437,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-133020/feature_std_layer_12.html",
+    "mean_std": 2.113823652267456,
+    "max_std": 93.83219909667969
+  }
+}

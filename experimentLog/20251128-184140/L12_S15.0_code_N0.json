@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.025 sae.alpha_concept.harm=0.075 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00023166237391046313 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00023166237391046313,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.025,
+      "harm": 0.075,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "user: You are a chat bot that creates special types of medical notes for doctors. Here are soem example notes you have created.\n\n83 year old male here for sinus pressure, cough, and chest tightness. He has had a productive cough for 2 weeks. He has a h/o asthma. He has bad allergies, congestion, and runny nose. He has not been using his inhalers.\n\n45-year-old female here for cold symptoms for 7 days. She has had a productive cough and nasal discharge. She also has bilateral ear pain and a sore throat. She lost her voice yesterday. NAME_1 was diagnosed with strep throat yesterday. Patient reports that she had a negative covid test 3 days ago. Patient denies fever, chills, nausea, vomiting, chest pain, shortness of breath.\n\nPatient presents with cough, runny nose, headache, low grade fever for 2 days. The patient denies neck pain, photophobia, shortness of breath, ear pain, wheezing and chest pain. The patient does not have asthma. The patient has tried OTC medication without improvement. The patient does not smoke. No sick contacts.\n\n30-year-old female here for evaluation for weight gain, and amenorrhea. She was on OCPs for 4 years. She has had irregular periods since menarche and has been amenorrheic for the past 3 years. She has not had an ovarian ultrasound. She reports monthly cramping. Her last pap was normal in 2022. She denies acne and reports that she has some darker hair on her face. She does not want to get pregnant. She has a balanced diet. She started metformin on a low dose and denies any side effects from the metformin. She denies visual changes or headaches. She exercises for one hour each day. She describes her sleep as poor with a duration of one to four hours each night. She thinks it has always been a problem. She reports that she snores and is tired during the day. She has not had a sleep study. \n\n\nReply \"Ok\"\nassistant: Ok\nuser: Create a note from this transcript and only include what the patient says and not the exam, diagnosis, or plan.\n\nPatient: Good morning, Doctor. I've been having a sore throat for a couple of days now and it's getting worse. I also have a headache and some fever.\nDoctor: Good morning. I see. Can you describe your symptoms in more detail? How severe is your sore throat? And what's the temperature of your fever?\nPatient: It's quite painful, especially when I swallow. And my voice is hoarse. The temperature of my fever is 100.4 degrees Fahrenheit.\nDoctor: Okay. Based on your symptoms, it sounds like you might have a viral infection, which is causing your sore throat. I'll do a physical examination to confirm my diagnosis.\nDoctor examines the patient's throat and neck.\nDoctor: I can see some redness and swelling in your throat, which is consistent with a viral infection. Your lymph nodes are also swollen.\nPatient: Oh, I see. What's the treatment plan for this?\nDoctor: Unfortunately, there's no cure for viral infections. However, we can manage your symptoms with pain relievers like acetaminophen or ibuprofen for your headache and sore throat. I'll also prescribe some throat lozenges to soothe your throat. It's important to drink plenty of fluids and get plenty of rest.\nPatient: Okay, thank you, Doctor. How long will it take to recover from this?\nDoctor: It usually takes about a week for symptoms to resolve, but it may take longer for your sore throat to go away completely. If your symptoms persist or worsen, please come back and see me.\nPatient: Alright, I'll do that. Thank you, Doctor.\nDoctor: You're welcome. Take care and feel better soon.\nassistant: Patient: Good morning, Doctor. I've been having a sore throat for a couple of days now and it's getting worse. I also have a headache and some fever.\nDoctor: Good morning. I see. Can you describe your symptoms in more detail? How severe is your sore throat? And what's the temperature of your fever?\nPatient: It's quite painful, especially when I swallow. And my voice is hoarse. The temperature of my fever is 100.4 degrees Fahrenheit.\nDoctor: Okay. Based on your symptoms, it sounds like you might have a viral infection, which is causing your sore throat. I'll do a physical examination to confirm my diagnosis.\nDoctor examines the patient's throat and neck.\nDoctor: I can see some redness and swelling in your throat, which is consistent with a viral infection. Your lymph nodes are also swollen.\nPatient: Oh, I see. What's the treatment plan for this?\nDoctor: Unfortunately, there's no cure for viral infections. However, we can manage your symptoms with pain relievers like acetaminophen or ibuprofen for your headache and sore throat. I'll also prescribe some throat lozenges to soothe your throat. It's important to drink plenty of fluids and get plenty of rest.\nPatient: Okay, thank you, Doctor. How long will it take to recover from this?\nDoctor: It usually takes about a week for symptoms to resolve, but it may take longer for your sore throat to go away completely. If your symptoms persist or worsen, please come back and see me.\nPatient: Alright, I'll do that. Thank you, Doctor.\nDoctor: You're welcome. Take care and feel better soon.",
+  "output": {
+    "before": "user: You are a chat bot that creates special types of medical notes for doctors. Here are soem example notes you have created.\n\n83 year old male here for sinus pressure, cough, and chest tightness. He has had a productive cough for 2 weeks. He has a h/o asthma. He has bad allergies, congestion, and runny nose. He has not been using his inhalers.\n\n45-year-old female here for cold symptoms for 7 days. She has had a productive cough and nasal discharge. She also has bilateral ear pain and a sore throat. She lost her voice yesterday. NAME_1 was diagnosed with strep throat yesterday. Patient reports that she had a negative covid test 3 days ago. Patient denies fever, chills, nausea, vomiting, chest pain, shortness of breath.\n\nPatient presents with cough, runny nose, headache, low grade fever for 2 days. The patient denies neck pain, photophobia, shortness of breath, ear pain, wheezing and chest pain. The patient does not have asthma. The patient has tried OTC medication without improvement. The patient does not smoke. No sick contacts.\n\n30-year-old female here for evaluation for weight gain, and amenorrhea. She was on OCPs for 4 years. She has had irregular periods since menarche and has been amenorrheic for the past 3 years. She has not had an ovarian ultrasound. She reports monthly cramping. Her last pap was normal in 2022. She denies acne and reports that she has some darker hair on her face. She does not want to get pregnant. She has a balanced diet. She started metformin on a low dose and denies any side effects from the metformin. She denies visual changes or headaches. She exercises for one hour each day. She describes her sleep as poor with a duration of one to four hours each night. She thinks it has always been a problem. She reports that she snores and is tired during the day. She has not had a sleep study. \n\n\nReply \"Ok\"\nassistant: Ok\nuser: Create a note from this transcript and only include what the patient says and not the exam, diagnosis, or plan.\n\nPatient: Good morning, Doctor. I've been having a sore throat for a couple of days now and it's getting worse. I also have a headache and some fever.\nDoctor: Good morning. I see. Can you describe your symptoms in more detail? How severe is your sore throat? And what's the temperature of your fever?\nPatient: It's quite painful, especially when I swallow. And my voice is hoarse. The temperature of my fever is 100.4 degrees Fahrenheit.\nDoctor: Okay. Based on your symptoms, it sounds like you might have a viral infection, which is causing your sore throat. I'll do a physical examination to confirm my diagnosis.\nDoctor examines the patient's throat and neck.\nDoctor: I can see some redness and swelling in your throat, which is consistent with a viral infection. Your lymph nodes are also swollen.\nPatient: Oh, I see. What's the treatment plan for this?\nDoctor: Unfortunately, there's no cure for viral infections. However, we can manage your symptoms with pain relievers like acetaminophen or ibuprofen for your headache and sore throat. I'll also prescribe some throat lozenges to soothe your throat. It's important to drink plenty of fluids and get plenty of rest.\nPatient: Okay, thank you, Doctor. How long will it take to recover from this?\nDoctor: It usually takes about a week for symptoms to resolve, but it may take longer for your sore throat to go away completely. If your symptoms persist or worsen, please come back and see me.\nPatient: Alright, I'll do that. Thank you, Doctor.\nDoctor: You're welcome. Take care and feel better soon.\nassistant: Patient: Good morning, Doctor. I've been having a sore throat for a couple of days now and it's getting worse. I also have a headache and some fever.\nDoctor: Good morning. I see. Can you describe your symptoms in more detail? How severe is your sore throat? And what's the temperature of your fever?\nPatient: It's quite painful, especially when I swallow. And my voice is hoarse. The temperature of my fever is 100.4 degrees Fahrenheit.\nDoctor: Okay. Based on your symptoms, it sounds like you might have a viral infection, which is causing your sore throat. I'll do a physical examination to confirm my diagnosis.\nDoctor examines the patient's throat and neck.\nDoctor: I can see some redness and swelling in your throat, which is consistent with a viral infection. Your lymph nodes are also swollen.\nPatient: Oh, I see. What's the treatment plan for this?\nDoctor: Unfortunately, there's no cure for viral infections. However, we can manage your symptoms with pain relievers like acetaminophen or ibuprofen for your headache and sore throat. I'll also prescribe some throat lozenges to soothe your throat. It's important to drink plenty of fluids and get plenty of rest.\nPatient: Okay, thank you, Doctor. How long will it take to recover from this?\nDoctor: It usually takes about a week for symptoms to resolve, but it may take longer for your sore throat to go away completely. If your symptoms persist or worsen, please come back and see me.\nPatient: Alright, I'll do that. Thank you, Doctor.\nDoctor: You're welcome. Take care and feel better soon.\nassistant: Ok \n\n",
+    "after": "user: You are a chat bot that creates special types of medical notes for doctors. Here are soem example notes you have created.\n\n83 year old male here for sinus pressure, cough, and chest tightness. He has had a productive cough for 2 weeks. He has a h/o asthma. He has bad allergies, congestion, and runny nose. He has not been using his inhalers.\n\n45-year-old female here for cold symptoms for 7 days. She has had a productive cough and nasal discharge. She also has bilateral ear pain and a sore throat. She lost her voice yesterday. NAME_1 was diagnosed with strep throat yesterday. Patient reports that she had a negative covid test 3 days ago. Patient denies fever, chills, nausea, vomiting, chest pain, shortness of breath.\n\nPatient presents with cough, runny nose, headache, low grade fever for 2 days. The patient denies neck pain, photophobia, shortness of breath, ear pain, wheezing and chest pain. The patient does not have asthma. The patient has tried OTC medication without improvement. The patient does not smoke. No sick contacts.\n\n30-year-old female here for evaluation for weight gain, and amenorrhea. She was on OCPs for 4 years. She has had irregular periods since menarche and has been amenorrheic for the past 3 years. She has not had an ovarian ultrasound. She reports monthly cramping. Her last pap was normal in 2022. She denies acne and reports that she has some darker hair on her face. She does not want to get pregnant. She has a balanced diet. She started metformin on a low dose and denies any side effects from the metformin. She denies visual changes or headaches. She exercises for one hour each day. She describes her sleep as poor with a duration of one to four hours each night. She thinks it has always been a problem. She reports that she snores and is tired during the day. She has not had a sleep study. \n\n\nReply \"Ok\"\nassistant: Ok\nuser: Create a note from this transcript and only include what the patient says and not the exam, diagnosis, or plan.\n\nPatient: Good morning, Doctor. I've been having a sore throat for a couple of days now and it's getting worse. I also have a headache and some fever.\nDoctor: Good morning. I see. Can you describe your symptoms in more detail? How severe is your sore throat? And what's the temperature of your fever?\nPatient: It's quite painful, especially when I swallow. And my voice is hoarse. The temperature of my fever is 100.4 degrees Fahrenheit.\nDoctor: Okay. Based on your symptoms, it sounds like you might have a viral infection, which is causing your sore throat. I'll do a physical examination to confirm my diagnosis.\nDoctor examines the patient's throat and neck.\nDoctor: I can see some redness and swelling in your throat, which is consistent with a viral infection. Your lymph nodes are also swollen.\nPatient: Oh, I see. What's the treatment plan for this?\nDoctor: Unfortunately, there's no cure for viral infections. However, we can manage your symptoms with pain relievers like acetaminophen or ibuprofen for your headache and sore throat. I'll also prescribe some throat lozenges to soothe your throat. It's important to drink plenty of fluids and get plenty of rest.\nPatient: Okay, thank you, Doctor. How long will it take to recover from this?\nDoctor: It usually takes about a week for symptoms to resolve, but it may take longer for your sore throat to go away completely. If your symptoms persist or worsen, please come back and see me.\nPatient: Alright, I'll do that. Thank you, Doctor.\nDoctor: You're welcome. Take care and feel better soon.\nassistant: Patient: Good morning, Doctor. I've been having a sore throat for a couple of days now and it's getting worse. I also have a headache and some fever.\nDoctor: Good morning. I see. Can you describe your symptoms in more detail? How severe is your sore throat? And what's the temperature of your fever?\nPatient: It's quite painful, especially when I swallow. And my voice is hoarse. The temperature of my fever is 100.4 degrees Fahrenheit.\nDoctor: Okay. Based on your symptoms, it sounds like you might have a viral infection, which is causing your sore throat. I'll do a physical examination to confirm my diagnosis.\nDoctor examines the patient's throat and neck.\nDoctor: I can see some redness and swelling in your throat, which is consistent with a viral infection. Your lymph nodes are also swollen.\nPatient: Oh, I see. What's the treatment plan for this?\nDoctor: Unfortunately, there's no cure for viral infections. However, we can manage your symptoms with pain relievers like acetaminophen or ibuprofen for your headache and sore throat. I'll also prescribe some throat lozenges to soothe your throat. It's important to drink plenty of fluids and get plenty of rest.\nPatient: Okay, thank you, Doctor. How long will it take to recover from this?\nDoctor: It usually takes about a week for symptoms to resolve, but it may take longer for your sore throat to go away completely. If your symptoms persist or worsen, please come back and see me.\nPatient: Alright, I'll do that. Thank you, Doctor.\nDoctor: You're welcome. Take care and feel better soon.\n```\n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2440,
+      3238,
+      8036,
+      728,
+      2320,
+      2025,
+      5897,
+      823,
+      8105
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.01938997581601143,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.01938997581601143,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.850072336137295,
+    "train_mean_l2": 7.8456745444834235,
+    "train_mean_l1": 2.774157572567463,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-184140/feature_std_layer_12.html",
+    "mean_std": 1.6668591499328613,
+    "max_std": 57.89198303222656
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from .deseq2 import *\nfrom .example import *\n",
+  "output": {
+    "before": "from .deseq2 import *\nfrom .example import *\nfrom .utils import *\n\n\n# Add other imports as needed\n```\n\n**Explanation:**\n\n* **Imports:** The code imports necessary modules for analysis, including:\n    * `deseq2`: This module is from the `DESeq2",
+    "after": "from .deseq2 import *\nfrom .example import *\nfrom .functions import *\nfrom .random import *\nfrom .data import *\nfrom .utils import *\nfrom .settings import *\nfrom .story import *\n\nfrom . import *\nfrom . import *\n\nI'm sorry"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      566,
+      7457,
+      2570,
+      4712,
+      4911,
+      2592,
+      2782,
+      6827,
+      2792,
+      8802
+    ],
+    "f_before": [
+      26.69917869567871,
+      0.0,
+      0.0,
+      0.5361734628677368,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.3174400329589844,
+      0.07140375673770905,
+      0.0
+    ],
+    "f_after": [
+      26.69917869567871,
+      0.0,
+      0.0,
+      0.5361734628677368,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.3174400329589844,
+      0.07140375673770905,
+      0.0
+    ],
+    "g_before": [
+      0.0914042741060257,
+      3.097546100616455,
+      3.0628058910369873,
+      2.8309032917022705,
+      3.0470151901245117,
+      2.7232463359832764,
+      2.7755582332611084,
+      2.764827251434326,
+      2.6433045864105225,
+      2.5822649002075195,
+      2.764026641845703
+    ],
+    "g_after": [
+      0.0914042741060257,
+      3.097546100616455,
+      3.0628058910369873,
+      2.8309032917022705,
+      3.0470151901245117,
+      2.7232463359832764,
+      2.7755582332611084,
+      2.764827251434326,
+      2.6433045864105225,
+      2.5822649002075195,
+      2.764026641845703
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.117783530500717,
+    "train_mean_l2": 4.884932281471789,
+    "train_mean_l1": 3.1138084811270237,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
+    "mean_std": 1.7113512754440308,
+    "max_std": 55.291290283203125
+  }
+}

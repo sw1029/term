@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.08 sae.alpha_concept.harm=0.0 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.002353998651181063 sae.role_sep_coeff=0.006500000000000001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.002353998651181063,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08,
+      "harm": 0.0,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.006500000000000001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"Various types related to HTTP and REST.\"\"\"\n\nfrom six import PY3\n\nDEnum = object\nDIntEnum = object\n\nif PY3:\n    import enum\n    DEnum = enum.Enum\n    DIntEnum = enum.IntEnum\n\n\nclass HttpMethod(DEnum):\n    \"\"\"Enum with HTTP methods.\"\"\"\n\n    GET = 'GET',\n    POST = 'POST',\n    PUT = 'PUT',\n    PATCH = 'PATCH',\n    DELETE = 'DELETE',\n    HEAD = 'HEAD',\n    OPTIONS = 'OPTIONS'\n\n\nclass HttpStatus(DIntEnum):\n    \"\"\"Enum with HTTP error code classes.\"\"\"\n\n    INFORMATIONAL_RESPONSE = 1,\n    SUCCESS = 2,\n    REDIRECTION = 3,\n    CLIENT_ERROR = 4,\n    SERVER_ERROR = 5,\n    ANY = 999  # Same as Ellipsis '...'\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"Various types related to HTTP and REST.\"\"\"\n\nfrom six import PY3\n\nDEnum = object\nDIntEnum = object\n\nif PY3:\n    import enum\n    DEnum = enum.Enum\n    DIntEnum = enum.IntEnum\n\n\nclass HttpMethod(DEnum):\n    \"\"\"Enum with HTTP methods.\"\"\"\n\n    GET = 'GET',\n    POST = 'POST',\n    PUT = 'PUT',\n    PATCH = 'PATCH',\n    DELETE = 'DELETE',\n    HEAD = 'HEAD',\n    OPTIONS = 'OPTIONS'\n\n\nclass HttpStatus(DIntEnum):\n    \"\"\"Enum with HTTP error code classes.\"\"\"\n\n    INFORMATIONAL_RESPONSE = 1,\n    SUCCESS = 2,\n    REDIRECTION = 3,\n    CLIENT_ERROR = 4,\n    SERVER_ERROR = 5,\n    ANY = 999  # Same as Ellipsis '...'\n    \n    \nclass ContentType(DEnum):\n    \"\"\"Enum for content types.\"\"\"\n\n    TEXT_PLAIN = 'text/plain'\n    TEXT_HTML = 'text/html'\n    JSON = 'application/json'",
+    "after": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"Various types related to HTTP and REST.\"\"\"\n\nfrom six import PY3\n\nDEnum = object\nDIntEnum = object\n\nif PY3:\n    import enum\n    DEnum = enum.Enum\n    DIntEnum = enum.IntEnum\n\n\nclass HttpMethod(DEnum):\n    \"\"\"Enum with HTTP methods.\"\"\"\n\n    GET = 'GET',\n    POST = 'POST',\n    PUT = 'PUT',\n    PATCH = 'PATCH',\n    DELETE = 'DELETE',\n    HEAD = 'HEAD',\n    OPTIONS = 'OPTIONS'\n\n\nclass HttpStatus(DIntEnum):\n    \"\"\"Enum with HTTP error code classes.\"\"\"\n\n    INFORMATIONAL_RESPONSE = 1,\n    SUCCESS = 2,\n    REDIRECTION = 3,\n    CLIENT_ERROR = 4,\n    SERVER_ERROR = 5,\n    ANY = 999  # Same as Ellipsis '...'\n    \n    \n    \n    # ... (add any other HTTP status code here)\n\n    def __init__(self, code):\n        self.code = code\n    \n    \n    # ... (add any other HTTP status code"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      5452,
+      8238,
+      428,
+      5185,
+      7119,
+      5486,
+      4805,
+      2275,
+      5729
+    ],
+    "f_before": [
+      123.7883071899414,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      123.7883071899414,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      72.03598022460938,
+      13.415855407714844,
+      12.499934196472168,
+      13.274065017700195,
+      12.152273178100586,
+      12.26669692993164,
+      12.359623908996582,
+      12.601016998291016,
+      11.876821517944336,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      72.03598022460938,
+      13.415855407714844,
+      12.499934196472168,
+      13.274065017700195,
+      12.152273178100586,
+      12.26669692993164,
+      12.359623908996582,
+      12.601016998291016,
+      11.876821517944336,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.851998617582023,
+    "train_mean_l2": 6.929702631205321,
+    "train_mean_l1": 3.2330496311187744,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
+    "mean_std": 1.6908782720565796,
+    "max_std": 61.18351364135742
+  }
+}

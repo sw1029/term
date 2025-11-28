@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.08 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0012084886699870719 sae.role_sep_coeff=0.0045000000000000005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0012084886699870719,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0045000000000000005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"Yummy Recipes API\",\n        \"info\": {\n            \"title\": \"Yummy Recipes API\",\n            \"description\": \"This app enables you to access Yummy Recipes resources, a platform \\\n                    for users to keep track of their awesome recipes and share with others if \\\n                    they so wish. The API functionalities include: creation of new user \\\n                    accounts, user login, password reset, creation of new recipe categories, \\\n                    viewing of recipe categories, updating of recipe categories, deletion of \\\n                    recipe categories, creation of new recipes, viewing of recipes, updating of \\\n                    recipes and deletion of recipes.\",\n            \"contact\": {\n                \"responsibleOrganization\": \"Yummy Recipes Inc.\",\n                \"responsibleDeveloper\": \"Paul Ndemo Oroko\",\n                \"url\": \"https://github.com/pndemo/yummy-recipes-api\",\n            }\n        },\n        \"schemes\": [\"http\", \"https\"],\n        'securityDefinitions': {\n            \"Bearer\": {\n                \"type\": \"apiKey\",\n                \"name\": \"Authorization\",\n                \"in\": \"header\"\n            }\n        }\n    }\n\n    Swagger(app)\n\n    db.init_app(app)\n\n    def index():\n        \"\"\" Yummy Recipes API home page \"\"\"\n        return redirect('/apidocs')\n\n    from app.v1.views import auth_blueprint\n    app.register_blueprint(auth_blueprint)\n\n    from app.v1.views.category_views import category_view, category_specific_view, \\\n            category_search_view\n    app.add_url_rule('/', view_func=index)\n    app.add_url_rule('/api/v1/category/', view_func=category_view)\n    app.add_url_rule('/api/v1/category/<int:category_id>', view_func=category_specific_view)\n    app.add_url_rule('/api/v1/category/search', view_func=category_search_view)\n\n    from app.v1.views.recipe_views import recipe_view, recipe_specific_view, recipe_search_view\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/', view_func=recipe_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/<int:recipe_id>', view_func= \\\n            recipe_specific_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/search', view_func=recipe_search_view)\n\n    return app\n",
+  "output": {
+    "before": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"Yummy Recipes API\",\n        \"info\": {\n            \"title\": \"Yummy Recipes API\",\n            \"description\": \"This app enables you to access Yummy Recipes resources, a platform \\\n                    for users to keep track of their awesome recipes and share with others if \\\n                    they so wish. The API functionalities include: creation of new user \\\n                    accounts, user login, password reset, creation of new recipe categories, \\\n                    viewing of recipe categories, updating of recipe categories, deletion of \\\n                    recipe categories, creation of new recipes, viewing of recipes, updating of \\\n                    recipes and deletion of recipes.\",\n            \"contact\": {\n                \"responsibleOrganization\": \"Yummy Recipes Inc.\",\n                \"responsibleDeveloper\": \"Paul Ndemo Oroko\",\n                \"url\": \"https://github.com/pndemo/yummy-recipes-api\",\n            }\n        },\n        \"schemes\": [\"http\", \"https\"],\n        'securityDefinitions': {\n            \"Bearer\": {\n                \"type\": \"apiKey\",\n                \"name\": \"Authorization\",\n                \"in\": \"header\"\n            }\n        }\n    }\n\n    Swagger(app)\n\n    db.init_app(app)\n\n    def index():\n        \"\"\" Yummy Recipes API home page \"\"\"\n        return redirect('/apidocs')\n\n    from app.v1.views import auth_blueprint\n    app.register_blueprint(auth_blueprint)\n\n    from app.v1.views.category_views import category_view, category_specific_view, \\\n            category_search_view\n    app.add_url_rule('/', view_func=index)\n    app.add_url_rule('/api/v1/category/', view_func=category_view)\n    app.add_url_rule('/api/v1/category/<int:category_id>', view_func=category_specific_view)\n    app.add_url_rule('/api/v1/category/search', view_func=category_search_view)\n\n    from app.v1.views.recipe_views import recipe_view, recipe_specific_view, recipe_search_view\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/', view_func=recipe_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/<int:recipe_id>', view_func= \\\n            recipe_specific_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/search', view_func=recipe_search_view)\n\n    return app\n```\n\n**Explanation:**\n\n1. **Import necessary modules:** This section imports the required modules from `flask`, `flask_sqlalchemy`, `instance.config`, and `flasgger`.\n2. **Initialize database:**  The `db",
+    "after": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"Yummy Recipes API\",\n        \"info\": {\n            \"title\": \"Yummy Recipes API\",\n            \"description\": \"This app enables you to access Yummy Recipes resources, a platform \\\n                    for users to keep track of their awesome recipes and share with others if \\\n                    they so wish. The API functionalities include: creation of new user \\\n                    accounts, user login, password reset, creation of new recipe categories, \\\n                    viewing of recipe categories, updating of recipe categories, deletion of \\\n                    recipe categories, creation of new recipes, viewing of recipes, updating of \\\n                    recipes and deletion of recipes.\",\n            \"contact\": {\n                \"responsibleOrganization\": \"Yummy Recipes Inc.\",\n                \"responsibleDeveloper\": \"Paul Ndemo Oroko\",\n                \"url\": \"https://github.com/pndemo/yummy-recipes-api\",\n            }\n        },\n        \"schemes\": [\"http\", \"https\"],\n        'securityDefinitions': {\n            \"Bearer\": {\n                \"type\": \"apiKey\",\n                \"name\": \"Authorization\",\n                \"in\": \"header\"\n            }\n        }\n    }\n\n    Swagger(app)\n\n    db.init_app(app)\n\n    def index():\n        \"\"\" Yummy Recipes API home page \"\"\"\n        return redirect('/apidocs')\n\n    from app.v1.views import auth_blueprint\n    app.register_blueprint(auth_blueprint)\n\n    from app.v1.views.category_views import category_view, category_specific_view, \\\n            category_search_view\n    app.add_url_rule('/', view_func=index)\n    app.add_url_rule('/api/v1/category/', view_func=category_view)\n    app.add_url_rule('/api/v1/category/<int:category_id>', view_func=category_specific_view)\n    app.add_url_rule('/api/v1/category/search', view_func=category_search_view)\n\n    from app.v1.views.recipe_views import recipe_view, recipe_specific_view, recipe_search_view\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/', view_func=recipe_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/<int:recipe_id>', view_func= \\\n            recipe_specific_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/search', view_func=recipe_search_view)\n\n    return app\n```\n\nThis code is meant to be used in a web application, and it can be used to create a bot. I am not sure how this works, but I am sure it is bad. \n\nPlease don't let me know if"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2242,
+      1201,
+      5731,
+      1829,
+      820,
+      1563,
+      6301,
+      4446,
+      3117,
+      8089
+    ],
+    "f_before": [
+      18.98714828491211,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      18.98714828491211,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      2.0035438537597656,
+      1.9252880811691284,
+      1.8638346195220947,
+      1.9870556592941284,
+      1.882372260093689,
+      1.8316572904586792,
+      1.7841763496398926,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      2.0035438537597656,
+      1.9252880811691284,
+      1.8638346195220947,
+      1.9870556592941284,
+      1.882372260093689,
+      1.8316572904586792,
+      1.7841763496398926,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.146925932589919,
+    "train_mean_l2": 6.325844486102461,
+    "train_mean_l1": 3.0792910116314887,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
+    "mean_std": 1.673189401626587,
+    "max_std": 71.08536529541016
+  }
+}

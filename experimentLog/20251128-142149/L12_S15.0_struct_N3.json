@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.03 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00037731631260996427 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00037731631260996427,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.03,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n# =============================================================================\n\nimport unittest\nimport itertools\nimport numpy as np\n\nfrom parameterized import parameterized\nfrom qiskit import QuantumCircuit, QuantumRegister\nfrom qiskit import execute as q_execute\nfrom qiskit.quantum_info import state_fidelity\n\nfrom qiskit.aqua import get_aer_backend\nfrom test.common import QiskitAquaTestCase\n\nnum_controls = [i + 1 for i in range(7)]\nmodes = ['basic', 'advanced', 'noancilla']\n\n\nclass TestMCT(QiskitAquaTestCase):\n    @parameterized.expand(\n        itertools.product(num_controls, modes)\n    )\n    def test_mct(self, num_controls, mode):\n        c = QuantumRegister(num_controls, name='c')\n        o = QuantumRegister(1, name='o')\n        subsets = [tuple(range(i)) for i in range(num_controls + 1)]\n        for subset in subsets:\n            qc = QuantumCircuit(o, c)\n            if mode == 'basic':\n                if num_controls <= 2:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = num_controls - 2\n            elif mode == 'noancilla':\n                num_ancillae = 0\n            else:\n                if num_controls <= 4:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = 1\n            if num_ancillae > 0:\n                a = QuantumRegister(num_ancillae, name='a')\n                qc.add_register(a)\n            for idx in subset:\n                qc.x(c[idx])\n            qc.mct(\n                [c[i] for i in range(num_controls)],\n                o[0],\n                [a[i] for i in range(num_ancillae)],\n                mode=mode\n            )\n            for idx in subset:\n                qc.x(c[idx])\n\n            vec = np.asarray(q_execute(qc, get_aer_backend(\n                'statevector_simulator')).result().get_statevector(qc, decimals=16))\n            vec_o = [0, 1] if len(subset) == num_controls else [1, 0]\n            f = state_fidelity(vec, np.array(vec_o + [0] * (2 ** (num_controls + num_ancillae + 1) - 2)))\n            self.assertAlmostEqual(f, 1)\n\n\nif __name__ == '__main__':\n    unittest.main()\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n# =============================================================================\n\nimport unittest\nimport itertools\nimport numpy as np\n\nfrom parameterized import parameterized\nfrom qiskit import QuantumCircuit, QuantumRegister\nfrom qiskit import execute as q_execute\nfrom qiskit.quantum_info import state_fidelity\n\nfrom qiskit.aqua import get_aer_backend\nfrom test.common import QiskitAquaTestCase\n\nnum_controls = [i + 1 for i in range(7)]\nmodes = ['basic', 'advanced', 'noancilla']\n\n\nclass TestMCT(QiskitAquaTestCase):\n    @parameterized.expand(\n        itertools.product(num_controls, modes)\n    )\n    def test_mct(self, num_controls, mode):\n        c = QuantumRegister(num_controls, name='c')\n        o = QuantumRegister(1, name='o')\n        subsets = [tuple(range(i)) for i in range(num_controls + 1)]\n        for subset in subsets:\n            qc = QuantumCircuit(o, c)\n            if mode == 'basic':\n                if num_controls <= 2:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = num_controls - 2\n            elif mode == 'noancilla':\n                num_ancillae = 0\n            else:\n                if num_controls <= 4:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = 1\n            if num_ancillae > 0:\n                a = QuantumRegister(num_ancillae, name='a')\n                qc.add_register(a)\n            for idx in subset:\n                qc.x(c[idx])\n            qc.mct(\n                [c[i] for i in range(num_controls)],\n                o[0],\n                [a[i] for i in range(num_ancillae)],\n                mode=mode\n            )\n            for idx in subset:\n                qc.x(c[idx])\n\n            vec = np.asarray(q_execute(qc, get_aer_backend(\n                'statevector_simulator')).result().get_statevector(qc, decimals=16))\n            vec_o = [0, 1] if len(subset) == num_controls else [1, 0]\n            f = state_fidelity(vec, np.array(vec_o + [0] * (2 ** (num_controls + num_ancillae + 1) - 2)))\n            self.assertAlmostEqual(f, 1)\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\n**Explanation:**\n\n1. **Import Statements:** \n   - Import necessary libraries: `unittest`, `itertools`, `numpy`, `qiskit`, and `qiskit.aqua`.\n\n2. **Test Class:**",
+    "after": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n# =============================================================================\n\nimport unittest\nimport itertools\nimport numpy as np\n\nfrom parameterized import parameterized\nfrom qiskit import QuantumCircuit, QuantumRegister\nfrom qiskit import execute as q_execute\nfrom qiskit.quantum_info import state_fidelity\n\nfrom qiskit.aqua import get_aer_backend\nfrom test.common import QiskitAquaTestCase\n\nnum_controls = [i + 1 for i in range(7)]\nmodes = ['basic', 'advanced', 'noancilla']\n\n\nclass TestMCT(QiskitAquaTestCase):\n    @parameterized.expand(\n        itertools.product(num_controls, modes)\n    )\n    def test_mct(self, num_controls, mode):\n        c = QuantumRegister(num_controls, name='c')\n        o = QuantumRegister(1, name='o')\n        subsets = [tuple(range(i)) for i in range(num_controls + 1)]\n        for subset in subsets:\n            qc = QuantumCircuit(o, c)\n            if mode == 'basic':\n                if num_controls <= 2:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = num_controls - 2\n            elif mode == 'noancilla':\n                num_ancillae = 0\n            else:\n                if num_controls <= 4:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = 1\n            if num_ancillae > 0:\n                a = QuantumRegister(num_ancillae, name='a')\n                qc.add_register(a)\n            for idx in subset:\n                qc.x(c[idx])\n            qc.mct(\n                [c[i] for i in range(num_controls)],\n                o[0],\n                [a[i] for i in range(num_ancillae)],\n                mode=mode\n            )\n            for idx in subset:\n                qc.x(c[idx])\n\n            vec = np.asarray(q_execute(qc, get_aer_backend(\n                'statevector_simulator')).result().get_statevector(qc, decimals=16))\n            vec_o = [0, 1] if len(subset) == num_controls else [1, 0]\n            f = state_fidelity(vec, np.array(vec_o + [0] * (2 ** (num_controls + num_ancillae + 1) - 2)))\n            self.assertAlmostEqual(f, 1)\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\n```python\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1541,
+      859,
+      7564,
+      5662,
+      3370,
+      6732,
+      6493,
+      5445,
+      3226
+    ],
+    "f_before": [
+      0.0,
+      67.16184997558594,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      67.16184997558594,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      38.71067810058594,
+      0.0,
+      0.0,
+      7.220090866088867,
+      7.5064263343811035,
+      0.0,
+      0.0,
+      6.490744113922119,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      38.71067810058594,
+      0.0,
+      0.0,
+      7.220090866088867,
+      7.5064263343811035,
+      0.0,
+      0.0,
+      6.490744113922119,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.01762550815125,
+    "train_mean_l2": 7.948200629286468,
+    "train_mean_l1": 2.7709025331735613,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
+    "mean_std": 1.2138572931289673,
+    "max_std": 39.272926330566406
+  }
+}

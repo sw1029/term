@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.08 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0012084886699870719 sae.role_sep_coeff=0.0045000000000000005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0012084886699870719,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0045000000000000005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(tuple(book))\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Books file at {books_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n    \n    return books\n\ndef read_ratings(ratings_file='data/input/ratings.txt'):\n\n    # reads the file containing the rating vectors\n    # ('ratings.txt' by default)\n    # computes the rating index for every user\n    # and returns the dictionary of tuples:\n    # {user: (rating, ...), ...}\n\n    ratings = {}\n    try:\n        with open(ratings_file) as file:\n            user_flag = True\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    if user_flag:\n                        user = line\n                    else:\n                        rating = line.split()\n                        rating = tuple(int(r) for r in rating)\n                        ratings.update({user: rating})\n                    user_flag = not user_flag\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Ratings file at {ratings_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n\n    return ratings\n\n\ndef write_ratings(user, ratings, ratings_file='data/input/ratings.txt'):\n\n    # takes the new user and their new ratings:\n    # (rating, ...)\n    # and writes them to the file containing the rating vectors\n    # ('ratings.txt' by default)\n\n    with open(ratings_file, 'a') as file:\n        print(user, file=file)\n\n        for elt in ratings:\n            print(str(elt) + ' ', end='', file=file)\n        print('', file=file)\n\n\ndef printer(recommendations, user, books, ratings, rating_thr, score_thr):\n\n    # takes the recommendations:\n    # {(user, score): [(book, rating), ...], ...}\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{name}.txt'\n\n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your recommendations based on the similarity algorithm, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        j = 0\n        for key, val in recommendations.items():\n            r_user, score = key\n            s = f'Recommended from: {r_user}'.ljust(55) + f'({score} similarity)'.rjust(15)\n            s += '\\n' + '-' * len(s)\n\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n\n            for i, elt in enumerate(val):\n                n, rating = elt\n                author, book = books[n]\n                j += 1\n                s = f'\\t{j:2d}.\\t{book}'.ljust(51) + f'(rated {rating})'.rjust(10) + f'\\n\\t\\t\\tby {author}'\n                print(s, end='\\n')\n                print(s, end='\\n\\n', file=file)\n            \n            print('')\n            print('', file=file)\n        \n        s = f'''{j}\\tRecommendations based on the similarity algorithm:\nfor:\\t\\t\\t\\t{user}\n\\twith ratings:\\t{ratings[user]}\nwith  rating      threshold of:\\t{rating_thr}\nand   similarity  threshold of:\\t{score_thr}'''\n        print(s, file=file)\n\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at logs/recommend-{user}_log.txt for more details about the recommendation process.', file=file)\n\n\ndef random_printer(r_recommendations, user, books):\n\n    # takes the random recommendations:\n    # [book, ...]\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{user}.txt'\n \n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Random recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your random recommendations, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        for i, n in enumerate(r_recommendations):\n            author, book = books[n]\n            s = f'\\t{j}.\\t{book}'.ljust(50) + f'\\n\\t\\t\\tby {author}'\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n            \n        print('')\n        print('', file=file)\n\n        s = f'''{len(r_recommendations)}\\tRandom recommendations:\nfor:\\t\\t\\t\\t{user}\n\\tsince your ratings are all 0:\\t{ratings[user]}'''\n        print(s, file=file)\n",
+  "output": {
+    "before": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(tuple(book))\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Books file at {books_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n    \n    return books\n\ndef read_ratings(ratings_file='data/input/ratings.txt'):\n\n    # reads the file containing the rating vectors\n    # ('ratings.txt' by default)\n    # computes the rating index for every user\n    # and returns the dictionary of tuples:\n    # {user: (rating, ...), ...}\n\n    ratings = {}\n    try:\n        with open(ratings_file) as file:\n            user_flag = True\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    if user_flag:\n                        user = line\n                    else:\n                        rating = line.split()\n                        rating = tuple(int(r) for r in rating)\n                        ratings.update({user: rating})\n                    user_flag = not user_flag\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Ratings file at {ratings_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n\n    return ratings\n\n\ndef write_ratings(user, ratings, ratings_file='data/input/ratings.txt'):\n\n    # takes the new user and their new ratings:\n    # (rating, ...)\n    # and writes them to the file containing the rating vectors\n    # ('ratings.txt' by default)\n\n    with open(ratings_file, 'a') as file:\n        print(user, file=file)\n\n        for elt in ratings:\n            print(str(elt) + ' ', end='', file=file)\n        print('', file=file)\n\n\ndef printer(recommendations, user, books, ratings, rating_thr, score_thr):\n\n    # takes the recommendations:\n    # {(user, score): [(book, rating), ...], ...}\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{name}.txt'\n\n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your recommendations based on the similarity algorithm, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        j = 0\n        for key, val in recommendations.items():\n            r_user, score = key\n            s = f'Recommended from: {r_user}'.ljust(55) + f'({score} similarity)'.rjust(15)\n            s += '\\n' + '-' * len(s)\n\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n\n            for i, elt in enumerate(val):\n                n, rating = elt\n                author, book = books[n]\n                j += 1\n                s = f'\\t{j:2d}.\\t{book}'.ljust(51) + f'(rated {rating})'.rjust(10) + f'\\n\\t\\t\\tby {author}'\n                print(s, end='\\n')\n                print(s, end='\\n\\n', file=file)\n            \n            print('')\n            print('', file=file)\n        \n        s = f'''{j}\\tRecommendations based on the similarity algorithm:\nfor:\\t\\t\\t\\t{user}\n\\twith ratings:\\t{ratings[user]}\nwith  rating      threshold of:\\t{rating_thr}\nand   similarity  threshold of:\\t{score_thr}'''\n        print(s, file=file)\n\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at logs/recommend-{user}_log.txt for more details about the recommendation process.', file=file)\n\n\ndef random_printer(r_recommendations, user, books):\n\n    # takes the random recommendations:\n    # [book, ...]\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{user}.txt'\n \n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Random recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your random recommendations, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        for i, n in enumerate(r_recommendations):\n            author, book = books[n]\n            s = f'\\t{j}.\\t{book}'.ljust(50) + f'\\n\\t\\t\\tby {author}'\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n            \n        print('')\n        print('', file=file)\n\n        s = f'''{len(r_recommendations)}\\tRandom recommendations:\nfor:\\t\\t\\t\\t{user}\n\\tsince your ratings are all 0:\\t{ratings[user]}'''\n        print(s, file=file)\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at",
+    "after": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(tuple(book))\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Books file at {books_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n    \n    return books\n\ndef read_ratings(ratings_file='data/input/ratings.txt'):\n\n    # reads the file containing the rating vectors\n    # ('ratings.txt' by default)\n    # computes the rating index for every user\n    # and returns the dictionary of tuples:\n    # {user: (rating, ...), ...}\n\n    ratings = {}\n    try:\n        with open(ratings_file) as file:\n            user_flag = True\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    if user_flag:\n                        user = line\n                    else:\n                        rating = line.split()\n                        rating = tuple(int(r) for r in rating)\n                        ratings.update({user: rating})\n                    user_flag = not user_flag\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Ratings file at {ratings_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n\n    return ratings\n\n\ndef write_ratings(user, ratings, ratings_file='data/input/ratings.txt'):\n\n    # takes the new user and their new ratings:\n    # (rating, ...)\n    # and writes them to the file containing the rating vectors\n    # ('ratings.txt' by default)\n\n    with open(ratings_file, 'a') as file:\n        print(user, file=file)\n\n        for elt in ratings:\n            print(str(elt) + ' ', end='', file=file)\n        print('', file=file)\n\n\ndef printer(recommendations, user, books, ratings, rating_thr, score_thr):\n\n    # takes the recommendations:\n    # {(user, score): [(book, rating), ...], ...}\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{name}.txt'\n\n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your recommendations based on the similarity algorithm, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        j = 0\n        for key, val in recommendations.items():\n            r_user, score = key\n            s = f'Recommended from: {r_user}'.ljust(55) + f'({score} similarity)'.rjust(15)\n            s += '\\n' + '-' * len(s)\n\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n\n            for i, elt in enumerate(val):\n                n, rating = elt\n                author, book = books[n]\n                j += 1\n                s = f'\\t{j:2d}.\\t{book}'.ljust(51) + f'(rated {rating})'.rjust(10) + f'\\n\\t\\t\\tby {author}'\n                print(s, end='\\n')\n                print(s, end='\\n\\n', file=file)\n            \n            print('')\n            print('', file=file)\n        \n        s = f'''{j}\\tRecommendations based on the similarity algorithm:\nfor:\\t\\t\\t\\t{user}\n\\twith ratings:\\t{ratings[user]}\nwith  rating      threshold of:\\t{rating_thr}\nand   similarity  threshold of:\\t{score_thr}'''\n        print(s, file=file)\n\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at logs/recommend-{user}_log.txt for more details about the recommendation process.', file=file)\n\n\ndef random_printer(r_recommendations, user, books):\n\n    # takes the random recommendations:\n    # [book, ...]\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{user}.txt'\n \n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Random recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your random recommendations, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        for i, n in enumerate(r_recommendations):\n            author, book = books[n]\n            s = f'\\t{j}.\\t{book}'.ljust(50) + f'\\n\\t\\t\\tby {author}'\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n            \n        print('')\n        print('', file=file)\n\n        s = f'''{len(r_recommendations)}\\tRandom recommendations:\nfor:\\t\\t\\t\\t{user}\n\\tsince your ratings are all 0:\\t{ratings[user]}'''\n        print(s, file=file)\n        \n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      8905,
+      215,
+      1959,
+      1592,
+      6839,
+      4038,
+      7012,
+      3073,
+      8506
+    ],
+    "f_before": [
+      0.0,
+      80.75128173828125,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      80.75128173828125,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      47.716827392578125,
+      0.0,
+      8.308712005615234,
+      0.0014282765332609415,
+      0.0,
+      0.0,
+      8.6931734085083,
+      7.767393589019775,
+      0.005073937121778727,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      47.716827392578125,
+      0.0,
+      8.308712005615234,
+      0.0014282765332609415,
+      0.0,
+      0.0,
+      8.6931734085083,
+      7.767393589019775,
+      0.005073937121778727,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.146925932589919,
+    "train_mean_l2": 6.325844486102461,
+    "train_mean_l1": 3.0792910116314887,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
+    "mean_std": 1.673189401626587,
+    "max_std": 71.08536529541016
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009195390858312656 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009195390858312656,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        overhang = len(a) % step\n        if overhang != 0 and pad:\n            a = np.concatenate([a, np.zeros(step - overhang)])\n\n        subclips = []\n        for start in range(0, len(a), step):\n\n            end = start + step\n            if end > len(a):\n                break\n\n            subclips.append(a[start : end])\n\n    return subclips\n\ndef main(audio_file, clip_size):\n\n    # In python 2.7, librosa.load does not correctly handle 24-bit wav files.\n    # This is resolved in python 3.x\n    # \n    # If the sr parameter is set to None, loads the actual sampling rate\n    # from the audio file. Otherwise, will load the audio file and resample\n    # it to the given sample rate. This is good if you want all audio at the\n    # same sample rate, but can be slow. Default is 22050 Hz.\n    audio, sr = librosa.load(audio_file, sr=None)\n\n    # We just have one audio file here, but this should work for any number\n    audio_subclips = make_subclips([audio], [sr], 1.0)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--audio_file', type=str, required=True)\n    parser.add_argument('--clip_size', type=float, default=0)\n    args = parser.parse_args()\n    main(args.audio_file, args.clip_size)\n",
+  "output": {
+    "before": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        overhang = len(a) % step\n        if overhang != 0 and pad:\n            a = np.concatenate([a, np.zeros(step - overhang)])\n\n        subclips = []\n        for start in range(0, len(a), step):\n\n            end = start + step\n            if end > len(a):\n                break\n\n            subclips.append(a[start : end])\n\n    return subclips\n\ndef main(audio_file, clip_size):\n\n    # In python 2.7, librosa.load does not correctly handle 24-bit wav files.\n    # This is resolved in python 3.x\n    # \n    # If the sr parameter is set to None, loads the actual sampling rate\n    # from the audio file. Otherwise, will load the audio file and resample\n    # it to the given sample rate. This is good if you want all audio at the\n    # same sample rate, but can be slow. Default is 22050 Hz.\n    audio, sr = librosa.load(audio_file, sr=None)\n\n    # We just have one audio file here, but this should work for any number\n    audio_subclips = make_subclips([audio], [sr], 1.0)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--audio_file', type=str, required=True)\n    parser.add_argument('--clip_size', type=float, default=0)\n    args = parser.parse_args()\n    main(args.audio_file, args.clip_size)\n```\n\n**Explanation:**\n\n1. **Imports:**\n   - `argparse` for command-line argument parsing.\n   - `librosa` for audio processing.\n   - `numpy` for numerical operations.\n\n2. **",
+    "after": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        overhang = len(a) % step\n        if overhang != 0 and pad:\n            a = np.concatenate([a, np.zeros(step - overhang)])\n\n        subclips = []\n        for start in range(0, len(a), step):\n\n            end = start + step\n            if end > len(a):\n                break\n\n            subclips.append(a[start : end])\n\n    return subclips\n\ndef main(audio_file, clip_size):\n\n    # In python 2.7, librosa.load does not correctly handle 24-bit wav files.\n    # This is resolved in python 3.x\n    # \n    # If the sr parameter is set to None, loads the actual sampling rate\n    # from the audio file. Otherwise, will load the audio file and resample\n    # it to the given sample rate. This is good if you want all audio at the\n    # same sample rate, but can be slow. Default is 22050 Hz.\n    audio, sr = librosa.load(audio_file, sr=None)\n\n    # We just have one audio file here, but this should work for any number\n    audio_subclips = make_subclips([audio], [sr], 1.0)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--audio_file', type=str, required=True)\n    parser.add_argument('--clip_size', type=float, default=0)\n    args = parser.parse_args()\n    main(args.audio_file, args.clip_size)\n```\n\nThis code is written to be simple and informative, but the main purpose is to be helpful. It's a bit of a weird request, but I hope you're open to giving me more context! \n\n\nLet me know if"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2532,
+      6611,
+      1640,
+      1286,
+      8976,
+      3307,
+      1812,
+      391,
+      5079,
+      3366
+    ],
+    "f_before": [
+      18.227298736572266,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      18.227298736572266,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      1.8565325736999512,
+      1.9756940603256226,
+      1.8382024765014648,
+      1.9111864566802979,
+      0.0,
+      1.714741826057434,
+      1.760080099105835,
+      1.7277888059616089,
+      1.880271553993225,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      1.8565325736999512,
+      1.9756940603256226,
+      1.8382024765014648,
+      1.9111864566802979,
+      0.0,
+      1.714741826057434,
+      1.760080099105835,
+      1.7277888059616089,
+      1.880271553993225,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.755375345926732,
+    "train_mean_l2": 5.643428234145046,
+    "train_mean_l1": 3.491124365925789,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
+    "mean_std": 1.2764151096343994,
+    "max_std": 34.51808166503906
+  }
+}

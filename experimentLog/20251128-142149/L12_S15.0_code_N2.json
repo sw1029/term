@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.03 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00037731631260996427 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00037731631260996427,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.03,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Generate a conversation between two people discussing a current news topic.\n\nPerson A: Have you been following the news about the proposed tax reform legislation? \n\nPerson B: Yes, I have. It looks like it could have some major implications for working families. \n\nPerson A: Absolutely. It looks like it could create a lot of financial hardship for those on lower incomes. We should keep an eye on the situation. \n\nPerson B: Absolutely. We need to be prepared.",
+  "output": {
+    "before": "Generate a conversation between two people discussing a current news topic.\n\nPerson A: Have you been following the news about the proposed tax reform legislation? \n\nPerson B: Yes, I have. It looks like it could have some major implications for working families. \n\nPerson A: Absolutely. It looks like it could create a lot of financial hardship for those on lower incomes. We should keep an eye on the situation. \n\nPerson B: Absolutely. We need to be prepared. I heard that some groups are already protesting against it. \n\nPerson A: I know. I was reading about the demonstrations in Washington D.C. It's a bit disheartening to see the level of anger and frustration. \n\nPerson",
+    "after": "Generate a conversation between two people discussing a current news topic.\n\nPerson A: Have you been following the news about the proposed tax reform legislation? \n\nPerson B: Yes, I have. It looks like it could have some major implications for working families. \n\nPerson A: Absolutely. It looks like it could create a lot of financial hardship for those on lower incomes. We should keep an eye on the situation. \n\nPerson B: Absolutely. We need to be prepared. \n\n**Note:** This is just a starting point. You can modify this conversation to suit your needs. \n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      7564,
+      859,
+      1114,
+      4101,
+      7528,
+      6732,
+      749,
+      1047,
+      5445
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.18301090598106384,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.18301090598106384,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.008305437862873077,
+      0.008065951988101006,
+      0.0,
+      0.059695009142160416,
+      0.044273145496845245,
+      0.0,
+      0.04678403213620186,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.008305437862873077,
+      0.008065951988101006,
+      0.0,
+      0.059695009142160416,
+      0.044273145496845245,
+      0.0,
+      0.04678403213620186,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.01762550815125,
+    "train_mean_l2": 7.948200629286468,
+    "train_mean_l1": 2.7709025331735613,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
+    "mean_std": 1.2138572931289673,
+    "max_std": 39.272926330566406
+  }
+}

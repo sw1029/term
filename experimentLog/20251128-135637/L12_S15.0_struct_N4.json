@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.045 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0005919594976014248 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0005919594976014248,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.045,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence('db_vacuum')\n    last_vacuum = persistence.get('last_vacuum')\n    if not last_vacuum or last_vacuum < datetime.now() - VACUUM_INTERVAL:\n        log.info('Running VACUUM on database to improve performance and decrease db size.')\n        session.execute('VACUUM')\n        persistence['last_vacuum'] = datetime.now()\n",
+  "output": {
+    "before": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence('db_vacuum')\n    last_vacuum = persistence.get('last_vacuum')\n    if not last_vacuum or last_vacuum < datetime.now() - VACUUM_INTERVAL:\n        log.info('Running VACUUM on database to improve performance and decrease db size.')\n        session.execute('VACUUM')\n        persistence['last_vacuum'] = datetime.now()\n        persistence.save()\n        \n    else:\n        log.info('VACUUM already ran recently.')\n\n# Run this as a background task\ndef run_vacuum():\n    \"\"\"\n    Executes the db_vacuum event.",
+    "after": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence('db_vacuum')\n    last_vacuum = persistence.get('last_vacuum')\n    if not last_vacuum or last_vacuum < datetime.now() - VACUUM_INTERVAL:\n        log.info('Running VACUUM on database to improve performance and decrease db size.')\n        session.execute('VACUUM')\n        persistence['last_vacuum'] = datetime.now()\n        persistence.save()\n        log.info('VACUUM completed.')\n\n```\n\nThis code provides a basic implementation for a database vacuum routine. \n\n**Explanation:**\n\n* **Logging:** The code uses logging to track the execution of the"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      7900,
+      7797,
+      6889,
+      5571,
+      4791,
+      1789,
+      7877,
+      4321,
+      1596
+    ],
+    "f_before": [
+      0.0,
+      117.9634017944336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      117.9634017944336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      68.45448303222656,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      11.026616096496582,
+      0.0,
+      0.0,
+      0.0,
+      11.565969467163086
+    ],
+    "g_after": [
+      68.45448303222656,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      11.026616096496582,
+      0.0,
+      0.0,
+      0.0,
+      11.565969467163086
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.52791960250726,
+    "train_mean_l2": 6.537878839939832,
+    "train_mean_l1": 2.780219153434038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
+    "mean_std": 1.6594011783599854,
+    "max_std": 59.914852142333984
+  }
+}

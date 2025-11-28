@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "from __future__ import annotations\n\nfrom enum import IntEnum\n\n\nclass Algorithm(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Algorithms.html\n    \"\"\"\n\n    RSA_PKCS1_SHA1 = 1\n    RSA_PKCS1_SHA256 = 2\n    RSA_PKCS1_SHA384 = 3\n    RSA_PKCS1_SHA512 = 4\n    RSA_PSS_SHA1 = 5\n    RSA_PSS_SHA256 = 6\n    RSA_PSS_SHA384 = 7\n    RSA_PSS_SHA512 = 8\n    RSA_2048 = 9\n    RSA_3072 = 10\n    RSA_4096 = 11\n    EC_P256 = 12\n    EC_P384 = 13\n    EC_P521 = 14\n    EC_K256 = 15\n    EC_BP256 = 16\n    EC_BP384 = 17\n    EC_BP512 = 18\n    HMAC_SHA1 = 19\n    HMAC_SHA256 = 20\n    HMAC_SHA384 = 21\n    HMAC_SHA512 = 22\n    ECDSA_SHA1 = 23\n    EC_ECDH = 24\n    RSA_OAEP_SHA1 = 25\n    RSA_OAEP_SHA256 = 26\n    RSA_OAEP_SHA384 = 27\n    RSA_OAEP_SHA512 = 28\n    AES128_CCM_WRAP = 29\n    Opaque_Data = 30\n    Opaque_X509_Certificate = 31\n    MGF1_SHA1 = 32\n    MGF1_SHA256 = 33\n    MGF1_SHA384 = 34\n    MGF1_SHA512 = 35\n    SSH_Template = 36\n    Yubico_OTP_AES128 = 37\n    Yubico_AES_Authentication = 38\n    Yubico_OTP_AES192 = 39\n    Yubico_OTP_AES256 = 40\n    AES192_CCM_WRAP = 41\n    AES256_CCM_WRAP = 42\n    ECDSA_SHA256 = 43\n    ECDSA_SHA384 = 44\n    ECDSA_SHA512 = 45\n    ED25519 = 46\n    EC_P224 = 47\n\n\nclass Capability(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Capability.html\n    \"\"\"\n\n    GetOpaque = 0\n    PutOpaque = 1\n    PutAuthenticationKey = 2\n    PutAsymmetricKey = 3\n    GenerateAsymmetricKey = 4\n    SignPkcs = 5\n    SignPss = 6\n    SignEcdsa = 7\n    SignEddsa = 8\n    DecryptPkcs = 9\n    DecryptOaep = 10\n    DeriveEcdh = 11\n    ExportWrapped = 12\n    ImportWrapped = 13\n    PutWrapKey = 14\n    GenerateWrapKey = 15\n    ExportableUnderWrap = 16\n    SetOption = 17\n    GetOption = 18\n    GetPseudoRandom = 19\n    PutMacKey = 20\n    GenerateHmacKey = 21\n    SignHmac = 22\n    VerifyHmac = 23\n    GetLogEntries = 24\n    SignSshCertificate = 25\n    GetTemplate = 26\n    PutTemplate = 27\n    ResetDevice = 28\n    DecryptOtp = 29\n    CreateOtpAead = 30\n    RandomizeOtpAead = 31\n    RewrapFromOtpAeadKey = 32\n    RewrapToOtpAeadKey = 33\n    SignAttestationCertificate = 34\n    PutOtpAeadKey = 35\n    GenerateOtpAeadKey = 36\n    WrapData = 37\n    UnwrapData = 38\n    DeleteOpaque = 39\n    DeleteAuthenticationKey = 40\n    DeleteAsymmetricKey = 41\n    DeleteWrapKey = 42\n    DeleteHmacKey = 43\n    DeleteTemplate = 44\n    DeleteOtpAeadKey = 45\n    ChangeAuthenticationKey = 46\n\n\nclass Command(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Commands/\n    \"\"\"\n\n    Echo = 0x01\n    CreateSession = 0x03\n    AuthenticateSession = 0x04\n    SessionMessage = 0x05\n    GetDeviceInfo = 0x06\n    ResetDevice = 0x08\n    CloseSession = 0x40\n    GetStorageInfo = 0x41\n    PutOpaque = 0x42\n    GetOpaque = 0x43\n    PutAuthenticationKey = 0x44\n    PutAsymmetricKey = 0x45\n    GenerateAsymmetricKey = 0x46\n    SignPkcs1 = 0x47\n    ListObjects = 0x48\n    DecryptPkcs1 = 0x49\n    ExportWrapped = 0x4A\n    ImportWrapped = 0x4B\n    PutWrapKey = 0x4C\n    GetLogEntries = 0x4D\n    GetObjectInfo = 0x4E\n    SetOption = 0x4F\n    GetOption = 0x50\n    GetPseudoRandom = 0x51\n    PutHmacKey = 0x52\n    SignHmac = 0x53\n    GetPublicKey = 0x54\n    SignPss = 0x55\n    SignEcdsa = 0x56\n    DeriveEcdh = 0x57\n    DeleteObject = 0x58\n    DecryptOaep = 0x59\n    GenerateHmacKey = 0x5A\n    GenerateWrapKey = 0x5B\n    VerifyHmac = 0x5C\n    SignSshCertificate = 0x5D\n    PutTemplate = 0x5E\n    GetTemplate = 0x5F\n    DecryptOtp = 0x60\n    CreateOtpAead = 0x61\n    RandomizeOtpAead = 0x62\n    RewrapOtpAead = 0x63\n    SignAttestationCertificate = 0x64\n    PutOtpAeadKey = 0x65\n    GenerateOtpAeadKey = 0x66\n    SetLogIndex = 0x67\n    WrapData = 0x68\n    UnwrapData = 0x69\n    SignEddsa = 0x6A\n    BlinkDevice = 0x6B\n    ChangeAuthenticationKey = 0x6C\n    Error = 0x7F\n\n\nclass Error(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Errors.html\n    \"\"\"\n\n    OK = 0x00\n    INVALID_COMMAND = 0x01\n    INVALID_DATA = 0x02\n    INVALID_SESSION = 0x03\n    AUTHENTICATION_FAILED = 0x04\n    SESSIONS_FULL = 0x05\n    SESSION_FAILED = 0x06\n    STORAGE_FAILED = 0x07\n    WRONG_LENGTH = 0x08\n    INSUFFICIENT_PERMISSIONS = 0x09\n    LOG_FULL = 0x0A\n    OBJECT_NOT_FOUND = 0x0B\n    INVALID_ID = 0x0C\n    SSH_CA_CONSTRAINT_VIOLATION = 0x0E\n    INVALID_OTP = 0x0F\n    DEMO_MODE = 0x10\n    OBJECT_EXISTS = 0x11\n\n\nclass ObjectType(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Object.html\n    \"\"\"\n\n    Opaque = 0x01\n    AuthenticationKey = 0x02\n    AsymmetricKey = 0x03\n    WrapKey = 0x04\n    HmacKey = 0x05\n    Template = 0x06\n    OtpAeadKey = 0x07\n\n\nclass Option(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Options.html\n    \"\"\"\n\n    ForceAudit = 0x01\n    CommandAudit = 0x03\n",
+  "output": {
+    "before": "from __future__ import annotations\n\nfrom enum import IntEnum\n\n\nclass Algorithm(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Algorithms.html\n    \"\"\"\n\n    RSA_PKCS1_SHA1 = 1\n    RSA_PKCS1_SHA256 = 2\n    RSA_PKCS1_SHA384 = 3\n    RSA_PKCS1_SHA512 = 4\n    RSA_PSS_SHA1 = 5\n    RSA_PSS_SHA256 = 6\n    RSA_PSS_SHA384 = 7\n    RSA_PSS_SHA512 = 8\n    RSA_2048 = 9\n    RSA_3072 = 10\n    RSA_4096 = 11\n    EC_P256 = 12\n    EC_P384 = 13\n    EC_P521 = 14\n    EC_K256 = 15\n    EC_BP256 = 16\n    EC_BP384 = 17\n    EC_BP512 = 18\n    HMAC_SHA1 = 19\n    HMAC_SHA256 = 20\n    HMAC_SHA384 = 21\n    HMAC_SHA512 = 22\n    ECDSA_SHA1 = 23\n    EC_ECDH = 24\n    RSA_OAEP_SHA1 = 25\n    RSA_OAEP_SHA256 = 26\n    RSA_OAEP_SHA384 = 27\n    RSA_OAEP_SHA512 = 28\n    AES128_CCM_WRAP = 29\n    Opaque_Data = 30\n    Opaque_X509_Certificate = 31\n    MGF1_SHA1 = 32\n    MGF1_SHA256 = 33\n    MGF1_SHA384 = 34\n    MGF1_SHA512 = 35\n    SSH_Template = 36\n    Yubico_OTP_AES128 = 37\n    Yubico_AES_Authentication = 38\n    Yubico_OTP_AES192 = 39\n    Yubico_OTP_AES256 = 40\n    AES192_CCM_WRAP = 41\n    AES256_CCM_WRAP = 42\n    ECDSA_SHA256 = 43\n    ECDSA_SHA384 = 44\n    ECDSA_SHA512 = 45\n    ED25519 = 46\n    EC_P224 = 47\n\n\nclass Capability(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Capability.html\n    \"\"\"\n\n    GetOpaque = 0\n    PutOpaque = 1\n    PutAuthenticationKey = 2\n    PutAsymmetricKey = 3\n    GenerateAsymmetricKey = 4\n    SignPkcs = 5\n    SignPss = 6\n    SignEcdsa = 7\n    SignEddsa = 8\n    DecryptPkcs = 9\n    DecryptOaep = 10\n    DeriveEcdh = 11\n    ExportWrapped = 12\n    ImportWrapped = 13\n    PutWrapKey = 14\n    GenerateWrapKey = 15\n    ExportableUnderWrap = 16\n    SetOption = 17\n    GetOption = 18\n    GetPseudoRandom = 19\n    PutMacKey = 20\n    GenerateHmacKey = 21\n    SignHmac = 22\n    VerifyHmac = 23\n    GetLogEntries = 24\n    SignSshCertificate = 25\n    GetTemplate = 26\n    PutTemplate = 27\n    ResetDevice = 28\n    DecryptOtp = 29\n    CreateOtpAead = 30\n    RandomizeOtpAead = 31\n    RewrapFromOtpAeadKey = 32\n    RewrapToOtpAeadKey = 33\n    SignAttestationCertificate = 34\n    PutOtpAeadKey = 35\n    GenerateOtpAeadKey = 36\n    WrapData = 37\n    UnwrapData = 38\n    DeleteOpaque = 39\n    DeleteAuthenticationKey = 40\n    DeleteAsymmetricKey = 41\n    DeleteWrapKey = 42\n    DeleteHmacKey = 43\n    DeleteTemplate = 44\n    DeleteOtpAeadKey = 45\n    ChangeAuthenticationKey = 46\n\n\nclass Command(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Commands/\n    \"\"\"\n\n    Echo = 0x01\n    CreateSession = 0x03\n    AuthenticateSession = 0x04\n    SessionMessage = 0x05\n    GetDeviceInfo = 0x06\n    ResetDevice = 0x08\n    CloseSession = 0x40\n    GetStorageInfo = 0x41\n    PutOpaque = 0x42\n    GetOpaque = 0x43\n    PutAuthenticationKey = 0x44\n    PutAsymmetricKey = 0x45\n    GenerateAsymmetricKey = 0x46\n    SignPkcs1 = 0x47\n    ListObjects = 0x48\n    DecryptPkcs1 = 0x49\n    ExportWrapped = 0x4A\n    ImportWrapped = 0x4B\n    PutWrapKey = 0x4C\n    GetLogEntries = 0x4D\n    GetObjectInfo = 0x4E\n    SetOption = 0x4F\n    GetOption = 0x50\n    GetPseudoRandom = 0x51\n    PutHmacKey = 0x52\n    SignHmac = 0x53\n    GetPublicKey = 0x54\n    SignPss = 0x55\n    SignEcdsa = 0x56\n    DeriveEcdh = 0x57\n    DeleteObject = 0x58\n    DecryptOaep = 0x59\n    GenerateHmacKey = 0x5A\n    GenerateWrapKey = 0x5B\n    VerifyHmac = 0x5C\n    SignSshCertificate = 0x5D\n    PutTemplate = 0x5E\n    GetTemplate = 0x5F\n    DecryptOtp = 0x60\n    CreateOtpAead = 0x61\n    RandomizeOtpAead = 0x62\n    RewrapOtpAead = 0x63\n    SignAttestationCertificate = 0x64\n    PutOtpAeadKey = 0x65\n    GenerateOtpAeadKey = 0x66\n    SetLogIndex = 0x67\n    WrapData = 0x68\n    UnwrapData = 0x69\n    SignEddsa = 0x6A\n    BlinkDevice = 0x6B\n    ChangeAuthenticationKey = 0x6C\n    Error = 0x7F\n\n\nclass Error(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Errors.html\n    \"\"\"\n\n    OK = 0x00\n    INVALID_COMMAND = 0x01\n    INVALID_DATA = 0x02\n    INVALID_SESSION = 0x03\n    AUTHENTICATION_FAILED = 0x04\n    SESSIONS_FULL = 0x05\n    SESSION_FAILED = 0x06\n    STORAGE_FAILED = 0x07\n    WRONG_LENGTH = 0x08\n    INSUFFICIENT_PERMISSIONS = 0x09\n    LOG_FULL = 0x0A\n    OBJECT_NOT_FOUND = 0x0B\n    INVALID_ID = 0x0C\n    SSH_CA_CONSTRAINT_VIOLATION = 0x0E\n    INVALID_OTP = 0x0F\n    DEMO_MODE = 0x10\n    OBJECT_EXISTS = 0x11\n\n\nclass ObjectType(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Object.html\n    \"\"\"\n\n    Opaque = 0x01\n    AuthenticationKey = 0x02\n    AsymmetricKey = 0x03\n    WrapKey = 0x04\n    HmacKey = 0x05\n    Template = 0x06\n    OtpAeadKey = 0x07\n\n\nclass Option(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Options.html\n    \"\"\"\n\n    ForceAudit = 0x01\n    CommandAudit = 0x03\n    AuditLog = 0x04\n    MaxSessionDuration = 0x05\n    MaxSessionCount = 0x06\n    DeviceID = 0x07\n    LogIndex = 0x0",
+    "after": "from __future__ import annotations\n\nfrom enum import IntEnum\n\n\nclass Algorithm(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Algorithms.html\n    \"\"\"\n\n    RSA_PKCS1_SHA1 = 1\n    RSA_PKCS1_SHA256 = 2\n    RSA_PKCS1_SHA384 = 3\n    RSA_PKCS1_SHA512 = 4\n    RSA_PSS_SHA1 = 5\n    RSA_PSS_SHA256 = 6\n    RSA_PSS_SHA384 = 7\n    RSA_PSS_SHA512 = 8\n    RSA_2048 = 9\n    RSA_3072 = 10\n    RSA_4096 = 11\n    EC_P256 = 12\n    EC_P384 = 13\n    EC_P521 = 14\n    EC_K256 = 15\n    EC_BP256 = 16\n    EC_BP384 = 17\n    EC_BP512 = 18\n    HMAC_SHA1 = 19\n    HMAC_SHA256 = 20\n    HMAC_SHA384 = 21\n    HMAC_SHA512 = 22\n    ECDSA_SHA1 = 23\n    EC_ECDH = 24\n    RSA_OAEP_SHA1 = 25\n    RSA_OAEP_SHA256 = 26\n    RSA_OAEP_SHA384 = 27\n    RSA_OAEP_SHA512 = 28\n    AES128_CCM_WRAP = 29\n    Opaque_Data = 30\n    Opaque_X509_Certificate = 31\n    MGF1_SHA1 = 32\n    MGF1_SHA256 = 33\n    MGF1_SHA384 = 34\n    MGF1_SHA512 = 35\n    SSH_Template = 36\n    Yubico_OTP_AES128 = 37\n    Yubico_AES_Authentication = 38\n    Yubico_OTP_AES192 = 39\n    Yubico_OTP_AES256 = 40\n    AES192_CCM_WRAP = 41\n    AES256_CCM_WRAP = 42\n    ECDSA_SHA256 = 43\n    ECDSA_SHA384 = 44\n    ECDSA_SHA512 = 45\n    ED25519 = 46\n    EC_P224 = 47\n\n\nclass Capability(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Capability.html\n    \"\"\"\n\n    GetOpaque = 0\n    PutOpaque = 1\n    PutAuthenticationKey = 2\n    PutAsymmetricKey = 3\n    GenerateAsymmetricKey = 4\n    SignPkcs = 5\n    SignPss = 6\n    SignEcdsa = 7\n    SignEddsa = 8\n    DecryptPkcs = 9\n    DecryptOaep = 10\n    DeriveEcdh = 11\n    ExportWrapped = 12\n    ImportWrapped = 13\n    PutWrapKey = 14\n    GenerateWrapKey = 15\n    ExportableUnderWrap = 16\n    SetOption = 17\n    GetOption = 18\n    GetPseudoRandom = 19\n    PutMacKey = 20\n    GenerateHmacKey = 21\n    SignHmac = 22\n    VerifyHmac = 23\n    GetLogEntries = 24\n    SignSshCertificate = 25\n    GetTemplate = 26\n    PutTemplate = 27\n    ResetDevice = 28\n    DecryptOtp = 29\n    CreateOtpAead = 30\n    RandomizeOtpAead = 31\n    RewrapFromOtpAeadKey = 32\n    RewrapToOtpAeadKey = 33\n    SignAttestationCertificate = 34\n    PutOtpAeadKey = 35\n    GenerateOtpAeadKey = 36\n    WrapData = 37\n    UnwrapData = 38\n    DeleteOpaque = 39\n    DeleteAuthenticationKey = 40\n    DeleteAsymmetricKey = 41\n    DeleteWrapKey = 42\n    DeleteHmacKey = 43\n    DeleteTemplate = 44\n    DeleteOtpAeadKey = 45\n    ChangeAuthenticationKey = 46\n\n\nclass Command(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Commands/\n    \"\"\"\n\n    Echo = 0x01\n    CreateSession = 0x03\n    AuthenticateSession = 0x04\n    SessionMessage = 0x05\n    GetDeviceInfo = 0x06\n    ResetDevice = 0x08\n    CloseSession = 0x40\n    GetStorageInfo = 0x41\n    PutOpaque = 0x42\n    GetOpaque = 0x43\n    PutAuthenticationKey = 0x44\n    PutAsymmetricKey = 0x45\n    GenerateAsymmetricKey = 0x46\n    SignPkcs1 = 0x47\n    ListObjects = 0x48\n    DecryptPkcs1 = 0x49\n    ExportWrapped = 0x4A\n    ImportWrapped = 0x4B\n    PutWrapKey = 0x4C\n    GetLogEntries = 0x4D\n    GetObjectInfo = 0x4E\n    SetOption = 0x4F\n    GetOption = 0x50\n    GetPseudoRandom = 0x51\n    PutHmacKey = 0x52\n    SignHmac = 0x53\n    GetPublicKey = 0x54\n    SignPss = 0x55\n    SignEcdsa = 0x56\n    DeriveEcdh = 0x57\n    DeleteObject = 0x58\n    DecryptOaep = 0x59\n    GenerateHmacKey = 0x5A\n    GenerateWrapKey = 0x5B\n    VerifyHmac = 0x5C\n    SignSshCertificate = 0x5D\n    PutTemplate = 0x5E\n    GetTemplate = 0x5F\n    DecryptOtp = 0x60\n    CreateOtpAead = 0x61\n    RandomizeOtpAead = 0x62\n    RewrapOtpAead = 0x63\n    SignAttestationCertificate = 0x64\n    PutOtpAeadKey = 0x65\n    GenerateOtpAeadKey = 0x66\n    SetLogIndex = 0x67\n    WrapData = 0x68\n    UnwrapData = 0x69\n    SignEddsa = 0x6A\n    BlinkDevice = 0x6B\n    ChangeAuthenticationKey = 0x6C\n    Error = 0x7F\n\n\nclass Error(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Errors.html\n    \"\"\"\n\n    OK = 0x00\n    INVALID_COMMAND = 0x01\n    INVALID_DATA = 0x02\n    INVALID_SESSION = 0x03\n    AUTHENTICATION_FAILED = 0x04\n    SESSIONS_FULL = 0x05\n    SESSION_FAILED = 0x06\n    STORAGE_FAILED = 0x07\n    WRONG_LENGTH = 0x08\n    INSUFFICIENT_PERMISSIONS = 0x09\n    LOG_FULL = 0x0A\n    OBJECT_NOT_FOUND = 0x0B\n    INVALID_ID = 0x0C\n    SSH_CA_CONSTRAINT_VIOLATION = 0x0E\n    INVALID_OTP = 0x0F\n    DEMO_MODE = 0x10\n    OBJECT_EXISTS = 0x11\n\n\nclass ObjectType(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Object.html\n    \"\"\"\n\n    Opaque = 0x01\n    AuthenticationKey = 0x02\n    AsymmetricKey = 0x03\n    WrapKey = 0x04\n    HmacKey = 0x05\n    Template = 0x06\n    OtpAeadKey = 0x07\n\n\nclass Option(IntEnum):\n    \"\"\"\n    https://developers.yubico.com/YubiHSM2/Concepts/Options.html\n    \"\"\"\n\n    ForceAudit = 0x01\n    CommandAudit = 0x03\n    \n    \n    \nclass Algorithm(IntEnum):\n    \"\"\"\n    Algorithm used by the YubiHSM2\n    \"\"\"\n    \n    RSA_PKCS1_SHA1 = 1\n    RSA_PKCS1_"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      3233,
+      2441,
+      8586,
+      3541,
+      6540,
+      9143,
+      7461,
+      2848,
+      8231
+    ],
+    "f_before": [
+      0.0,
+      77.34281921386719,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      77.34281921386719,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      44.432212829589844,
+      0.0,
+      7.993818759918213,
+      0.07788217067718506,
+      8.737070083618164,
+      8.36906623840332,
+      7.290607929229736,
+      0.0,
+      7.7963175773620605,
+      0.06165238842368126,
+      0.0
+    ],
+    "g_after": [
+      44.432212829589844,
+      0.0,
+      7.993818759918213,
+      0.07788217067718506,
+      8.737070083618164,
+      8.36906623840332,
+      7.290607929229736,
+      0.0,
+      7.7963175773620605,
+      0.06165238842368126,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.117783530500717,
+    "train_mean_l2": 4.884932281471789,
+    "train_mean_l1": 3.1138084811270237,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
+    "mean_std": 1.7113512754440308,
+    "max_std": 55.291290283203125
+  }
+}

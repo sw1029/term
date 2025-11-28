@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.08 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0012084886699870719 sae.role_sep_coeff=0.0045000000000000005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0012084886699870719,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0045000000000000005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\nИнгредиенты:\\n 1) Мука\\n' + \\\n               '2) Яйцо куриное\\n3) Изюм\\n\\n<a href=\"http://recipe\">Булочки с изюмом</a>'\n        self.assertEqual(form_answer(rec1), ans1)\n        rec2 = {\"name\": \"Омлет\",\n                \"ingrs\": [\"Яйцо куриное\", \"Соль\", \"Молоко\"],\n                \"link\": \"http://recipe\"}\n        ans2 = '<b>Омлет</b>\\nИнгредиенты:\\n 1) Яйцо куриное\\n2) Соль\\n' + \\\n               '3) Молоко\\n\\n<a href=\"http://recipe\">Омлет</a>'\n        self.assertEqual(form_answer(rec2), ans2)\n        with self.assertRaises(KeyError):\n            form_answer(dict())\n\n    # def test_empty_delete_reminders(self):\n    #     self.assertEqual(delete_table_data(\"reminders\"), 0)\n\n    def test_parsing_horoscope(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(obj.url, \"https://1001goroskop.ru\")\n\n    def test_parsing_horoscope_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(type(obj.get_signs()), type([1, 2]))\n\n    def test_parsing_news(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.count, None)\n\n    def test_parsing_news_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        obj.count = 5\n        obj.make_zero()\n        self.assertEqual(obj.count, 0)\n\n    def test_parsing_news_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url, \"https://lenta.ru/parts/news\")\n\n    def test_parsing_news_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url_part, \"https://lenta.ru\")\n\n    def test_parsing_news_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(type(obj.parse()), type([1, 2]))\n\n    def test_parsing_weather(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.extra_data), type({}))\n\n    def test_parsing_weather_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(obj.url, \"https://www.gismeteo.ru\")\n\n    def test_parsing_weather_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.main_data), type({}))\n\n    def test_parsing_afisha(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        self.assertEqual(obj.cinema_count, None)\n\n    def test_parsing_afisha_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n\n    def test_parsing_afisha_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_5(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_6(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_total(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n",
+  "output": {
+    "before": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\nИнгредиенты:\\n 1) Мука\\n' + \\\n               '2) Яйцо куриное\\n3) Изюм\\n\\n<a href=\"http://recipe\">Булочки с изюмом</a>'\n        self.assertEqual(form_answer(rec1), ans1)\n        rec2 = {\"name\": \"Омлет\",\n                \"ingrs\": [\"Яйцо куриное\", \"Соль\", \"Молоко\"],\n                \"link\": \"http://recipe\"}\n        ans2 = '<b>Омлет</b>\\nИнгредиенты:\\n 1) Яйцо куриное\\n2) Соль\\n' + \\\n               '3) Молоко\\n\\n<a href=\"http://recipe\">Омлет</a>'\n        self.assertEqual(form_answer(rec2), ans2)\n        with self.assertRaises(KeyError):\n            form_answer(dict())\n\n    # def test_empty_delete_reminders(self):\n    #     self.assertEqual(delete_table_data(\"reminders\"), 0)\n\n    def test_parsing_horoscope(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(obj.url, \"https://1001goroskop.ru\")\n\n    def test_parsing_horoscope_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(type(obj.get_signs()), type([1, 2]))\n\n    def test_parsing_news(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.count, None)\n\n    def test_parsing_news_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        obj.count = 5\n        obj.make_zero()\n        self.assertEqual(obj.count, 0)\n\n    def test_parsing_news_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url, \"https://lenta.ru/parts/news\")\n\n    def test_parsing_news_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url_part, \"https://lenta.ru\")\n\n    def test_parsing_news_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(type(obj.parse()), type([1, 2]))\n\n    def test_parsing_weather(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.extra_data), type({}))\n\n    def test_parsing_weather_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(obj.url, \"https://www.gismeteo.ru\")\n\n    def test_parsing_weather_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.main_data), type({}))\n\n    def test_parsing_afisha(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        self.assertEqual(obj.cinema_count, None)\n\n    def test_parsing_afisha_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n\n    def test_parsing_afisha_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_5(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_6(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_total(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n        \n\nif __name__ == '__main__':\n    unittest.main()\n```\n\nThis test suite contains a variety of tests for the `form_answer`, `delete_table_data`, `NEWS`, `AFISHA`, `HOR",
+    "after": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\nИнгредиенты:\\n 1) Мука\\n' + \\\n               '2) Яйцо куриное\\n3) Изюм\\n\\n<a href=\"http://recipe\">Булочки с изюмом</a>'\n        self.assertEqual(form_answer(rec1), ans1)\n        rec2 = {\"name\": \"Омлет\",\n                \"ingrs\": [\"Яйцо куриное\", \"Соль\", \"Молоко\"],\n                \"link\": \"http://recipe\"}\n        ans2 = '<b>Омлет</b>\\nИнгредиенты:\\n 1) Яйцо куриное\\n2) Соль\\n' + \\\n               '3) Молоко\\n\\n<a href=\"http://recipe\">Омлет</a>'\n        self.assertEqual(form_answer(rec2), ans2)\n        with self.assertRaises(KeyError):\n            form_answer(dict())\n\n    # def test_empty_delete_reminders(self):\n    #     self.assertEqual(delete_table_data(\"reminders\"), 0)\n\n    def test_parsing_horoscope(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(obj.url, \"https://1001goroskop.ru\")\n\n    def test_parsing_horoscope_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(type(obj.get_signs()), type([1, 2]))\n\n    def test_parsing_news(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.count, None)\n\n    def test_parsing_news_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        obj.count = 5\n        obj.make_zero()\n        self.assertEqual(obj.count, 0)\n\n    def test_parsing_news_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url, \"https://lenta.ru/parts/news\")\n\n    def test_parsing_news_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url_part, \"https://lenta.ru\")\n\n    def test_parsing_news_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(type(obj.parse()), type([1, 2]))\n\n    def test_parsing_weather(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.extra_data), type({}))\n\n    def test_parsing_weather_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(obj.url, \"https://www.gismeteo.ru\")\n\n    def test_parsing_weather_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.main_data), type({}))\n\n    def test_parsing_afisha(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        self.assertEqual(obj.cinema_count, None)\n\n    def test_parsing_afisha_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n\n    def test_parsing_afisha_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_5(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_6(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_total(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n        self.assertEqual(obj.total, 0)\n    \n    def test_form_answer_1(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      8905,
+      215,
+      1959,
+      1592,
+      6839,
+      4038,
+      7012,
+      3073,
+      8506
+    ],
+    "f_before": [
+      0.0,
+      76.0779037475586,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      76.0779037475586,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      44.95527648925781,
+      0.0,
+      7.829767227172852,
+      0.0,
+      0.05197787284851074,
+      0.02454584464430809,
+      8.190067291259766,
+      7.317865371704102,
+      0.019820235669612885,
+      0.0,
+      0.019201355054974556
+    ],
+    "g_after": [
+      44.95527648925781,
+      0.0,
+      7.829767227172852,
+      0.0,
+      0.05197787284851074,
+      0.02454584464430809,
+      8.190067291259766,
+      7.317865371704102,
+      0.019820235669612885,
+      0.0,
+      0.019201355054974556
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.146925932589919,
+    "train_mean_l2": 6.325844486102461,
+    "train_mean_l1": 3.0792910116314887,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
+    "mean_std": 1.673189401626587,
+    "max_std": 71.08536529541016
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.03 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00037731631260996427 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00037731631260996427,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.03,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: 你好\nassistant: 你好！有什么我能为你效劳的吗？",
+  "output": {
+    "before": "user: 你好\nassistant: 你好！有什么我能为你效劳的吗？ 😊 \n",
+    "after": "user: 你好\nassistant: 你好！有什么我能为你效劳的吗？ \n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1760,
+      6164,
+      3477,
+      62,
+      5355,
+      208,
+      3053,
+      6739,
+      6468,
+      1609
+    ],
+    "f_before": [
+      34.152740478515625,
+      0.0,
+      0.9136785268783569,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.209496021270752,
+      0.0
+    ],
+    "f_after": [
+      34.152740478515625,
+      0.0,
+      0.9136785268783569,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.209496021270752,
+      0.0
+    ],
+    "g_before": [
+      0.21040889620780945,
+      4.171378135681152,
+      3.961247205734253,
+      3.7371082305908203,
+      3.6440062522888184,
+      3.7642500400543213,
+      0.32494327425956726,
+      0.07951845973730087,
+      0.04799405112862587,
+      0.1495678722858429,
+      0.07889378815889359
+    ],
+    "g_after": [
+      0.21040889620780945,
+      4.171378135681152,
+      3.961247205734253,
+      3.7371082305908203,
+      3.6440062522888184,
+      3.7642500400543213,
+      0.32494327425956726,
+      0.07951845973730087,
+      0.04799405112862587,
+      0.1495678722858429,
+      0.07889378815889359
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.01762550815125,
+    "train_mean_l2": 7.948200629286468,
+    "train_mean_l1": 2.7709025331735613,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
+    "mean_std": 1.2138572931289673,
+    "max_std": 39.272926330566406
+  }
+}

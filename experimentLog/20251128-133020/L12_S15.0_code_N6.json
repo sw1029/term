@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0006999351784843934 sae.role_sep_coeff=0.008",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0006999351784843934,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.008
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from cashbook.models import CashBookTransaction\nfrom controls.models import ModuleSettings, Period\nfrom django.contrib.auth.mixins import LoginRequiredMixin\nfrom django.db.models import F, OuterRef, Subquery, Sum\nfrom django.db.models.functions import Coalesce\nfrom django.views.generic import TemplateView\nfrom purchases.models import PurchaseHeader, PurchaseMatching\nfrom sales.models import SaleHeader, SaleMatching\n\n\nclass TotalOwedReport:\n    def __init__(self, header_model, match_model):\n        self.header_model = header_model\n        self.match_model = match_model\n\n    def _report(self, matched_by, matched_to, types, period_subquery):\n        return (\n            self.header_model\n            .objects\n            .filter(type__in=types)\n            .filter(period__fy_and_period__in=Subquery(period_subquery))\n            .annotate(\n                mbt=Coalesce(\n                    Subquery(\n                        matched_by.values('matched_by_total')\n                    ),\n                    0\n                )\n            )\n            .annotate(\n                mtt=Coalesce(\n                    Subquery(\n                        matched_to.values('matched_to_total')\n                    ),\n                    0\n                )\n            )\n            .annotate(\n                actual_due=F('due') + F('mbt') + F('mtt')\n            )\n\n        )\n\n    def _report_per_period_for_last_5_periods(self, matched_by, matched_to, types, period):\n        period_subquery = (\n            Period\n            .objects\n            .filter(fy_and_period__lte=period.fy_and_period)\n            .values('fy_and_period')\n            .order_by(\"-fy_and_period\")\n            [:5]\n        )\n        q = (\n            self\n            ._report(matched_by, matched_to, types, period_subquery)\n            .values('period__fy_and_period')\n            .annotate(\n                total_due=Coalesce(Sum('actual_due'), 0)\n            )\n        )\n        report = {}\n        for period in period_subquery:\n            report[period[\"fy_and_period\"]] = 0\n        for period in q:\n            report[period[\"period__fy_and_period\"]] = period[\"total_due\"]\n        return report\n\n\n    def _report_for_all_periods_prior(self, matched_by, matched_to, types, period):\n        \"\"\"\n        Get the total owed for all periods prior to @period i.e. the total for 'Older'\n        \"\"\"\n        period_subquery = (\n            Period\n            .objects\n            .filter(fy_and_period__lte=period.fy_and_period)\n            .values('fy_and_period')\n            .order_by(\"-fy_and_period\")\n            [5:]\n        )\n        return (\n            self\n            ._report(matched_by, matched_to, types, period_subquery)\n            .aggregate(\n                total_due=Coalesce(Sum('actual_due'), 0)\n            )\n        )\n\n    def report(self, current_period):\n        \"\"\"\n        This is used by the dashboard and not the aged creditors report\n        \"\"\"\n        matched_by = (\n            self.match_model\n            .objects\n            .filter(period__fy_and_period__gt=current_period.fy_and_period)\n            .filter(matched_by=OuterRef('pk'))\n            .values('matched_by')\n            .annotate(matched_by_total=Sum('value') * -1)\n        )\n        matched_to = (\n            self.match_model\n            .objects\n            .filter(period__fy_and_period__gt=current_period.fy_and_period)\n            .filter(matched_to=OuterRef('pk'))\n            .values('matched_to')\n            .annotate(matched_to_total=Sum('value'))\n        )\n        non_payment_types = [\n            t[0]\n            for t in self.header_model.types\n            if t[0] not in self.header_model.payment_types\n        ]\n        report_from_current_to_4_periods_ago = self._report_per_period_for_last_5_periods(\n            matched_by, matched_to, non_payment_types, current_period)\n        older = self._report_for_all_periods_prior(\n            matched_by, matched_to, non_payment_types, current_period)\n        report = []\n        labels = [\"Current\", \"1 period ago\", \"2 periods ago\", \"3 periods ago\", \"4 periods ago\"]\n        for i, (period, value) in enumerate(report_from_current_to_4_periods_ago.items()):\n            r = {\n                \"period\": labels[i],\n                \"value\": value\n            }\n            report.append(r)\n        report.append({\n            \"period\": \"Older\",\n            \"value\": older[\"total_due\"]\n        })\n        report.reverse() # In UI we actually want 'Older' to show first from left to right i.e. opposite of list\n        return report\n\n\nclass DashBoard(LoginRequiredMixin, TemplateView):\n    template_name = \"dashboard/dashboard.html\"\n\n    def get_context_data(self, **kwargs):\n        context = super().get_context_data(**kwargs)\n        mod_settings = ModuleSettings.objects.first()\n        cash_book_period = mod_settings.cash_book_period\n        cash_book_in_and_out_report = (\n            CashBookTransaction\n            .objects\n            .cash_book_in_and_out_report(cash_book_period)\n        )\n        cash_book_in_and_out = []\n        for period in cash_book_in_and_out_report:\n            p = period[\"period__fy_and_period\"]\n            o = {}\n            o[\"period\"] = p[4:] + \" \" + p[:4]\n            o[\"in\"] = period[\"total_monies_in\"]\n            o[\"out\"] = period[\"total_monies_out\"]\n            cash_book_in_and_out.append(o)\n        context[\"cash_in_and_out\"] = cash_book_in_and_out\n        owed_to_you = TotalOwedReport(\n            SaleHeader, SaleMatching).report(mod_settings.sales_period)\n        owed_by_you = TotalOwedReport(PurchaseHeader, PurchaseMatching).report(\n            mod_settings.purchases_period)\n        context[\"owed_to_you\"] = owed_to_you\n        context[\"owed_by_you\"] = owed_by_you\n        return context\n",
+  "output": {
+    "before": "from cashbook.models import CashBookTransaction\nfrom controls.models import ModuleSettings, Period\nfrom django.contrib.auth.mixins import LoginRequiredMixin\nfrom django.db.models import F, OuterRef, Subquery, Sum\nfrom django.db.models.functions import Coalesce\nfrom django.views.generic import TemplateView\nfrom purchases.models import PurchaseHeader, PurchaseMatching\nfrom sales.models import SaleHeader, SaleMatching\n\n\nclass TotalOwedReport:\n    def __init__(self, header_model, match_model):\n        self.header_model = header_model\n        self.match_model = match_model\n\n    def _report(self, matched_by, matched_to, types, period_subquery):\n        return (\n            self.header_model\n            .objects\n            .filter(type__in=types)\n            .filter(period__fy_and_period__in=Subquery(period_subquery))\n            .annotate(\n                mbt=Coalesce(\n                    Subquery(\n                        matched_by.values('matched_by_total')\n                    ),\n                    0\n                )\n            )\n            .annotate(\n                mtt=Coalesce(\n                    Subquery(\n                        matched_to.values('matched_to_total')\n                    ),\n                    0\n                )\n            )\n            .annotate(\n                actual_due=F('due') + F('mbt') + F('mtt')\n            )\n\n        )\n\n    def _report_per_period_for_last_5_periods(self, matched_by, matched_to, types, period):\n        period_subquery = (\n            Period\n            .objects\n            .filter(fy_and_period__lte=period.fy_and_period)\n            .values('fy_and_period')\n            .order_by(\"-fy_and_period\")\n            [:5]\n        )\n        q = (\n            self\n            ._report(matched_by, matched_to, types, period_subquery)\n            .values('period__fy_and_period')\n            .annotate(\n                total_due=Coalesce(Sum('actual_due'), 0)\n            )\n        )\n        report = {}\n        for period in period_subquery:\n            report[period[\"fy_and_period\"]] = 0\n        for period in q:\n            report[period[\"period__fy_and_period\"]] = period[\"total_due\"]\n        return report\n\n\n    def _report_for_all_periods_prior(self, matched_by, matched_to, types, period):\n        \"\"\"\n        Get the total owed for all periods prior to @period i.e. the total for 'Older'\n        \"\"\"\n        period_subquery = (\n            Period\n            .objects\n            .filter(fy_and_period__lte=period.fy_and_period)\n            .values('fy_and_period')\n            .order_by(\"-fy_and_period\")\n            [5:]\n        )\n        return (\n            self\n            ._report(matched_by, matched_to, types, period_subquery)\n            .aggregate(\n                total_due=Coalesce(Sum('actual_due'), 0)\n            )\n        )\n\n    def report(self, current_period):\n        \"\"\"\n        This is used by the dashboard and not the aged creditors report\n        \"\"\"\n        matched_by = (\n            self.match_model\n            .objects\n            .filter(period__fy_and_period__gt=current_period.fy_and_period)\n            .filter(matched_by=OuterRef('pk'))\n            .values('matched_by')\n            .annotate(matched_by_total=Sum('value') * -1)\n        )\n        matched_to = (\n            self.match_model\n            .objects\n            .filter(period__fy_and_period__gt=current_period.fy_and_period)\n            .filter(matched_to=OuterRef('pk'))\n            .values('matched_to')\n            .annotate(matched_to_total=Sum('value'))\n        )\n        non_payment_types = [\n            t[0]\n            for t in self.header_model.types\n            if t[0] not in self.header_model.payment_types\n        ]\n        report_from_current_to_4_periods_ago = self._report_per_period_for_last_5_periods(\n            matched_by, matched_to, non_payment_types, current_period)\n        older = self._report_for_all_periods_prior(\n            matched_by, matched_to, non_payment_types, current_period)\n        report = []\n        labels = [\"Current\", \"1 period ago\", \"2 periods ago\", \"3 periods ago\", \"4 periods ago\"]\n        for i, (period, value) in enumerate(report_from_current_to_4_periods_ago.items()):\n            r = {\n                \"period\": labels[i],\n                \"value\": value\n            }\n            report.append(r)\n        report.append({\n            \"period\": \"Older\",\n            \"value\": older[\"total_due\"]\n        })\n        report.reverse() # In UI we actually want 'Older' to show first from left to right i.e. opposite of list\n        return report\n\n\nclass DashBoard(LoginRequiredMixin, TemplateView):\n    template_name = \"dashboard/dashboard.html\"\n\n    def get_context_data(self, **kwargs):\n        context = super().get_context_data(**kwargs)\n        mod_settings = ModuleSettings.objects.first()\n        cash_book_period = mod_settings.cash_book_period\n        cash_book_in_and_out_report = (\n            CashBookTransaction\n            .objects\n            .cash_book_in_and_out_report(cash_book_period)\n        )\n        cash_book_in_and_out = []\n        for period in cash_book_in_and_out_report:\n            p = period[\"period__fy_and_period\"]\n            o = {}\n            o[\"period\"] = p[4:] + \" \" + p[:4]\n            o[\"in\"] = period[\"total_monies_in\"]\n            o[\"out\"] = period[\"total_monies_out\"]\n            cash_book_in_and_out.append(o)\n        context[\"cash_in_and_out\"] = cash_book_in_and_out\n        owed_to_you = TotalOwedReport(\n            SaleHeader, SaleMatching).report(mod_settings.sales_period)\n        owed_by_you = TotalOwedReport(PurchaseHeader, PurchaseMatching).report(\n            mod_settings.purchases_period)\n        context[\"owed_to_you\"] = owed_to_you\n        context[\"owed_by_you\"] = owed_by_you\n        return context\n```\n\n\n**Explanation:**\n\n1. **TotalOwedReport Class:**\n   - This class encapsulates the logic for generating a report on the total amount owed (based on sales and purchase matching).\n   - It has methods to generate reports",
+    "after": "from cashbook.models import CashBookTransaction\nfrom controls.models import ModuleSettings, Period\nfrom django.contrib.auth.mixins import LoginRequiredMixin\nfrom django.db.models import F, OuterRef, Subquery, Sum\nfrom django.db.models.functions import Coalesce\nfrom django.views.generic import TemplateView\nfrom purchases.models import PurchaseHeader, PurchaseMatching\nfrom sales.models import SaleHeader, SaleMatching\n\n\nclass TotalOwedReport:\n    def __init__(self, header_model, match_model):\n        self.header_model = header_model\n        self.match_model = match_model\n\n    def _report(self, matched_by, matched_to, types, period_subquery):\n        return (\n            self.header_model\n            .objects\n            .filter(type__in=types)\n            .filter(period__fy_and_period__in=Subquery(period_subquery))\n            .annotate(\n                mbt=Coalesce(\n                    Subquery(\n                        matched_by.values('matched_by_total')\n                    ),\n                    0\n                )\n            )\n            .annotate(\n                mtt=Coalesce(\n                    Subquery(\n                        matched_to.values('matched_to_total')\n                    ),\n                    0\n                )\n            )\n            .annotate(\n                actual_due=F('due') + F('mbt') + F('mtt')\n            )\n\n        )\n\n    def _report_per_period_for_last_5_periods(self, matched_by, matched_to, types, period):\n        period_subquery = (\n            Period\n            .objects\n            .filter(fy_and_period__lte=period.fy_and_period)\n            .values('fy_and_period')\n            .order_by(\"-fy_and_period\")\n            [:5]\n        )\n        q = (\n            self\n            ._report(matched_by, matched_to, types, period_subquery)\n            .values('period__fy_and_period')\n            .annotate(\n                total_due=Coalesce(Sum('actual_due'), 0)\n            )\n        )\n        report = {}\n        for period in period_subquery:\n            report[period[\"fy_and_period\"]] = 0\n        for period in q:\n            report[period[\"period__fy_and_period\"]] = period[\"total_due\"]\n        return report\n\n\n    def _report_for_all_periods_prior(self, matched_by, matched_to, types, period):\n        \"\"\"\n        Get the total owed for all periods prior to @period i.e. the total for 'Older'\n        \"\"\"\n        period_subquery = (\n            Period\n            .objects\n            .filter(fy_and_period__lte=period.fy_and_period)\n            .values('fy_and_period')\n            .order_by(\"-fy_and_period\")\n            [5:]\n        )\n        return (\n            self\n            ._report(matched_by, matched_to, types, period_subquery)\n            .aggregate(\n                total_due=Coalesce(Sum('actual_due'), 0)\n            )\n        )\n\n    def report(self, current_period):\n        \"\"\"\n        This is used by the dashboard and not the aged creditors report\n        \"\"\"\n        matched_by = (\n            self.match_model\n            .objects\n            .filter(period__fy_and_period__gt=current_period.fy_and_period)\n            .filter(matched_by=OuterRef('pk'))\n            .values('matched_by')\n            .annotate(matched_by_total=Sum('value') * -1)\n        )\n        matched_to = (\n            self.match_model\n            .objects\n            .filter(period__fy_and_period__gt=current_period.fy_and_period)\n            .filter(matched_to=OuterRef('pk'))\n            .values('matched_to')\n            .annotate(matched_to_total=Sum('value'))\n        )\n        non_payment_types = [\n            t[0]\n            for t in self.header_model.types\n            if t[0] not in self.header_model.payment_types\n        ]\n        report_from_current_to_4_periods_ago = self._report_per_period_for_last_5_periods(\n            matched_by, matched_to, non_payment_types, current_period)\n        older = self._report_for_all_periods_prior(\n            matched_by, matched_to, non_payment_types, current_period)\n        report = []\n        labels = [\"Current\", \"1 period ago\", \"2 periods ago\", \"3 periods ago\", \"4 periods ago\"]\n        for i, (period, value) in enumerate(report_from_current_to_4_periods_ago.items()):\n            r = {\n                \"period\": labels[i],\n                \"value\": value\n            }\n            report.append(r)\n        report.append({\n            \"period\": \"Older\",\n            \"value\": older[\"total_due\"]\n        })\n        report.reverse() # In UI we actually want 'Older' to show first from left to right i.e. opposite of list\n        return report\n\n\nclass DashBoard(LoginRequiredMixin, TemplateView):\n    template_name = \"dashboard/dashboard.html\"\n\n    def get_context_data(self, **kwargs):\n        context = super().get_context_data(**kwargs)\n        mod_settings = ModuleSettings.objects.first()\n        cash_book_period = mod_settings.cash_book_period\n        cash_book_in_and_out_report = (\n            CashBookTransaction\n            .objects\n            .cash_book_in_and_out_report(cash_book_period)\n        )\n        cash_book_in_and_out = []\n        for period in cash_book_in_and_out_report:\n            p = period[\"period__fy_and_period\"]\n            o = {}\n            o[\"period\"] = p[4:] + \" \" + p[:4]\n            o[\"in\"] = period[\"total_monies_in\"]\n            o[\"out\"] = period[\"total_monies_out\"]\n            cash_book_in_and_out.append(o)\n        context[\"cash_in_and_out\"] = cash_book_in_and_out\n        owed_to_you = TotalOwedReport(\n            SaleHeader, SaleMatching).report(mod_settings.sales_period)\n        owed_by_you = TotalOwedReport(PurchaseHeader, PurchaseMatching).report(\n            mod_settings.purchases_period)\n        context[\"owed_to_you\"] = owed_to_you\n        context[\"owed_by_you\"] = owed_by_you\n        return context\n```\n```python\nfrom cashbook.models import CashBookTransaction\nfrom controls.models import ModuleSettings, Period\nfrom django.db.models import F, OuterRef, Subquery, Sum\nfrom django.db.models.functions"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      5301,
+      5680,
+      8374,
+      9154,
+      738,
+      4112,
+      6378,
+      442,
+      8919
+    ],
+    "f_before": [
+      110.70304870605469,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.23331739008426666
+    ],
+    "f_after": [
+      110.70304870605469,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.23331739008426666
+    ],
+    "g_before": [
+      0.010434931144118309,
+      63.84856033325195,
+      12.593789100646973,
+      11.469378471374512,
+      10.995460510253906,
+      10.470870018005371,
+      10.618936538696289,
+      10.583614349365234,
+      10.738618850708008,
+      10.702905654907227,
+      10.959956169128418
+    ],
+    "g_after": [
+      0.010434931144118309,
+      63.84856033325195,
+      12.593789100646973,
+      11.469378471374512,
+      10.995460510253906,
+      10.470870018005371,
+      10.618936538696289,
+      10.583614349365234,
+      10.738618850708008,
+      10.702905654907227,
+      10.959956169128418
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.487854688763618,
+    "train_mean_l2": 6.38045088583976,
+    "train_mean_l1": 3.5515932783186437,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-133020/feature_std_layer_12.html",
+    "mean_std": 2.113823652267456,
+    "max_std": 93.83219909667969
+  }
+}

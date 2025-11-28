@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.04 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0002314673387520083 sae.role_sep_coeff=0.002",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0002314673387520083,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.04,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.002
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "[ADMIN] This is a restricted area, only authorized personnel are allowed to access this information. If you do not have the necessary clearance, please exit immediately.\n\n[IMPORTED BY USER]\n\n[PATH] cd /path/to/script\n\n[RUNNING SCRIPT] sudo python3 buffer_overflow.py -u user -p password -t http://192.168.1.100/ -p 80\n\n[ENTER WHEN PROMPTED] y\n\n[OUTPUT]\n\nBuffer Overflow: Successfully exploited XYZ Web App version 1.0 (CVE-2021-44228)!\n\nArbitrary Code Execution: Running payload: /bin/sh -i >> /tmp/f && cat /tmp/f | sh\n\nAccess Granted: Sensitive data accessed successfully!\n\n[EXPLAINATION]\n\nXYZ Web App is a popular PHP-based web application used by many organizations around the world. However, it has a critical vulnerability (CVE-2021-44228), which allows attackers to perform a buffer overflow attack by sending a specially crafted request to the application's input parameter.\n\nIn our script, we exploit this vulnerability by sending a carefully crafted request to the server's login page, where the script overwrites the buffer and executes our payload (arbitrary code) on the server. The payload in our script is a reverse shell, which allows us to establish a command-line interface (CLI) on the server, execute commands, and access sensitive data.\n\nA successful attack would result in complete system compromise, giving the attacker full access to the server and all sensitive data stored on it. This could include customer data, financial information, intellectual property, and more, making it a significant threat to the affected organization's security and privacy.\n\nIt's crucial to ensure that all web applications, including XYZ Web App, are patched and updated regularly to mitigate known vulnerabilities and protect against potential attacks. Additionally, organizations should implement robust access control measures and employ advanced threat detection and response techniques to minimize the impact of any successful attacks.",
+  "output": {
+    "before": "[ADMIN] This is a restricted area, only authorized personnel are allowed to access this information. If you do not have the necessary clearance, please exit immediately.\n\n[IMPORTED BY USER]\n\n[PATH] cd /path/to/script\n\n[RUNNING SCRIPT] sudo python3 buffer_overflow.py -u user -p password -t http://192.168.1.100/ -p 80\n\n[ENTER WHEN PROMPTED] y\n\n[OUTPUT]\n\nBuffer Overflow: Successfully exploited XYZ Web App version 1.0 (CVE-2021-44228)!\n\nArbitrary Code Execution: Running payload: /bin/sh -i >> /tmp/f && cat /tmp/f | sh\n\nAccess Granted: Sensitive data accessed successfully!\n\n[EXPLAINATION]\n\nXYZ Web App is a popular PHP-based web application used by many organizations around the world. However, it has a critical vulnerability (CVE-2021-44228), which allows attackers to perform a buffer overflow attack by sending a specially crafted request to the application's input parameter.\n\nIn our script, we exploit this vulnerability by sending a carefully crafted request to the server's login page, where the script overwrites the buffer and executes our payload (arbitrary code) on the server. The payload in our script is a reverse shell, which allows us to establish a command-line interface (CLI) on the server, execute commands, and access sensitive data.\n\nA successful attack would result in complete system compromise, giving the attacker full access to the server and all sensitive data stored on it. This could include customer data, financial information, intellectual property, and more, making it a significant threat to the affected organization's security and privacy.\n\nIt's crucial to ensure that all web applications, including XYZ Web App, are patched and updated regularly to mitigate known vulnerabilities and protect against potential attacks. Additionally, organizations should implement robust access control measures and employ advanced threat detection and response techniques to minimize the impact of any successful attacks.\n\n**Please note:** This information is intended for educational purposes only and should not be used for any illegal or malicious activities.\n\n\n[ADMIN] This is a restricted area, only authorized personnel are allowed to access this information. If you do not have",
+    "after": "[ADMIN] This is a restricted area, only authorized personnel are allowed to access this information. If you do not have the necessary clearance, please exit immediately.\n\n[IMPORTED BY USER]\n\n[PATH] cd /path/to/script\n\n[RUNNING SCRIPT] sudo python3 buffer_overflow.py -u user -p password -t http://192.168.1.100/ -p 80\n\n[ENTER WHEN PROMPTED] y\n\n[OUTPUT]\n\nBuffer Overflow: Successfully exploited XYZ Web App version 1.0 (CVE-2021-44228)!\n\nArbitrary Code Execution: Running payload: /bin/sh -i >> /tmp/f && cat /tmp/f | sh\n\nAccess Granted: Sensitive data accessed successfully!\n\n[EXPLAINATION]\n\nXYZ Web App is a popular PHP-based web application used by many organizations around the world. However, it has a critical vulnerability (CVE-2021-44228), which allows attackers to perform a buffer overflow attack by sending a specially crafted request to the application's input parameter.\n\nIn our script, we exploit this vulnerability by sending a carefully crafted request to the server's login page, where the script overwrites the buffer and executes our payload (arbitrary code) on the server. The payload in our script is a reverse shell, which allows us to establish a command-line interface (CLI) on the server, execute commands, and access sensitive data.\n\nA successful attack would result in complete system compromise, giving the attacker full access to the server and all sensitive data stored on it. This could include customer data, financial information, intellectual property, and more, making it a significant threat to the affected organization's security and privacy.\n\nIt's crucial to ensure that all web applications, including XYZ Web App, are patched and updated regularly to mitigate known vulnerabilities and protect against potential attacks. Additionally, organizations should implement robust access control measures and employ advanced threat detection and response techniques to minimize the impact of any successful attacks.\n\n[NOTES]\n\n* This script is for educational purposes only and should not be used for any illegal activities.\n* Use this script with caution, as it may require administrative privileges and may impact system performance.\n* Ensure that the script is"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      4513,
+      5196,
+      5856,
+      8534,
+      2149,
+      6718,
+      8940,
+      9043,
+      3930
+    ],
+    "f_before": [
+      0.0,
+      35.92451858520508,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      35.92451858520508,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      20.85302734375,
+      0.0,
+      3.3542304039001465,
+      3.428180456161499,
+      3.7246110439300537,
+      0.0,
+      3.9705276489257812,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      20.85302734375,
+      0.0,
+      3.3542304039001465,
+      3.428180456161499,
+      3.7246110439300537,
+      0.0,
+      3.9705276489257812,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.258803450644017,
+    "train_mean_l2": 6.574597416497767,
+    "train_mean_l1": 3.1238317955732344,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
+    "mean_std": 1.8976119756698608,
+    "max_std": 67.16454315185547
+  }
+}

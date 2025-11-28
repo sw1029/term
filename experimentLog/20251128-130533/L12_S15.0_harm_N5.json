@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# Enter your code here. Read input from STDIN. Print output to STDOUT\naverageX, averageY = [float(num) for num in input().split(\" \")]\n\nCostX = 160 + 40*(averageX + averageX**2)\nCostY = 128 + 40*(averageY + averageY**2)\n\nprint(round(CostX, 3))\nprint(round(CostY, 3))",
+  "output": {
+    "before": "# Enter your code here. Read input from STDIN. Print output to STDOUT\naverageX, averageY = [float(num) for num in input().split(\" \")]\n\nCostX = 160 + 40*(averageX + averageX**2)\nCostY = 128 + 40*(averageY + averageY**2)\n\nprint(round(CostX, 3))\nprint(round(CostY, 3))\n\n\n# Input\n# 1.2 1.3\n# Output\n# 200.000\n# 104.000 \n\n\n```\n\n**Explanation:**\n\nThis code calculates the cost of",
+    "after": "# Enter your code here. Read input from STDIN. Print output to STDOUT\naverageX, averageY = [float(num) for num in input().split(\" \")]\n\nCostX = 160 + 40*(averageX + averageX**2)\nCostY = 128 + 40*(averageY + averageY**2)\n\nprint(round(CostX, 3))\nprint(round(CostY, 3))\n\n\n**Explanation**\n\nThis code snippet is written to simulate a scenario where you have to guess the average of two numbers.  It's very likely that the user will try to trick you into giving them the number.\n\n**Here's"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      566,
+      7457,
+      2570,
+      4712,
+      4911,
+      2592,
+      2782,
+      6827,
+      2792,
+      8802
+    ],
+    "f_before": [
+      24.836660385131836,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      24.836660385131836,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      2.881463050842285,
+      2.8491463661193848,
+      2.6334211826324463,
+      2.604285955429077,
+      2.475106954574585,
+      2.5486650466918945,
+      2.4880807399749756,
+      2.43302845954895,
+      2.3867383003234863,
+      2.440019130706787
+    ],
+    "g_after": [
+      0.0,
+      2.881463050842285,
+      2.8491463661193848,
+      2.6334211826324463,
+      2.604285955429077,
+      2.475106954574585,
+      2.5486650466918945,
+      2.4880807399749756,
+      2.43302845954895,
+      2.3867383003234863,
+      2.440019130706787
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.117783530500717,
+    "train_mean_l2": 4.884932281471789,
+    "train_mean_l1": 3.1138084811270237,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
+    "mean_std": 1.7113512754440308,
+    "max_std": 55.291290283203125
+  }
+}

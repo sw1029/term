@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.045 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0005919594976014248 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0005919594976014248,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.045,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n\n@app.errorhandler(404)\ndef page_not_found(e):\n    \"\"\"Return a custom 404 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 404\t\n\n@app.errorhandler(500)\ndef application_error(e):\n    \"\"\"Return a custom 500 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 500\n\nif __name__ == '__main__':\n    app.run()\n",
+  "output": {
+    "before": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n\n@app.errorhandler(404)\ndef page_not_found(e):\n    \"\"\"Return a custom 404 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 404\t\n\n@app.errorhandler(500)\ndef application_error(e):\n    \"\"\"Return a custom 500 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 500\n\nif __name__ == '__main__':\n    app.run()\n```\n\n**Explanation:**\n\n1. **Import Libraries:**\n   - `flask`: For building the web application.\n   - `flash`: To display temporary messages to the user.\n   - `render_template`: To render HTML templates",
+    "after": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n\n@app.errorhandler(404)\ndef page_not_found(e):\n    \"\"\"Return a custom 404 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 404\t\n\n@app.errorhandler(500)\ndef application_error(e):\n    \"\"\"Return a custom 500 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 500\n\nif __name__ == '__main__':\n    app.run()\n```\n\n**Explanation:**\n\n1.  **Imports:**\n    *   `os`: For checking if file exists\n    *   `Flask`: For creating Flask app\n    *   `flash`: For displaying flash messages\n    *   "
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      644,
+      6124,
+      6425,
+      4800,
+      1596,
+      4791,
+      8335,
+      6620,
+      1959
+    ],
+    "f_before": [
+      107.25386810302734,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      107.25386810302734,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      62.23971176147461,
+      12.270176887512207,
+      11.111721992492676,
+      10.57380485534668,
+      10.137773513793945,
+      10.515931129455566,
+      10.025543212890625,
+      0.0,
+      9.918262481689453,
+      9.926929473876953
+    ],
+    "g_after": [
+      0.0,
+      62.23971176147461,
+      12.270176887512207,
+      11.111721992492676,
+      10.57380485534668,
+      10.137773513793945,
+      10.515931129455566,
+      10.025543212890625,
+      0.0,
+      9.918262481689453,
+      9.926929473876953
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.52791960250726,
+    "train_mean_l2": 6.537878839939832,
+    "train_mean_l1": 2.780219153434038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
+    "mean_std": 1.6594011783599854,
+    "max_std": 59.914852142333984
+  }
+}

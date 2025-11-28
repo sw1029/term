@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009195390858312656 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009195390858312656,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-auth: \"userx:passx\",\n    proxy-type: \"meh\"\n}\n\"\"\"\ndef input_time_random():\n    return random.randint(300, 500)\n\n\nasync def main():\n    print(\"in main \")\n    print(os.environ.get('PYPPETEER_CHROMIUM_REVISION'))\n    browser = await pyppeteer.launch(\n        executablePath=r\"D:\\A\\Desktop\\项目+更新\\node_project\\chrome-win\\chrome-win\\chrome.exe\",\n        headless=False,\n        args=[\n            '--proxy-server=118.24.156.214:8118'\n            ],\n        timeout=30000)\n    page = await browser.newPage()\n    await page.setViewport({\"width\": 1000, \"height\": 780})\n    await page.setUserAgent(\"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36\")\n    await page.goto('http://httpbin.net/ip')\n    # await page.waitForNavigation({'waitUntil': 'load'})  # 有时候不需要\n\n    content = await page.content()\n    cookies = await page.cookies()\n    await page.screenshot({'path': 'example.png'})\n\n    dimensions = await page.evaluate('''() => {\n        return {\n            width: document.documentElement.clientWidth,\n            height: document.documentElement.clientHeight,\n            deviceScaleFactor: window.devicePixelRatio,\n        }\n    }''')\n\n    print(dimensions)\n\n    await browser.close()\n    return {'content': content, 'cookies': cookies}\n\n\nasyncio.get_event_loop().run_until_complete(main())",
+  "output": {
+    "before": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-auth: \"userx:passx\",\n    proxy-type: \"meh\"\n}\n\"\"\"\ndef input_time_random():\n    return random.randint(300, 500)\n\n\nasync def main():\n    print(\"in main \")\n    print(os.environ.get('PYPPETEER_CHROMIUM_REVISION'))\n    browser = await pyppeteer.launch(\n        executablePath=r\"D:\\A\\Desktop\\项目+更新\\node_project\\chrome-win\\chrome-win\\chrome.exe\",\n        headless=False,\n        args=[\n            '--proxy-server=118.24.156.214:8118'\n            ],\n        timeout=30000)\n    page = await browser.newPage()\n    await page.setViewport({\"width\": 1000, \"height\": 780})\n    await page.setUserAgent(\"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36\")\n    await page.goto('http://httpbin.net/ip')\n    # await page.waitForNavigation({'waitUntil': 'load'})  # 有时候不需要\n\n    content = await page.content()\n    cookies = await page.cookies()\n    await page.screenshot({'path': 'example.png'})\n\n    dimensions = await page.evaluate('''() => {\n        return {\n            width: document.documentElement.clientWidth,\n            height: document.documentElement.clientHeight,\n            deviceScaleFactor: window.devicePixelRatio,\n        }\n    }''')\n\n    print(dimensions)\n\n    await browser.close()\n    return {'content': content, 'cookies': cookies}\n\n\nasyncio.get_event_loop().run_until_complete(main())\n```\n\n**Explanation:**\n\n1. **Imports:** \n   - `asyncio`: For asynchronous programming.\n   - `pyppeteer`: For browser automation.\n   - `time`: For pausing execution.\n   - `os`:",
+    "after": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-auth: \"userx:passx\",\n    proxy-type: \"meh\"\n}\n\"\"\"\ndef input_time_random():\n    return random.randint(300, 500)\n\n\nasync def main():\n    print(\"in main \")\n    print(os.environ.get('PYPPETEER_CHROMIUM_REVISION'))\n    browser = await pyppeteer.launch(\n        executablePath=r\"D:\\A\\Desktop\\项目+更新\\node_project\\chrome-win\\chrome-win\\chrome.exe\",\n        headless=False,\n        args=[\n            '--proxy-server=118.24.156.214:8118'\n            ],\n        timeout=30000)\n    page = await browser.newPage()\n    await page.setViewport({\"width\": 1000, \"height\": 780})\n    await page.setUserAgent(\"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36\")\n    await page.goto('http://httpbin.net/ip')\n    # await page.waitForNavigation({'waitUntil': 'load'})  # 有时候不需要\n\n    content = await page.content()\n    cookies = await page.cookies()\n    await page.screenshot({'path': 'example.png'})\n\n    dimensions = await page.evaluate('''() => {\n        return {\n            width: document.documentElement.clientWidth,\n            height: document.documentElement.clientHeight,\n            deviceScaleFactor: window.devicePixelRatio,\n        }\n    }''')\n\n    print(dimensions)\n\n    await browser.close()\n    return {'content': content, 'cookies': cookies}\n\n\nasyncio.get_event_loop().run_until_complete(main())\n\n\n# 2023-08-20\n# 1.\n# 2.\n# 3.\n# 4.\n# 5.\n# 6.\n# 7.\n#"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      8711,
+      2874,
+      1646,
+      5111,
+      3943,
+      8935,
+      7673,
+      3030,
+      8147
+    ],
+    "f_before": [
+      65.23833465576172,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      65.23833465576172,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      38.21778106689453,
+      6.871379375457764,
+      6.669388294219971,
+      6.870412349700928,
+      7.153665065765381,
+      6.316555500030518,
+      6.783613681793213,
+      6.355030536651611,
+      6.390753269195557,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      38.21778106689453,
+      6.871379375457764,
+      6.669388294219971,
+      6.870412349700928,
+      7.153665065765381,
+      6.316555500030518,
+      6.783613681793213,
+      6.355030536651611,
+      6.390753269195557,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.755375345926732,
+    "train_mean_l2": 5.643428234145046,
+    "train_mean_l1": 3.491124365925789,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
+    "mean_std": 1.2764151096343994,
+    "max_std": 34.51808166503906
+  }
+}

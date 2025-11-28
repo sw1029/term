@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.045 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0005919594976014248 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0005919594976014248,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.045,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        return self.model.predict([text])\n\n    def file_inference(self, file_name, output):\n        df = pd.read_csv(file_name, header=None)\n        predictions = self.model.predict(df.iloc[:, 0].values)\n        predictions.to_csv(output, index=False)\n",
+  "output": {
+    "before": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        return self.model.predict([text])\n\n    def file_inference(self, file_name, output):\n        df = pd.read_csv(file_name, header=None)\n        predictions = self.model.predict(df.iloc[:, 0].values)\n        predictions.to_csv(output, index=False)\n        print(f\"Predictions saved to {output}\")\n\n# Example usage\nmodel_type = 'twitter'\ninference = ModelInference(model_type)\ntext = \"Tesla stock is up today\"\nprediction = inference.inference(",
+    "after": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        return self.model.predict([text])\n\n    def file_inference(self, file_name, output):\n        df = pd.read_csv(file_name, header=None)\n        predictions = self.model.predict(df.iloc[:, 0].values)\n        predictions.to_csv(output, index=False)\n        return predictions\n\n    def download_model(self, model_type):\n        if not os.path.exists(os.path.join(self.MODEL_BASE_PATH, model_type)):\n            os.makedirs("
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      644,
+      6124,
+      6425,
+      4800,
+      1596,
+      4791,
+      8335,
+      6620,
+      1959
+    ],
+    "f_before": [
+      117.46499633789062,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      117.46499633789062,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      68.16525268554688,
+      13.438361167907715,
+      12.16961669921875,
+      11.580486297607422,
+      11.10294246673584,
+      11.517102241516113,
+      10.980027198791504,
+      0.0,
+      10.862533569335938,
+      10.872025489807129
+    ],
+    "g_after": [
+      0.0,
+      68.16525268554688,
+      13.438361167907715,
+      12.16961669921875,
+      11.580486297607422,
+      11.10294246673584,
+      11.517102241516113,
+      10.980027198791504,
+      0.0,
+      10.862533569335938,
+      10.872025489807129
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.52791960250726,
+    "train_mean_l2": 6.537878839939832,
+    "train_mean_l1": 2.780219153434038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
+    "mean_std": 1.6594011783599854,
+    "max_std": 59.914852142333984
+  }
+}

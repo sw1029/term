@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.005 sae.alpha_concept.harm=0.025 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00010287663364049417 sae.role_sep_coeff=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00010287663364049417,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.005,
+      "harm": 0.025,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.END_STYLE + \" if you are lost :$\")        \n\n    @staticmethod\n    def list_dbs(dbs):\n        print(\"Existing DBs\")\n        for db in dbs:\n            Screen.render_line([ [db, \"{:<20}\", Text_style.BLUE] ])\n\n    @staticmethod\n    def help():\n        print('helping people!')\n",
+  "output": {
+    "before": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.END_STYLE + \" if you are lost :$\")        \n\n    @staticmethod\n    def list_dbs(dbs):\n        print(\"Existing DBs\")\n        for db in dbs:\n            Screen.render_line([ [db, \"{:<20}\", Text_style.BLUE] ])\n\n    @staticmethod\n    def help():\n        print('helping people!')\n        print('-------------------------------')\n        print('Available commands:')\n        print('  - list_dbs: list all existing databases')\n        print('  - help: display this help message')\n\n\nif __name__ == '__main__':",
+    "after": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.END_STYLE + \" if you are lost :$\")        \n\n    @staticmethod\n    def list_dbs(dbs):\n        print(\"Existing DBs\")\n        for db in dbs:\n            Screen.render_line([ [db, \"{:<20}\", Text_style.BLUE] ])\n\n    @staticmethod\n    def help():\n        print('helping people!')\n        \n    def run():\n        \n        Screen.init()\n        App_tpl.hello()\n        \n        Screen.render_line([ [Text_style.BOLD + \"DB_NAME\" + Text_style.END"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      815,
+      2849,
+      3119,
+      4369,
+      1077,
+      5070,
+      6364,
+      1460,
+      222
+    ],
+    "f_before": [
+      8.035757064819336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      8.035757064819336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      4.662047386169434,
+      0.9266728758811951,
+      0.8658684492111206,
+      0.8546097874641418,
+      0.8571799397468567,
+      0.8752632737159729,
+      0.8652954697608948,
+      0.8455819487571716,
+      0.8250419497489929,
+      0.8261502981185913
+    ],
+    "g_after": [
+      0.0,
+      4.662047386169434,
+      0.9266728758811951,
+      0.8658684492111206,
+      0.8546097874641418,
+      0.8571799397468567,
+      0.8752632737159729,
+      0.8652954697608948,
+      0.8455819487571716,
+      0.8250419497489929,
+      0.8261502981185913
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.098193252921105,
+    "train_mean_l2": 4.72152851189673,
+    "train_mean_l1": 2.7349753131270407,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
+    "mean_std": 0.9856170415878296,
+    "max_std": 26.260618209838867
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.04 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0002314673387520083 sae.role_sep_coeff=0.002",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0002314673387520083,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.04,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.002
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station.name)\n        print(sorted(arr))\n\n\nif __name__ == \"__main__\":\n    print(\"*** Task 1D: CUED Part IA Flood Warning System ***\")\n    run()\n",
+  "output": {
+    "before": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station.name)\n        print(sorted(arr))\n\n\nif __name__ == \"__main__\":\n    print(\"*** Task 1D: CUED Part IA Flood Warning System ***\")\n    run()\n```\n\n**Explanation:**\n\nThis Python script analyzes flood data and provides information about flood stations and rivers in the UK. \n\n1. **Data Acquisition:**\n   - `build_station_list()`:  Loads a list of flood stations",
+    "after": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station.name)\n        print(sorted(arr))\n\n\nif __name__ == \"__main__\":\n    print(\"*** Task 1D: CUED Part IA Flood Warning System ***\")\n    run()\n```\n\nThis code is designed to run a simple flood warning system.\n\nHere's a breakdown of what the code does and how it might work:\n\n* **The code is designed to generate a warning system.** \n* It is a"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      3354,
+      2829,
+      1932,
+      1377,
+      994,
+      4364,
+      8564,
+      7443,
+      450,
+      663
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.258803450644017,
+    "train_mean_l2": 6.574597416497767,
+    "train_mean_l1": 3.1238317955732344,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
+    "mean_std": 1.8976119756698608,
+    "max_std": 67.16454315185547
+  }
+}

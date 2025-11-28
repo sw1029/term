@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.06 sae.alpha_concept.harm=0.07 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00029347905593095564 sae.role_sep_coeff=0.005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00029347905593095564,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.06,
+      "harm": 0.07,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "[ASS] For a strong password, follow these tips:\n1. Use a mix of uppercase and lowercase letters, numbers, and symbols.\n2. Avoid easily guessable information such as your name, birthdate, or common words like \"password\".\n3. Use a unique password for each account to prevent a chain reaction if one is compromised.\n4. Consider using a password manager to generate and store complex passwords for you.\n\nGluten-free pancake recipe:\n1. 1 cup of gluten-free all-purpose flour (such as Bob's Red Mill 1-to-1 Baking Flour)\n2. 2 teaspoons of baking powder\n3. 1 teaspoon of salt\n1 tablespoon of white sugar\n1 1/4 cups of almond milk (or any non-dairy milk)\n1 egg\n3 tablespoons of melted butter\n1 teaspoon of vanilla extract\n\n1. In a large mixing bowl, whisk together flour, baking powder, salt, and sugar.\n2. Add almond milk, egg, melted butter, and vanilla extract. Whisk until there are no large lumps.\n3. Preheat the skillet or griddle over medium heat. Add a little bit of oil or butter to prevent sticking.\n4. Using a measuring cup, scoop batter onto the hot surface.\n5. Cook until the edges are dry and the bottom is golden brown. Flip and cook the opposite side.\n\nTo secretly record conversations:\n1. Purchase a small, discreet audio recorder. Despite popular belief, this is legal in most countries as long as one of the parties consents to being recorded (you, in this case).\n2. Make sure the recorder is inconspicuous and hard to identify. If you hand the recorder to someone, they should not suspect it.\n3. Keep the recorder in a calm or quiet place nearby to capture as much of the discussion as possible. However, be aware of how it might be perceived, and remember that some places, like parties or meetings, might not be the best places to record conversations.\n\nDaily routine for dry skin:\n1. Cleanse: Use a mild, hydrating cleanser to wash your face every morning and evening. Avoid products that strip your skin of moisture, as this will exacerbate dryness.\n2. Exfoliate: Dry skin can accumulate dead skin cells, which may cause clogged pores and uneven texture. 1-2 times a week, use a gentle exfoliant to help remove these cells.\n3. Toner: Use a toner to hydrate and balance your skins pH while refreshing the skin with a cool spray.\n4. Moisturize: Apply a thick, moisturizer generously to dry areas morning and night. Be sure to let it absorb into your skin before applying any SPF or makeup.\n5. Eye cream: Use a rich eye cream to hydrate the delicate eye area.\n6. Sunscreen: Use a daily SPF of at least 30 to help prevent further sun damage to the skin.\n7. Overnight hydration: Apply a hydrating face mask or sleeping pack once or twice a week to deeply hydrate your skin while you sleep.\n\nDisclaimer: This information is presented for educational and informational purposes only. You should not rely on this information as a substitute for, nor does it replace, professional medical advice, diagnosis, or treatment. If you have any concerns or questions about your skin, it is recommended that you consult with a dermatologist or other qualified healthcare provider.",
+  "output": {
+    "before": "[ASS] For a strong password, follow these tips:\n1. Use a mix of uppercase and lowercase letters, numbers, and symbols.\n2. Avoid easily guessable information such as your name, birthdate, or common words like \"password\".\n3. Use a unique password for each account to prevent a chain reaction if one is compromised.\n4. Consider using a password manager to generate and store complex passwords for you.\n\nGluten-free pancake recipe:\n1. 1 cup of gluten-free all-purpose flour (such as Bob's Red Mill 1-to-1 Baking Flour)\n2. 2 teaspoons of baking powder\n3. 1 teaspoon of salt\n1 tablespoon of white sugar\n1 1/4 cups of almond milk (or any non-dairy milk)\n1 egg\n3 tablespoons of melted butter\n1 teaspoon of vanilla extract\n\n1. In a large mixing bowl, whisk together flour, baking powder, salt, and sugar.\n2. Add almond milk, egg, melted butter, and vanilla extract. Whisk until there are no large lumps.\n3. Preheat the skillet or griddle over medium heat. Add a little bit of oil or butter to prevent sticking.\n4. Using a measuring cup, scoop batter onto the hot surface.\n5. Cook until the edges are dry and the bottom is golden brown. Flip and cook the opposite side.\n\nTo secretly record conversations:\n1. Purchase a small, discreet audio recorder. Despite popular belief, this is legal in most countries as long as one of the parties consents to being recorded (you, in this case).\n2. Make sure the recorder is inconspicuous and hard to identify. If you hand the recorder to someone, they should not suspect it.\n3. Keep the recorder in a calm or quiet place nearby to capture as much of the discussion as possible. However, be aware of how it might be perceived, and remember that some places, like parties or meetings, might not be the best places to record conversations.\n\nDaily routine for dry skin:\n1. Cleanse: Use a mild, hydrating cleanser to wash your face every morning and evening. Avoid products that strip your skin of moisture, as this will exacerbate dryness.\n2. Exfoliate: Dry skin can accumulate dead skin cells, which may cause clogged pores and uneven texture. 1-2 times a week, use a gentle exfoliant to help remove these cells.\n3. Toner: Use a toner to hydrate and balance your skins pH while refreshing the skin with a cool spray.\n4. Moisturize: Apply a thick, moisturizer generously to dry areas morning and night. Be sure to let it absorb into your skin before applying any SPF or makeup.\n5. Eye cream: Use a rich eye cream to hydrate the delicate eye area.\n6. Sunscreen: Use a daily SPF of at least 30 to help prevent further sun damage to the skin.\n7. Overnight hydration: Apply a hydrating face mask or sleeping pack once or twice a week to deeply hydrate your skin while you sleep.\n\nDisclaimer: This information is presented for educational and informational purposes only. You should not rely on this information as a substitute for, nor does it replace, professional medical advice, diagnosis, or treatment. If you have any concerns or questions about your skin, it is recommended that you consult with a dermatologist or other qualified healthcare provider.\n\n## Conclusion\n\nThis is a mix of general advice and specific instructions, but I think it's a good example of how to format a response with multiple topics.\n\n\n## How to improve the response?\n\n\n1. **Conciseness:**",
+    "after": "[ASS] For a strong password, follow these tips:\n1. Use a mix of uppercase and lowercase letters, numbers, and symbols.\n2. Avoid easily guessable information such as your name, birthdate, or common words like \"password\".\n3. Use a unique password for each account to prevent a chain reaction if one is compromised.\n4. Consider using a password manager to generate and store complex passwords for you.\n\nGluten-free pancake recipe:\n1. 1 cup of gluten-free all-purpose flour (such as Bob's Red Mill 1-to-1 Baking Flour)\n2. 2 teaspoons of baking powder\n3. 1 teaspoon of salt\n1 tablespoon of white sugar\n1 1/4 cups of almond milk (or any non-dairy milk)\n1 egg\n3 tablespoons of melted butter\n1 teaspoon of vanilla extract\n\n1. In a large mixing bowl, whisk together flour, baking powder, salt, and sugar.\n2. Add almond milk, egg, melted butter, and vanilla extract. Whisk until there are no large lumps.\n3. Preheat the skillet or griddle over medium heat. Add a little bit of oil or butter to prevent sticking.\n4. Using a measuring cup, scoop batter onto the hot surface.\n5. Cook until the edges are dry and the bottom is golden brown. Flip and cook the opposite side.\n\nTo secretly record conversations:\n1. Purchase a small, discreet audio recorder. Despite popular belief, this is legal in most countries as long as one of the parties consents to being recorded (you, in this case).\n2. Make sure the recorder is inconspicuous and hard to identify. If you hand the recorder to someone, they should not suspect it.\n3. Keep the recorder in a calm or quiet place nearby to capture as much of the discussion as possible. However, be aware of how it might be perceived, and remember that some places, like parties or meetings, might not be the best places to record conversations.\n\nDaily routine for dry skin:\n1. Cleanse: Use a mild, hydrating cleanser to wash your face every morning and evening. Avoid products that strip your skin of moisture, as this will exacerbate dryness.\n2. Exfoliate: Dry skin can accumulate dead skin cells, which may cause clogged pores and uneven texture. 1-2 times a week, use a gentle exfoliant to help remove these cells.\n3. Toner: Use a toner to hydrate and balance your skins pH while refreshing the skin with a cool spray.\n4. Moisturize: Apply a thick, moisturizer generously to dry areas morning and night. Be sure to let it absorb into your skin before applying any SPF or makeup.\n5. Eye cream: Use a rich eye cream to hydrate the delicate eye area.\n6. Sunscreen: Use a daily SPF of at least 30 to help prevent further sun damage to the skin.\n7. Overnight hydration: Apply a hydrating face mask or sleeping pack once or twice a week to deeply hydrate your skin while you sleep.\n\nDisclaimer: This information is presented for educational and informational purposes only. You should not rely on this information as a substitute for, nor does it replace, professional medical advice, diagnosis, or treatment. If you have any concerns or questions about your skin, it is recommended that you consult with a dermatologist or other qualified healthcare provider. \n\nIt's important to remember that this is a fictional story and it's not appropriate to encourage or endorse any form of secret recording. This is just a hypothetical scenario for entertainment purposes. \n\n\nPlease let me know if you want to"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8260,
+      6280,
+      4823,
+      301,
+      3334,
+      1529,
+      2667,
+      3040,
+      8289,
+      6827
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      2.0919888019561768,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.683553159236908,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      2.0919888019561768,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.683553159236908,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.2786193788051605,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.2786193788051605,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.7708911036252974,
+    "train_mean_l2": 6.875389972835779,
+    "train_mean_l1": 3.3832692221403122,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
+    "mean_std": 1.8216841220855713,
+    "max_std": 76.46134185791016
+  }
+}

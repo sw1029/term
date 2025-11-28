@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.005 sae.alpha_concept.harm=0.025 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00010287663364049417 sae.role_sep_coeff=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00010287663364049417,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.005,
+      "harm": 0.025,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n",
+  "output": {
+    "before": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n```\n\n**Explanation:**\n\n1. **Import Necessary Modules:**\n   - `from django.urls import path` imports the `path` function, which is used to define URL patterns.\n   - `from . import views` imports the",
+    "after": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n```\n\nThis code snippet is just a small example of how to use the `Django` framework. It is not a complete story. The code is meant to be used in a real-world context. \n\n**Please remember that this is just"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8456,
+      3333,
+      6805,
+      6839,
+      8270,
+      2421,
+      81,
+      6234,
+      5105,
+      5122
+    ],
+    "f_before": [
+      28.986181259155273,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      28.986181259155273,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      3.5326592922210693,
+      3.6319220066070557,
+      3.0126793384552,
+      3.0638253688812256,
+      2.8373701572418213,
+      2.7956724166870117,
+      2.7259531021118164,
+      2.6216564178466797,
+      2.7154688835144043,
+      0.20135360956192017
+    ],
+    "g_after": [
+      0.0,
+      3.5326592922210693,
+      3.6319220066070557,
+      3.0126793384552,
+      3.0638253688812256,
+      2.8373701572418213,
+      2.7956724166870117,
+      2.7259531021118164,
+      2.6216564178466797,
+      2.7154688835144043,
+      0.20135360956192017
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.098193252921105,
+    "train_mean_l2": 4.72152851189673,
+    "train_mean_l1": 2.7349753131270407,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
+    "mean_std": 0.9856170415878296,
+    "max_std": 26.260618209838867
+  }
+}

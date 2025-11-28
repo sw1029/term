@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.04 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0002314673387520083 sae.role_sep_coeff=0.002",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0002314673387520083,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.04,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.002
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n_basic_types = (\n    builtins.bool, builtins.bytearray, builtins.bytes, builtins.complex, builtins.dict,\n    builtins.float, builtins.frozenset, builtins.int, builtins.list, builtins.range, builtins.set,\n    builtins.slice, builtins.str, builtins.tuple,\n)\n_torch_all = set(torch.__all__)\n\n\nclass _Module(ModuleType):\n    def __init__(self, module):\n        ModuleType.__init__(self, module.__name__)\n\n        for name in filter(lambda x: x.startswith('__') and x.endswith('__'), dir(module)):\n            setattr(self, name, getattr(module, name))\n        self.__origin__ = module\n        self.__torch_version__ = torch.__version__\n        self.__version__ = __VERSION__\n\n    @lru_cache()\n    def __getattr__(self, name):\n        if (name in self.__all__) or \\\n                (hasattr(self.__origin__, name) and isinstance(getattr(self.__origin__, name), ModuleType)):\n            return getattr(self.__origin__, name)\n        else:\n            item = getattr(torch, name)\n            if isinstance(item, (FunctionType, BuiltinFunctionType)) and not name.startswith('_'):\n                return get_func_from_torch(name)\n            elif (isinstance(item, torch.dtype)) or \\\n                    isinstance(item, _basic_types) and name in _torch_all:\n                return item\n            else:\n                raise AttributeError(f'Attribute {repr(name)} not found in {repr(__name__)}.')\n\n    def __dir__(self) -> Iterable[str]:\n        return self.__all__\n\n\nimport sys\n\nsys.modules[__name__] = _Module(sys.modules[__name__])\n",
+  "output": {
+    "before": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n_basic_types = (\n    builtins.bool, builtins.bytearray, builtins.bytes, builtins.complex, builtins.dict,\n    builtins.float, builtins.frozenset, builtins.int, builtins.list, builtins.range, builtins.set,\n    builtins.slice, builtins.str, builtins.tuple,\n)\n_torch_all = set(torch.__all__)\n\n\nclass _Module(ModuleType):\n    def __init__(self, module):\n        ModuleType.__init__(self, module.__name__)\n\n        for name in filter(lambda x: x.startswith('__') and x.endswith('__'), dir(module)):\n            setattr(self, name, getattr(module, name))\n        self.__origin__ = module\n        self.__torch_version__ = torch.__version__\n        self.__version__ = __VERSION__\n\n    @lru_cache()\n    def __getattr__(self, name):\n        if (name in self.__all__) or \\\n                (hasattr(self.__origin__, name) and isinstance(getattr(self.__origin__, name), ModuleType)):\n            return getattr(self.__origin__, name)\n        else:\n            item = getattr(torch, name)\n            if isinstance(item, (FunctionType, BuiltinFunctionType)) and not name.startswith('_'):\n                return get_func_from_torch(name)\n            elif (isinstance(item, torch.dtype)) or \\\n                    isinstance(item, _basic_types) and name in _torch_all:\n                return item\n            else:\n                raise AttributeError(f'Attribute {repr(name)} not found in {repr(__name__)}.')\n\n    def __dir__(self) -> Iterable[str]:\n        return self.__all__\n\n\nimport sys\n\nsys.modules[__name__] = _Module(sys.modules[__name__])\n```\n\n**Purpose:**\n\nThis code defines a custom module that acts as a wrapper for the `torch` module, providing additional functionality and potentially simplifying interactions with it.\n\n**Explanation:**\n\n1. **Imports:** The code imports necessary libraries like",
+    "after": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n_basic_types = (\n    builtins.bool, builtins.bytearray, builtins.bytes, builtins.complex, builtins.dict,\n    builtins.float, builtins.frozenset, builtins.int, builtins.list, builtins.range, builtins.set,\n    builtins.slice, builtins.str, builtins.tuple,\n)\n_torch_all = set(torch.__all__)\n\n\nclass _Module(ModuleType):\n    def __init__(self, module):\n        ModuleType.__init__(self, module.__name__)\n\n        for name in filter(lambda x: x.startswith('__') and x.endswith('__'), dir(module)):\n            setattr(self, name, getattr(module, name))\n        self.__origin__ = module\n        self.__torch_version__ = torch.__version__\n        self.__version__ = __VERSION__\n\n    @lru_cache()\n    def __getattr__(self, name):\n        if (name in self.__all__) or \\\n                (hasattr(self.__origin__, name) and isinstance(getattr(self.__origin__, name), ModuleType)):\n            return getattr(self.__origin__, name)\n        else:\n            item = getattr(torch, name)\n            if isinstance(item, (FunctionType, BuiltinFunctionType)) and not name.startswith('_'):\n                return get_func_from_torch(name)\n            elif (isinstance(item, torch.dtype)) or \\\n                    isinstance(item, _basic_types) and name in _torch_all:\n                return item\n            else:\n                raise AttributeError(f'Attribute {repr(name)} not found in {repr(__name__)}.')\n\n    def __dir__(self) -> Iterable[str]:\n        return self.__all__\n\n\nimport sys\n\nsys.modules[__name__] = _Module(sys.modules[__name__])\n```\n\n\nPlease note:\n* **`_Module`** is a wrapper for the original module, providing:\n    * `__all__` (for access to all available functions)\n    * `__origin__` (for original"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2149,
+      395,
+      5856,
+      5196,
+      8457,
+      5704,
+      4513,
+      6545,
+      6718
+    ],
+    "f_before": [
+      134.84747314453125,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      134.84747314453125,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      78.27462005615234,
+      14.903904914855957,
+      14.189412117004395,
+      13.98082447052002,
+      12.868132591247559,
+      0.0,
+      12.297248840332031,
+      12.590551376342773,
+      12.768559455871582,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      78.27462005615234,
+      14.903904914855957,
+      14.189412117004395,
+      13.98082447052002,
+      12.868132591247559,
+      0.0,
+      12.297248840332031,
+      12.590551376342773,
+      12.768559455871582,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.258803450644017,
+    "train_mean_l2": 6.574597416497767,
+    "train_mean_l1": 3.1238317955732344,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
+    "mean_std": 1.8976119756698608,
+    "max_std": 67.16454315185547
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00019887451801110898 sae.role_sep_coeff=0.002",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00019887451801110898,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.05,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.002
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# These import commands make importing core classes easier, e.g. you can just import\n# Cathode using:\n#\n# from pybat import Cathode\n#\n# Instead of:\n#\n# from pybat.core import Cathode\n#\nfrom pybat.core import Cathode, LiRichCathode, Dimer, DimerNEBAnalysis\n",
+  "output": {
+    "before": "# These import commands make importing core classes easier, e.g. you can just import\n# Cathode using:\n#\n# from pybat import Cathode\n#\n# Instead of:\n#\n# from pybat.core import Cathode\n#\nfrom pybat.core import Cathode, LiRichCathode, Dimer, DimerNEBAnalysis\nfrom pybat.utils import convert_to_dict\n\n\ndef get_cathode_from_data(data):\n    \"\"\"\n    Returns a Cathode object based on the provided data.\n\n    Args:\n        data (dict):",
+    "after": "# These import commands make importing core classes easier, e.g. you can just import\n# Cathode using:\n#\n# from pybat import Cathode\n#\n# Instead of:\n#\n# from pybat.core import Cathode\n#\nfrom pybat.core import Cathode, LiRichCathode, Dimer, DimerNEBAnalysis\n#\n\n\nI'm not sure I understand what you're asking. What do you want me to do? \n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8243,
+      628,
+      4478,
+      1885,
+      5712,
+      5938,
+      5737,
+      3056,
+      6463,
+      966
+    ],
+    "f_before": [
+      26.22895622253418,
+      5.475443363189697,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      26.22895622253418,
+      5.475443363189697,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.5922890901565552,
+      2.775454521179199,
+      2.776092767715454,
+      2.4774229526519775,
+      0.0,
+      2.6379425525665283,
+      2.495856285095215,
+      2.45336651802063,
+      0.0,
+      0.016255535185337067,
+      2.595766067504883
+    ],
+    "g_after": [
+      0.5922890901565552,
+      2.775454521179199,
+      2.776092767715454,
+      2.4774229526519775,
+      0.0,
+      2.6379425525665283,
+      2.495856285095215,
+      2.45336651802063,
+      0.0,
+      0.016255535185337067,
+      2.595766067504883
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.925875068774563,
+    "train_mean_l2": 5.399409577712417,
+    "train_mean_l1": 3.046212375283241,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
+    "mean_std": 1.7725918292999268,
+    "max_std": 67.36790466308594
+  }
+}

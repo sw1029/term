@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "from .deseq2 import *\nfrom .example import *\n",
+  "output": {
+    "before": "from .deseq2 import *\nfrom .example import *\nfrom .utils import *\n\n__all__ = [\"DESeq2\", \"Example\", \"Utils\"]\n```\n\nThis code snippet defines a Python module with three classes and a list of names for all the classes and functions. \n\nLet'",
+    "after": "from .deseq2 import *\nfrom .example import *\nfrom .utils import *\n\nfrom . import tools\n\nfrom . import models\nfrom . import utils\n\nfrom . import metrics\nfrom . import tools\n\nfrom . import utils\nfrom . import metrics\nfrom . import models\nfrom . import tools"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      3233,
+      2441,
+      8586,
+      3541,
+      6540,
+      9143,
+      7461,
+      2848,
+      8231
+    ],
+    "f_before": [
+      0.0,
+      187.09414672851562,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.11332953721284866,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      187.09414672851562,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.11332953721284866,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      107.48786926269531,
+      0.0,
+      19.41775131225586,
+      0.04844129830598831,
+      21.247753143310547,
+      20.245485305786133,
+      17.822837829589844,
+      0.07810823619365692,
+      19.346969604492188,
+      0.09639832377433777,
+      0.18794919550418854
+    ],
+    "g_after": [
+      107.48786926269531,
+      0.0,
+      19.41775131225586,
+      0.04844129830598831,
+      21.247753143310547,
+      20.245485305786133,
+      17.822837829589844,
+      0.07810823619365692,
+      19.346969604492188,
+      0.09639832377433777,
+      0.18794919550418854
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.117783530500717,
+    "train_mean_l2": 4.884932281471789,
+    "train_mean_l1": 3.1138084811270237,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
+    "mean_std": 1.7113512754440308,
+    "max_std": 55.291290283203125
+  }
+}

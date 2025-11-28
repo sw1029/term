@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009195390858312656 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009195390858312656,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom __future__ import print_function\nfrom six import itervalues, iteritems\nfrom ctypes import *\nimport numpy as np\n\nimport os, sys\nfrom vai.dpuv1.rt import xdnn, xdnn_io\nfrom vai.dpuv1.rt.vitis.python.dpu.runner import Runner\nimport waa_rt\n\nimport multiprocessing as mp\nimport ctypes\n\n\ndef pre_process(q,args):\n\n  xclbin_p=str(args['xclbin']+\"/xdnn_v3_96x16_2pe_8b_9mb_bank03.xclbin\")\n  kernelName_p=\"pp_pipeline_accel\"\n  deviceIdx_p=args['deviceid']\n  fpga_pp = waa_rt.PreProcess(xclbin_p,kernelName_p,deviceIdx_p, 0)\n  batch_sz = args['batch_sz']\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  print(\"Pre-processing handle created. Populating Queue\")\n  for i in range(0, len(img_paths), batch_sz):\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n      arr, ht = fpga_pp.preprocess_input(p)\n      q.put(arr)\n      print(\"Queue populated\")\n\n\ndef process_xdnn(q,args):\n  runner = Runner(args['vitis_rundir'])\n  inTensors = runner.get_input_tensors()\n  outTensors = runner.get_output_tensors()\n  batch_sz = args['batch_sz']\n  if batch_sz == -1:\n    # use Runner's suggested batch size\n    batch_sz = inTensors[0].dims[0]\n\n  if args['golden']:\n    goldenMap = xdnn_io.getGoldenMap(args['golden'])\n    top5Count = 0\n    top1Count = 0\n\n  fpgaBlobs = []\n  for io in [inTensors, outTensors]:\n    blobs = []\n    for t in io:\n      shape = (batch_sz,) + tuple([t.dims[i] for i in range(t.ndims)][1:])\n      blobs.append(np.empty((shape), dtype=np.float32, order='C'))\n    fpgaBlobs.append(blobs)\n\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  labels = xdnn_io.get_labels(args['labels'])\n  xdnnCPUOp = xdnn.XDNNCPUOp(\"%s/weights.h5\" % args['vitis_rundir'])\n  fcOutput = np.empty((batch_sz, args['outsz'],), dtype=np.float32, order='C')\n\n  fpgaInput = fpgaBlobs[0][0]\n  for i in range(0, len(img_paths), batch_sz):\n    pl = []\n    # fill tensor input data from image file\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n\n      img, _ = q.get(), None\n      pl.append(p)\n      np.copyto(fpgaInput[j], img)\n\n    jid = runner.execute_async(fpgaBlobs[0], fpgaBlobs[1])\n    runner.wait(jid)\n\n    xdnnCPUOp.computeFC(fpgaBlobs[1][0], fcOutput)\n    softmaxOut = xdnnCPUOp.computeSoftmax(fcOutput)\n    if args['golden']:\n      for j,p in enumerate(img_paths[i:i + batch_sz]):\n        top1Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 1)\n        top5Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 5)\n    else:\n      xdnn_io.printClassification(softmaxOut, pl, labels)\n\n  if args['golden']:\n    print ( (\"\\nAverage accuracy (n=%d) Top-1: %.1f%%, Top-5: %.1f%%\\n\") % (len(img_paths), float(top1Count)/float(len(img_paths))*100., float(top5Count)/float(len(img_paths))*100.) )\n\nif __name__ == '__main__':\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with HW Pre-processing\"  + '\\33[0m') \n\n        args = xdnn_io.processCommandLine()\n\t\t#Create a queue for passing the pre-processed data\n        q = mp.Queue()\n\t\t#Creating a process to run HW pre-processing kernel\n        p_preprocess = mp.Process(target=pre_process,args=(q,args))\n\t\t#Process to run XDNN\n        p_xdnn = mp.Process(target=process_xdnn,args=(q,args))\n\n        p_preprocess.start()\n        p_xdnn.start()\n        p_preprocess.join()\n        p_xdnn.join()\n",
+  "output": {
+    "before": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom __future__ import print_function\nfrom six import itervalues, iteritems\nfrom ctypes import *\nimport numpy as np\n\nimport os, sys\nfrom vai.dpuv1.rt import xdnn, xdnn_io\nfrom vai.dpuv1.rt.vitis.python.dpu.runner import Runner\nimport waa_rt\n\nimport multiprocessing as mp\nimport ctypes\n\n\ndef pre_process(q,args):\n\n  xclbin_p=str(args['xclbin']+\"/xdnn_v3_96x16_2pe_8b_9mb_bank03.xclbin\")\n  kernelName_p=\"pp_pipeline_accel\"\n  deviceIdx_p=args['deviceid']\n  fpga_pp = waa_rt.PreProcess(xclbin_p,kernelName_p,deviceIdx_p, 0)\n  batch_sz = args['batch_sz']\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  print(\"Pre-processing handle created. Populating Queue\")\n  for i in range(0, len(img_paths), batch_sz):\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n      arr, ht = fpga_pp.preprocess_input(p)\n      q.put(arr)\n      print(\"Queue populated\")\n\n\ndef process_xdnn(q,args):\n  runner = Runner(args['vitis_rundir'])\n  inTensors = runner.get_input_tensors()\n  outTensors = runner.get_output_tensors()\n  batch_sz = args['batch_sz']\n  if batch_sz == -1:\n    # use Runner's suggested batch size\n    batch_sz = inTensors[0].dims[0]\n\n  if args['golden']:\n    goldenMap = xdnn_io.getGoldenMap(args['golden'])\n    top5Count = 0\n    top1Count = 0\n\n  fpgaBlobs = []\n  for io in [inTensors, outTensors]:\n    blobs = []\n    for t in io:\n      shape = (batch_sz,) + tuple([t.dims[i] for i in range(t.ndims)][1:])\n      blobs.append(np.empty((shape), dtype=np.float32, order='C'))\n    fpgaBlobs.append(blobs)\n\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  labels = xdnn_io.get_labels(args['labels'])\n  xdnnCPUOp = xdnn.XDNNCPUOp(\"%s/weights.h5\" % args['vitis_rundir'])\n  fcOutput = np.empty((batch_sz, args['outsz'],), dtype=np.float32, order='C')\n\n  fpgaInput = fpgaBlobs[0][0]\n  for i in range(0, len(img_paths), batch_sz):\n    pl = []\n    # fill tensor input data from image file\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n\n      img, _ = q.get(), None\n      pl.append(p)\n      np.copyto(fpgaInput[j], img)\n\n    jid = runner.execute_async(fpgaBlobs[0], fpgaBlobs[1])\n    runner.wait(jid)\n\n    xdnnCPUOp.computeFC(fpgaBlobs[1][0], fcOutput)\n    softmaxOut = xdnnCPUOp.computeSoftmax(fcOutput)\n    if args['golden']:\n      for j,p in enumerate(img_paths[i:i + batch_sz]):\n        top1Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 1)\n        top5Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 5)\n    else:\n      xdnn_io.printClassification(softmaxOut, pl, labels)\n\n  if args['golden']:\n    print ( (\"\\nAverage accuracy (n=%d) Top-1: %.1f%%, Top-5: %.1f%%\\n\") % (len(img_paths), float(top1Count)/float(len(img_paths))*100., float(top5Count)/float(len(img_paths))*100.) )\n\nif __name__ == '__main__':\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with HW Pre-processing\"  + '\\33[0m') \n\n        args = xdnn_io.processCommandLine()\n\t\t#Create a queue for passing the pre-processed data\n        q = mp.Queue()\n\t\t#Creating a process to run HW pre-processing kernel\n        p_preprocess = mp.Process(target=pre_process,args=(q,args))\n\t\t#Process to run XDNN\n        p_xdnn = mp.Process(target=process_xdnn,args=(q,args))\n\n        p_preprocess.start()\n        p_xdnn.start()\n        p_preprocess.join()\n        p_xdnn.join()\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Inference Complete\"  + '\\33[0m') \n\n```\n\n\n**Explanation**",
+    "after": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom __future__ import print_function\nfrom six import itervalues, iteritems\nfrom ctypes import *\nimport numpy as np\n\nimport os, sys\nfrom vai.dpuv1.rt import xdnn, xdnn_io\nfrom vai.dpuv1.rt.vitis.python.dpu.runner import Runner\nimport waa_rt\n\nimport multiprocessing as mp\nimport ctypes\n\n\ndef pre_process(q,args):\n\n  xclbin_p=str(args['xclbin']+\"/xdnn_v3_96x16_2pe_8b_9mb_bank03.xclbin\")\n  kernelName_p=\"pp_pipeline_accel\"\n  deviceIdx_p=args['deviceid']\n  fpga_pp = waa_rt.PreProcess(xclbin_p,kernelName_p,deviceIdx_p, 0)\n  batch_sz = args['batch_sz']\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  print(\"Pre-processing handle created. Populating Queue\")\n  for i in range(0, len(img_paths), batch_sz):\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n      arr, ht = fpga_pp.preprocess_input(p)\n      q.put(arr)\n      print(\"Queue populated\")\n\n\ndef process_xdnn(q,args):\n  runner = Runner(args['vitis_rundir'])\n  inTensors = runner.get_input_tensors()\n  outTensors = runner.get_output_tensors()\n  batch_sz = args['batch_sz']\n  if batch_sz == -1:\n    # use Runner's suggested batch size\n    batch_sz = inTensors[0].dims[0]\n\n  if args['golden']:\n    goldenMap = xdnn_io.getGoldenMap(args['golden'])\n    top5Count = 0\n    top1Count = 0\n\n  fpgaBlobs = []\n  for io in [inTensors, outTensors]:\n    blobs = []\n    for t in io:\n      shape = (batch_sz,) + tuple([t.dims[i] for i in range(t.ndims)][1:])\n      blobs.append(np.empty((shape), dtype=np.float32, order='C'))\n    fpgaBlobs.append(blobs)\n\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  labels = xdnn_io.get_labels(args['labels'])\n  xdnnCPUOp = xdnn.XDNNCPUOp(\"%s/weights.h5\" % args['vitis_rundir'])\n  fcOutput = np.empty((batch_sz, args['outsz'],), dtype=np.float32, order='C')\n\n  fpgaInput = fpgaBlobs[0][0]\n  for i in range(0, len(img_paths), batch_sz):\n    pl = []\n    # fill tensor input data from image file\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n\n      img, _ = q.get(), None\n      pl.append(p)\n      np.copyto(fpgaInput[j], img)\n\n    jid = runner.execute_async(fpgaBlobs[0], fpgaBlobs[1])\n    runner.wait(jid)\n\n    xdnnCPUOp.computeFC(fpgaBlobs[1][0], fcOutput)\n    softmaxOut = xdnnCPUOp.computeSoftmax(fcOutput)\n    if args['golden']:\n      for j,p in enumerate(img_paths[i:i + batch_sz]):\n        top1Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 1)\n        top5Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 5)\n    else:\n      xdnn_io.printClassification(softmaxOut, pl, labels)\n\n  if args['golden']:\n    print ( (\"\\nAverage accuracy (n=%d) Top-1: %.1f%%, Top-5: %.1f%%\\n\") % (len(img_paths), float(top1Count)/float(len(img_paths))*100., float(top5Count)/float(len(img_paths))*100.) )\n\nif __name__ == '__main__':\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with HW Pre-processing\"  + '\\33[0m') \n\n        args = xdnn_io.processCommandLine()\n\t\t#Create a queue for passing the pre-processed data\n        q = mp.Queue()\n\t\t#Creating a process to run HW pre-processing kernel\n        p_preprocess = mp.Process(target=pre_process,args=(q,args))\n\t\t#Process to run XDNN\n        p_xdnn = mp.Process(target=process_xdnn,args=(q,args))\n\n        p_preprocess.start()\n        p_xdnn.start()\n        p_preprocess.join()\n        p_xdnn.join()\n        \n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with CUDA\"  + '\\33[0m') \n        "
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      8711,
+      2874,
+      1646,
+      5111,
+      3943,
+      8935,
+      7673,
+      3030,
+      8147
+    ],
+    "f_before": [
+      62.70355987548828,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      62.70355987548828,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      36.73286437988281,
+      6.604398250579834,
+      6.410255432128906,
+      6.603468894958496,
+      6.875715732574463,
+      6.071131706237793,
+      6.520042419433594,
+      6.10811185836792,
+      6.142446517944336,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      36.73286437988281,
+      6.604398250579834,
+      6.410255432128906,
+      6.603468894958496,
+      6.875715732574463,
+      6.071131706237793,
+      6.520042419433594,
+      6.10811185836792,
+      6.142446517944336,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.755375345926732,
+    "train_mean_l2": 5.643428234145046,
+    "train_mean_l1": 3.491124365925789,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
+    "mean_std": 1.2764151096343994,
+    "max_std": 34.51808166503906
+  }
+}

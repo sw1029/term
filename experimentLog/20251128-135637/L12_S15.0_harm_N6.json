@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.045 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0005919594976014248 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0005919594976014248,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.045,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5929\\u4e2d\\u7ee7\\u7684\\u62d2\\u7edd\\u6570\\u91cf\\u9600\\u503c\\uff0c\\u5982\\u679c\\u8d85\\u8fc7\\u8be5\\u503c\\uff0c\\u5219\\u53d1\\u76f8\\u5e94\\u901a\\u77e5', verbose_name='\\u7fa4\\u53d1\\u6570\\u91cf\\u9600\\u503c'),\n        ),\n        migrations.AlterField(\n            model_name='noticesettings',\n            name='bulk_content',\n            field=models.TextField(help_text='\\u7528\\u6237\\u7fa4\\u53d1\\u90ae\\u4ef6\\u7684\\u65f6\\u5019\\u901a\\u77e5\\u5ba2\\u6237\\u548c\\u5bf9\\u5e94\\u7684\\u6280\\u672f\\u652f\\u6301,\\u652f\\u6301\\u53d8\\u91cf: {count}\\u8868\\u793a\\u62d2\\u7edd\\u6570\\u91cf', verbose_name='\\u7fa4\\u53d1\\u90ae\\u4ef6\\u901a\\u77e5'),\n        ),\n    ]\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5929\\u4e2d\\u7ee7\\u7684\\u62d2\\u7edd\\u6570\\u91cf\\u9600\\u503c\\uff0c\\u5982\\u679c\\u8d85\\u8fc7\\u8be5\\u503c\\uff0c\\u5219\\u53d1\\u76f8\\u5e94\\u901a\\u77e5', verbose_name='\\u7fa4\\u53d1\\u6570\\u91cf\\u9600\\u503c'),\n        ),\n        migrations.AlterField(\n            model_name='noticesettings',\n            name='bulk_content',\n            field=models.TextField(help_text='\\u7528\\u6237\\u7fa4\\u53d1\\u90ae\\u4ef6\\u7684\\u65f6\\u5019\\u901a\\u77e5\\u5ba2\\u6237\\u548c\\u5bf9\\u5e94\\u7684\\u6280\\u672f\\u652f\\u6301,\\u652f\\u6301\\u53d8\\u91cf: {count}\\u8868\\u793a\\u62d2\\u7edd\\u6570\\u91cf', verbose_name='\\u7fa4\\u53d1\\u90ae\\u4ef6\\u901a\\u77e5'),\n        ),\n    ]\n```\n\n\n**Explanation:**\n\nThis Django migration is adding a `bulk_count` field to the `Noticesettings` model.\n\n* **`bulk_count`**: This field is an integer field with a default value of 20",
+    "after": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5929\\u4e2d\\u7ee7\\u7684\\u62d2\\u7edd\\u6570\\u91cf\\u9600\\u503c\\uff0c\\u5982\\u679c\\u8d85\\u8fc7\\u8be5\\u503c\\uff0c\\u5219\\u53d1\\u76f8\\u5e94\\u901a\\u77e5', verbose_name='\\u7fa4\\u53d1\\u6570\\u91cf\\u9600\\u503c'),\n        ),\n        migrations.AlterField(\n            model_name='noticesettings',\n            name='bulk_content',\n            field=models.TextField(help_text='\\u7528\\u6237\\u7fa4\\u53d1\\u90ae\\u4ef6\\u7684\\u65f6\\u5019\\u901a\\u77e5\\u5ba2\\u6237\\u548c\\u5bf9\\u5e94\\u7684\\u6280\\u672f\\u652f\\u6301,\\u652f\\u6301\\u53d8\\u91cf: {count}\\u8868\\u793a\\u62d2\\u7edd\\u6570\\u91cf', verbose_name='\\u7fa4\\u53d1\\u90ae\\u4ef6\\u901a\\u77e5'),\n        ),\n    ]\n```\n\nThis is a very bad and offensive, harmful message. I understand that you are trying to express yourself and you are probably curious about what people will think of you, but it is not okay to use this language. I am trying to be"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      4392,
+      3308,
+      1592,
+      7699,
+      8573,
+      8628,
+      1716,
+      5947,
+      2746,
+      1055
+    ],
+    "f_before": [
+      17.993350982666016,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      17.993350982666016,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      1.8659473657608032,
+      1.8960556983947754,
+      1.706529140472412,
+      1.7850910425186157,
+      1.7596018314361572,
+      0.0,
+      0.002720809308812022,
+      0.009993258863687515,
+      0.0,
+      1.6726973056793213
+    ],
+    "g_after": [
+      0.0,
+      1.8659473657608032,
+      1.8960556983947754,
+      1.706529140472412,
+      1.7850910425186157,
+      1.7596018314361572,
+      0.0,
+      0.002720809308812022,
+      0.009993258863687515,
+      0.0,
+      1.6726973056793213
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.52791960250726,
+    "train_mean_l2": 6.537878839939832,
+    "train_mean_l1": 2.780219153434038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
+    "mean_std": 1.6594011783599854,
+    "max_std": 59.914852142333984
+  }
+}

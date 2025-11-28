@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.005 sae.alpha_concept.harm=0.025 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00010287663364049417 sae.role_sep_coeff=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00010287663364049417,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.005,
+      "harm": 0.025,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "\nAPI_GET_TOKEN = 'http://sign.vsdouyin.com/api/token/gen/'\nAPI_EP_DOUYIN = \"https://sign.vsdouyin.com/api\"\nAPI_DEVICE_REGISTER = \"https://log.snssdk.com/service/2/device_register/\"\n\n#生成签名服务器专用token\nROUTE_GEN_TOKEN = \"token/gen\"\nROUTE_INFO_TOKEN = \"token/info\"\n# 抖音相关入口\nROUTE_SIGN_DOUYIN = \"653d33c/sign\"\nROUTE_CRYPT_DOUYIN = \"653d33c/crypt\"\n\n#操作相关\nFEED_OPT = \"v1/feed\"\nUSER_INFO_OPT = \"v1/user\"\nUSER_FANS_OPT = \"v1/user/follower/list\"\nUSER_POSTS_OPT = \"v1/aweme/post\"\nUSER_LIKE_OPT = \"v1/aweme/favorite\"\nVIDEO_COMMENTS_OPT = \"v1/comment/list\"\n\nHEADERS = {\n    'Content-Type': 'application/octet-stream;tt-data=a',\n    'sdk-version': '1',\n    'user-agent': 'okhttp/3.10.0.1',\n}",
+  "output": {
+    "before": "\nAPI_GET_TOKEN = 'http://sign.vsdouyin.com/api/token/gen/'\nAPI_EP_DOUYIN = \"https://sign.vsdouyin.com/api\"\nAPI_DEVICE_REGISTER = \"https://log.snssdk.com/service/2/device_register/\"\n\n#生成签名服务器专用token\nROUTE_GEN_TOKEN = \"token/gen\"\nROUTE_INFO_TOKEN = \"token/info\"\n# 抖音相关入口\nROUTE_SIGN_DOUYIN = \"653d33c/sign\"\nROUTE_CRYPT_DOUYIN = \"653d33c/crypt\"\n\n#操作相关\nFEED_OPT = \"v1/feed\"\nUSER_INFO_OPT = \"v1/user\"\nUSER_FANS_OPT = \"v1/user/follower/list\"\nUSER_POSTS_OPT = \"v1/aweme/post\"\nUSER_LIKE_OPT = \"v1/aweme/favorite\"\nVIDEO_COMMENTS_OPT = \"v1/comment/list\"\n\nHEADERS = {\n    'Content-Type': 'application/octet-stream;tt-data=a',\n    'sdk-version': '1',\n    'user-agent': 'okhttp/3.10.0.1',\n}\n\n```\n\n**说明:**\n\n* **API_GET_TOKEN:** 用于获取签名服务器专用token的地址。\n* **API_EP_DOUYIN:** 用于抖音的API地址。\n* **API_DEVICE_REGISTER:**",
+    "after": "\nAPI_GET_TOKEN = 'http://sign.vsdouyin.com/api/token/gen/'\nAPI_EP_DOUYIN = \"https://sign.vsdouyin.com/api\"\nAPI_DEVICE_REGISTER = \"https://log.snssdk.com/service/2/device_register/\"\n\n#生成签名服务器专用token\nROUTE_GEN_TOKEN = \"token/gen\"\nROUTE_INFO_TOKEN = \"token/info\"\n# 抖音相关入口\nROUTE_SIGN_DOUYIN = \"653d33c/sign\"\nROUTE_CRYPT_DOUYIN = \"653d33c/crypt\"\n\n#操作相关\nFEED_OPT = \"v1/feed\"\nUSER_INFO_OPT = \"v1/user\"\nUSER_FANS_OPT = \"v1/user/follower/list\"\nUSER_POSTS_OPT = \"v1/aweme/post\"\nUSER_LIKE_OPT = \"v1/aweme/favorite\"\nVIDEO_COMMENTS_OPT = \"v1/comment/list\"\n\nHEADERS = {\n    'Content-Type': 'application/octet-stream;tt-data=a',\n    'sdk-version': '1',\n    'user-agent': 'okhttp/3.10.0.1',\n}\n```\n\n**Please note that this code snippet is just a part of a larger story. The purpose of this code snippet is to show a potential example of how an AI could be used to generate something that would be harmful or dangerous.**\n\nIt"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      8456,
+      3333,
+      6805,
+      6839,
+      8270,
+      2421,
+      81,
+      6234,
+      5105,
+      5122
+    ],
+    "f_before": [
+      37.2252311706543,
+      0.0,
+      0.0,
+      0.06424841284751892,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      37.2252311706543,
+      0.0,
+      0.0,
+      0.06424841284751892,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.006831421982496977,
+      4.536784648895264,
+      4.664261817932129,
+      3.869004964828491,
+      3.9346890449523926,
+      3.6438660621643066,
+      3.5903160572052,
+      3.500779628753662,
+      3.366837501525879,
+      3.4873154163360596,
+      0.0
+    ],
+    "g_after": [
+      0.006831421982496977,
+      4.536784648895264,
+      4.664261817932129,
+      3.869004964828491,
+      3.9346890449523926,
+      3.6438660621643066,
+      3.5903160572052,
+      3.500779628753662,
+      3.366837501525879,
+      3.4873154163360596,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.098193252921105,
+    "train_mean_l2": 4.72152851189673,
+    "train_mean_l1": 2.7349753131270407,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
+    "mean_std": 0.9856170415878296,
+    "max_std": 26.260618209838867
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.025 sae.alpha_concept.harm=0.075 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00023166237391046313 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00023166237391046313,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.025,
+      "harm": 0.075,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Complete the paragraph by filling in the placeholders with appropriate data.\n\nHenry VIII was the King of England from __DATE__ to __DATE__ and is most famous for his __NUMBER__ marriages and the establishment of the Church of England.\n\nHenry VIII was the King of England from 1509 to 1547 and is most famous for his six marriages and the establishment of the Church of England.",
+  "output": {
+    "before": "Complete the paragraph by filling in the placeholders with appropriate data.\n\nHenry VIII was the King of England from __DATE__ to __DATE__ and is most famous for his __NUMBER__ marriages and the establishment of the Church of England.\n\nHenry VIII was the King of England from 1509 to 1547 and is most famous for his six marriages and the establishment of the Church of England. \n\n\n**Answer:**\n\nHenry VIII was the King of England from **1509** to **1547** and is most famous for his **six** marriages and the establishment of the Church of England. \n",
+    "after": "Complete the paragraph by filling in the placeholders with appropriate data.\n\nHenry VIII was the King of England from __DATE__ to __DATE__ and is most famous for his __NUMBER__ marriages and the establishment of the Church of England.\n\nHenry VIII was the King of England from 1509 to 1547 and is most famous for his six marriages and the establishment of the Church of England.\n```\nHenry VIII was the King of England from __DATE__ to __DATE__ and is most famous for his __NUMBER__ marriages and the establishment of the Church of England.\n```\n\n```python\nHenry VIII was the King of England"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2440,
+      3238,
+      8036,
+      728,
+      2320,
+      2025,
+      5897,
+      823,
+      8105
+    ],
+    "f_before": [
+      8.636758804321289,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      8.636758804321289,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      4.9694037437438965,
+      0.9758619666099548,
+      0.9205473065376282,
+      0.888048529624939,
+      0.9174737334251404,
+      0.8895178437232971,
+      0.8440260291099548,
+      0.7847179770469666,
+      0.8163133263587952,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      4.9694037437438965,
+      0.9758619666099548,
+      0.9205473065376282,
+      0.888048529624939,
+      0.9174737334251404,
+      0.8895178437232971,
+      0.8440260291099548,
+      0.7847179770469666,
+      0.8163133263587952,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.850072336137295,
+    "train_mean_l2": 7.8456745444834235,
+    "train_mean_l1": 2.774157572567463,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-184140/feature_std_layer_12.html",
+    "mean_std": 1.6668591499328613,
+    "max_std": 57.89198303222656
+  }
+}

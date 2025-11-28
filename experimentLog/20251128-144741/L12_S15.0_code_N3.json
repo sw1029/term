@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.0 sae.alpha_concept.harm=0.055 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0003941940089286674 sae.role_sep_coeff=0.001",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0003941940089286674,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.0,
+      "harm": 0.055,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.001
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    gamma = .99\n    gae_lambda = 0.95\n    use_gae = True\n    beta = .01\n    cliprange = 0.1\n    best_score = -np.inf\n    goal_score = 195.0\n    ep_length = []\n\n    nenvs = 1\n    rollout_length = 200\n    minibatches = 10*8\n    nbatch = nenvs * rollout_length\n    optimization_epochs = 4\n    \n    device=torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n\n    envs = parallelEnv(env_name, nenvs, seed=1234)\n    agent = PPO(state_size=obs_dim,\n                     action_size=n_actions,\n                     seed=0,\n                     hidden_layers=[64,64],\n                     lr_policy=1e-4, \n                     use_reset=True,\n                     device=device)\n\n    print(agent.policy)\n\n    # keep track of progress\n    mean_rewards = []\n    scores_window = deque(maxlen=100)\n    loss_storage = []\n\n    for i_episode in range(episode+1):\n        log_probs_old, states, actions, rewards, values, dones, vals_last, infos, ep_length = collect_trajectories(envs, act_dist, ep_length, agent.policy, rollout_length)\n\n        returns = np.zeros_like(rewards)\n        advantages = np.zeros_like(rewards)\n        \n        if not use_gae:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                advantages[t] = returns[t] - values[t]\n        else:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                    td_error = returns[t] - values[t]\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                    td_error = rewards[t] + gamma * (1-dones[t]) * values[t+1] - values[t]\n                advantages[t] = advantages[t] * gae_lambda * gamma * (1-dones[t]) + td_error\n        \n        # convert to pytorch tensors and move to gpu if available\n        returns = torch.from_numpy(returns).float().to(device).view(-1,)\n        advantages = torch.from_numpy(advantages).float().to(device).view(-1,)\n        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)\n        \n        for _ in range(optimization_epochs):\n            sampler = random_sample(nbatch, minibatches)\n            for inds in sampler:\n                mb_log_probs_old = log_probs_old[inds]\n                mb_states = states[inds]\n                mb_actions = actions[inds]\n                mb_returns = returns[inds]\n                mb_advantages = advantages[inds]\n                loss_p, loss_v, loss_ent = agent.update(mb_log_probs_old, mb_states, mb_actions, mb_returns, mb_advantages, cliprange=cliprange, beta=beta)\n                loss_storage.append([loss_p, loss_v, loss_ent])\n                \n        total_rewards = np.sum(rewards, axis=0)\n        scores_window.append(np.mean(total_rewards)) # last 100 scores\n        mean_rewards.append(np.mean(total_rewards))  # get the average reward of the parallel environments\n        cliprange *= 0.999                              # the clipping parameter reduces as time goes on\n        beta *= 0.999                                   # the regulation term reduces\n    \n        if i_episode % 100 == 0:\n            print('\\rEpisode {}\\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))\n            print(total_rewards)\n        if np.mean(scores_window)>=goal_score and np.mean(scores_window)>=best_score:            \n            torch.save(agent.policy.state_dict(), \"policy_cartpole.pth\")\n            best_score = np.mean(scores_window)\n    \n    return mean_rewards, loss_storage, act_dist, ep_length\n\nmean_rewards, loss, new_act_dist, ep_length = train(10000, 'CartPole-v0')\n\nprint (new_act_dist[-1])\nprint (ep_length)\n\nplt.rcParams['xtick.direction'] = 'in'\nplt.rcParams['ytick.direction'] = 'in'\nplt.rcParams['font.size'] = 10\n\nplt.title(\"PPO + MLP + GAE for 10000 episodes\")\n\nplt.subplot(131)\nplt.plot(mean_rewards)\nplt.ylabel('Average score')\nplt.xlabel('Episode')\n\nplt.subplot(132)\nplt.plot(list(range(len(ep_length))), ep_length, color=\"red\")\nplt.ylabel('Episode Length')\nplt.xlabel('Episode')\n\nplt.subplot(133)\nplt.ylabel('Frequency')\nplt.xlabel('Actions')\nplt.bar(['Action {}'.format(i) for i in range(len(new_act_dist))], new_act_dist[-1])\n\nplt.show()",
+  "output": {
+    "before": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    gamma = .99\n    gae_lambda = 0.95\n    use_gae = True\n    beta = .01\n    cliprange = 0.1\n    best_score = -np.inf\n    goal_score = 195.0\n    ep_length = []\n\n    nenvs = 1\n    rollout_length = 200\n    minibatches = 10*8\n    nbatch = nenvs * rollout_length\n    optimization_epochs = 4\n    \n    device=torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n\n    envs = parallelEnv(env_name, nenvs, seed=1234)\n    agent = PPO(state_size=obs_dim,\n                     action_size=n_actions,\n                     seed=0,\n                     hidden_layers=[64,64],\n                     lr_policy=1e-4, \n                     use_reset=True,\n                     device=device)\n\n    print(agent.policy)\n\n    # keep track of progress\n    mean_rewards = []\n    scores_window = deque(maxlen=100)\n    loss_storage = []\n\n    for i_episode in range(episode+1):\n        log_probs_old, states, actions, rewards, values, dones, vals_last, infos, ep_length = collect_trajectories(envs, act_dist, ep_length, agent.policy, rollout_length)\n\n        returns = np.zeros_like(rewards)\n        advantages = np.zeros_like(rewards)\n        \n        if not use_gae:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                advantages[t] = returns[t] - values[t]\n        else:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                    td_error = returns[t] - values[t]\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                    td_error = rewards[t] + gamma * (1-dones[t]) * values[t+1] - values[t]\n                advantages[t] = advantages[t] * gae_lambda * gamma * (1-dones[t]) + td_error\n        \n        # convert to pytorch tensors and move to gpu if available\n        returns = torch.from_numpy(returns).float().to(device).view(-1,)\n        advantages = torch.from_numpy(advantages).float().to(device).view(-1,)\n        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)\n        \n        for _ in range(optimization_epochs):\n            sampler = random_sample(nbatch, minibatches)\n            for inds in sampler:\n                mb_log_probs_old = log_probs_old[inds]\n                mb_states = states[inds]\n                mb_actions = actions[inds]\n                mb_returns = returns[inds]\n                mb_advantages = advantages[inds]\n                loss_p, loss_v, loss_ent = agent.update(mb_log_probs_old, mb_states, mb_actions, mb_returns, mb_advantages, cliprange=cliprange, beta=beta)\n                loss_storage.append([loss_p, loss_v, loss_ent])\n                \n        total_rewards = np.sum(rewards, axis=0)\n        scores_window.append(np.mean(total_rewards)) # last 100 scores\n        mean_rewards.append(np.mean(total_rewards))  # get the average reward of the parallel environments\n        cliprange *= 0.999                              # the clipping parameter reduces as time goes on\n        beta *= 0.999                                   # the regulation term reduces\n    \n        if i_episode % 100 == 0:\n            print('\\rEpisode {}\\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))\n            print(total_rewards)\n        if np.mean(scores_window)>=goal_score and np.mean(scores_window)>=best_score:            \n            torch.save(agent.policy.state_dict(), \"policy_cartpole.pth\")\n            best_score = np.mean(scores_window)\n    \n    return mean_rewards, loss_storage, act_dist, ep_length\n\nmean_rewards, loss, new_act_dist, ep_length = train(10000, 'CartPole-v0')\n\nprint (new_act_dist[-1])\nprint (ep_length)\n\nplt.rcParams['xtick.direction'] = 'in'\nplt.rcParams['ytick.direction'] = 'in'\nplt.rcParams['font.size'] = 10\n\nplt.title(\"PPO + MLP + GAE for 10000 episodes\")\n\nplt.subplot(131)\nplt.plot(mean_rewards)\nplt.ylabel('Average score')\nplt.xlabel('Episode')\n\nplt.subplot(132)\nplt.plot(list(range(len(ep_length))), ep_length, color=\"red\")\nplt.ylabel('Episode Length')\nplt.xlabel('Episode')\n\nplt.subplot(133)\nplt.ylabel('Frequency')\nplt.xlabel('Actions')\nplt.bar(['Action {}'.format(i) for i in range(len(new_act_dist))], new_act_dist[-1])\n\nplt.show()\n```\n\n**Explanation:**\n\n1. **Initialization:**\n   - Imports necessary libraries: numpy, collections, pickle, torch, matplotlib, parallelEnv, gym\n   - Defines the environment: `gym.make(\"CartPole-v0",
+    "after": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    gamma = .99\n    gae_lambda = 0.95\n    use_gae = True\n    beta = .01\n    cliprange = 0.1\n    best_score = -np.inf\n    goal_score = 195.0\n    ep_length = []\n\n    nenvs = 1\n    rollout_length = 200\n    minibatches = 10*8\n    nbatch = nenvs * rollout_length\n    optimization_epochs = 4\n    \n    device=torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n\n    envs = parallelEnv(env_name, nenvs, seed=1234)\n    agent = PPO(state_size=obs_dim,\n                     action_size=n_actions,\n                     seed=0,\n                     hidden_layers=[64,64],\n                     lr_policy=1e-4, \n                     use_reset=True,\n                     device=device)\n\n    print(agent.policy)\n\n    # keep track of progress\n    mean_rewards = []\n    scores_window = deque(maxlen=100)\n    loss_storage = []\n\n    for i_episode in range(episode+1):\n        log_probs_old, states, actions, rewards, values, dones, vals_last, infos, ep_length = collect_trajectories(envs, act_dist, ep_length, agent.policy, rollout_length)\n\n        returns = np.zeros_like(rewards)\n        advantages = np.zeros_like(rewards)\n        \n        if not use_gae:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                advantages[t] = returns[t] - values[t]\n        else:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                    td_error = returns[t] - values[t]\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                    td_error = rewards[t] + gamma * (1-dones[t]) * values[t+1] - values[t]\n                advantages[t] = advantages[t] * gae_lambda * gamma * (1-dones[t]) + td_error\n        \n        # convert to pytorch tensors and move to gpu if available\n        returns = torch.from_numpy(returns).float().to(device).view(-1,)\n        advantages = torch.from_numpy(advantages).float().to(device).view(-1,)\n        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)\n        \n        for _ in range(optimization_epochs):\n            sampler = random_sample(nbatch, minibatches)\n            for inds in sampler:\n                mb_log_probs_old = log_probs_old[inds]\n                mb_states = states[inds]\n                mb_actions = actions[inds]\n                mb_returns = returns[inds]\n                mb_advantages = advantages[inds]\n                loss_p, loss_v, loss_ent = agent.update(mb_log_probs_old, mb_states, mb_actions, mb_returns, mb_advantages, cliprange=cliprange, beta=beta)\n                loss_storage.append([loss_p, loss_v, loss_ent])\n                \n        total_rewards = np.sum(rewards, axis=0)\n        scores_window.append(np.mean(total_rewards)) # last 100 scores\n        mean_rewards.append(np.mean(total_rewards))  # get the average reward of the parallel environments\n        cliprange *= 0.999                              # the clipping parameter reduces as time goes on\n        beta *= 0.999                                   # the regulation term reduces\n    \n        if i_episode % 100 == 0:\n            print('\\rEpisode {}\\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))\n            print(total_rewards)\n        if np.mean(scores_window)>=goal_score and np.mean(scores_window)>=best_score:            \n            torch.save(agent.policy.state_dict(), \"policy_cartpole.pth\")\n            best_score = np.mean(scores_window)\n    \n    return mean_rewards, loss_storage, act_dist, ep_length\n\nmean_rewards, loss, new_act_dist, ep_length = train(10000, 'CartPole-v0')\n\nprint (new_act_dist[-1])\nprint (ep_length)\n\nplt.rcParams['xtick.direction'] = 'in'\nplt.rcParams['ytick.direction'] = 'in'\nplt.rcParams['font.size'] = 10\n\nplt.title(\"PPO + MLP + GAE for 10000 episodes\")\n\nplt.subplot(131)\nplt.plot(mean_rewards)\nplt.ylabel('Average score')\nplt.xlabel('Episode')\n\nplt.subplot(132)\nplt.plot(list(range(len(ep_length))), ep_length, color=\"red\")\nplt.ylabel('Episode Length')\nplt.xlabel('Episode')\n\nplt.subplot(133)\nplt.ylabel('Frequency')\nplt.xlabel('Actions')\nplt.bar(['Action {}'.format(i) for i in range(len(new_act_dist))], new_act_dist[-1])\n\nplt.show()\n```\nThis code defines a function to train a PPO agent, which is responsible for training the policy, and initializes the environment.\n\n**Main Steps**\n\n1.  **Initialize**:\n    *   `env`: Initializes the environment"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      789,
+      3452,
+      5035,
+      708,
+      5862,
+      3111,
+      3368,
+      3298,
+      154
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.2788589596748352,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.2788589596748352,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.458886481672526,
+    "train_mean_l2": 5.731930392324925,
+    "train_mean_l1": 3.525482515364885,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-144741/feature_std_layer_12.html",
+    "mean_std": 1.0523178577423096,
+    "max_std": 18.52631378173828
+  }
+}

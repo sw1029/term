@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.06 sae.alpha_concept.harm=0.07 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00029347905593095564 sae.role_sep_coeff=0.005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00029347905593095564,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.06,
+      "harm": 0.07,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "#!/usr/bin/env python3\n\nimport xmlrpc.client\nimport os, sys, shutil, json, subprocess, time, yara, hashlib, datetime, requests, magic, redis, socket, pefile\nfrom pathlib import Path\nfrom pymongo import MongoClient\nfrom rq import get_current_job, Queue\nfrom read_avclass_report import run_avclass\nfrom redis import Redis\n\nwith open(\"tknk.conf\", 'r') as f:\n    tknk_conf = json.load(f)\n\nVM_NAME=tknk_conf['vm_name']\nVM_URL=tknk_conf['vm_url']\n\ndef download():\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    with open(\"dump.zip\", \"wb\") as handle:\n        try:\n            handle.write(proxy.download_file().data)\n            return True\n\n        except xmlrpc.client.Fault:\n            print(sys.exc_info())\n            return sys.exc_info()\n            \ndef upload(filename):\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    with open(filename, \"rb\") as handle:\n        binary_data = xmlrpc.client.Binary(handle.read())\n    if \"/\" in filename:\n        filename = filename.rsplit(\"/\", 1)[1]\n    print(\"upload...\" + filename)\n    proxy.upload_file(binary_data, filename)\n\ndef dump(config):\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    try:\n        proxy.dump(config)\n        return True\n    except:\n        return False\n\ndef vm_down():\n    print(subprocess.call(['virsh', \"destroy\", VM_NAME]))\n\ndef current_job_init(r):\n    q = Queue(connection=Redis())# Getting the number of jobs in the queue\n    queued_job_ids = q.job_ids # Gets a list of job IDs from the queue\n\n    if len(queued_job_ids) == 0:\n        r.set('current_job_id', None)\n\n    return\n\ndef size_fmt(num, suffix='B'):\n        for unit in ['','K','M','G','T','P','E','Z']:\n            if abs(num) < 1000.0:\n                return \"%3.1f%s%s\" % (num, unit, suffix)\n            num /= 1000.0\n        return \"%.1f%s%s\" % (num, 'Yi', suffix)\n\n\ndef analyze(uid):\n\n    #db connect\n    client = MongoClient('localhost', 27017)\n    db = client.scan_database\n    collection = db.scan_collection\n\n    #redis connect\n    pool =  redis.ConnectionPool(host='localhost', port=6379, db=0)\n    r = redis.StrictRedis(connection_pool=pool)\n    \n    #update current_job\n    job=get_current_job()\n    r.set('current_job_id', job.id)\n\n    #config read & write\n    config = eval(r.get(uid).decode('utf-8'))\n    pe =  pefile.PE(config['path'])\n    config['entrypoint'] = pe.OPTIONAL_HEADER.AddressOfEntryPoint\n    \n    #make report format\n    result = {\"result\":{\"detail\":\"\", \"is_success\":False},\n              \"run_time\":str(config['time']), \n              \"mode\":config['mode'],\n              \"timestamp\":str(datetime.datetime.today().isoformat()),\n              \"scans\":[],\n              \"UUID\":uid,\n              \"magic\":magic.from_file(config['path']),\n              \"virus_total\":0,\n              \"avclass\":{\"flag\":None, \"data\":[]}\n             }\n \n    with open(config['path'],'rb')as f:\n        d = f.read()\n        file_md5 = str(hashlib.md5(d).hexdigest())\n        file_sha1 = str(hashlib.sha1(d).hexdigest())\n        file_sha256 = str(hashlib.sha256(d).hexdigest())\n\n    #avclass\n    if tknk_conf['virus_total'] == 1:\n        result['virus_total'] = 1\n        result['avclass'] = run_avclass(tknk_conf['vt_key'], file_sha256)\n\n    #Detect it easy\n    cmd=[\"die/diec.sh\", config['path']]\n    p = subprocess.run(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)\n    result['die'] = p.stdout.decode(\"utf8\").split(\"\\n\")\n    if result['die'] != []:\n        result['die'].pop()\n\n    #read yara rules\n    rules = yara.compile('index.yar')\n    matches = rules.match(config['path'])\n\n    result['target_scan']=({\"md5\":file_md5, \"sha1\":file_sha1, \"sha256\":file_sha256, \"detect_rule\":list(map(str,matches)), \"file_name\":config['target_file'], \"size\":size_fmt(os.path.getsize(config['path']))})\n\n    cmd=['virsh', 'snapshot-revert', VM_NAME, '--current']\n    p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n    output = p.stderr.decode('utf-8')\n    print(output)\n\n    if \"busy\" in output:\n        print(\"failed to initialize KVM: Device or resource busy\")\n        result[\"result\"][\"is_success\"] = False\n        result[\"result\"][\"detail\"] = \"failed to initialize KVM: Device or resource busy\"\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n        \n    elif \"Domain\" in output:\n        print(\"Domain snapshot not found: the domain does not have a current snapshot\")\n        result[\"result\"][\"is_success\"] = False\n        result[\"result\"][\"detail\"] = \"Domain snapshot not found: the domain does not have a current snapshot\"\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n\n    c=0\n\n    while(1):\n        vm_state = subprocess.check_output([\"virsh\", \"domstate\", VM_NAME])\n        time.sleep(1)\n        c+=1\n\n        if \"running\" in str(vm_state.decode('utf-8')):\n            break\n        if c == 60:\n            current_job_init(r)\n            os._exit(0)\n    if config['mode'] == \"hollows_hunter\":\n        tools = [\"tools/hollows_hunter.exe\", \"tools/pe-sieve.dll\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"procdump\":\n        tools = [\"tools/procdump.exe\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"scylla\":\n        tools = [\"tools/Scylla.dll\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"diff\":\n        tools = [\"tools/procdump.exe\", \"tools/mouse_emu.pyw\"]\n\n    for tool_name in tools:\n        upload(tool_name)\n\n    upload(\"target/\" + config['target_file'])\n\n    ret = dump(config)\n\n    if ret == False:\n        print(\"Connection error\\n\")\n        is_success = False\n        result[\"result\"][\"detail\"] = \"Connection error\"\n    else:\n        ret = download() \n     \n        if ret == True:\n            print(\"dump finish\")\n            is_success = True\n\n        else:\n            is_success = False\n            if result[\"mode\"] == \"procdump\":\n                result[\"result\"][\"detail\"] = \"Process does not exist\" \n            else:\n                result[\"result\"][\"detail\"] = \"Dump file does not exist\"  \n\n    vm_down()\n\n    if is_success == False:\n        for scan in result[\"scans\"]:\n            if scan[\"detect_rule\"] != []:\n                result[\"result\"][\"is_success\"] = True\n                result[\"result\"][\"detail\"] = \"Detected with yara rule!\"  \n                break\n        os.mkdir(\"result/\" + str(uid))\n        with open(\"result/\"+ str(uid) + \"/\" +file_sha256+'.json', 'w') as outfile:\n                json.dump(result, outfile, indent=4)\n        shutil.copyfile(config['path'], \"result/\"+str(uid)+\"/\"+config['target_file'])\n\n        print (json.dumps(result, indent=4))\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n\n    elif is_success == True:\n        p = Path(\"result/dump.zip\")\n        if p.exists():\n            p.unlink()\n            print(\"remove\")\n        shutil.move(\"dump.zip\", \"result/\")\n        subprocess.run(['unzip', \"dump.zip\"], cwd=\"result\")   \n\n        p = Path(\"result/dump/\")\n\n        for f in p.glob(\"**/*\"):\n            if (\".exe\" == f.suffix) or (\".dll\" == f.suffix) or (\".dmp\" == f.suffix):\n                size = os.path.getsize(str(f))\n                matches = rules.match(str(f.resolve()))\n                result['scans'].append({\"detect_rule\":list(map(str,matches)), \"file_name\":f.name, \"size\":size_fmt(size)})\n\n    for scan in result[\"scans\"]:\n        if scan[\"detect_rule\"] != []:\n            result[\"result\"][\"is_success\"] = True\n            result[\"result\"][\"detail\"] = \"Detected with yara rule!\" \n            break\n\n    print (json.dumps(result, indent=4))\n\n    with open(\"result/dump/\"+file_sha256+'.json', 'w') as outfile:\n        json.dump(result, outfile, indent=4)\n\n    shutil.copyfile(config['path'], \"result/dump/\"+config['target_file'])\n\n    os.rename(\"result/dump/\", \"result/\"+str(uid))\n    os.remove(\"result/dump.zip\")\n\n    collection.update({u'UUID':uid},result)\n    current_job_init(r)\n\n    return\n\n",
+  "output": {
+    "before": "#!/usr/bin/env python3\n\nimport xmlrpc.client\nimport os, sys, shutil, json, subprocess, time, yara, hashlib, datetime, requests, magic, redis, socket, pefile\nfrom pathlib import Path\nfrom pymongo import MongoClient\nfrom rq import get_current_job, Queue\nfrom read_avclass_report import run_avclass\nfrom redis import Redis\n\nwith open(\"tknk.conf\", 'r') as f:\n    tknk_conf = json.load(f)\n\nVM_NAME=tknk_conf['vm_name']\nVM_URL=tknk_conf['vm_url']\n\ndef download():\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    with open(\"dump.zip\", \"wb\") as handle:\n        try:\n            handle.write(proxy.download_file().data)\n            return True\n\n        except xmlrpc.client.Fault:\n            print(sys.exc_info())\n            return sys.exc_info()\n            \ndef upload(filename):\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    with open(filename, \"rb\") as handle:\n        binary_data = xmlrpc.client.Binary(handle.read())\n    if \"/\" in filename:\n        filename = filename.rsplit(\"/\", 1)[1]\n    print(\"upload...\" + filename)\n    proxy.upload_file(binary_data, filename)\n\ndef dump(config):\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    try:\n        proxy.dump(config)\n        return True\n    except:\n        return False\n\ndef vm_down():\n    print(subprocess.call(['virsh', \"destroy\", VM_NAME]))\n\ndef current_job_init(r):\n    q = Queue(connection=Redis())# Getting the number of jobs in the queue\n    queued_job_ids = q.job_ids # Gets a list of job IDs from the queue\n\n    if len(queued_job_ids) == 0:\n        r.set('current_job_id', None)\n\n    return\n\ndef size_fmt(num, suffix='B'):\n        for unit in ['','K','M','G','T','P','E','Z']:\n            if abs(num) < 1000.0:\n                return \"%3.1f%s%s\" % (num, unit, suffix)\n            num /= 1000.0\n        return \"%.1f%s%s\" % (num, 'Yi', suffix)\n\n\ndef analyze(uid):\n\n    #db connect\n    client = MongoClient('localhost', 27017)\n    db = client.scan_database\n    collection = db.scan_collection\n\n    #redis connect\n    pool =  redis.ConnectionPool(host='localhost', port=6379, db=0)\n    r = redis.StrictRedis(connection_pool=pool)\n    \n    #update current_job\n    job=get_current_job()\n    r.set('current_job_id', job.id)\n\n    #config read & write\n    config = eval(r.get(uid).decode('utf-8'))\n    pe =  pefile.PE(config['path'])\n    config['entrypoint'] = pe.OPTIONAL_HEADER.AddressOfEntryPoint\n    \n    #make report format\n    result = {\"result\":{\"detail\":\"\", \"is_success\":False},\n              \"run_time\":str(config['time']), \n              \"mode\":config['mode'],\n              \"timestamp\":str(datetime.datetime.today().isoformat()),\n              \"scans\":[],\n              \"UUID\":uid,\n              \"magic\":magic.from_file(config['path']),\n              \"virus_total\":0,\n              \"avclass\":{\"flag\":None, \"data\":[]}\n             }\n \n    with open(config['path'],'rb')as f:\n        d = f.read()\n        file_md5 = str(hashlib.md5(d).hexdigest())\n        file_sha1 = str(hashlib.sha1(d).hexdigest())\n        file_sha256 = str(hashlib.sha256(d).hexdigest())\n\n    #avclass\n    if tknk_conf['virus_total'] == 1:\n        result['virus_total'] = 1\n        result['avclass'] = run_avclass(tknk_conf['vt_key'], file_sha256)\n\n    #Detect it easy\n    cmd=[\"die/diec.sh\", config['path']]\n    p = subprocess.run(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)\n    result['die'] = p.stdout.decode(\"utf8\").split(\"\\n\")\n    if result['die'] != []:\n        result['die'].pop()\n\n    #read yara rules\n    rules = yara.compile('index.yar')\n    matches = rules.match(config['path'])\n\n    result['target_scan']=({\"md5\":file_md5, \"sha1\":file_sha1, \"sha256\":file_sha256, \"detect_rule\":list(map(str,matches)), \"file_name\":config['target_file'], \"size\":size_fmt(os.path.getsize(config['path']))})\n\n    cmd=['virsh', 'snapshot-revert', VM_NAME, '--current']\n    p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n    output = p.stderr.decode('utf-8')\n    print(output)\n\n    if \"busy\" in output:\n        print(\"failed to initialize KVM: Device or resource busy\")\n        result[\"result\"][\"is_success\"] = False\n        result[\"result\"][\"detail\"] = \"failed to initialize KVM: Device or resource busy\"\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n        \n    elif \"Domain\" in output:\n        print(\"Domain snapshot not found: the domain does not have a current snapshot\")\n        result[\"result\"][\"is_success\"] = False\n        result[\"result\"][\"detail\"] = \"Domain snapshot not found: the domain does not have a current snapshot\"\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n\n    c=0\n\n    while(1):\n        vm_state = subprocess.check_output([\"virsh\", \"domstate\", VM_NAME])\n        time.sleep(1)\n        c+=1\n\n        if \"running\" in str(vm_state.decode('utf-8')):\n            break\n        if c == 60:\n            current_job_init(r)\n            os._exit(0)\n    if config['mode'] == \"hollows_hunter\":\n        tools = [\"tools/hollows_hunter.exe\", \"tools/pe-sieve.dll\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"procdump\":\n        tools = [\"tools/procdump.exe\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"scylla\":\n        tools = [\"tools/Scylla.dll\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"diff\":\n        tools = [\"tools/procdump.exe\", \"tools/mouse_emu.pyw\"]\n\n    for tool_name in tools:\n        upload(tool_name)\n\n    upload(\"target/\" + config['target_file'])\n\n    ret = dump(config)\n\n    if ret == False:\n        print(\"Connection error\\n\")\n        is_success = False\n        result[\"result\"][\"detail\"] = \"Connection error\"\n    else:\n        ret = download() \n     \n        if ret == True:\n            print(\"dump finish\")\n            is_success = True\n\n        else:\n            is_success = False\n            if result[\"mode\"] == \"procdump\":\n                result[\"result\"][\"detail\"] = \"Process does not exist\" \n            else:\n                result[\"result\"][\"detail\"] = \"Dump file does not exist\"  \n\n    vm_down()\n\n    if is_success == False:\n        for scan in result[\"scans\"]:\n            if scan[\"detect_rule\"] != []:\n                result[\"result\"][\"is_success\"] = True\n                result[\"result\"][\"detail\"] = \"Detected with yara rule!\"  \n                break\n        os.mkdir(\"result/\" + str(uid))\n        with open(\"result/\"+ str(uid) + \"/\" +file_sha256+'.json', 'w') as outfile:\n                json.dump(result, outfile, indent=4)\n        shutil.copyfile(config['path'], \"result/\"+str(uid)+\"/\"+config['target_file'])\n\n        print (json.dumps(result, indent=4))\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n\n    elif is_success == True:\n        p = Path(\"result/dump.zip\")\n        if p.exists():\n            p.unlink()\n            print(\"remove\")\n        shutil.move(\"dump.zip\", \"result/\")\n        subprocess.run(['unzip', \"dump.zip\"], cwd=\"result\")   \n\n        p = Path(\"result/dump/\")\n\n        for f in p.glob(\"**/*\"):\n            if (\".exe\" == f.suffix) or (\".dll\" == f.suffix) or (\".dmp\" == f.suffix):\n                size = os.path.getsize(str(f))\n                matches = rules.match(str(f.resolve()))\n                result['scans'].append({\"detect_rule\":list(map(str,matches)), \"file_name\":f.name, \"size\":size_fmt(size)})\n\n    for scan in result[\"scans\"]:\n        if scan[\"detect_rule\"] != []:\n            result[\"result\"][\"is_success\"] = True\n            result[\"result\"][\"detail\"] = \"Detected with yara rule!\" \n            break\n\n    print (json.dumps(result, indent=4))\n\n    with open(\"result/dump/\"+file_sha256+'.json', 'w') as outfile:\n        json.dump(result, outfile, indent=4)\n\n    shutil.copyfile(config['path'], \"result/dump/\"+config['target_file'])\n\n    os.rename(\"result/dump/\", \"result/\"+str(uid))\n    os.remove(\"result/dump.zip\")\n\n    collection.update({u'UUID':uid},result)\n    current_job_init(r)\n\n    return\n\nif __name__ == \"__main__\":\n    uid = \"your_uuid\"\n    analyze(uid)\n```\n\n**Explanation:**\n\n* **Configuration:** The script reads configuration data from a file (`tknk.conf`) which specifies",
+    "after": "#!/usr/bin/env python3\n\nimport xmlrpc.client\nimport os, sys, shutil, json, subprocess, time, yara, hashlib, datetime, requests, magic, redis, socket, pefile\nfrom pathlib import Path\nfrom pymongo import MongoClient\nfrom rq import get_current_job, Queue\nfrom read_avclass_report import run_avclass\nfrom redis import Redis\n\nwith open(\"tknk.conf\", 'r') as f:\n    tknk_conf = json.load(f)\n\nVM_NAME=tknk_conf['vm_name']\nVM_URL=tknk_conf['vm_url']\n\ndef download():\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    with open(\"dump.zip\", \"wb\") as handle:\n        try:\n            handle.write(proxy.download_file().data)\n            return True\n\n        except xmlrpc.client.Fault:\n            print(sys.exc_info())\n            return sys.exc_info()\n            \ndef upload(filename):\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    with open(filename, \"rb\") as handle:\n        binary_data = xmlrpc.client.Binary(handle.read())\n    if \"/\" in filename:\n        filename = filename.rsplit(\"/\", 1)[1]\n    print(\"upload...\" + filename)\n    proxy.upload_file(binary_data, filename)\n\ndef dump(config):\n    proxy = xmlrpc.client.ServerProxy(VM_URL)\n    try:\n        proxy.dump(config)\n        return True\n    except:\n        return False\n\ndef vm_down():\n    print(subprocess.call(['virsh', \"destroy\", VM_NAME]))\n\ndef current_job_init(r):\n    q = Queue(connection=Redis())# Getting the number of jobs in the queue\n    queued_job_ids = q.job_ids # Gets a list of job IDs from the queue\n\n    if len(queued_job_ids) == 0:\n        r.set('current_job_id', None)\n\n    return\n\ndef size_fmt(num, suffix='B'):\n        for unit in ['','K','M','G','T','P','E','Z']:\n            if abs(num) < 1000.0:\n                return \"%3.1f%s%s\" % (num, unit, suffix)\n            num /= 1000.0\n        return \"%.1f%s%s\" % (num, 'Yi', suffix)\n\n\ndef analyze(uid):\n\n    #db connect\n    client = MongoClient('localhost', 27017)\n    db = client.scan_database\n    collection = db.scan_collection\n\n    #redis connect\n    pool =  redis.ConnectionPool(host='localhost', port=6379, db=0)\n    r = redis.StrictRedis(connection_pool=pool)\n    \n    #update current_job\n    job=get_current_job()\n    r.set('current_job_id', job.id)\n\n    #config read & write\n    config = eval(r.get(uid).decode('utf-8'))\n    pe =  pefile.PE(config['path'])\n    config['entrypoint'] = pe.OPTIONAL_HEADER.AddressOfEntryPoint\n    \n    #make report format\n    result = {\"result\":{\"detail\":\"\", \"is_success\":False},\n              \"run_time\":str(config['time']), \n              \"mode\":config['mode'],\n              \"timestamp\":str(datetime.datetime.today().isoformat()),\n              \"scans\":[],\n              \"UUID\":uid,\n              \"magic\":magic.from_file(config['path']),\n              \"virus_total\":0,\n              \"avclass\":{\"flag\":None, \"data\":[]}\n             }\n \n    with open(config['path'],'rb')as f:\n        d = f.read()\n        file_md5 = str(hashlib.md5(d).hexdigest())\n        file_sha1 = str(hashlib.sha1(d).hexdigest())\n        file_sha256 = str(hashlib.sha256(d).hexdigest())\n\n    #avclass\n    if tknk_conf['virus_total'] == 1:\n        result['virus_total'] = 1\n        result['avclass'] = run_avclass(tknk_conf['vt_key'], file_sha256)\n\n    #Detect it easy\n    cmd=[\"die/diec.sh\", config['path']]\n    p = subprocess.run(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)\n    result['die'] = p.stdout.decode(\"utf8\").split(\"\\n\")\n    if result['die'] != []:\n        result['die'].pop()\n\n    #read yara rules\n    rules = yara.compile('index.yar')\n    matches = rules.match(config['path'])\n\n    result['target_scan']=({\"md5\":file_md5, \"sha1\":file_sha1, \"sha256\":file_sha256, \"detect_rule\":list(map(str,matches)), \"file_name\":config['target_file'], \"size\":size_fmt(os.path.getsize(config['path']))})\n\n    cmd=['virsh', 'snapshot-revert', VM_NAME, '--current']\n    p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n    output = p.stderr.decode('utf-8')\n    print(output)\n\n    if \"busy\" in output:\n        print(\"failed to initialize KVM: Device or resource busy\")\n        result[\"result\"][\"is_success\"] = False\n        result[\"result\"][\"detail\"] = \"failed to initialize KVM: Device or resource busy\"\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n        \n    elif \"Domain\" in output:\n        print(\"Domain snapshot not found: the domain does not have a current snapshot\")\n        result[\"result\"][\"is_success\"] = False\n        result[\"result\"][\"detail\"] = \"Domain snapshot not found: the domain does not have a current snapshot\"\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n\n    c=0\n\n    while(1):\n        vm_state = subprocess.check_output([\"virsh\", \"domstate\", VM_NAME])\n        time.sleep(1)\n        c+=1\n\n        if \"running\" in str(vm_state.decode('utf-8')):\n            break\n        if c == 60:\n            current_job_init(r)\n            os._exit(0)\n    if config['mode'] == \"hollows_hunter\":\n        tools = [\"tools/hollows_hunter.exe\", \"tools/pe-sieve.dll\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"procdump\":\n        tools = [\"tools/procdump.exe\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"scylla\":\n        tools = [\"tools/Scylla.dll\", \"tools/mouse_emu.pyw\"]\n    elif config['mode'] == \"diff\":\n        tools = [\"tools/procdump.exe\", \"tools/mouse_emu.pyw\"]\n\n    for tool_name in tools:\n        upload(tool_name)\n\n    upload(\"target/\" + config['target_file'])\n\n    ret = dump(config)\n\n    if ret == False:\n        print(\"Connection error\\n\")\n        is_success = False\n        result[\"result\"][\"detail\"] = \"Connection error\"\n    else:\n        ret = download() \n     \n        if ret == True:\n            print(\"dump finish\")\n            is_success = True\n\n        else:\n            is_success = False\n            if result[\"mode\"] == \"procdump\":\n                result[\"result\"][\"detail\"] = \"Process does not exist\" \n            else:\n                result[\"result\"][\"detail\"] = \"Dump file does not exist\"  \n\n    vm_down()\n\n    if is_success == False:\n        for scan in result[\"scans\"]:\n            if scan[\"detect_rule\"] != []:\n                result[\"result\"][\"is_success\"] = True\n                result[\"result\"][\"detail\"] = \"Detected with yara rule!\"  \n                break\n        os.mkdir(\"result/\" + str(uid))\n        with open(\"result/\"+ str(uid) + \"/\" +file_sha256+'.json', 'w') as outfile:\n                json.dump(result, outfile, indent=4)\n        shutil.copyfile(config['path'], \"result/\"+str(uid)+\"/\"+config['target_file'])\n\n        print (json.dumps(result, indent=4))\n        collection.update({u'UUID':uid},result)\n        current_job_init(r)\n        os._exit(0)\n\n    elif is_success == True:\n        p = Path(\"result/dump.zip\")\n        if p.exists():\n            p.unlink()\n            print(\"remove\")\n        shutil.move(\"dump.zip\", \"result/\")\n        subprocess.run(['unzip', \"dump.zip\"], cwd=\"result\")   \n\n        p = Path(\"result/dump/\")\n\n        for f in p.glob(\"**/*\"):\n            if (\".exe\" == f.suffix) or (\".dll\" == f.suffix) or (\".dmp\" == f.suffix):\n                size = os.path.getsize(str(f))\n                matches = rules.match(str(f.resolve()))\n                result['scans'].append({\"detect_rule\":list(map(str,matches)), \"file_name\":f.name, \"size\":size_fmt(size)})\n\n    for scan in result[\"scans\"]:\n        if scan[\"detect_rule\"] != []:\n            result[\"result\"][\"is_success\"] = True\n            result[\"result\"][\"detail\"] = \"Detected with yara rule!\" \n            break\n\n    print (json.dumps(result, indent=4))\n\n    with open(\"result/dump/\"+file_sha256+'.json', 'w') as outfile:\n        json.dump(result, outfile, indent=4)\n\n    shutil.copyfile(config['path'], \"result/dump/\"+config['target_file'])\n\n    os.rename(\"result/dump/\", \"result/\"+str(uid))\n    os.remove(\"result/dump.zip\")\n\n    collection.update({u'UUID':uid},result)\n    current_job_init(r)\n\n    return\n\nif __name__ == \"__main__\":\n    \n    try:\n        #run_avclass\n        analyze(config)\n\n    except:\n        pass\n```\n\n**Please note:** This script is for educational purposes only and should"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2664,
+      1297,
+      8804,
+      6406,
+      4840,
+      7527,
+      371,
+      169,
+      480
+    ],
+    "f_before": [
+      113.35533905029297,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      113.35533905029297,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      67.24044036865234,
+      12.517409324645996,
+      11.52049446105957,
+      11.839241027832031,
+      12.246888160705566,
+      10.791142463684082,
+      11.474936485290527,
+      0.020133960992097855,
+      0.0,
+      0.004440600518137217
+    ],
+    "g_after": [
+      0.0,
+      67.24044036865234,
+      12.517409324645996,
+      11.52049446105957,
+      11.839241027832031,
+      12.246888160705566,
+      10.791142463684082,
+      11.474936485290527,
+      0.020133960992097855,
+      0.0,
+      0.004440600518137217
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.7708911036252974,
+    "train_mean_l2": 6.875389972835779,
+    "train_mean_l1": 3.3832692221403122,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
+    "mean_std": 1.8216841220855713,
+    "max_std": 76.46134185791016
+  }
+}

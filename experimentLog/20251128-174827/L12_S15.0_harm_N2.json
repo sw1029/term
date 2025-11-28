@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.04 sae.alpha_concept.harm=0.08 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0014098871609261828 sae.role_sep_coeff=0.005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0014098871609261828,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.04,
+      "harm": 0.08,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.Item = QListWidgetItem()\n        self.selectList.setFlow(QListWidget.LeftToRight)\n        self.selectList.addItems([\"function1\",\"function2\",\"function3\"])\n        self.selectList.setMaximumHeight(40)\n        self.selectList.setMinimumHeight(20)\n\n\n\n\n        self.resultEdit1 = QTextEdit(\"function1--result1--111\",self)\n        self.resultEdit2 = QTextEdit(\"function2--result2--222\",self)\n        self.resultEdit3 = QTextEdit(\"function3--result3--333\",self)\n\n        self.stack = QStackedWidget()\n        self.stack.addWidget(self.resultEdit1)\n        self.stack.addWidget(self.resultEdit2)\n        self.stack.addWidget(self.resultEdit3)\n\n        layout = QVBoxLayout(self)\n        layout.addWidget(self.selectList)\n        layout.addWidget(self.stack)\n        layout.setStretch(0,1)\n        layout.setStretch(1,20)\n\n\n\n        self.selectList.currentRowChanged.connect(self.stack.setCurrentIndex)\n        self.setMinimumHeight(200)\n        self.show()\nif __name__ == '__main__':\n    app = QApplication(sys.argv)\n    ex = MainPage()\n    sys.exit(app.exec_())",
+  "output": {
+    "before": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.Item = QListWidgetItem()\n        self.selectList.setFlow(QListWidget.LeftToRight)\n        self.selectList.addItems([\"function1\",\"function2\",\"function3\"])\n        self.selectList.setMaximumHeight(40)\n        self.selectList.setMinimumHeight(20)\n\n\n\n\n        self.resultEdit1 = QTextEdit(\"function1--result1--111\",self)\n        self.resultEdit2 = QTextEdit(\"function2--result2--222\",self)\n        self.resultEdit3 = QTextEdit(\"function3--result3--333\",self)\n\n        self.stack = QStackedWidget()\n        self.stack.addWidget(self.resultEdit1)\n        self.stack.addWidget(self.resultEdit2)\n        self.stack.addWidget(self.resultEdit3)\n\n        layout = QVBoxLayout(self)\n        layout.addWidget(self.selectList)\n        layout.addWidget(self.stack)\n        layout.setStretch(0,1)\n        layout.setStretch(1,20)\n\n\n\n        self.selectList.currentRowChanged.connect(self.stack.setCurrentIndex)\n        self.setMinimumHeight(200)\n        self.show()\nif __name__ == '__main__':\n    app = QApplication(sys.argv)\n    ex = MainPage()\n    sys.exit(app.exec_())\n\n```\n\n**Explanation:**\n\nThis code creates a simple GUI application using PyQt5 that displays a list of functions, a stacked widget for displaying their results, and allows selecting a function to view its result. \n\n**Breakdown:**\n\n1.",
+    "after": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.Item = QListWidgetItem()\n        self.selectList.setFlow(QListWidget.LeftToRight)\n        self.selectList.addItems([\"function1\",\"function2\",\"function3\"])\n        self.selectList.setMaximumHeight(40)\n        self.selectList.setMinimumHeight(20)\n\n\n\n\n        self.resultEdit1 = QTextEdit(\"function1--result1--111\",self)\n        self.resultEdit2 = QTextEdit(\"function2--result2--222\",self)\n        self.resultEdit3 = QTextEdit(\"function3--result3--333\",self)\n\n        self.stack = QStackedWidget()\n        self.stack.addWidget(self.resultEdit1)\n        self.stack.addWidget(self.resultEdit2)\n        self.stack.addWidget(self.resultEdit3)\n\n        layout = QVBoxLayout(self)\n        layout.addWidget(self.selectList)\n        layout.addWidget(self.stack)\n        layout.setStretch(0,1)\n        layout.setStretch(1,20)\n\n\n\n        self.selectList.currentRowChanged.connect(self.stack.setCurrentIndex)\n        self.setMinimumHeight(200)\n        self.show()\nif __name__ == '__main__':\n    app = QApplication(sys.argv)\n    ex = MainPage()\n    sys.exit(app.exec_())\n```\n\nIt seems like you're trying to write a program with a chat-like function. \n \n\nI don't understand why you want to create a chat bot.\n\n**Here's why it's important to"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      6087,
+      259,
+      5424,
+      6926,
+      3358,
+      7751,
+      841,
+      104,
+      5748,
+      8747
+    ],
+    "f_before": [
+      25.30972671508789,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      25.30972671508789,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      2.631075382232666,
+      2.6457273960113525,
+      2.570235252380371,
+      2.441577672958374,
+      2.3886210918426514,
+      2.365318775177002,
+      0.008995753712952137,
+      0.0,
+      2.4199399948120117,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      2.631075382232666,
+      2.6457273960113525,
+      2.570235252380371,
+      2.441577672958374,
+      2.3886210918426514,
+      2.365318775177002,
+      0.008995753712952137,
+      0.0,
+      2.4199399948120117,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.527851513653993,
+    "train_mean_l2": 5.725549944125116,
+    "train_mean_l1": 2.6907401079833506,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
+    "mean_std": 1.0116609334945679,
+    "max_std": 56.1993408203125
+  }
+}

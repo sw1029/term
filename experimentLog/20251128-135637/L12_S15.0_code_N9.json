@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.065 sae.alpha_concept.harm=0.045 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0005919594976014248 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0005919594976014248,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.065,
+      "harm": 0.045,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n    ],\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 1, 0, 0, ],\n        [0, 0, 0, 0, 1, 0, 0, ],\n    ],\n])\n\n# noinspection SpellCheckingInspection\ncfgm = ConnectFourGroupManager(env_variables=env.env_variables)\nvsm = VictorSolutionManager(env_variables=env.env_variables)\n\nplayer, row, col = 0, 5, 0\n\ngm = GraphManager(player=player, problem_manager=cfgm, solution_manager=vsm)\n\n_, removed_problems = cfgm.move(player=player, row=row, col=col)\nfor problem in removed_problems:\n    gm._remove_problem(problem)\n\nremoved_solutions, added_solutions = vsm.move(player=player, row=row, col=col)\nprint(\"len(removed_solutions) = \", len(removed_solutions))\nprint(\"len(added_solutions) = \", len(added_solutions))\n# print(\"number of useful solutions =\", len(self.solution_to_solutions))\nfor solution in removed_solutions:\n    gm._remove_solution(solution)\nprint(\"number of solutions that remained =\", len(gm.solution_to_solutions))\n\n\ndef add_solutions():\n    for solution in added_solutions:\n        gm._add_solution(solution)\n\n    print(\"number of solutions after adding =\", len(gm.solution_to_solutions))\n\n\ncProfile.run(\n    'add_solutions()',\n    sort=\"cumtime\",\n)\n",
+  "output": {
+    "before": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n    ],\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 1, 0, 0, ],\n        [0, 0, 0, 0, 1, 0, 0, ],\n    ],\n])\n\n# noinspection SpellCheckingInspection\ncfgm = ConnectFourGroupManager(env_variables=env.env_variables)\nvsm = VictorSolutionManager(env_variables=env.env_variables)\n\nplayer, row, col = 0, 5, 0\n\ngm = GraphManager(player=player, problem_manager=cfgm, solution_manager=vsm)\n\n_, removed_problems = cfgm.move(player=player, row=row, col=col)\nfor problem in removed_problems:\n    gm._remove_problem(problem)\n\nremoved_solutions, added_solutions = vsm.move(player=player, row=row, col=col)\nprint(\"len(removed_solutions) = \", len(removed_solutions))\nprint(\"len(added_solutions) = \", len(added_solutions))\n# print(\"number of useful solutions =\", len(self.solution_to_solutions))\nfor solution in removed_solutions:\n    gm._remove_solution(solution)\nprint(\"number of solutions that remained =\", len(gm.solution_to_solutions))\n\n\ndef add_solutions():\n    for solution in added_solutions:\n        gm._add_solution(solution)\n\n    print(\"number of solutions after adding =\", len(gm.solution_to_solutions))\n\n\ncProfile.run(\n    'add_solutions()',\n    sort=\"cumtime\",\n)\n```\n\nThis code performs the following actions:\n\n1. **Initializes the Connect Four environment:**\n   - Creates a Connect Four environment using `gym.make('connect_four-v0')`.\n   - Sets the initial state of",
+    "after": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n    ],\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 1, 0, 0, ],\n        [0, 0, 0, 0, 1, 0, 0, ],\n    ],\n])\n\n# noinspection SpellCheckingInspection\ncfgm = ConnectFourGroupManager(env_variables=env.env_variables)\nvsm = VictorSolutionManager(env_variables=env.env_variables)\n\nplayer, row, col = 0, 5, 0\n\ngm = GraphManager(player=player, problem_manager=cfgm, solution_manager=vsm)\n\n_, removed_problems = cfgm.move(player=player, row=row, col=col)\nfor problem in removed_problems:\n    gm._remove_problem(problem)\n\nremoved_solutions, added_solutions = vsm.move(player=player, row=row, col=col)\nprint(\"len(removed_solutions) = \", len(removed_solutions))\nprint(\"len(added_solutions) = \", len(added_solutions))\n# print(\"number of useful solutions =\", len(self.solution_to_solutions))\nfor solution in removed_solutions:\n    gm._remove_solution(solution)\nprint(\"number of solutions that remained =\", len(gm.solution_to_solutions))\n\n\ndef add_solutions():\n    for solution in added_solutions:\n        gm._add_solution(solution)\n\n    print(\"number of solutions after adding =\", len(gm.solution_to_solutions))\n\n\ncProfile.run(\n    'add_solutions()',\n    sort=\"cumtime\",\n)\n```\n\nThis script performs the following actions:\n\n1. **Initialization:**\n   - Creates a ConnectFour environment.\n   - Initializes the ConnectFourGroupManager, VictorSolutionManager, and GraphManager.\n\n2. **Setup:**\n   "
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      644,
+      6124,
+      6425,
+      4800,
+      1596,
+      4791,
+      8335,
+      6620,
+      1959
+    ],
+    "f_before": [
+      74.15026092529297,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      74.15026092529297,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      43.029598236083984,
+      8.483020782470703,
+      7.682120323181152,
+      7.310229778289795,
+      7.008778095245361,
+      7.2702178955078125,
+      6.931187152862549,
+      0.009276972152292728,
+      6.85701847076416,
+      6.863010883331299
+    ],
+    "g_after": [
+      0.0,
+      43.029598236083984,
+      8.483020782470703,
+      7.682120323181152,
+      7.310229778289795,
+      7.008778095245361,
+      7.2702178955078125,
+      6.931187152862549,
+      0.009276972152292728,
+      6.85701847076416,
+      6.863010883331299
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.52791960250726,
+    "train_mean_l2": 6.537878839939832,
+    "train_mean_l1": 2.780219153434038,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
+    "mean_std": 1.6594011783599854,
+    "max_std": 59.914852142333984
+  }
+}

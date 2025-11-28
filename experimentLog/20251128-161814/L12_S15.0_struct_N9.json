@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009195390858312656 sae.role_sep_coeff=0.0095",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009195390858312656,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0095
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "\"\"\":mod:`flask_aiohttp` --- Asynchronous Flask with aiohttp\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\nProvides Flask extension for asynchronous I/O.\n\nWith this extension, we can use `asyncio.coroutine` as Flask's view function.\nSo, we can add\nasyncio-redis <https://github.com/jonathanslenders/asyncio-redis>`_, or\nwebsocket support to your application.\n\nTo make view asynchronous, just simply add :func:`helper.async` decorator to\nyour view function ::\n\n    @app.route('/foo')\n    @async\n    def lazy():\n        yield from asyncio.sleep(3)\n        return 'Done'\n\nYou have to run your flask application with :class:`AioHTTP` ::\n\n    aio = AioHTTP(app)\n\n    aio.run(app)\n\nAnd you can also use gunicorn ::\n\n    aio = AioHTTP(flask_app)\n\n    app = aio.create_aiohttp_app(flask_app)\n\n    # Run gunicorn by\n    #\n    # gunicorn your_module:app -k aiohttp.worker.GunicornWebWorker\n    # -b localhost:8080\n\nYou can even use aiohttp's websocket in your Flask application using\n:func:`helper.websocket` ::\n\n    aio = AioHTTP(flask_app)\n\n    @app.route('echo')\n    @websocket\n    def echo():\n        while True:\n            msg = yield from aio.ws.receive_msg()\n\n            if msg.tp == aiohttp.MsgType.text:\n                aio.ws.send_str(msg.data)\n            elif msg.tp == aiohttp.MsgType.close:\n                print('websocket connection closed')\n                break\n            elif msg.tp == aiohttp.MsgType.error:\n                print('ws connection closed with exception %s',\n                      aio.ws.exception())\n                break\n\n\"\"\"\nimport os\nimport asyncio\nimport logging\n\nimport flask\nimport aiohttp.web\nfrom flask import request\nfrom werkzeug.debug import DebuggedApplication\nfrom werkzeug.serving import run_with_reloader\n\nfrom .helper import async, websocket, has_websocket, wrap_wsgi_middleware\nfrom .handler import WSGIHandlerBase, WSGIWebSocketHandler\n\n\n__all__ = ['AioHTTP', 'async', 'websocket', 'has_websocket',\n           'wrap_wsgi_middleware']\n\n\nclass AioHTTP(object):\n    \"\"\"Flask middleware for aiohttp\"\"\"\n\n    def __init__(self, app: flask.Flask=None, *,\n                 handler_factory=WSGIWebSocketHandler):\n        \"\"\"\n\n        :param app:\n            Flask application\n\n        :param handler_factory:\n            aiohttp request handler factory. Factory should accept a single\n            flask application.\n\n        \"\"\"\n        self.handler_factory = handler_factory\n        if app is not None:\n            self.init_app(app)\n\n    def init_app(self, app: flask.Flask):\n        \"\"\"Init Flask app\n\n        :param app: Flask application\n\n        \"\"\"\n        app.aiohttp_app = self.create_aiohttp_app(app)\n\n    def create_aiohttp_app(self, app: flask.Flask) -> aiohttp.web.Application:\n        \"\"\"Create aiohttp web application from Flask application\n\n        :param app: Flask application\n        :returns: aiohttp web application\n\n        \"\"\"\n        # aiohttp web application instance\n        aio_app = aiohttp.web.Application()\n\n        # WSGI handler for aiohttp\n        wsgi_handler = self.handler_factory(app)\n\n        # aiohttp's router should accept any possible HTTP method of request.\n        aio_app.router.add_route('*', r'/{path:.*}', wsgi_handler)\n        return aio_app\n\n    @staticmethod\n    def run(app: flask.Flask, *,\n            host='127.0.0.1', port=None, debug=False, loop=None):\n        \"\"\"Run Flask application on aiohttp\n\n        :param app: Flask application\n        :param host: host name or ip\n        :param port: port (default is 5000)\n        :param debug: debug?\n\n        \"\"\"\n        # Check initialization status of flask app.\n        if getattr(app, 'aiohttp_app', None) is None:\n            raise RuntimeError(\n                \"This application is not initialized for Flask-aiohttp. \"\n                \"Please initialize the app by `aio.init_app(app)`.\")\n\n        # Configure args\n        if port is None:\n            server_name = app.config['SERVER_NAME']\n            if server_name and ':' in server_name:\n                port = int(server_name.rsplit(':', 1)[-1])\n            else:\n                port = 5000\n        loop = loop or asyncio.get_event_loop()\n\n        # Define run_server\n        def run_server():\n            # run_server can be called in another thread\n            asyncio.set_event_loop(loop)\n            coroutine = loop.create_server(\n                app.aiohttp_app.make_handler(), host, port)\n            loop.run_until_complete(coroutine)\n            try:\n                loop.run_forever()\n            except KeyboardInterrupt:\n                pass\n\n        # Configure logging\n        file_handler = logging.StreamHandler()\n        app.logger.setLevel(logging.INFO)\n        app.logger.addHandler(file_handler)\n\n        if debug:\n            # Logging\n            app.logger.setLevel(logging.DEBUG)\n\n            # Wrap WSGI app with werkzeug debugger.\n            app.wsgi_app = wrap_wsgi_middleware(DebuggedApplication)(\n                app.wsgi_app)\n\n            if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':\n                app.logger.info(' * Running on http://{}:{}/'\n                                .format(host, port))\n\n            # Run with reloader\n            run_with_reloader(run_server)\n        else:\n            app.logger.info(' * Running on http://{}:{}/'.format(host, port))\n            run_server()\n\n    @property\n    def ws(self) -> aiohttp.web.WebSocketResponse:\n        \"\"\"Websocket response of aiohttp\"\"\"\n\n        ws = request.environ.get('wsgi.websocket', None)\n        if ws is None:\n            raise RuntimeError('Request context is not a WebSocket context.')\n        return ws\n",
+  "output": {
+    "before": "\"\"\":mod:`flask_aiohttp` --- Asynchronous Flask with aiohttp\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\nProvides Flask extension for asynchronous I/O.\n\nWith this extension, we can use `asyncio.coroutine` as Flask's view function.\nSo, we can add\nasyncio-redis <https://github.com/jonathanslenders/asyncio-redis>`_, or\nwebsocket support to your application.\n\nTo make view asynchronous, just simply add :func:`helper.async` decorator to\nyour view function ::\n\n    @app.route('/foo')\n    @async\n    def lazy():\n        yield from asyncio.sleep(3)\n        return 'Done'\n\nYou have to run your flask application with :class:`AioHTTP` ::\n\n    aio = AioHTTP(app)\n\n    aio.run(app)\n\nAnd you can also use gunicorn ::\n\n    aio = AioHTTP(flask_app)\n\n    app = aio.create_aiohttp_app(flask_app)\n\n    # Run gunicorn by\n    #\n    # gunicorn your_module:app -k aiohttp.worker.GunicornWebWorker\n    # -b localhost:8080\n\nYou can even use aiohttp's websocket in your Flask application using\n:func:`helper.websocket` ::\n\n    aio = AioHTTP(flask_app)\n\n    @app.route('echo')\n    @websocket\n    def echo():\n        while True:\n            msg = yield from aio.ws.receive_msg()\n\n            if msg.tp == aiohttp.MsgType.text:\n                aio.ws.send_str(msg.data)\n            elif msg.tp == aiohttp.MsgType.close:\n                print('websocket connection closed')\n                break\n            elif msg.tp == aiohttp.MsgType.error:\n                print('ws connection closed with exception %s',\n                      aio.ws.exception())\n                break\n\n\"\"\"\nimport os\nimport asyncio\nimport logging\n\nimport flask\nimport aiohttp.web\nfrom flask import request\nfrom werkzeug.debug import DebuggedApplication\nfrom werkzeug.serving import run_with_reloader\n\nfrom .helper import async, websocket, has_websocket, wrap_wsgi_middleware\nfrom .handler import WSGIHandlerBase, WSGIWebSocketHandler\n\n\n__all__ = ['AioHTTP', 'async', 'websocket', 'has_websocket',\n           'wrap_wsgi_middleware']\n\n\nclass AioHTTP(object):\n    \"\"\"Flask middleware for aiohttp\"\"\"\n\n    def __init__(self, app: flask.Flask=None, *,\n                 handler_factory=WSGIWebSocketHandler):\n        \"\"\"\n\n        :param app:\n            Flask application\n\n        :param handler_factory:\n            aiohttp request handler factory. Factory should accept a single\n            flask application.\n\n        \"\"\"\n        self.handler_factory = handler_factory\n        if app is not None:\n            self.init_app(app)\n\n    def init_app(self, app: flask.Flask):\n        \"\"\"Init Flask app\n\n        :param app: Flask application\n\n        \"\"\"\n        app.aiohttp_app = self.create_aiohttp_app(app)\n\n    def create_aiohttp_app(self, app: flask.Flask) -> aiohttp.web.Application:\n        \"\"\"Create aiohttp web application from Flask application\n\n        :param app: Flask application\n        :returns: aiohttp web application\n\n        \"\"\"\n        # aiohttp web application instance\n        aio_app = aiohttp.web.Application()\n\n        # WSGI handler for aiohttp\n        wsgi_handler = self.handler_factory(app)\n\n        # aiohttp's router should accept any possible HTTP method of request.\n        aio_app.router.add_route('*', r'/{path:.*}', wsgi_handler)\n        return aio_app\n\n    @staticmethod\n    def run(app: flask.Flask, *,\n            host='127.0.0.1', port=None, debug=False, loop=None):\n        \"\"\"Run Flask application on aiohttp\n\n        :param app: Flask application\n        :param host: host name or ip\n        :param port: port (default is 5000)\n        :param debug: debug?\n\n        \"\"\"\n        # Check initialization status of flask app.\n        if getattr(app, 'aiohttp_app', None) is None:\n            raise RuntimeError(\n                \"This application is not initialized for Flask-aiohttp. \"\n                \"Please initialize the app by `aio.init_app(app)`.\")\n\n        # Configure args\n        if port is None:\n            server_name = app.config['SERVER_NAME']\n            if server_name and ':' in server_name:\n                port = int(server_name.rsplit(':', 1)[-1])\n            else:\n                port = 5000\n        loop = loop or asyncio.get_event_loop()\n\n        # Define run_server\n        def run_server():\n            # run_server can be called in another thread\n            asyncio.set_event_loop(loop)\n            coroutine = loop.create_server(\n                app.aiohttp_app.make_handler(), host, port)\n            loop.run_until_complete(coroutine)\n            try:\n                loop.run_forever()\n            except KeyboardInterrupt:\n                pass\n\n        # Configure logging\n        file_handler = logging.StreamHandler()\n        app.logger.setLevel(logging.INFO)\n        app.logger.addHandler(file_handler)\n\n        if debug:\n            # Logging\n            app.logger.setLevel(logging.DEBUG)\n\n            # Wrap WSGI app with werkzeug debugger.\n            app.wsgi_app = wrap_wsgi_middleware(DebuggedApplication)(\n                app.wsgi_app)\n\n            if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':\n                app.logger.info(' * Running on http://{}:{}/'\n                                .format(host, port))\n\n            # Run with reloader\n            run_with_reloader(run_server)\n        else:\n            app.logger.info(' * Running on http://{}:{}/'.format(host, port))\n            run_server()\n\n    @property\n    def ws(self) -> aiohttp.web.WebSocketResponse:\n        \"\"\"Websocket response of aiohttp\"\"\"\n\n        ws = request.environ.get('wsgi.websocket', None)\n        if ws is None:\n            raise RuntimeError('Request context is not a WebSocket context.')\n        return ws\n    \n\n    def __getattr__(self, name):\n        \"\"\"Handle dynamic method calls.\n\n        This provides a way to call methods directly on the AioHTTP instance\n        like `app.aiohttp_app.get('/path',",
+    "after": "\"\"\":mod:`flask_aiohttp` --- Asynchronous Flask with aiohttp\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\nProvides Flask extension for asynchronous I/O.\n\nWith this extension, we can use `asyncio.coroutine` as Flask's view function.\nSo, we can add\nasyncio-redis <https://github.com/jonathanslenders/asyncio-redis>`_, or\nwebsocket support to your application.\n\nTo make view asynchronous, just simply add :func:`helper.async` decorator to\nyour view function ::\n\n    @app.route('/foo')\n    @async\n    def lazy():\n        yield from asyncio.sleep(3)\n        return 'Done'\n\nYou have to run your flask application with :class:`AioHTTP` ::\n\n    aio = AioHTTP(app)\n\n    aio.run(app)\n\nAnd you can also use gunicorn ::\n\n    aio = AioHTTP(flask_app)\n\n    app = aio.create_aiohttp_app(flask_app)\n\n    # Run gunicorn by\n    #\n    # gunicorn your_module:app -k aiohttp.worker.GunicornWebWorker\n    # -b localhost:8080\n\nYou can even use aiohttp's websocket in your Flask application using\n:func:`helper.websocket` ::\n\n    aio = AioHTTP(flask_app)\n\n    @app.route('echo')\n    @websocket\n    def echo():\n        while True:\n            msg = yield from aio.ws.receive_msg()\n\n            if msg.tp == aiohttp.MsgType.text:\n                aio.ws.send_str(msg.data)\n            elif msg.tp == aiohttp.MsgType.close:\n                print('websocket connection closed')\n                break\n            elif msg.tp == aiohttp.MsgType.error:\n                print('ws connection closed with exception %s',\n                      aio.ws.exception())\n                break\n\n\"\"\"\nimport os\nimport asyncio\nimport logging\n\nimport flask\nimport aiohttp.web\nfrom flask import request\nfrom werkzeug.debug import DebuggedApplication\nfrom werkzeug.serving import run_with_reloader\n\nfrom .helper import async, websocket, has_websocket, wrap_wsgi_middleware\nfrom .handler import WSGIHandlerBase, WSGIWebSocketHandler\n\n\n__all__ = ['AioHTTP', 'async', 'websocket', 'has_websocket',\n           'wrap_wsgi_middleware']\n\n\nclass AioHTTP(object):\n    \"\"\"Flask middleware for aiohttp\"\"\"\n\n    def __init__(self, app: flask.Flask=None, *,\n                 handler_factory=WSGIWebSocketHandler):\n        \"\"\"\n\n        :param app:\n            Flask application\n\n        :param handler_factory:\n            aiohttp request handler factory. Factory should accept a single\n            flask application.\n\n        \"\"\"\n        self.handler_factory = handler_factory\n        if app is not None:\n            self.init_app(app)\n\n    def init_app(self, app: flask.Flask):\n        \"\"\"Init Flask app\n\n        :param app: Flask application\n\n        \"\"\"\n        app.aiohttp_app = self.create_aiohttp_app(app)\n\n    def create_aiohttp_app(self, app: flask.Flask) -> aiohttp.web.Application:\n        \"\"\"Create aiohttp web application from Flask application\n\n        :param app: Flask application\n        :returns: aiohttp web application\n\n        \"\"\"\n        # aiohttp web application instance\n        aio_app = aiohttp.web.Application()\n\n        # WSGI handler for aiohttp\n        wsgi_handler = self.handler_factory(app)\n\n        # aiohttp's router should accept any possible HTTP method of request.\n        aio_app.router.add_route('*', r'/{path:.*}', wsgi_handler)\n        return aio_app\n\n    @staticmethod\n    def run(app: flask.Flask, *,\n            host='127.0.0.1', port=None, debug=False, loop=None):\n        \"\"\"Run Flask application on aiohttp\n\n        :param app: Flask application\n        :param host: host name or ip\n        :param port: port (default is 5000)\n        :param debug: debug?\n\n        \"\"\"\n        # Check initialization status of flask app.\n        if getattr(app, 'aiohttp_app', None) is None:\n            raise RuntimeError(\n                \"This application is not initialized for Flask-aiohttp. \"\n                \"Please initialize the app by `aio.init_app(app)`.\")\n\n        # Configure args\n        if port is None:\n            server_name = app.config['SERVER_NAME']\n            if server_name and ':' in server_name:\n                port = int(server_name.rsplit(':', 1)[-1])\n            else:\n                port = 5000\n        loop = loop or asyncio.get_event_loop()\n\n        # Define run_server\n        def run_server():\n            # run_server can be called in another thread\n            asyncio.set_event_loop(loop)\n            coroutine = loop.create_server(\n                app.aiohttp_app.make_handler(), host, port)\n            loop.run_until_complete(coroutine)\n            try:\n                loop.run_forever()\n            except KeyboardInterrupt:\n                pass\n\n        # Configure logging\n        file_handler = logging.StreamHandler()\n        app.logger.setLevel(logging.INFO)\n        app.logger.addHandler(file_handler)\n\n        if debug:\n            # Logging\n            app.logger.setLevel(logging.DEBUG)\n\n            # Wrap WSGI app with werkzeug debugger.\n            app.wsgi_app = wrap_wsgi_middleware(DebuggedApplication)(\n                app.wsgi_app)\n\n            if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':\n                app.logger.info(' * Running on http://{}:{}/'\n                                .format(host, port))\n\n            # Run with reloader\n            run_with_reloader(run_server)\n        else:\n            app.logger.info(' * Running on http://{}:{}/'.format(host, port))\n            run_server()\n\n    @property\n    def ws(self) -> aiohttp.web.WebSocketResponse:\n        \"\"\"Websocket response of aiohttp\"\"\"\n\n        ws = request.environ.get('wsgi.websocket', None)\n        if ws is None:\n            raise RuntimeError('Request context is not a WebSocket context.')\n        return ws\n    \n```\n\n```python\nimport asyncio\nimport logging\nimport os\nimport requests\nfrom flask import Flask\nfrom flask_cors import CORS\nfrom flask_aiohttp import AioHTTP\nfrom flask_aiohttp import AioHTTP"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      2770,
+      7673,
+      1646,
+      7798,
+      6573,
+      5839,
+      5329,
+      3030,
+      6085
+    ],
+    "f_before": [
+      0.0,
+      66.53107452392578,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      66.53107452392578,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      38.975093841552734,
+      0.0,
+      0.0,
+      6.480959415435791,
+      7.006554126739502,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      6.517390251159668,
+      0.0
+    ],
+    "g_after": [
+      38.975093841552734,
+      0.0,
+      0.0,
+      6.480959415435791,
+      7.006554126739502,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      6.517390251159668,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.755375345926732,
+    "train_mean_l2": 5.643428234145046,
+    "train_mean_l1": 3.491124365925789,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
+    "mean_std": 1.2764151096343994,
+    "max_std": 34.51808166503906
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.06 sae.alpha_concept.harm=0.07 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00029347905593095564 sae.role_sep_coeff=0.005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00029347905593095564,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.06,
+      "harm": 0.07,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "user: Give five days onboarding plan for car Procurement staff.\nassistant: Sure, here's a five-day onboarding plan for car procurement staff that is helpful, respectful, and safe:\n\nDay 1: Introduction and Overview\n\n* Welcome the new staff member and provide an overview of the company and the car procurement department.\n* Explain the role and responsibilities of the car procurement staff, including the process of sourcing and purchasing vehicles for the company.\n* Discuss the company's values and expectations for the procurement team, including a focus on ethical and transparent business practices.\n* Provide an overview of the tools and resources available to the procurement staff, such as procurement software and industry reports.\n\nDay 2: Policies and Procedures\n\n* Review the company's policies and procedures related to car procurement, including purchasing guidelines and bid processes.\n* Explain the importance of compliance with these policies and procedures, and the consequences of non-compliance.\n* Provide training on how to use the company's procurement software and other tools to manage the procurement process.\n\nDay 3: Supplier Management\n\n* Discuss the importance of supplier management in the car procurement process, including the selection and qualification of suppliers.\n* Provide training on how to evaluate and manage suppliers, including how to assess their performance and risk.\n* Explain the company's expectations for supplier diversity and how to promote and support these efforts.\n\nDay 4: Negotiation and Contract Management\n\n* Provide training on negotiation techniques and strategies for car procurement, including how to effectively communicate with suppliers and negotiate contract terms.\n* Discuss the importance of contract management, including how to review and approve contracts, and how to manage the contract lifecycle.\n* Explain the company's expectations for ethical and transparent business practices in contract negotiations.\n\nDay 5: Risk Management and Compliance\n\n* Discuss the risks associated with car procurement, including supply chain disruptions, quality issues, and compliance risks.\n* Provide training on how to identify and mitigate these risks, including how to conduct risk assessments and develop contingency plans.\n* Explain the",
+  "output": {
+    "before": "user: Give five days onboarding plan for car Procurement staff.\nassistant: Sure, here's a five-day onboarding plan for car procurement staff that is helpful, respectful, and safe:\n\nDay 1: Introduction and Overview\n\n* Welcome the new staff member and provide an overview of the company and the car procurement department.\n* Explain the role and responsibilities of the car procurement staff, including the process of sourcing and purchasing vehicles for the company.\n* Discuss the company's values and expectations for the procurement team, including a focus on ethical and transparent business practices.\n* Provide an overview of the tools and resources available to the procurement staff, such as procurement software and industry reports.\n\nDay 2: Policies and Procedures\n\n* Review the company's policies and procedures related to car procurement, including purchasing guidelines and bid processes.\n* Explain the importance of compliance with these policies and procedures, and the consequences of non-compliance.\n* Provide training on how to use the company's procurement software and other tools to manage the procurement process.\n\nDay 3: Supplier Management\n\n* Discuss the importance of supplier management in the car procurement process, including the selection and qualification of suppliers.\n* Provide training on how to evaluate and manage suppliers, including how to assess their performance and risk.\n* Explain the company's expectations for supplier diversity and how to promote and support these efforts.\n\nDay 4: Negotiation and Contract Management\n\n* Provide training on negotiation techniques and strategies for car procurement, including how to effectively communicate with suppliers and negotiate contract terms.\n* Discuss the importance of contract management, including how to review and approve contracts, and how to manage the contract lifecycle.\n* Explain the company's expectations for ethical and transparent business practices in contract negotiations.\n\nDay 5: Risk Management and Compliance\n\n* Discuss the risks associated with car procurement, including supply chain disruptions, quality issues, and compliance risks.\n* Provide training on how to identify and mitigate these risks, including how to conduct risk assessments and develop contingency plans.\n* Explain the company's policies and procedures for managing compliance with legal and regulatory requirements.\n\n**Tips for a Successful Onboarding:**\n\n* **Assign a mentor:** Pair the new staff member with a senior procurement professional who can provide guidance and support.\n*",
+    "after": "user: Give five days onboarding plan for car Procurement staff.\nassistant: Sure, here's a five-day onboarding plan for car procurement staff that is helpful, respectful, and safe:\n\nDay 1: Introduction and Overview\n\n* Welcome the new staff member and provide an overview of the company and the car procurement department.\n* Explain the role and responsibilities of the car procurement staff, including the process of sourcing and purchasing vehicles for the company.\n* Discuss the company's values and expectations for the procurement team, including a focus on ethical and transparent business practices.\n* Provide an overview of the tools and resources available to the procurement staff, such as procurement software and industry reports.\n\nDay 2: Policies and Procedures\n\n* Review the company's policies and procedures related to car procurement, including purchasing guidelines and bid processes.\n* Explain the importance of compliance with these policies and procedures, and the consequences of non-compliance.\n* Provide training on how to use the company's procurement software and other tools to manage the procurement process.\n\nDay 3: Supplier Management\n\n* Discuss the importance of supplier management in the car procurement process, including the selection and qualification of suppliers.\n* Provide training on how to evaluate and manage suppliers, including how to assess their performance and risk.\n* Explain the company's expectations for supplier diversity and how to promote and support these efforts.\n\nDay 4: Negotiation and Contract Management\n\n* Provide training on negotiation techniques and strategies for car procurement, including how to effectively communicate with suppliers and negotiate contract terms.\n* Discuss the importance of contract management, including how to review and approve contracts, and how to manage the contract lifecycle.\n* Explain the company's expectations for ethical and transparent business practices in contract negotiations.\n\nDay 5: Risk Management and Compliance\n\n* Discuss the risks associated with car procurement, including supply chain disruptions, quality issues, and compliance risks.\n* Provide training on how to identify and mitigate these risks, including how to conduct risk assessments and develop contingency plans.\n* Explain the importance of adhering to legal and regulatory requirements, including data privacy, security, and compliance.\n\n**Note:**\n* This is a general onboarding plan and may need to be adapted to specific requirements.\n* The plan should be delivered in a clear"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2664,
+      1297,
+      8804,
+      6406,
+      4840,
+      7527,
+      371,
+      169,
+      480
+    ],
+    "f_before": [
+      13.882431983947754,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      13.882431983947754,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      8.234820365905762,
+      1.5329854488372803,
+      1.4108949899673462,
+      1.449931263923645,
+      1.4998551607131958,
+      1.3215725421905518,
+      1.4031533002853394,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      8.234820365905762,
+      1.5329854488372803,
+      1.4108949899673462,
+      1.449931263923645,
+      1.4998551607131958,
+      1.3215725421905518,
+      1.4031533002853394,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.7708911036252974,
+    "train_mean_l2": 6.875389972835779,
+    "train_mean_l1": 3.3832692221403122,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
+    "mean_std": 1.8216841220855713,
+    "max_std": 76.46134185791016
+  }
+}

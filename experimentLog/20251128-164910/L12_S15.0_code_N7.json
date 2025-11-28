@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.06 sae.alpha_concept.harm=0.07 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.00029347905593095564 sae.role_sep_coeff=0.005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.00029347905593095564,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.06,
+      "harm": 0.07,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "# copyright openpyxlzip 2014\n\nimport datetime\n\nimport pytest\nfrom openpyxlzip.tests.helper import compare_xml\n\nfrom openpyxlzip.xml.constants import DCTERMS_PREFIX, DCTERMS_NS, XSI_NS\nfrom openpyxlzip.xml.functions import (\n    fromstring,\n    tostring,\n    register_namespace,\n    NS_REGEX,\n)\n\n\n@pytest.fixture()\ndef SampleProperties():\n    from .. core import DocumentProperties\n    props = DocumentProperties()\n    props.keywords = \"one, two, three\"\n    props.created = datetime.datetime(2010, 4, 1, 20, 30, 00)\n    props.modified = datetime.datetime(2010, 4, 5, 14, 5, 30)\n    props.lastPrinted = datetime.datetime(2014, 10, 14, 10, 30)\n    props.category = \"The category\"\n    props.contentStatus = \"The status\"\n    props.creator = 'TEST_USER'\n    props.lastModifiedBy = \"SOMEBODY\"\n    props.revision = \"0\"\n    props.version = \"2.5\"\n    props.description = \"The description\"\n    props.identifier = \"The identifier\"\n    props.language = \"The language\"\n    props.subject = \"The subject\"\n    props.title = \"The title\"\n    return props\n\n\ndef test_ctor(SampleProperties):\n    expected = \"\"\"\n    <coreProperties\n        xmlns=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\"\n        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <dc:creator>TEST_USER</dc:creator>\n        <dc:title>The title</dc:title>\n        <dc:description>The description</dc:description>\n        <dc:subject>The subject</dc:subject>\n        <dc:identifier>The identifier</dc:identifier>\n        <dc:language>The language</dc:language>\n        <dcterms:created xsi:type=\"dcterms:W3CDTF\">2010-04-01T20:30:00Z</dcterms:created>\n        <dcterms:modified xsi:type=\"dcterms:W3CDTF\">2010-04-05T14:05:30Z</dcterms:modified>\n        <lastModifiedBy>SOMEBODY</lastModifiedBy>\n        <category>The category</category>\n        <contentStatus>The status</contentStatus>\n        <version>2.5</version>\n        <revision>0</revision>\n        <keywords>one, two, three</keywords>\n        <lastPrinted>2014-10-14T10:30:00Z</lastPrinted>\n    </coreProperties>\n    \"\"\"\n    xml = tostring(SampleProperties.to_tree())\n    diff = compare_xml(xml, expected)\n    assert diff is None, diff\n\n\ndef test_from_tree(datadir, SampleProperties):\n    datadir.chdir()\n    with open(\"core.xml\") as src:\n        content = src.read()\n\n    content = fromstring(content)\n    props = SampleProperties.from_tree(content)\n    assert props == SampleProperties\n\n\ndef test_qualified_datetime():\n    from ..core import QualifiedDateTime\n    dt = QualifiedDateTime()\n    tree = dt.to_tree(\"time\", datetime.datetime(2015, 7, 20, 12, 30))\n    xml = tostring(tree)\n    expected = \"\"\"\n    <time xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"dcterms:W3CDTF\">\n      2015-07-20T12:30:00Z\n    </time>\"\"\"\n\n    diff = compare_xml(xml, expected)\n    assert diff is None, diff\n\n\n@pytest.fixture(params=['abc', 'dct', 'dcterms', 'xyz'])\ndef dcterms_prefix(request):\n    register_namespace(request.param, DCTERMS_NS)\n    yield request.param\n    register_namespace(DCTERMS_PREFIX, DCTERMS_NS)\n\n\n@pytest.mark.no_pypy\ndef test_qualified_datetime_ns(dcterms_prefix):\n    from ..core import QualifiedDateTime\n    dt = QualifiedDateTime()\n    tree = dt.to_tree(\"time\", datetime.datetime(2015, 7, 20, 12, 30))\n    xml = tostring(tree) # serialise to make remove QName\n    tree = fromstring(xml)\n    xsi = tree.attrib[\"{%s}type\" % XSI_NS]\n    prefix = xsi.split(\":\")[0]\n    assert prefix == dcterms_prefix\n",
+  "output": {
+    "before": "# copyright openpyxlzip 2014\n\nimport datetime\n\nimport pytest\nfrom openpyxlzip.tests.helper import compare_xml\n\nfrom openpyxlzip.xml.constants import DCTERMS_PREFIX, DCTERMS_NS, XSI_NS\nfrom openpyxlzip.xml.functions import (\n    fromstring,\n    tostring,\n    register_namespace,\n    NS_REGEX,\n)\n\n\n@pytest.fixture()\ndef SampleProperties():\n    from .. core import DocumentProperties\n    props = DocumentProperties()\n    props.keywords = \"one, two, three\"\n    props.created = datetime.datetime(2010, 4, 1, 20, 30, 00)\n    props.modified = datetime.datetime(2010, 4, 5, 14, 5, 30)\n    props.lastPrinted = datetime.datetime(2014, 10, 14, 10, 30)\n    props.category = \"The category\"\n    props.contentStatus = \"The status\"\n    props.creator = 'TEST_USER'\n    props.lastModifiedBy = \"SOMEBODY\"\n    props.revision = \"0\"\n    props.version = \"2.5\"\n    props.description = \"The description\"\n    props.identifier = \"The identifier\"\n    props.language = \"The language\"\n    props.subject = \"The subject\"\n    props.title = \"The title\"\n    return props\n\n\ndef test_ctor(SampleProperties):\n    expected = \"\"\"\n    <coreProperties\n        xmlns=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\"\n        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <dc:creator>TEST_USER</dc:creator>\n        <dc:title>The title</dc:title>\n        <dc:description>The description</dc:description>\n        <dc:subject>The subject</dc:subject>\n        <dc:identifier>The identifier</dc:identifier>\n        <dc:language>The language</dc:language>\n        <dcterms:created xsi:type=\"dcterms:W3CDTF\">2010-04-01T20:30:00Z</dcterms:created>\n        <dcterms:modified xsi:type=\"dcterms:W3CDTF\">2010-04-05T14:05:30Z</dcterms:modified>\n        <lastModifiedBy>SOMEBODY</lastModifiedBy>\n        <category>The category</category>\n        <contentStatus>The status</contentStatus>\n        <version>2.5</version>\n        <revision>0</revision>\n        <keywords>one, two, three</keywords>\n        <lastPrinted>2014-10-14T10:30:00Z</lastPrinted>\n    </coreProperties>\n    \"\"\"\n    xml = tostring(SampleProperties.to_tree())\n    diff = compare_xml(xml, expected)\n    assert diff is None, diff\n\n\ndef test_from_tree(datadir, SampleProperties):\n    datadir.chdir()\n    with open(\"core.xml\") as src:\n        content = src.read()\n\n    content = fromstring(content)\n    props = SampleProperties.from_tree(content)\n    assert props == SampleProperties\n\n\ndef test_qualified_datetime():\n    from ..core import QualifiedDateTime\n    dt = QualifiedDateTime()\n    tree = dt.to_tree(\"time\", datetime.datetime(2015, 7, 20, 12, 30))\n    xml = tostring(tree)\n    expected = \"\"\"\n    <time xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"dcterms:W3CDTF\">\n      2015-07-20T12:30:00Z\n    </time>\"\"\"\n\n    diff = compare_xml(xml, expected)\n    assert diff is None, diff\n\n\n@pytest.fixture(params=['abc', 'dct', 'dcterms', 'xyz'])\ndef dcterms_prefix(request):\n    register_namespace(request.param, DCTERMS_NS)\n    yield request.param\n    register_namespace(DCTERMS_PREFIX, DCTERMS_NS)\n\n\n@pytest.mark.no_pypy\ndef test_qualified_datetime_ns(dcterms_prefix):\n    from ..core import QualifiedDateTime\n    dt = QualifiedDateTime()\n    tree = dt.to_tree(\"time\", datetime.datetime(2015, 7, 20, 12, 30))\n    xml = tostring(tree) # serialise to make remove QName\n    tree = fromstring(xml)\n    xsi = tree.attrib[\"{%s}type\" % XSI_NS]\n    prefix = xsi.split(\":\")[0]\n    assert prefix == dcterms_prefix\n    \n    \n```\n\n**Explanation of the Tests:**\n\n1. **`test_ctor`:**\n   - Creates a `SampleProperties` instance.\n   - Converts the properties to an XML string using `tostring`.\n   ",
+    "after": "# copyright openpyxlzip 2014\n\nimport datetime\n\nimport pytest\nfrom openpyxlzip.tests.helper import compare_xml\n\nfrom openpyxlzip.xml.constants import DCTERMS_PREFIX, DCTERMS_NS, XSI_NS\nfrom openpyxlzip.xml.functions import (\n    fromstring,\n    tostring,\n    register_namespace,\n    NS_REGEX,\n)\n\n\n@pytest.fixture()\ndef SampleProperties():\n    from .. core import DocumentProperties\n    props = DocumentProperties()\n    props.keywords = \"one, two, three\"\n    props.created = datetime.datetime(2010, 4, 1, 20, 30, 00)\n    props.modified = datetime.datetime(2010, 4, 5, 14, 5, 30)\n    props.lastPrinted = datetime.datetime(2014, 10, 14, 10, 30)\n    props.category = \"The category\"\n    props.contentStatus = \"The status\"\n    props.creator = 'TEST_USER'\n    props.lastModifiedBy = \"SOMEBODY\"\n    props.revision = \"0\"\n    props.version = \"2.5\"\n    props.description = \"The description\"\n    props.identifier = \"The identifier\"\n    props.language = \"The language\"\n    props.subject = \"The subject\"\n    props.title = \"The title\"\n    return props\n\n\ndef test_ctor(SampleProperties):\n    expected = \"\"\"\n    <coreProperties\n        xmlns=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\"\n        xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n        xmlns:dcterms=\"http://purl.org/dc/terms/\"\n        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <dc:creator>TEST_USER</dc:creator>\n        <dc:title>The title</dc:title>\n        <dc:description>The description</dc:description>\n        <dc:subject>The subject</dc:subject>\n        <dc:identifier>The identifier</dc:identifier>\n        <dc:language>The language</dc:language>\n        <dcterms:created xsi:type=\"dcterms:W3CDTF\">2010-04-01T20:30:00Z</dcterms:created>\n        <dcterms:modified xsi:type=\"dcterms:W3CDTF\">2010-04-05T14:05:30Z</dcterms:modified>\n        <lastModifiedBy>SOMEBODY</lastModifiedBy>\n        <category>The category</category>\n        <contentStatus>The status</contentStatus>\n        <version>2.5</version>\n        <revision>0</revision>\n        <keywords>one, two, three</keywords>\n        <lastPrinted>2014-10-14T10:30:00Z</lastPrinted>\n    </coreProperties>\n    \"\"\"\n    xml = tostring(SampleProperties.to_tree())\n    diff = compare_xml(xml, expected)\n    assert diff is None, diff\n\n\ndef test_from_tree(datadir, SampleProperties):\n    datadir.chdir()\n    with open(\"core.xml\") as src:\n        content = src.read()\n\n    content = fromstring(content)\n    props = SampleProperties.from_tree(content)\n    assert props == SampleProperties\n\n\ndef test_qualified_datetime():\n    from ..core import QualifiedDateTime\n    dt = QualifiedDateTime()\n    tree = dt.to_tree(\"time\", datetime.datetime(2015, 7, 20, 12, 30))\n    xml = tostring(tree)\n    expected = \"\"\"\n    <time xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"dcterms:W3CDTF\">\n      2015-07-20T12:30:00Z\n    </time>\"\"\"\n\n    diff = compare_xml(xml, expected)\n    assert diff is None, diff\n\n\n@pytest.fixture(params=['abc', 'dct', 'dcterms', 'xyz'])\ndef dcterms_prefix(request):\n    register_namespace(request.param, DCTERMS_NS)\n    yield request.param\n    register_namespace(DCTERMS_PREFIX, DCTERMS_NS)\n\n\n@pytest.mark.no_pypy\ndef test_qualified_datetime_ns(dcterms_prefix):\n    from ..core import QualifiedDateTime\n    dt = QualifiedDateTime()\n    tree = dt.to_tree(\"time\", datetime.datetime(2015, 7, 20, 12, 30))\n    xml = tostring(tree) # serialise to make remove QName\n    tree = fromstring(xml)\n    xsi = tree.attrib[\"{%s}type\" % XSI_NS]\n    prefix = xsi.split(\":\")[0]\n    assert prefix == dcterms_prefix\n    \n    \ndef test_to_tree():\n    \n    \n    # TODO: Implement test for to_tree()\n    \n    \n    \n```\n\n```python\nfrom ..core import DocumentProperties\nfrom ..xml."
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2664,
+      1297,
+      8804,
+      6406,
+      4840,
+      7527,
+      371,
+      169,
+      480
+    ],
+    "f_before": [
+      119.88660430908203,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      119.88660430908203,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      71.11466979980469,
+      13.238633155822754,
+      12.184277534484863,
+      12.521389961242676,
+      12.952524185180664,
+      11.412901878356934,
+      12.117422103881836,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      71.11466979980469,
+      13.238633155822754,
+      12.184277534484863,
+      12.521389961242676,
+      12.952524185180664,
+      11.412901878356934,
+      12.117422103881836,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.7708911036252974,
+    "train_mean_l2": 6.875389972835779,
+    "train_mean_l1": 3.3832692221403122,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
+    "mean_std": 1.8216841220855713,
+    "max_std": 76.46134185791016
+  }
+}

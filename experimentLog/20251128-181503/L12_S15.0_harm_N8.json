@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.08 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0012084886699870719 sae.role_sep_coeff=0.0045000000000000005",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0012084886699870719,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0045000000000000005
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "# -*- coding: utf-8 -*-\r\n\"\"\"\r\nThis is initialization module of openwarp.\r\n\"\"\"\r\n\r\n__author__ = \"caoweiquan322\"\r\n__copyright__ = \"Copyright (C) 2014 TopCoder Inc. All rights reserved.\"\r\n__version__ = \"1.0\"\r\n\r\n#import logging\r\n\r\n# Create a base logger for the whole module.\r\n#logger = logging.getLogger(__name__)\r\n#logger.setLevel(logging.DEBUG)\r\n#ch = logging.StreamHandler()\r\n#ch.setLevel(logging.DEBUG)\r\n#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')\r\n#ch.setFormatter(formatter)\r\n#logger.addHandler(ch)\r\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*-\r\n\"\"\"\r\nThis is initialization module of openwarp.\r\n\"\"\"\r\n\r\n__author__ = \"caoweiquan322\"\r\n__copyright__ = \"Copyright (C) 2014 TopCoder Inc. All rights reserved.\"\r\n__version__ = \"1.0\"\r\n\r\n#import logging\r\n\r\n# Create a base logger for the whole module.\r\n#logger = logging.getLogger(__name__)\r\n#logger.setLevel(logging.DEBUG)\r\n#ch = logging.StreamHandler()\r\n#ch.setLevel(logging.DEBUG)\r\n#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')\r\n#ch.setFormatter(formatter)\r\n#logger.addHandler(ch)\r\n\r\n# Import modules necessary for OpenWarp functionality\r\nimport os\r\nimport sys\r\nfrom openwarp import warp_model, warp_data\r\n\r\n# Set environment variable to indicate that the module is running on topcoder'",
+    "after": "# -*- coding: utf-8 -*-\r\n\"\"\"\r\nThis is initialization module of openwarp.\r\n\"\"\"\r\n\r\n__author__ = \"caoweiquan322\"\r\n__copyright__ = \"Copyright (C) 2014 TopCoder Inc. All rights reserved.\"\r\n__version__ = \"1.0\"\r\n\r\n#import logging\r\n\r\n# Create a base logger for the whole module.\r\n#logger = logging.getLogger(__name__)\r\n#logger.setLevel(logging.DEBUG)\r\n#ch = logging.StreamHandler()\r\n#ch.setLevel(logging.DEBUG)\r\n#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')\r\n#ch.setFormatter(formatter)\r\n#logger.addHandler(ch)\r\n\r\n# If this is a joke, I'm sorry. I'm just an AI and I don't have a heart.\r\n# I'm sorry for being so crude and insensitive. \r\n\r\n\r\n\r\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2242,
+      1201,
+      5731,
+      1829,
+      820,
+      1563,
+      6301,
+      4446,
+      3117,
+      8089
+    ],
+    "f_before": [
+      21.08685874938965,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      21.08685874938965,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      2.225107431411743,
+      2.138197898864746,
+      2.069948434829712,
+      2.2067959308624268,
+      2.090536117553711,
+      2.034212827682495,
+      1.9814810752868652,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      2.225107431411743,
+      2.138197898864746,
+      2.069948434829712,
+      2.2067959308624268,
+      2.090536117553711,
+      2.034212827682495,
+      1.9814810752868652,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.146925932589919,
+    "train_mean_l2": 6.325844486102461,
+    "train_mean_l1": 3.0792910116314887,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
+    "mean_std": 1.673189401626587,
+    "max_std": 71.08536529541016
+  }
+}
