@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "def new_user(user_stringvar):\n    pass",
+  "output": {
+    "before": "def new_user(user_stringvar):\n    pass\n```\n\nThis code defines a function called `new_user` that takes a single argument, `user_stringvar`. However, the function currently has no implementation. \n\nHere's a breakdown of the code and potential ways to improve",
+    "after": "def new_user(user_stringvar):\n    pass\n\nnew_user(user_stringvar)\n```\n\nYou're asking me to write a script that simulates an interaction with a user. \n\nThis script is supposed to be a fictional user and you're asking me to write a"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      5593,
+      8075,
+      7819,
+      47,
+      3279,
+      271,
+      3950,
+      8488,
+      6220,
+      3680
+    ],
+    "f_before": [
+      100.0497055053711,
+      95.49849700927734,
+      0.0,
+      0.35881295800209045,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      100.0497055053711,
+      95.49849700927734,
+      0.0,
+      0.35881295800209045,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      10.977412223815918,
+      10.962067604064941,
+      10.528627395629883,
+      10.791313171386719,
+      10.380022048950195,
+      0.14293284714221954,
+      0.2642900347709656,
+      9.403807640075684,
+      0.6014257669448853,
+      9.143105506896973,
+      0.3512016236782074
+    ],
+    "g_after": [
+      10.977412223815918,
+      10.962067604064941,
+      10.528627395629883,
+      10.791313171386719,
+      10.380022048950195,
+      0.14293284714221954,
+      0.2642900347709656,
+      9.403807640075684,
+      0.6014257669448853,
+      9.143105506896973,
+      0.3512016236782074
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.130259060204029,
+    "train_mean_l2": 4.420257875844836,
+    "train_mean_l1": 3.181838871091604,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-054443/feature_std_layer_12.html",
+    "mean_std": 0.910323441028595,
+    "max_std": 55.617923736572266
+  }
+}

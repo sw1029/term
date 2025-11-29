@@ -27,6 +27,7 @@ def compute_loss(
     guidance_coeff = config.get("guidance_coeff", 1.0)
     mse_pos = config.get("guidance_mse_pos_value", 1.0)
     mse_neg = config.get("guidance_mse_neg_value", 0.0)
+    role_sep_coeff = config.get("role_sep_coeff", 0.0)
 
     x = x.to(device)
     x_reconst = x_reconst.to(device)
@@ -67,4 +68,21 @@ def compute_loss(
         "l0": l0,
         "guidance": guidance,
     }
+
+    # 역할 분리(decorrelation) loss: concept feature 간 공분산(off-diagonal)을 줄이는 항
+    role_sep = torch.tensor(0.0, device=device)
+    if role_sep_coeff > 0.0 and f is not None:
+        if concept_indices:
+            idxs = [int(idx) for idx in concept_indices.values()]
+            if len(idxs) > 1:
+                F = f[:, idxs]  # [batch, num_concepts]
+                F_centered = F - F.mean(dim=0, keepdim=True)
+                cov = (F_centered.T @ F_centered) / max(F_centered.size(0), 1)
+                diag = torch.diag(torch.diag(cov))
+                offdiag = cov - diag
+                role_sep_raw = (offdiag.pow(2)).mean()
+                role_sep = role_sep_coeff * role_sep_raw
+                total = total + role_sep
+                loss_items["role_sep"] = role_sep
+
     return total, loss_items

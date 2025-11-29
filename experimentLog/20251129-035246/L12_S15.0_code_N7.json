@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.02 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.02,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "user: 你好\nassistant: 你好！有什么我能为你效劳的吗？",
+  "output": {
+    "before": "user: 你好\nassistant: 你好！有什么我能为你效劳的吗？😊 \n",
+    "after": "user: 你好\nassistant: 你好！有什么我能为你效劳的吗？\n```python\nimport numpy as np\n\n# 定义一个函数\ndef generate_random_numbers(n, start, end):\n  \"\"\"\n  生成随机数\n  \"\"\"\n  return np.random.randint(start, end"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      8706,
+      1543,
+      5492,
+      5982,
+      4303,
+      6816,
+      6799,
+      6342,
+      752
+    ],
+    "f_before": [
+      38.34037780761719,
+      0.0,
+      0.0,
+      0.9345075488090515,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.7982480525970459
+    ],
+    "f_after": [
+      38.34037780761719,
+      0.0,
+      0.0,
+      0.9345075488090515,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.7982480525970459
+    ],
+    "g_before": [
+      0.07912339270114899,
+      22.6903133392334,
+      4.4815673828125,
+      3.988032102584839,
+      3.9398865699768066,
+      4.347365856170654,
+      3.959522247314453,
+      3.7965521812438965,
+      3.692556858062744,
+      4.0284423828125,
+      3.497068166732788
+    ],
+    "g_after": [
+      0.07912339270114899,
+      22.6903133392334,
+      4.4815673828125,
+      3.988032102584839,
+      3.9398865699768066,
+      4.347365856170654,
+      3.959522247314453,
+      3.7965521812438965,
+      3.692556858062744,
+      4.0284423828125,
+      3.497068166732788
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.431506278693676,
+    "train_mean_l2": 4.804488041855395,
+    "train_mean_l1": 3.246077475249767,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-035246/feature_std_layer_12.html",
+    "mean_std": 1.9125933647155762,
+    "max_std": 75.5639877319336
+  }
+}

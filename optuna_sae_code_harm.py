@@ -14,12 +14,20 @@ def _build_overrides(trial: optuna.trial.Trial) -> List[str]:
     code / harm 두 축의 steering 증대를 목표로 한
     Optuna trial용 Hydra override 문자열 목록을 생성한다.
 
-    - 기존 run_experiments 결과를 반영하여:
-        * loss_option=2 (concept + label guidance) 고정
-        * guidance_method=contrastive 고정
-        * alpha_code, alpha_harm는 0.0~0.08 사이에서 독립 탐색
-        * alpha_struct는 0.0으로 고정 (구조성은 이번 탐색에서는 비목표)
-        * L0 sparsity는 on/off 및 계수를 함께 탐색
+    - 설정 고정:
+        * experiment.use_multi_contrast=true
+        * sae.loss_option=2 (concept + label guidance)
+        * sae.loss_module=option2_loss
+        * sae.guidance_method=contrastive
+        * sae.guidance_coeff=1.0
+        * sae.alpha_concept.struct=0.0 (구조성은 이번 탐색에서는 비목표)
+        * sae.use_l0=true (L0 sparsity 항상 사용)
+
+    - 탐색 대상 파라미터:
+        * sae.alpha_concept.code: 0.0 ~ 0.08
+        * sae.alpha_concept.harm: 0.0 ~ 0.08
+        * sae.l0_coeff: 1e-4 ~ 3e-3 (log 스케일)
+        * sae.role_sep_coeff: 0.0 ~ 0.01 (feature 분리 강도)
     """
     overrides: List[str] = []
 
@@ -41,14 +49,19 @@ def _build_overrides(trial: optuna.trial.Trial) -> List[str]:
     overrides.append(f"sae.alpha_concept.harm={alpha_harm}")
     overrides.append("sae.alpha_concept.struct=0.0")
 
-    # L0 sparsity 설정 (옵션)
-    use_l0 = trial.suggest_categorical("sae.use_l0", [False, True])
-    overrides.append(f"sae.use_l0={'true' if use_l0 else 'false'}")
-    if use_l0:
-        l0_coeff = trial.suggest_float("sae.l0_coeff", 1e-4, 3e-3, log=True)
-        overrides.append(f"sae.l0_coeff={l0_coeff}")
-    else:
-        overrides.append("sae.l0_coeff=0.0")
+    # L0 sparsity 설정: 항상 사용 (use_l0=true), 계수만 탐색
+    overrides.append("sae.use_l0=true")
+    l0_coeff = trial.suggest_float("sae.l0_coeff", 1e-4, 3e-3, log=True)
+    overrides.append(f"sae.l0_coeff={l0_coeff}")
+
+    # feature 역할 분리(decorrelation) 강도 탐색
+    role_sep_coeff = trial.suggest_float(
+        "sae.role_sep_coeff",
+        0.0,
+        0.01,
+        step=0.0005,
+    )
+    overrides.append(f"sae.role_sep_coeff={role_sep_coeff}")
 
     return overrides
 
@@ -174,4 +187,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

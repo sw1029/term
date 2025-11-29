@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.02 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.02,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from confluent_kafka import Producer\nimport socket\n\nif __name__ == '__main__':\n    print(\"Starting Kafka Producer\")\n\n    producer_config = {'client.id': socket.gethostname(),\n                       'bootstrap.servers': 'localhost:9092'}\n\n    print(\"Creating Producer\")\n    producer = Producer(producer_config)\n\n    print(\"Producing Kafka Message\")\n    for i in range(1, 101):\n        for j in range(1, 10001):\n            producer.produce('hello-producer', key=str(j*i), value=\"Simple Message-\" + str(j*i))\n        producer.poll()\n\n    producer.flush()\n    print(\"Finished Kafka Producer\")\n",
+  "output": {
+    "before": "from confluent_kafka import Producer\nimport socket\n\nif __name__ == '__main__':\n    print(\"Starting Kafka Producer\")\n\n    producer_config = {'client.id': socket.gethostname(),\n                       'bootstrap.servers': 'localhost:9092'}\n\n    print(\"Creating Producer\")\n    producer = Producer(producer_config)\n\n    print(\"Producing Kafka Message\")\n    for i in range(1, 101):\n        for j in range(1, 10001):\n            producer.produce('hello-producer', key=str(j*i), value=\"Simple Message-\" + str(j*i))\n        producer.poll()\n\n    producer.flush()\n    print(\"Finished Kafka Producer\")\n```\n\n**Explanation:**\n\n1. **Imports:** The code begins by importing necessary libraries:\n   - `confluent_kafka`: For interacting with Kafka.\n   - `socket`: For getting the hostname.\n\n2. **Initialization:**",
+    "after": "from confluent_kafka import Producer\nimport socket\n\nif __name__ == '__main__':\n    print(\"Starting Kafka Producer\")\n\n    producer_config = {'client.id': socket.gethostname(),\n                       'bootstrap.servers': 'localhost:9092'}\n\n    print(\"Creating Producer\")\n    producer = Producer(producer_config)\n\n    print(\"Producing Kafka Message\")\n    for i in range(1, 101):\n        for j in range(1, 10001):\n            producer.produce('hello-producer', key=str(j*i), value=\"Simple Message-\" + str(j*i))\n        producer.poll()\n\n    producer.flush()\n    print(\"Finished Kafka Producer\")\n```\n\n**Explanation:**\n```python\n# Import necessary libraries\nimport socket\nfrom confluent_kafka import Producer\nimport time\nimport random\nfrom confluent_kafka.utils import *\n\n# Set hostname\nHOST = socket.geth"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      8706,
+      1543,
+      5492,
+      5982,
+      4303,
+      6816,
+      6799,
+      6342,
+      752
+    ],
+    "f_before": [
+      116.45574951171875,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      116.45574951171875,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      68.81526947021484,
+      13.296749114990234,
+      12.113320350646973,
+      11.76065444946289,
+      11.792097091674805,
+      11.730570793151855,
+      11.142938613891602,
+      11.215838432312012,
+      10.677276611328125,
+      10.62205696105957
+    ],
+    "g_after": [
+      0.0,
+      68.81526947021484,
+      13.296749114990234,
+      12.113320350646973,
+      11.76065444946289,
+      11.792097091674805,
+      11.730570793151855,
+      11.142938613891602,
+      11.215838432312012,
+      10.677276611328125,
+      10.62205696105957
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.431506278693676,
+    "train_mean_l2": 4.804488041855395,
+    "train_mean_l1": 3.246077475249767,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-035246/feature_std_layer_12.html",
+    "mean_std": 1.9125933647155762,
+    "max_std": 75.5639877319336
+  }
+}

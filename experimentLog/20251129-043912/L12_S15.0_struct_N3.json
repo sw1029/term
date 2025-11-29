@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.02 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.02,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "Think of an innovative idea related to agriculture and explain why it is beneficial.\n\nAn innovative idea related to agriculture is the development of smart greenhouses. These greenhouses leverage technology and automation to optimize the growth of crops, as well as reduce labor costs, energy usage, and water usage. This could significantly improve crop yields and efficiency, while also reducing the environmental footprint of agriculture. Smart greenhouses could also enable farmers to quickly adapt to changing weather patterns and climate conditions.",
+  "output": {
+    "before": "Think of an innovative idea related to agriculture and explain why it is beneficial.\n\nAn innovative idea related to agriculture is the development of smart greenhouses. These greenhouses leverage technology and automation to optimize the growth of crops, as well as reduce labor costs, energy usage, and water usage. This could significantly improve crop yields and efficiency, while also reducing the environmental footprint of agriculture. Smart greenhouses could also enable farmers to quickly adapt to changing weather patterns and climate conditions.\n\nHere's why it's beneficial:\n\n* **Increased crop yields:** By precisely controlling factors like temperature, humidity, light, and nutrient levels, smart greenhouses can significantly boost crop yields compared to traditional farming methods.\n* **Reduced labor",
+    "after": "Think of an innovative idea related to agriculture and explain why it is beneficial.\n\nAn innovative idea related to agriculture is the development of smart greenhouses. These greenhouses leverage technology and automation to optimize the growth of crops, as well as reduce labor costs, energy usage, and water usage. This could significantly improve crop yields and efficiency, while also reducing the environmental footprint of agriculture. Smart greenhouses could also enable farmers to quickly adapt to changing weather patterns and climate conditions.\n\nHere's a breakdown of the benefits:\n\n* **Increased crop yields:** Smart greenhouses enable precise control over environmental conditions (temperature, humidity, light), allowing for optimal crop growth.\n* **Reduced labor costs:** Automation can significantly reduce the"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      4185,
+      5787,
+      4649,
+      2117,
+      3658,
+      3250,
+      4157,
+      4706,
+      580
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.012307443656027317,
+      0.023557517677545547,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.024924444034695625,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.012307443656027317,
+      0.023557517677545547,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.024924444034695625,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.478275847430806,
+    "train_mean_l2": 6.235681868962944,
+    "train_mean_l1": 3.1976873024106025,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-043912/feature_std_layer_12.html",
+    "mean_std": 1.4158730506896973,
+    "max_std": 69.4203109741211
+  }
+}

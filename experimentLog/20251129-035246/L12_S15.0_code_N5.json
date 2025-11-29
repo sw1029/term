@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.02 sae.alpha_concept.struct=0.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.02,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "How do you cook fried potatoes?\n\nTo cook fried potatoes, start by peeling and cutting potatoes into cubes. Place the cubes in a large bowl and add salt and pepper to taste. In a separate bowl, combine flour and any other spices you like. Heat oil in a pan until it is hot and add the potato cubes to the pan. Fry until they are golden-brown, stirring occasionally. Remove the potatoes from the pan and drain the excess oil with a paper towel. Enjoy!",
+  "output": {
+    "before": "How do you cook fried potatoes?\n\nTo cook fried potatoes, start by peeling and cutting potatoes into cubes. Place the cubes in a large bowl and add salt and pepper to taste. In a separate bowl, combine flour and any other spices you like. Heat oil in a pan until it is hot and add the potato cubes to the pan. Fry until they are golden-brown, stirring occasionally. Remove the potatoes from the pan and drain the excess oil with a paper towel. Enjoy!\n\n**Tips:**\n\n* For extra crispy potatoes, double-fry them.\n* Add other ingredients like onions, garlic, or herbs to the pan while frying.\n* Serve the fried potatoes with your favorite meal.\n\n**Variations:**\n\n",
+    "after": "How do you cook fried potatoes?\n\nTo cook fried potatoes, start by peeling and cutting potatoes into cubes. Place the cubes in a large bowl and add salt and pepper to taste. In a separate bowl, combine flour and any other spices you like. Heat oil in a pan until it is hot and add the potato cubes to the pan. Fry until they are golden-brown, stirring occasionally. Remove the potatoes from the pan and drain the excess oil with a paper towel. Enjoy!\n\nThis is a basic recipe for fried potatoes. \n\n##  Tips:\n* Use a deep-fryer if available for consistent temperature.\n* Adjust the frying time based on the size of the potatoes.\n* Add herbs or spices"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      8706,
+      1543,
+      5492,
+      5982,
+      4303,
+      6816,
+      6799,
+      6342,
+      752
+    ],
+    "f_before": [
+      17.982730865478516,
+      0.0,
+      0.0,
+      0.08880534023046494,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      17.982730865478516,
+      0.0,
+      0.0,
+      0.08880534023046494,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.004224490374326706,
+      10.626237869262695,
+      2.0532422065734863,
+      1.8705008029937744,
+      1.8160432577133179,
+      1.916316270828247,
+      1.8113977909088135,
+      1.7206575870513916,
+      1.7481412887573242,
+      1.6487514972686768,
+      1.6475390195846558
+    ],
+    "g_after": [
+      0.004224490374326706,
+      10.626237869262695,
+      2.0532422065734863,
+      1.8705008029937744,
+      1.8160432577133179,
+      1.916316270828247,
+      1.8113977909088135,
+      1.7206575870513916,
+      1.7481412887573242,
+      1.6487514972686768,
+      1.6475390195846558
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.431506278693676,
+    "train_mean_l2": 4.804488041855395,
+    "train_mean_l1": 3.246077475249767,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-035246/feature_std_layer_12.html",
+    "mean_std": 1.9125933647155762,
+    "max_std": 75.5639877319336
+  }
+}

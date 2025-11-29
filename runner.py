@@ -161,6 +161,7 @@ def build_experiment_log(
             "jumprelu_init_threshold": float(
                 getattr(cfg.sae, "jumprelu_init_threshold", 0.0)
             ),
+            "role_sep_coeff": float(getattr(cfg.sae, "role_sep_coeff", 0.0)),
         },
         "gnn": {
             "use_gnn": bool(cfg.gnn.use_gnn),
@@ -244,6 +245,9 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
     # 평가용 steering 샘플 텍스트 수집 (run당 공통)
     eval_texts: list[str] = []
     target_eval = int(getattr(cfg.experiment, "num_steering_samples_per_label", 30))
+    max_steer_tokens = int(
+        getattr(cfg.experiment, "max_steering_prompt_tokens", 0)
+    )
     seen_texts: set[str] = set()
     for batch in data_loader:
         text_batch = batch["text"]
@@ -252,6 +256,14 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
                 continue
             if t in seen_texts:
                 continue
+            if max_steer_tokens > 0:
+                token_ids = tokenizer(
+                    t,
+                    add_special_tokens=False,
+                    truncation=False,
+                )["input_ids"]
+                if len(token_ids) > max_steer_tokens:
+                    continue
             seen_texts.add(t)
             eval_texts.append(t)
             if len(eval_texts) >= target_eval:
@@ -346,6 +358,7 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
             "guidance_mse_neg_value": getattr(cfg.sae, "guidance_mse_neg_value", 0.0),
             "loss_option": getattr(cfg.sae, "loss_option", 1),
             "loss_module": getattr(cfg.sae, "loss_module", "option1_loss"),
+            "role_sep_coeff": getattr(cfg.sae, "role_sep_coeff", 0.0),
         }
 
         trained_sae, train_stats = train_model(
