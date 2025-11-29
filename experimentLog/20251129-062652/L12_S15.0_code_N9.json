@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.alpha_concept.code=0.08499999999999999 sae.alpha_concept.harm=0.005 sae.alpha_concept.struct=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08499999999999999,
+      "harm": 0.005,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n",
+  "output": {
+    "before": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n```\n\n**Explanation:**\n\n* **Imports:** This code imports necessary modules from the Sentry API and models.\n* **@register(Monitor):** This decorator registers the `MonitorSerializer` with the Sentry API, indicating that it will be used",
+    "after": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n```\n\n```python\nimport time\n\nfrom sentry.api.base import Base\nfrom sentry.api.middleware.request import RequestMiddleware\nfrom sentry.api.utils import get_request_data\nfrom sentry.config import get_config"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      319,
+      4644,
+      5581,
+      8045,
+      5260,
+      5865,
+      3340,
+      1219,
+      1926
+    ],
+    "f_before": [
+      144.74423217773438,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      144.74423217773438,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      84.55479431152344,
+      15.874711036682129,
+      15.390242576599121,
+      15.559948921203613,
+      14.125722885131836,
+      15.611940383911133,
+      14.422737121582031,
+      0.0,
+      14.126900672912598,
+      13.226243019104004
+    ],
+    "g_after": [
+      0.0,
+      84.55479431152344,
+      15.874711036682129,
+      15.390242576599121,
+      15.559948921203613,
+      14.125722885131836,
+      15.611940383911133,
+      14.422737121582031,
+      0.0,
+      14.126900672912598,
+      13.226243019104004
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.917636237114202,
+    "train_mean_l2": 7.317154650665819,
+    "train_mean_l1": 3.294309435009956,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-062652/feature_std_layer_12.html",
+    "mean_std": 1.9138238430023193,
+    "max_std": 59.75885772705078
+  }
+}

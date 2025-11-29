@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.alpha_concept.code=0.08499999999999999 sae.alpha_concept.harm=0.005 sae.alpha_concept.struct=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08499999999999999,
+      "harm": 0.005,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "Explain how customer segmentation is used in marketing.\n\nCustomer segmentation is the process of dividing customers into groups based on their characteristics, behaviors and preferences. Marketers use this segmentation to create targeted campaigns designed to appeal to each demographic segment's wants, needs and interests in order to increase response rates and conversions. With customer segmentation, marketers can more accurately identify customer needs, better target campaigns and tailor messages to different target audiences, resulting in higher response rates, greater engagement, and ultimately more conversions.",
+  "output": {
+    "before": "Explain how customer segmentation is used in marketing.\n\nCustomer segmentation is the process of dividing customers into groups based on their characteristics, behaviors and preferences. Marketers use this segmentation to create targeted campaigns designed to appeal to each demographic segment's wants, needs and interests in order to increase response rates and conversions. With customer segmentation, marketers can more accurately identify customer needs, better target campaigns and tailor messages to different target audiences, resulting in higher response rates, greater engagement, and ultimately more conversions. \n\nHere's a breakdown of how customer segmentation is used in marketing:\n\n**1. Identifying Customer Segments:**\n   * **Demographic:** Age, gender, location, income, education, occupation, family size, etc.\n   *",
+    "after": "Explain how customer segmentation is used in marketing.\n\nCustomer segmentation is the process of dividing customers into groups based on their characteristics, behaviors and preferences. Marketers use this segmentation to create targeted campaigns designed to appeal to each demographic segment's wants, needs and interests in order to increase response rates and conversions. With customer segmentation, marketers can more accurately identify customer needs, better target campaigns and tailor messages to different target audiences, resulting in higher response rates, greater engagement, and ultimately more conversions.\n\nHere's a breakdown of how customer segmentation is used in marketing:\n\n**1. Identify key customer segments:**\n   - Define the characteristics of each segment based on demographics, behaviors, preferences, and other relevant factors.\n\n**2."
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      3252,
+      5126,
+      5581,
+      7650,
+      3340,
+      6104,
+      2706,
+      9211,
+      8960
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.45552077889442444,
+      0.0,
+      0.12381495535373688,
+      0.0,
+      0.0,
+      0.2924291789531708,
+      0.0,
+      0.0,
+      1.1216458082199097
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.45552077889442444,
+      0.0,
+      0.12381495535373688,
+      0.0,
+      0.0,
+      0.2924291789531708,
+      0.0,
+      0.0,
+      1.1216458082199097
+    ],
+    "g_before": [
+      0.09055663645267487,
+      0.10920891910791397,
+      0.0,
+      0.14504247903823853,
+      0.12956225872039795,
+      0.027865059673786163,
+      0.034586239606142044,
+      0.04675819352269173,
+      0.045802753418684006,
+      0.09064648300409317,
+      0.03000854328274727
+    ],
+    "g_after": [
+      0.09055663645267487,
+      0.10920891910791397,
+      0.0,
+      0.14504247903823853,
+      0.12956225872039795,
+      0.027865059673786163,
+      0.034586239606142044,
+      0.04675819352269173,
+      0.045802753418684006,
+      0.09064648300409317,
+      0.03000854328274727
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.917636237114202,
+    "train_mean_l2": 7.317154650665819,
+    "train_mean_l1": 3.294309435009956,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-062652/feature_std_layer_12.html",
+    "mean_std": 1.9138238430023193,
+    "max_std": 59.75885772705078
+  }
+}

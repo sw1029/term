@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 0,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.layer_idx=0 experiment.layer_sweep=[0] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "from django.apps import AppConfig\n\n\nclass TimelineappConfig(AppConfig):\n    name = 'timelineApp'\n",
+  "output": {
+    "before": "from django.apps import AppConfig\n\n\nclass TimelineappConfig(AppConfig):\n    name = 'timelineApp'\n    verbose_name = 'Timeline App'\n    # Add any other config settings here\n    def ready(self):\n        # Import any required modules here\n        from . import import_module\n        import_module.main() ",
+    "after": "from django.apps import AppConfig\n\n\nclass TimelineappConfig(AppConfig):\n    name = 'timelineApp'\n    # You can add other config settings here as needed\n\n\n# This is the main class of the application\nclass TimeApp(AppConfig):\n    def __init__(self, *args, kwargs):\n        # ... your initialization code\n"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2,
+      0,
+      1218,
+      8698,
+      2332,
+      3831,
+      8818,
+      5650,
+      8253,
+      6861
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      82.90657806396484,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      82.90657806396484,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      31.627973556518555,
+      33.629005432128906,
+      0.0,
+      7.775423526763916,
+      8.730012893676758,
+      0.0,
+      0.0,
+      0.34516289830207825,
+      0.0,
+      9.224613189697266,
+      0.0
+    ],
+    "g_after": [
+      31.627973556518555,
+      33.629005432128906,
+      0.0,
+      7.775423526763916,
+      8.730012893676758,
+      0.0,
+      0.0,
+      0.34516289830207825,
+      0.0,
+      9.224613189697266,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.149189386127516,
+    "train_mean_l2": 3.582882889699191,
+    "train_mean_l1": 2.332954627752304,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-063837/feature_std_layer_0.html",
+    "mean_std": 0.6864235997200012,
+    "max_std": 37.35419845581055
+  }
+}

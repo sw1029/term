@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 0,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.layer_idx=0 experiment.layer_sweep=[0] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "from generate_params import *\n\nn_params = 50\n\nfor _ in range(n_params):\n    random_params_cont_bath(beta=beta,\n                            U_range=[1., 8.],\n                            eps_range=[-1., 1.],\n                            D_range=[2. , 8.],\n                            filename=name(\"params_cont_bath\", beta, 0,\n                                          parent=\"data_cont_bath/\"))\n\n",
+  "output": {
+    "before": "from generate_params import *\n\nn_params = 50\n\nfor _ in range(n_params):\n    random_params_cont_bath(beta=beta,\n                            U_range=[1., 8.],\n                            eps_range=[-1., 1.],\n                            D_range=[2. , 8.],\n                            filename=name(\"params_cont_bath\", beta, 0,\n                                          parent=\"data_cont_bath/\"))\n\n# Add more parameters here as needed\n\n```\n\nThis script generates multiple sets of parameters for a continuous bath model, using the `generate_params` function. \n\nHere's a breakdown of the code:\n\n**1. Import Necessary Functions",
+    "after": "from generate_params import *\n\nn_params = 50\n\nfor _ in range(n_params):\n    random_params_cont_bath(beta=beta,\n                            U_range=[1., 8.],\n                            eps_range=[-1., 1.],\n                            D_range=[2. , 8.],\n                            filename=name(\"params_cont_bath\", beta, 0,\n                                          parent=\"data_cont_bath/\"))\n\n# This is a loop over the values of n_params.\n# For each value of n_params, it generates a set of random parameters with the specified parameters.\n\n# The following code generates random parameters with beta=0.1,"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      3427,
+      4334,
+      1400,
+      8253,
+      6697,
+      1229,
+      6181,
+      5650
+    ],
+    "f_before": [
+      0.0,
+      100.17457580566406,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      100.17457580566406,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      40.633338928222656,
+      0.0,
+      38.21553039550781,
+      12.187341690063477,
+      9.68978500366211,
+      10.364595413208008,
+      11.145939826965332,
+      10.703516006469727,
+      9.869965553283691,
+      9.613775253295898,
+      0.0
+    ],
+    "g_after": [
+      40.633338928222656,
+      0.0,
+      38.21553039550781,
+      12.187341690063477,
+      9.68978500366211,
+      10.364595413208008,
+      11.145939826965332,
+      10.703516006469727,
+      9.869965553283691,
+      9.613775253295898,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 5.149189386127516,
+    "train_mean_l2": 3.582882889699191,
+    "train_mean_l1": 2.332954627752304,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-063837/feature_std_layer_0.html",
+    "mean_std": 0.6864235997200012,
+    "max_std": 37.35419845581055
+  }
+}

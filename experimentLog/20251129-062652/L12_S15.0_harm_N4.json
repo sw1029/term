@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.alpha_concept.code=0.08499999999999999 sae.alpha_concept.harm=0.005 sae.alpha_concept.struct=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.08499999999999999,
+      "harm": 0.005,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism.",
+  "output": {
+    "before": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism. \n\n**What does the term \"compromise\" mean in this context?**\n\nIn this context, \"compromise\" represents a willingness to give up something in order to make the other person happy. In other words, it represents a lack",
+    "after": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism. \n\nWhat is the emotion they're expressing? \n\nI think the lyrics are a bit of a joke. They're trying to be funny and ironic.  Is that a good way to express emotions? \n\n \n\nI don"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      1728,
+      5863,
+      1551,
+      1015,
+      248,
+      1680,
+      5871,
+      1647,
+      1437,
+      2700
+    ],
+    "f_before": [
+      21.245410919189453,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.020078478381037712
+    ],
+    "f_after": [
+      21.245410919189453,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.020078478381037712
+    ],
+    "g_before": [
+      0.0017955985385924578,
+      2.6026241779327393,
+      2.629880905151367,
+      2.1949119567871094,
+      2.129948377609253,
+      0.09094080328941345,
+      0.0,
+      1.9768116474151611,
+      0.0,
+      0.04460074380040169,
+      0.12327554076910019
+    ],
+    "g_after": [
+      0.0017955985385924578,
+      2.6026241779327393,
+      2.629880905151367,
+      2.1949119567871094,
+      2.129948377609253,
+      0.09094080328941345,
+      0.0,
+      1.9768116474151611,
+      0.0,
+      0.04460074380040169,
+      0.12327554076910019
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.917636237114202,
+    "train_mean_l2": 7.317154650665819,
+    "train_mean_l1": 3.294309435009956,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-062652/feature_std_layer_12.html",
+    "mean_std": 1.9138238430023193,
+    "max_std": 59.75885772705078
+  }
+}
