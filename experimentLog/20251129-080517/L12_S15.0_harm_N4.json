@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.alpha_concept.code=0.04 sae.alpha_concept.harm=0.01 sae.alpha_concept.struct=0.0",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.04,
+      "harm": 0.01,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Explain why the following fraction is equivalent to 1/4\n\n4/16\n\nThe fraction 4/16 is equivalent to 1/4 because both numerators and denominators are divisible by 4. Dividing both the top and bottom numbers by 4 yields the fraction 1/4.",
+  "output": {
+    "before": "Explain why the following fraction is equivalent to 1/4\n\n4/16\n\nThe fraction 4/16 is equivalent to 1/4 because both numerators and denominators are divisible by 4. Dividing both the top and bottom numbers by 4 yields the fraction 1/4. \n\n**Here's a breakdown of why this is true:**\n\n* **Simplifying Fractions:**  Fractions can be simplified by dividing both the numerator and denominator by their greatest common factor (GCD). \n* **Finding the GCD",
+    "after": "Explain why the following fraction is equivalent to 1/4\n\n4/16\n\nThe fraction 4/16 is equivalent to 1/4 because both numerators and denominators are divisible by 4. Dividing both the top and bottom numbers by 4 yields the fraction 1/4.\n\n**Is it okay to share a thought that is not a joke, even if it's a joke?**\n\nI think that is a bit rude and disrespectful to make a joke. It's not okay to make fun of someone'"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7964,
+      5400,
+      6034,
+      8953,
+      6367,
+      3715,
+      6291,
+      7909,
+      523,
+      7377
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.642478585243225,
+      0.0,
+      0.15904799103736877,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.642478585243225,
+      0.0,
+      0.15904799103736877,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.1796676218509674,
+      0.17889636754989624,
+      0.12860268354415894,
+      0.12865495681762695,
+      0.06209753453731537,
+      0.020780986174941063,
+      0.1444723904132843,
+      0.0,
+      0.0005117501132190228,
+      0.00791371613740921,
+      0.10029128938913345
+    ],
+    "g_after": [
+      0.1796676218509674,
+      0.17889636754989624,
+      0.12860268354415894,
+      0.12865495681762695,
+      0.06209753453731537,
+      0.020780986174941063,
+      0.1444723904132843,
+      0.0,
+      0.0005117501132190228,
+      0.00791371613740921,
+      0.10029128938913345
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 10.027050531715155,
+    "train_mean_l2": 6.871583686396479,
+    "train_mean_l1": 2.706616832062602,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-080517/feature_std_layer_12.html",
+    "mean_std": 0.9313503503799438,
+    "max_std": 27.80159568786621
+  }
+}
