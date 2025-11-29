@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 16,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.layer_idx=16 experiment.layer_sweep=[16] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      16
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Create a table that illustrates the results of a survey.\n\nThe survey asked people to rate a new website on a scale of 1-5, with 1 being poor and 5 being excellent.\n\n| Rating | Percentage |\n| ------ | ---------- |\n| 1      | 10%        |\n| 2      | 20%        |\n| 3      | 30%        |\n| 4      | 25%        |\n| 5      | 15%        |",
+  "output": {
+    "before": "Create a table that illustrates the results of a survey.\n\nThe survey asked people to rate a new website on a scale of 1-5, with 1 being poor and 5 being excellent.\n\n| Rating | Percentage |\n| ------ | ---------- |\n| 1      | 10%        |\n| 2      | 20%        |\n| 3      | 30%        |\n| 4      | 25%        |\n| 5      | 15%        |\n\nCreate a graph to visually represent the data.\n\n**Explanation:**\n\nThis table and graph summarize the results of a survey about a new website.  \n\n* **Table:** The table presents the percentage of people who gave each rating (1-",
+    "after": "Create a table that illustrates the results of a survey.\n\nThe survey asked people to rate a new website on a scale of 1-5, with 1 being poor and 5 being excellent.\n\n| Rating | Percentage |\n| ------ | ---------- |\n| 1      | 10%        |\n| 2      | 20%        |\n| 3      | 30%        |\n| 4      | 25%        |\n| 5      | 15%        |\n\n**The survey was a poll about a new website that was launched.**\n\nWhat is the average rating?\n\nWhat is the median rating?\n\nWhat is the highest rating?\n\nWhat is the lowest rating?\n\n\n**The survey is a poll"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7233,
+      1953,
+      3321,
+      4172,
+      9078,
+      6736,
+      2840,
+      389,
+      2718,
+      8094
+    ],
+    "f_before": [
+      109.26685333251953,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      109.26685333251953,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      12.448836326599121,
+      12.566363334655762,
+      12.153605461120605,
+      11.409337043762207,
+      11.258506774902344,
+      10.529735565185547,
+      11.195080757141113,
+      11.132417678833008,
+      10.659192085266113,
+      10.318822860717773
+    ],
+    "g_after": [
+      0.0,
+      12.448836326599121,
+      12.566363334655762,
+      12.153605461120605,
+      11.409337043762207,
+      11.258506774902344,
+      10.529735565185547,
+      11.195080757141113,
+      11.132417678833008,
+      10.659192085266113,
+      10.318822860717773
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 13.971935280323029,
+    "train_mean_l2": 10.59188197554648,
+    "train_mean_l1": 3.990132829785347,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-093409/feature_std_layer_16.html",
+    "mean_std": 0.9223610162734985,
+    "max_std": 50.35371017456055
+  }
+}
