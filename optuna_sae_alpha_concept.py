@@ -1,9 +1,11 @@
 import datetime
+import gc
 import json
 import os
 from typing import List
 
 import optuna
+import torch
 from hydra import compose, initialize
 
 from runner import run_experiment
@@ -126,7 +128,13 @@ def main() -> None:
             log(f"[TRIAL {trial.number}] overrides: " + ", ".join(overrides))
 
             # 한 trial 전체 실행 (SAE 학습 + steering + OpenAI eval)
-            run_experiment(cfg, cli_command=cli_command)
+            try:
+                run_experiment(cfg, cli_command=cli_command)
+            finally:
+                # 명시적 메모리 해제 (CPU/GPU)
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
 
             # 새 run 디렉토리 찾기
             after_dirs = set(os.listdir(logs_root))

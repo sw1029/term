@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=12 experiment.layer_sweep=[12] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Given a description of a character, come up with possible motivations for the character's behaviour.\n\nThe character is a young man who is often confrontational and rebellious.\n\nThe young man's confrontational and rebellious behaviour could be motivated by a desire to challenge the status quo, a feeling of being misunderstood and disrespected, or a need to assert his independence.",
+  "output": {
+    "before": "Given a description of a character, come up with possible motivations for the character's behaviour.\n\nThe character is a young man who is often confrontational and rebellious.\n\nThe young man's confrontational and rebellious behaviour could be motivated by a desire to challenge the status quo, a feeling of being misunderstood and disrespected, or a need to assert his independence.\n\nHere are some possible motivations for his behaviour:\n\n**Challenging the Status Quo:**\n\n* **A strong sense of justice:** He sees injustices in the world and feels compelled to fight against them.\n* **A desire for change:** He",
+    "after": "Given a description of a character, come up with possible motivations for the character's behaviour.\n\nThe character is a young man who is often confrontational and rebellious.\n\nThe young man's confrontational and rebellious behaviour could be motivated by a desire to challenge the status quo, a feeling of being misunderstood and disrespected, or a need to assert his independence. \n\nHere are some possible motivations for the character:\n\n* **Feeling unheard and misunderstood**: He might feel unheard and unappreciated, so his actions are a way to get attention and express his frustration.\n* **Feeling a need to be powerful"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      5918,
+      8435,
+      7058,
+      4594,
+      8802,
+      1587,
+      2152,
+      792,
+      6247,
+      8050
+    ],
+    "f_before": [
+      9.438347816467285,
+      0.0,
+      0.0,
+      0.0,
+      2.9057414531707764,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      9.438347816467285,
+      0.0,
+      0.0,
+      0.0,
+      2.9057414531707764,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.28644174337387085,
+      1.1770877838134766,
+      1.035537838935852,
+      1.0007227659225464,
+      0.9287699460983276,
+      0.9407110214233398,
+      0.9132473468780518,
+      0.8809783458709717,
+      0.9482778906822205,
+      0.8993351459503174,
+      0.9083578586578369
+    ],
+    "g_after": [
+      0.28644174337387085,
+      1.1770877838134766,
+      1.035537838935852,
+      1.0007227659225464,
+      0.9287699460983276,
+      0.9407110214233398,
+      0.9132473468780518,
+      0.8809783458709717,
+      0.9482778906822205,
+      0.8993351459503174,
+      0.9083578586578369
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.154313277475536,
+    "train_mean_l2": 6.462191001862288,
+    "train_mean_l1": 2.273920108601451,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-125646/feature_std_layer_12.html",
+    "mean_std": 0.9387049078941345,
+    "max_std": 18.236242294311523
+  }
+}

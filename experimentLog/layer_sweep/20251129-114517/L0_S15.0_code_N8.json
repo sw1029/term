@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 0,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=0 experiment.layer_sweep=[0] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Brainstorm five slogans for a business\n\n1. \"Keep it simple and professional\" \n2. \"Experience the difference\" \n3. \"Passionate results, every time\" \n4. \"Quality you can trust\" \n5. \"On top of the game\"",
+  "output": {
+    "before": "Brainstorm five slogans for a business\n\n1. \"Keep it simple and professional\" \n2. \"Experience the difference\" \n3. \"Passionate results, every time\" \n4. \"Quality you can trust\" \n5. \"On top of the game\"\n\n\nWhich one resonates most with you? \n\n**Here's why I'm asking:**\n\n* **Clarity and Conciseness:**  I'm looking for slogans that are easily understood and memorable. \n* **Target Audience:**",
+    "after": "Brainstorm five slogans for a business\n\n1. \"Keep it simple and professional\" \n2. \"Experience the difference\" \n3. \"Passionate results, every time\" \n4. \"Quality you can trust\" \n5. \"On top of the game\"\n\n**Please tell me what you think of these slogans and how they might be improved.**\n\nHere are some thoughts on each slogan:\n\n1. **\"Keep it simple and professional\"**: This slogan feels a bit generic. It doesn't"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      1,
+      1507,
+      8929,
+      3003,
+      8672,
+      8133,
+      675,
+      380,
+      78
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0014318835455924273,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.005003414582461119,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0014318835455924273,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.005003414582461119,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 1.9766910339444876,
+    "train_mean_l2": 0.900213987313211,
+    "train_mean_l1": 0.7620190627016127,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-114517/feature_std_layer_0.html",
+    "mean_std": 0.08911429345607758,
+    "max_std": 8.961198806762695
+  }
+}

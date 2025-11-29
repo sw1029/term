@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=12 experiment.layer_sweep=[12] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Describe the impact of the industrial revolution\n\nThe industrial revolution had a profound impact on society. It brought new innovations in technology, production methods, and industrial organization, which resulted in increased productivity and manufacturing capabilities. Additionally, it led to increased wealth generation, population growth, and improved living standards. It also resulted in the expanding roles of machines in work and home life, as well as in enhanced consumer access to consumer goods.",
+  "output": {
+    "before": "Describe the impact of the industrial revolution\n\nThe industrial revolution had a profound impact on society. It brought new innovations in technology, production methods, and industrial organization, which resulted in increased productivity and manufacturing capabilities. Additionally, it led to increased wealth generation, population growth, and improved living standards. It also resulted in the expanding roles of machines in work and home life, as well as in enhanced consumer access to consumer goods.\n\n**Positive Impacts:**\n\n* **Economic Growth:** The industrial revolution spurred economic growth by increasing productivity and creating new industries. \n* **Technological Advancements:** Innovations like the steam engine, power loom, and cotton gin led to increased efficiency and",
+    "after": "Describe the impact of the industrial revolution\n\nThe industrial revolution had a profound impact on society. It brought new innovations in technology, production methods, and industrial organization, which resulted in increased productivity and manufacturing capabilities. Additionally, it led to increased wealth generation, population growth, and improved living standards. It also resulted in the expanding roles of machines in work and home life, as well as in enhanced consumer access to consumer goods.\n\nHowever, it is important to acknowledge that the industrial revolution wasn't just a positive thing. It was a complex and nuanced experience. It brought about many new challenges and problems that came with it, including social unrest, poverty, disease, and"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      103,
+      5385,
+      4225,
+      822,
+      5631,
+      38,
+      843,
+      5487,
+      4092,
+      1470
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.015781819820404053,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.015781819820404053,
+      0.0
+    ],
+    "g_before": [
+      0.0015329467132687569,
+      0.03889887034893036,
+      0.029581401497125626,
+      0.07573295384645462,
+      0.06748742610216141,
+      0.06632111221551895,
+      0.004301031585782766,
+      0.028347259387373924,
+      0.10397124290466309,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0015329467132687569,
+      0.03889887034893036,
+      0.029581401497125626,
+      0.07573295384645462,
+      0.06748742610216141,
+      0.06632111221551895,
+      0.004301031585782766,
+      0.028347259387373924,
+      0.10397124290466309,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 7.945697203695774,
+    "train_mean_l2": 5.446323892746121,
+    "train_mean_l1": 2.024458252355456,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-133428/feature_std_layer_12.html",
+    "mean_std": 0.8507248163223267,
+    "max_std": 18.098957061767578
+  }
+}

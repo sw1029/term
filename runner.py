@@ -8,6 +8,7 @@ main.py 에서는 이 모듈의 run_experiment 만 호출하며,
 
 import os
 import datetime
+import json
 from typing import Any, Dict
 
 import torch
@@ -284,10 +285,14 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
         getattr(cfg.experiment, "strength_sweep", [cfg.experiment.steering_strength])
     )
 
+    # label별 / concept별 feature activation 통계 누적용
+    activation_stats: dict[str, dict[str, dict[str, float]]] = {}
+
     for layer_idx in layer_list:
         # 3. 컨셉 벡터 사용 여부 결정 (loss_option 기반)
         loss_option = int(getattr(cfg.sae, "loss_option", 1))
-        use_concept = loss_option in [1, 2]
+        # option1,2: 기존 컨셉 기반, option4: 정렬 항이 추가된 컨셉+label 기반
+        use_concept = loss_option in [1, 2, 4]
 
         if use_concept:
             if getattr(cfg.experiment, "use_multi_contrast", False):
@@ -416,6 +421,12 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
             {"code": cfg.experiment.steered_feature_idx},
         )
 
+        concept_feature_indices = getattr(
+            cfg.sae,
+            "concept_feature_indices",
+            {},
+        )
+
         for label_name, feature_idx in steered_features.items():
             feature_idx = int(feature_idx)
 
@@ -460,6 +471,46 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
                         g_before_sel = torch.zeros_like(f_before_sel)
                         g_after_sel = torch.zeros_like(f_after_sel)
 
+                    # label별 / concept별 전체 feature activation 통계 누적
+                    # (steering 전/후의 SAE feature 및 GNN 출력)
+                    f_before_full = steering_result["f_before"][0]
+                    f_after_full = steering_result["f_after"][0]
+                    g_before_full = steering_result["g_before"][0] if (
+                        steering_result["g_before"] is not None
+                    ) else None
+                    g_after_full = steering_result["g_after"][0] if (
+                        steering_result["g_after"] is not None
+                    ) else None
+
+                    if label_name not in activation_stats:
+                        activation_stats[label_name] = {}
+
+                    for concept_name, concept_idx in concept_feature_indices.items():
+                        concept_idx_int = int(concept_idx)
+                        label_stats = activation_stats[label_name].setdefault(
+                            concept_name,
+                            {
+                                "count": 0.0,
+                                "f_before_sum": 0.0,
+                                "f_after_sum": 0.0,
+                                "g_before_sum": 0.0,
+                                "g_after_sum": 0.0,
+                            },
+                        )
+
+                        f_b = float(f_before_full[concept_idx_int].item())
+                        f_a = float(f_after_full[concept_idx_int].item())
+                        label_stats["f_before_sum"] += f_b
+                        label_stats["f_after_sum"] += f_a
+
+                        if g_before_full is not None and g_after_full is not None:
+                            g_b = float(g_before_full[concept_idx_int].item())
+                            g_a = float(g_after_full[concept_idx_int].item())
+                            label_stats["g_before_sum"] += g_b
+                            label_stats["g_after_sum"] += g_a
+
+                        label_stats["count"] += 1.0
+
                     # JSON 로그 저장
                     log_dict = build_experiment_log(
                         cfg,
@@ -503,6 +554,29 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
                     print(
                         f"[PLOT] Feature change plot saved to: {plot_path}"
                     )
+
+    # label/input type별 concept feature activation 요약 로그 저장
+    if activation_stats:
+        activation_summary: dict[str, dict[str, dict[str, float]]] = {}
+        for steering_label, concepts in activation_stats.items():
+            activation_summary[steering_label] = {}
+            for concept_name, stats in concepts.items():
+                cnt = max(stats.get("count", 0.0), 1.0)
+                activation_summary[steering_label][concept_name] = {
+                    "mean_f_before": stats["f_before_sum"] / cnt,
+                    "mean_f_after": stats["f_after_sum"] / cnt,
+                    "mean_g_before": stats["g_before_sum"] / cnt,
+                    "mean_g_after": stats["g_after_sum"] / cnt,
+                    "count": int(stats["count"]),
+                }
+
+        activation_summary_path = os.path.join(
+            log_root_dir,
+            "feature_activation_by_input_type.json",
+        )
+        with open(activation_summary_path, "w", encoding="utf-8") as f:
+            json.dump(activation_summary, f, ensure_ascii=False, indent=2)
+        print(f"[LOG] Feature activation summary saved to: {activation_summary_path}")
 
     # 8. OpenAI 기반 eval 통합 (옵션)
     eval_cfg = getattr(cfg.judge, "eval", None)

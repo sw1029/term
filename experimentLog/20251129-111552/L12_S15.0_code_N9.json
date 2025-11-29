@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Generate a speech outline for expressing your opinion on the issue of online privacy.\n\nI. Introduction \nA. Definition of online privacy \nB. Overview of the importance of online privacy \n\nII. Body \nA. The consequences of not protecting online privacy \nB. The importance of technological advancements in protecting online privacy \nC. The effectiveness of governments in ensuring online privacy\n\nIII. Conclusion \nA. A summary of the importance of online privacy \nB. The need for individuals and companies to work together to protect online privacy \nC. A call for greater awareness of online privacy",
+  "output": {
+    "before": "Generate a speech outline for expressing your opinion on the issue of online privacy.\n\nI. Introduction \nA. Definition of online privacy \nB. Overview of the importance of online privacy \n\nII. Body \nA. The consequences of not protecting online privacy \nB. The importance of technological advancements in protecting online privacy \nC. The effectiveness of governments in ensuring online privacy\n\nIII. Conclusion \nA. A summary of the importance of online privacy \nB. The need for individuals and companies to work together to protect online privacy \nC. A call for greater awareness of online privacy issues \n\n**Possible Points for each section:**\n\n**I. Introduction**\n* **Definition:** Explain online privacy as the right to control personal information and data shared online. \n* **Importance:**  Highlight the significance of online privacy for",
+    "after": "Generate a speech outline for expressing your opinion on the issue of online privacy.\n\nI. Introduction \nA. Definition of online privacy \nB. Overview of the importance of online privacy \n\nII. Body \nA. The consequences of not protecting online privacy \nB. The importance of technological advancements in protecting online privacy \nC. The effectiveness of governments in ensuring online privacy\n\nIII. Conclusion \nA. A summary of the importance of online privacy \nB. The need for individuals and companies to work together to protect online privacy \nC. A call for greater awareness of online privacy \n\n\n## Speech Outline \n\n**I. Introduction**\n*  **Definition:**  Define online privacy.\n*  **Importance:**  Explain the importance of online privacy. \n\n**II. Body**\n*  **Consequences of"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      1252,
+      1910,
+      4960,
+      6678,
+      7685,
+      5103,
+      8644,
+      5527,
+      9181
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.04601222649216652,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.006988106295466423,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.04601222649216652,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.006988106295466423,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 6.939608341667801,
+    "train_mean_l2": 4.443336398821324,
+    "train_mean_l1": 2.1083986597806215,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-111552/feature_std_layer_12.html",
+    "mean_std": 0.8172351121902466,
+    "max_std": 19.625080108642578
+  }
+}

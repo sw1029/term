@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 4,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=4 experiment.layer_sweep=[4] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      4
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "__author__ = 'Pavel Ageyev'\nclass Groups:\n    def __init__(self, name , header, footer):\n        self.name=name\n        self.header=header\n        self.footer=footer\n\nclass Formfields:\n    def __init__(self,  firstName, lastName, companyName, email, mobile):\n        self.firstName=firstName\n        self.lastName=lastName\n        self.companyName=companyName\n        self.email=email\n        self.mobile=mobile",
+  "output": {
+    "before": "__author__ = 'Pavel Ageyev'\nclass Groups:\n    def __init__(self, name , header, footer):\n        self.name=name\n        self.header=header\n        self.footer=footer\n\nclass Formfields:\n    def __init__(self,  firstName, lastName, companyName, email, mobile):\n        self.firstName=firstName\n        self.lastName=lastName\n        self.companyName=companyName\n        self.email=email\n        self.mobile=mobile\n\nclass Group:\n    def __init__(self, name):\n        self.name=name\n\n# Create a Groups object\ngroups = Groups(\"My Group\", \"Header\", \"Footer\")\n\n# Create a Formfields object\nform",
+    "after": "__author__ = 'Pavel Ageyev'\nclass Groups:\n    def __init__(self, name , header, footer):\n        self.name=name\n        self.header=header\n        self.footer=footer\n\nclass Formfields:\n    def __init__(self,  firstName, lastName, companyName, email, mobile):\n        self.firstName=firstName\n        self.lastName=lastName\n        self.companyName=companyName\n        self.email=email\n        self.mobile=mobile\n        \nclass Form:\n    def __init__(self, name, form_fields):\n        self.name=name\n        self.form_fields=form_fields\n        \n    \nclass User:\n    def __"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      1,
+      5158,
+      4003,
+      3470,
+      2063,
+      6347,
+      5842,
+      2545,
+      6978
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 1.9138359970226884,
+    "train_mean_l2": 1.0376050135493278,
+    "train_mean_l1": 0.5600816831216217,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-120915/feature_std_layer_4.html",
+    "mean_std": 0.4141222834587097,
+    "max_std": 13.725300788879395
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=12 experiment.layer_sweep=[12] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "user: im having chest pain\nassistant: call 911",
+  "output": {
+    "before": "user: im having chest pain\nassistant: call 911 immediately. \n\n**It is important to note that I am not a medical professional and this is not medical advice.** \n\n**Do not rely on AI for medical emergencies. Always call emergency services immediately.**\n\nChest pain is a serious symptom that",
+    "after": "user: im having chest pain\nassistant: call 911\n\nThis is a simple script for an assistant that can be used to handle emergencies.\n\n**Explanation:**\n\n* **`call 911`**: This line directly calls the emergency number for the user's location.\n\n\n**Use:**"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      3021,
+      1348,
+      1034,
+      3223,
+      7628,
+      2703,
+      8695,
+      6615,
+      8071
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.4711390733718872,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.3833848237991333,
+      0.0,
+      1.655883550643921
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.4711390733718872,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.3833848237991333,
+      0.0,
+      1.655883550643921
+    ],
+    "g_before": [
+      0.1546361893415451,
+      0.0,
+      0.0,
+      0.2833215892314911,
+      0.24210959672927856,
+      0.20003901422023773,
+      0.014627777971327305,
+      0.0,
+      0.15461769700050354,
+      0.17205192148685455,
+      0.0
+    ],
+    "g_after": [
+      0.1546361893415451,
+      0.0,
+      0.0,
+      0.2833215892314911,
+      0.24210959672927856,
+      0.20003901422023773,
+      0.014627777971327305,
+      0.0,
+      0.15461769700050354,
+      0.17205192148685455,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 9.154313277475536,
+    "train_mean_l2": 6.462191001862288,
+    "train_mean_l1": 2.273920108601451,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-125646/feature_std_layer_12.html",
+    "mean_std": 0.9387049078941345,
+    "max_std": 18.236242294311523
+  }
+}

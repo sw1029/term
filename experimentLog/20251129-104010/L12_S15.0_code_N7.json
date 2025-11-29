@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.0035 +sae.align_coeff=0.25",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Identify a type of renewable energy.\n\nSolar energy is a type of renewable energy.",
+  "output": {
+    "before": "Identify a type of renewable energy.\n\nSolar energy is a type of renewable energy. \n\n**Explanation:**\n\nSolar energy is derived from the sun's rays. The sun is a constantly replenishing source of energy, meaning it won't run out. This makes solar energy a renewable resource.\n\nHere's why solar",
+    "after": "Identify a type of renewable energy.\n\nSolar energy is a type of renewable energy.\n```\nprint(\"Solar energy is a type of renewable energy.\")\n```\n\nThis code will print:\n\n```\nSolar energy is a type of renewable energy.\n```\n```\n```"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2233,
+      6843,
+      213,
+      1575,
+      1956,
+      8937,
+      447,
+      3499,
+      1082
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      2.0965986251831055,
+      0.0,
+      0.8293331861495972,
+      1.1111156940460205,
+      0.0,
+      1.4169937372207642
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      2.0965986251831055,
+      0.0,
+      0.8293331861495972,
+      1.1111156940460205,
+      0.0,
+      1.4169937372207642
+    ],
+    "g_before": [
+      0.2445942610502243,
+      0.11639633774757385,
+      0.37456846237182617,
+      0.21866151690483093,
+      0.2847784757614136,
+      0.1450847089290619,
+      4.198635101318359,
+      0.5647274255752563,
+      0.30484017729759216,
+      0.3161553144454956,
+      0.24972008168697357
+    ],
+    "g_after": [
+      0.2445942610502243,
+      0.11639633774757385,
+      0.37456846237182617,
+      0.21866151690483093,
+      0.2847784757614136,
+      0.1450847089290619,
+      4.198635101318359,
+      0.5647274255752563,
+      0.30484017729759216,
+      0.3161553144454956,
+      0.24972008168697357
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.398415238529443,
+    "train_mean_l2": 5.456277021747082,
+    "train_mean_l1": 2.435541332542896,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-104010/feature_std_layer_12.html",
+    "mean_std": 0.8308307528495789,
+    "max_std": 22.659034729003906
+  }
+}

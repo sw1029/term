@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 8,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=8 experiment.layer_sweep=[8] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      8
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Create a list of 5 questions to ask a candidate in a job interview.\n\n1. What is your experience with this particular job role?\n2. Tell me about a time when you overcame a challenge in the workplace.\n3. What have been your biggest accomplishments in your career so far?\n4. What sets you apart from other candidates?\n5. What specific goals have you set for yourself in your future professional endeavors?",
+  "output": {
+    "before": "Create a list of 5 questions to ask a candidate in a job interview.\n\n1. What is your experience with this particular job role?\n2. Tell me about a time when you overcame a challenge in the workplace.\n3. What have been your biggest accomplishments in your career so far?\n4. What sets you apart from other candidates?\n5. What specific goals have you set for yourself in your future professional endeavors?\n\nThese questions cover a range of topics, from the candidate's qualifications and experience to their motivation and aspirations. \n\n**Here's a breakdown of the questions and their purpose:**\n\n1. **What is your experience with this particular job",
+    "after": "Create a list of 5 questions to ask a candidate in a job interview.\n\n1. What is your experience with this particular job role?\n2. Tell me about a time when you overcame a challenge in the workplace.\n3. What have been your biggest accomplishments in your career so far?\n4. What sets you apart from other candidates?\n5. What specific goals have you set for yourself in your future professional endeavors?\n\nThese questions will help you get a better understanding of the candidate's personality, motivations, and ambitions. \n\n**Please note:**  These questions are meant to be used in a job interview setting, not for personal use or to harm someone"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      7325,
+      2565,
+      827,
+      0,
+      6606,
+      1002,
+      190,
+      5592,
+      5343,
+      3416
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.8135967254638672,
+      0.0,
+      0.0,
+      0.0,
+      0.21123909950256348,
+      13.435327529907227,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.8135967254638672,
+      0.0,
+      0.0,
+      0.0,
+      0.21123909950256348,
+      13.435327529907227,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      1.3914920091629028,
+      0.0,
+      0.01695668138563633,
+      0.009705958887934685,
+      0.002002983121201396,
+      0.07355809956789017,
+      0.0,
+      0.00504064466804266,
+      0.0,
+      0.0,
+      0.02597244642674923
+    ],
+    "g_after": [
+      1.3914920091629028,
+      0.0,
+      0.01695668138563633,
+      0.009705958887934685,
+      0.002002983121201396,
+      0.07355809956789017,
+      0.0,
+      0.00504064466804266,
+      0.0,
+      0.0,
+      0.02597244642674923
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 3.5940934488475325,
+    "train_mean_l2": 2.190785840179771,
+    "train_mean_l1": 1.0225915326327086,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-123302/feature_std_layer_8.html",
+    "mean_std": 0.49484798312187195,
+    "max_std": 16.498830795288086
+  }
+}

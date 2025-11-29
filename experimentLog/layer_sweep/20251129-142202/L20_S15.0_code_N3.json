@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 20,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 sae.layer_idx=20 experiment.layer_sweep=[20] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      20
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Describe the painting \"Starry Night\"\n\n\"Starry Night\" by Dutch post-Impressionist painter Vincent Van Gogh is an oil painting featuring a night sky full of stars and a sleepy village on the horizon. The night sky is painted in swirling blues and yellows, with a crescent moon and stars that twinkle in the dark night. In the village, church spires and a large cypress tree draw the eye. The painting is full of movement, capturing the hustle and bustle of a small village, while the sky is peaceful and still. The painting is seen as a representation of Van Gogh's inner peace and spirituality.",
+  "output": {
+    "before": "Describe the painting \"Starry Night\"\n\n\"Starry Night\" by Dutch post-Impressionist painter Vincent Van Gogh is an oil painting featuring a night sky full of stars and a sleepy village on the horizon. The night sky is painted in swirling blues and yellows, with a crescent moon and stars that twinkle in the dark night. In the village, church spires and a large cypress tree draw the eye. The painting is full of movement, capturing the hustle and bustle of a small village, while the sky is peaceful and still. The painting is seen as a representation of Van Gogh's inner peace and spirituality. \n\n**Key features of the painting:**\n\n* **The swirling sky:** The sky is dominated by a swirling movement of blues and yellows. This swirling movement is reminiscent of the brushstrokes of Van Gogh's own mind, expressing his emotions and",
+    "after": "Describe the painting \"Starry Night\"\n\n\"Starry Night\" by Dutch post-Impressionist painter Vincent Van Gogh is an oil painting featuring a night sky full of stars and a sleepy village on the horizon. The night sky is painted in swirling blues and yellows, with a crescent moon and stars that twinkle in the dark night. In the village, church spires and a large cypress tree draw the eye. The painting is full of movement, capturing the hustle and bustle of a small village, while the sky is peaceful and still. The painting is seen as a representation of Van Gogh's inner peace and spirituality.\n\n**Description:**\n\n* **Subject:** Night sky with a village\n* **Style:** Post-Impressionism\n* **Colors:** Vibrant, swirling blues and yellows;  \n   * **Signature:** The color combination is unique and highly"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      1,
+      5666,
+      3683,
+      5515,
+      4697,
+      4212,
+      8354,
+      9175,
+      2271
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      17.954431533813477,
+      0.04754295200109482,
+      0.0,
+      0.11723219603300095,
+      0.04079330712556839,
+      0.05153386667370796,
+      0.0,
+      0.07113264501094818,
+      0.10250292718410492
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      17.954431533813477,
+      0.04754295200109482,
+      0.0,
+      0.11723219603300095,
+      0.04079330712556839,
+      0.05153386667370796,
+      0.0,
+      0.07113264501094818,
+      0.10250292718410492
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 26.672479647785426,
+    "train_mean_l2": 20.70426560740173,
+    "train_mean_l1": 5.5165470574200155,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-142202/feature_std_layer_20.html",
+    "mean_std": 1.4509227275848389,
+    "max_std": 35.97808074951172
+  }
+}

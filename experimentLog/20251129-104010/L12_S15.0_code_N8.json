@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.0035 +sae.align_coeff=0.25",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "t = int(input())\ni=0\nwhile i < t:\n    st = str(input())\n    length = len(st)\n    j = 0\n    cnt = 0\n    while j < length:\n        \n        num = int(st[j])\n        #print(num)\n        if num == 4:\n            cnt = cnt + 1\n        j=j+1\n    print(cnt)\n    i=i+1",
+  "output": {
+    "before": "t = int(input())\ni=0\nwhile i < t:\n    st = str(input())\n    length = len(st)\n    j = 0\n    cnt = 0\n    while j < length:\n        \n        num = int(st[j])\n        #print(num)\n        if num == 4:\n            cnt = cnt + 1\n        j=j+1\n    print(cnt)\n    i=i+1\n    \n```\n\n**Explanation:**\n\nThis Python code counts the number of times the number \"4\" appears in a given string. Here's a breakdown of the code:\n\n1. **Input:**\n   - `t = int",
+    "after": "t = int(input())\ni=0\nwhile i < t:\n    st = str(input())\n    length = len(st)\n    j = 0\n    cnt = 0\n    while j < length:\n        \n        num = int(st[j])\n        #print(num)\n        if num == 4:\n            cnt = cnt + 1\n        j=j+1\n    print(cnt)\n    i=i+1\n```\n\n**Explanation:**\n\nThe code is designed to handle multiple test cases. Here's a breakdown:\n\n1. **Input:**\n   - `t = int(input())`: Reads the number of test cases.\n   -"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      2233,
+      6843,
+      213,
+      1575,
+      1956,
+      8937,
+      447,
+      3499,
+      1082
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.08885831385850906,
+      0.0,
+      0.0,
+      0.07460657507181168,
+      0.0,
+      0.046778760850429535,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.08885831385850906,
+      0.0,
+      0.0,
+      0.07460657507181168,
+      0.0,
+      0.046778760850429535,
+      0.0
+    ],
+    "g_before": [
+      0.009564542211592197,
+      0.007807740941643715,
+      0.00017357035540044308,
+      0.0,
+      0.005599360913038254,
+      0.0,
+      0.9155032634735107,
+      0.004050466697663069,
+      0.0,
+      0.07616878300905228,
+      0.0
+    ],
+    "g_after": [
+      0.009564542211592197,
+      0.007807740941643715,
+      0.00017357035540044308,
+      0.0,
+      0.005599360913038254,
+      0.0,
+      0.9155032634735107,
+      0.004050466697663069,
+      0.0,
+      0.07616878300905228,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.398415238529443,
+    "train_mean_l2": 5.456277021747082,
+    "train_mean_l1": 2.435541332542896,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-104010/feature_std_layer_12.html",
+    "mean_std": 0.8308307528495789,
+    "max_std": 22.659034729003906
+  }
+}
