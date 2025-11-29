@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "python main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.alpha_concept.code=0.07 sae.alpha_concept.harm=0.015 sae.alpha_concept.struct=0.015",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.07,
+      "harm": 0.015,
+      "struct": 0.015
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "Describe a data structure that is suitable for storing a large set of integers.\n\nA hash table would be an appropriate data structure for storing a large set of integers. A hash table is a data structure that utilizes key/value pairs and allows for O(1) lookup time. A hash table is also space efficient, so it is capable of storing a large number of items without taking up too much space. Its quick lookup time and efficient storage make it an ideal data structure for storing large sets of integers.",
+  "output": {
+    "before": "Describe a data structure that is suitable for storing a large set of integers.\n\nA hash table would be an appropriate data structure for storing a large set of integers. A hash table is a data structure that utilizes key/value pairs and allows for O(1) lookup time. A hash table is also space efficient, so it is capable of storing a large number of items without taking up too much space. Its quick lookup time and efficient storage make it an ideal data structure for storing large sets of integers.\n\n**Here's why a hash table is suitable for storing a large set of integers:**\n\n* **Efficient Lookup:**  Hash tables use a hash function to map integer keys to specific index positions in the table. This allows for near-instant",
+    "after": "Describe a data structure that is suitable for storing a large set of integers.\n\nA hash table would be an appropriate data structure for storing a large set of integers. A hash table is a data structure that utilizes key/value pairs and allows for O(1) lookup time. A hash table is also space efficient, so it is capable of storing a large number of items without taking up too much space. Its quick lookup time and efficient storage make it an ideal data structure for storing large sets of integers. \n\nHere are some other data structures:\n- **Arrays:** Suitable for storing integers.\n- **HashMap:** Suitable for storing keys and values.\n\nLet me know if you have any other questions. \n"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      7974,
+      8192,
+      5475,
+      3406,
+      2428,
+      7771,
+      6494,
+      538,
+      4027
+    ],
+    "f_before": [
+      13.194485664367676,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      13.194485664367676,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      7.575535774230957,
+      1.5446256399154663,
+      1.409816861152649,
+      1.4238499402999878,
+      1.3943113088607788,
+      1.3202078342437744,
+      1.228583812713623,
+      1.3530086278915405,
+      1.2901687622070312,
+      1.2906099557876587
+    ],
+    "g_after": [
+      0.0,
+      7.575535774230957,
+      1.5446256399154663,
+      1.409816861152649,
+      1.4238499402999878,
+      1.3943113088607788,
+      1.3202078342437744,
+      1.228583812713623,
+      1.3530086278915405,
+      1.2901687622070312,
+      1.2906099557876587
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.739678638620768,
+    "train_mean_l2": 7.679845778621734,
+    "train_mean_l1": 3.0366101479530334,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-071403/feature_std_layer_12.html",
+    "mean_std": 1.7980707883834839,
+    "max_std": 65.45854949951172
+  }
+}

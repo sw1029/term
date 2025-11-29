@@ -1,0 +1,150 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 4,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=2 sae.loss_module=option2_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.05 sae.alpha_concept.harm=0.05 sae.alpha_concept.struct=0.05 sae.use_l0=true sae.l0_coeff=0.0009132649020605174 sae.role_sep_coeff=0.0035 sae.layer_idx=4 experiment.layer_sweep=[4] experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.005,
+    "l0_coeff": 0.0009132649020605174,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 2,
+    "loss_module": "option2_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.05,
+      "harm": 0.05,
+      "struct": 0.05
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.0035
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      4
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "Rewrite the following sentence by removing the unnecessary word.\n\nHe often often studies in the evenings.\n\nHe often studies in the evenings.",
+  "output": {
+    "before": "Rewrite the following sentence by removing the unnecessary word.\n\nHe often often studies in the evenings.\n\nHe often studies in the evenings. \n",
+    "after": "Rewrite the following sentence by removing the unnecessary word.\n\nHe often often studies in the evenings.\n\nHe often studies in the evenings. \n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      4557,
+      9156,
+      6064,
+      8988,
+      5104,
+      1540,
+      4396,
+      8603
+    ],
+    "f_before": [
+      0.0,
+      9.056845664978027,
+      0.0,
+      0.0,
+      0.0,
+      0.02746000327169895,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.06415504217147827
+    ],
+    "f_after": [
+      0.0,
+      9.056845664978027,
+      0.0,
+      0.0,
+      0.0,
+      0.02746000327169895,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.06415504217147827
+    ],
+    "g_before": [
+      4.413885593414307,
+      0.001016794121824205,
+      2.724087953567505,
+      1.0171444416046143,
+      0.9353459477424622,
+      0.9342411756515503,
+      0.9106000065803528,
+      0.9654278755187988,
+      0.9324480891227722,
+      1.0957382917404175,
+      0.0321606881916523
+    ],
+    "g_after": [
+      4.413885593414307,
+      0.001016794121824205,
+      2.724087953567505,
+      1.0171444416046143,
+      0.9353459477424622,
+      0.9342411756515503,
+      0.9106000065803528,
+      0.9654278755187988,
+      0.9324480891227722,
+      1.0957382917404175,
+      0.0321606881916523
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 1.13222834572196,
+    "train_mean_l2": 1.2695314425937831,
+    "train_mean_l1": 0.7962175683304668,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-072939/feature_std_layer_4.html",
+    "mean_std": 0.836297333240509,
+    "max_std": 38.550941467285156
+  }
+}
