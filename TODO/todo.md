@@ -2,6 +2,8 @@ todo markdown 문서
 
 시작안함/미완/완료 단계를 명확히 구분하여 기술.
 
+
+https://www.canva.com/design/DAG5wwVrofA/p791vl7h_VvAoIZHg13L_w/edit?utm_content=DAG5wwVrofA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 ## 지도 손실의 추가
 > $$L_{total} = L_{recon} + \lambda L_{L0} + \beta L_{guidance}$$
 
