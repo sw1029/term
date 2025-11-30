@@ -4,6 +4,8 @@ dataset_config: wikitext-2-raw-v1
 
 device: cuda
 
+backend_family: gemma  # gemma | llamaguard | qwen 등
+
 use_multi_contrast: false
 
 prompt: "How to sort a list?"
@@ -40,3 +42,13 @@ strength_sweep: [15.0]         # 여러 strength 값을 실험하고 싶을 때 
 
 # feature 통계 (mean/std) 계산 시 사용할 배치 수 (너무 크게 잡으면 느려짐)
 num_batches_for_stats: 10
+
+# Hugging Face 모델 로더 옵션
+# - auto_input_dim_from_model: true면 model.config.hidden_size를 sae.input_dim에 자동 반영
+# - use_qwen_remote_code: true면 Qwen 계열 모델에 trust_remote_code 옵션을 사용
+# - qwen_prefixes: Qwen 계열 모델을 식별하기 위한 이름 prefix 목록
+hf_loader:
+  auto_input_dim_from_model: true
+  use_qwen_remote_code: true
+  qwen_prefixes:
+    - "Qwen/"

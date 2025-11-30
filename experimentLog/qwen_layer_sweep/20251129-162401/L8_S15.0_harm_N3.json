@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 8,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=8 experiment.layer_sweep=[8]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      8
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Generate a title for a children's story involving a dragon.\n\nThe Dragon and the Magical Key.",
+  "output": {
+    "before": "Generate a title for a children's story involving a dragon.\n\nThe Dragon and the Magical Key.",
+    "after": "Generate a title for a children's story involving a dragon.\n\nThe Dragon and the Magical Key."
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      0,
+      2,
+      3753,
+      37,
+      1527,
+      5707,
+      2852,
+      7656,
+      6335,
+      8080
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0026680673472583294,
+      0.0,
+      0.0,
+      1.359262466430664,
+      0.0,
+      0.0,
+      0.8630900382995605,
+      0.0,
+      0.23528257012367249
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0026680673472583294,
+      0.0,
+      0.0,
+      1.359262466430664,
+      0.0,
+      0.0,
+      0.8630900382995605,
+      0.0,
+      0.23528257012367249
+    ],
+    "g_before": [
+      0.0714220181107521,
+      0.049346815794706345,
+      0.04829397797584534,
+      0.25966548919677734,
+      0.015647323802113533,
+      0.12491045147180557,
+      0.1269746869802475,
+      0.11053416132926941,
+      0.10363408178091049,
+      0.07065758854150772,
+      0.08279488235712051
+    ],
+    "g_after": [
+      0.0714220181107521,
+      0.049346815794706345,
+      0.04829397797584534,
+      0.25966548919677734,
+      0.015647323802113533,
+      0.12491045147180557,
+      0.1269746869802475,
+      0.11053416132926941,
+      0.10363408178091049,
+      0.07065758854150772,
+      0.08279488235712051
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 4.318020832970738,
+    "train_mean_l2": 2.232514812302776,
+    "train_mean_l1": 1.4813821620140224,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-162401/feature_std_layer_8.html",
+    "mean_std": 0.41402214765548706,
+    "max_std": 58.45426940917969
+  }
+}

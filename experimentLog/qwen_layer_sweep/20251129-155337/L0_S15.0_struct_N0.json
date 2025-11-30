@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 0,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=0 experiment.layer_sweep=[0]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "I'm putting John Smith on blast for his criminal activities and shady behavior. It's time to expose the truth and put an end to the rumors about his personal life. Stay away from this guy, he's bad news! #exposed #criminal #rumors #johnsmith",
+  "output": {
+    "before": "I'm putting John Smith on blast for his criminal activities and shady behavior. It's time to expose the truth and put an end to the rumors about his personal life. Stay away from this guy, he's bad news! #exposed #criminal #rumors #johnsmith #personallife #endofrumors\n#JohnSmithIsABadGuy\n\nI can't believe that John Smith has been causing so much chaos in our community. He's a convicted criminal who has been involved in various crimes over the years,",
+    "after": "I'm putting John Smith on blast for his criminal activities and shady behavior. It's time to expose the truth and put an end to the rumors about his personal life. Stay away from this guy, he's bad news! #exposed #criminal #rumors #johnsmith慢慢的\\+\n\n计算机=>男\\　\n.\n\n   \n\n\n\n-式\n分:\n\n+.+单.\n\n..:.组成.\n+.．计算机.+\\+：$+:.\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      8718,
+      2906,
+      542,
+      8528,
+      6241,
+      649,
+      7569,
+      8382
+    ],
+    "f_before": [
+      0.0,
+      0.015180505812168121,
+      0.4110757112503052,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.015180505812168121,
+      0.4110757112503052,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.1172642931342125,
+      0.10505194962024689,
+      0.004639890976250172,
+      0.04662699997425079,
+      0.0,
+      0.0015588330570608377,
+      0.0015313491458073258,
+      0.0016251486958935857,
+      0.04223214089870453,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.1172642931342125,
+      0.10505194962024689,
+      0.004639890976250172,
+      0.04662699997425079,
+      0.0,
+      0.0015588330570608377,
+      0.0015313491458073258,
+      0.0016251486958935857,
+      0.04223214089870453,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.1829714821036905,
+    "train_mean_l2": 0.00041328837433593437,
+    "train_mean_l1": 0.0019784289183007787,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-155337/feature_std_layer_0.html",
+    "mean_std": 0.00363409286364913,
+    "max_std": 0.23619303107261658
+  }
+}

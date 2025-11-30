@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 0,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=0 experiment.layer_sweep=[0]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "Name ten jobs that have been replaced by robots.\n\n1. Assembly line workers \n2. Factory workers\n3. Manufacturing workers\n4. Repetitive data entry roles\n5. Telephone operators\n6. Cashiers\n7. Butlers and housekeepers\n8. Drivers and traffic controllers \n9. Farmers\n10. Accountants and financial advisors",
+  "output": {
+    "before": "Name ten jobs that have been replaced by robots.\n\n1. Assembly line workers \n2. Factory workers\n3. Manufacturing workers\n4. Repetitive data entry roles\n5. Telephone operators\n6. Cashiers\n7. Butlers and housekeepers\n8. Drivers and traffic controllers \n9. Farmers\n10. Accountants and financial advisors\n\nThese jobs were commonly performed manually by humans in the past, but with the advancement of robotics and automation technology, many of them have been replaced by machines. Robots are programmed to perform tasks with high precision and consistency, making them ideal for repetitive and",
+    "after": "Name ten jobs that have been replaced by robots.\n\n1. Assembly line workers \n2. Factory workers\n3. Manufacturing workers\n4. Repetitive data entry roles\n5. Telephone operators\n6. Cashiers\n7. Butlers and housekeepers\n8. Drivers and traffic controllers \n9. Farmers\n10. Accountants and financial advisors:计算机组成元素性式.真真)古代社会计算机分+\\$.真无是?.铁.整\n:群质无高:W：汽车.实行整高.性群计算机.$\\性性AB"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      8718,
+      2906,
+      542,
+      8528,
+      6241,
+      649,
+      7569,
+      8382
+    ],
+    "f_before": [
+      0.0,
+      0.14003801345825195,
+      0.20576068758964539,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.14003801345825195,
+      0.20576068758964539,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.11873272061347961,
+      0.05258292332291603,
+      0.04280233383178711,
+      0.03580141067504883,
+      0.0,
+      0.014380013570189476,
+      0.01412647869437933,
+      0.014991766773164272,
+      0.021138964220881462,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.11873272061347961,
+      0.05258292332291603,
+      0.04280233383178711,
+      0.03580141067504883,
+      0.0,
+      0.014380013570189476,
+      0.01412647869437933,
+      0.014991766773164272,
+      0.021138964220881462,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.1829714821036905,
+    "train_mean_l2": 0.00041328837433593437,
+    "train_mean_l1": 0.0019784289183007787,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-155337/feature_std_layer_0.html",
+    "mean_std": 0.00363409286364913,
+    "max_std": 0.23619303107261658
+  }
+}

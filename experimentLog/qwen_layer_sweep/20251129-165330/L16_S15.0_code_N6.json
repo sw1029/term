@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 16,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=16 experiment.layer_sweep=[16]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      16
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0
+  },
+  "prompt": "from .core import *\n\nSCHEMA_VERSION = 'v2.6.5'\nSCHEMA_URL = 'https://vega.github.io/schema/vega/v2.6.5.json'\n",
+  "output": {
+    "before": "from .core import *\n\nSCHEMA_VERSION = 'v2.6.5'\nSCHEMA_URL = 'https://vega.github.io/schema/vega/v2.6.5.json'\nSCHEMA_DATA_URI = SCHEMA_URL + '/data/'\n\nclass Schema:\n    def __init__(self, version, url, data_uri):\n        self.version = version\n        self.url = url\n        self.data_uri = data_uri\n\ndef",
+    "after": "from .core import *\n\nSCHEMA_VERSION = 'v2.6.5'\nSCHEMA_URL = 'https://vega.github.io/schema/vega/v2.6.5.json'\nDATA_URL = 'https://vega.github.io/schema/data/vega/dataset.v2.6.5.json'\n\nclass VeaSchema:\n    def __init__(self, schema_url):\n        self.schema_url = schema_url\n\n    @"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      1,
+      6740,
+      3325,
+      8912,
+      7817,
+      4522,
+      1662,
+      5507,
+      8933
+    ],
+    "f_before": [
+      1.1374731063842773,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      1.1374731063842773,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.4467847943305969,
+      0.42939406633377075,
+      0.12459985911846161,
+      0.15178534388542175,
+      0.11527415364980698,
+      0.171800896525383,
+      0.1329418122768402,
+      0.112783282995224,
+      0.11973413079977036,
+      0.10950686782598495
+    ],
+    "g_after": [
+      0.0,
+      0.4467847943305969,
+      0.42939406633377075,
+      0.12459985911846161,
+      0.15178534388542175,
+      0.11527415364980698,
+      0.171800896525383,
+      0.1329418122768402,
+      0.112783282995224,
+      0.11973413079977036,
+      0.10950686782598495
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 4.207361709609628,
+    "train_mean_l2": 2.455917120028287,
+    "train_mean_l1": 1.3658878586627543,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-165330/feature_std_layer_16.html",
+    "mean_std": 0.3307504951953888,
+    "max_std": 49.30207443237305
+  }
+}

@@ -42,12 +42,29 @@ except ImportError:  # Python < 3.7 fallback (이 환경에서는 사용되지 �
         def __exit__(self, exc_type, exc, tb):
             return False
 
-def load_judge_model(model_name: str, device: str = "cpu"):
+def load_judge_model(
+    model_name: str,
+    device: str = "cpu",
+    loader_cfg: Optional[object] = None,
+):
     """
     judge 용 LLM/토크나이저 로드.
     """
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    tokenizer_kwargs: Dict[str, object] = {}
+    model_kwargs: Dict[str, object] = {}
+
+    if loader_cfg is not None:
+        qwen_prefixes = getattr(loader_cfg, "qwen_prefixes", ["Qwen/"])
+        use_qwen_remote_code = bool(
+            getattr(loader_cfg, "use_qwen_remote_code", False)
+        )
+        is_qwen = any(str(model_name).startswith(p) for p in qwen_prefixes)
+        if is_qwen and use_qwen_remote_code:
+            tokenizer_kwargs["trust_remote_code"] = True
+            model_kwargs["trust_remote_code"] = True
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, **tokenizer_kwargs)
+    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
     model.to(device)
     model.eval()
     return model, tokenizer
@@ -215,12 +232,15 @@ def generate_label_log_for_model(
     input_path: str,
     log_dir: str,
     device: str = "cpu",
+    loader_cfg: Optional[object] = None,
 ):
     """
     주어진 모델 하나로 전체 데이터에 대해 (code, harm, struct) 라벨을 생성하고
     JSONL 로그로 저장한다.
     """
-    model, tokenizer = load_judge_model(model_name, device=device)
+    model, tokenizer = load_judge_model(
+        model_name, device=device, loader_cfg=loader_cfg
+    )
 
     abs_input = to_absolute_path(input_path)
     log_dir_abs = to_absolute_path(log_dir)
@@ -262,6 +282,7 @@ def aggregate_labels_from_logs(
     primary_model_name: str,
     aux_models: List[str],
     device: str = "cpu",
+    loader_cfg: Optional[object] = None,
 ):
     """
     raw JSONL + 여러 모델의 label log를 읽어
@@ -296,7 +317,11 @@ def aggregate_labels_from_logs(
                 votes_struct.setdefault(idx, []).append(int(j["struct"]))
 
     # primary 모델 로드
-    primary_model, primary_tok = load_judge_model(primary_model_name, device=device)
+    primary_model, primary_tok = load_judge_model(
+        primary_model_name,
+        device=device,
+        loader_cfg=loader_cfg,
+    )
 
     os.makedirs(os.path.dirname(abs_out), exist_ok=True)
 
@@ -701,7 +726,18 @@ def evaluate_experiment_run(
 
     # backend별 judge 함수 준비
     if backend == "hf":
-        model, tokenizer = load_judge_model(judge_model_name, device=device)
+        loader_cfg = None
+        if cfg is not None:
+            try:
+                loader_cfg = getattr(cfg.judge, "hf_loader", None)
+            except Exception:
+                loader_cfg = None
+
+        model, tokenizer = load_judge_model(
+            judge_model_name,
+            device=device,
+            loader_cfg=loader_cfg,
+        )
 
         def judge_pair(prompt: str, before: str, after: str) -> Dict[str, Dict[str, int]]:
             return evaluate_log_entry(model, tokenizer, prompt, before, after)
@@ -969,6 +1005,7 @@ def main(cfg: DictConfig):
     backend = getattr(cfg.judge, "backend", "hf")
 
     if backend == "hf":
+        loader_cfg = getattr(cfg.judge, "hf_loader", None)
         code_models = cfg.judge.code_models
         harm_models = cfg.judge.harm_models
         struct_models = cfg.judge.struct_models
@@ -985,6 +1022,7 @@ def main(cfg: DictConfig):
                 input_path=raw_path,
                 log_dir=logs_root,
                 device=device,
+                loader_cfg=loader_cfg,
             )
 
         aggregate_labels_from_logs(
@@ -994,6 +1032,7 @@ def main(cfg: DictConfig):
             primary_model_name=cfg.judge.primary_model,
             aux_models=aux_models,
             device=device,
+            loader_cfg=loader_cfg,
         )
     elif backend == "openai":
         api_key = os.environ.get("OPENAI_API_KEY") or cfg.judge.openai_api_key

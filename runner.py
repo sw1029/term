@@ -233,12 +233,48 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
         cfg.experiment.device if torch.cuda.is_available() else "cpu"
     )
 
-    # 1. 모델 / 토크나이저 로드
+    # 1. 모델 / 토크나이저 로드 (hf_loader 옵션 기반)
     model_name = cfg.experiment.model_name
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+
+    hf_loader_cfg = getattr(cfg.experiment, "hf_loader", None)
+    if hf_loader_cfg is None:
+        hf_loader_cfg = {}
+
+    qwen_prefixes = getattr(hf_loader_cfg, "qwen_prefixes", ["Qwen/"])
+    use_qwen_remote_code = bool(
+        getattr(hf_loader_cfg, "use_qwen_remote_code", False)
+    )
+    auto_input_dim = bool(
+        getattr(hf_loader_cfg, "auto_input_dim_from_model", False)
+    )
+
+    is_qwen = any(str(model_name).startswith(p) for p in qwen_prefixes)
+
+    tokenizer_kwargs = {}
+    model_kwargs = {}
+    if is_qwen and use_qwen_remote_code:
+        tokenizer_kwargs["trust_remote_code"] = True
+        model_kwargs["trust_remote_code"] = True
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, **tokenizer_kwargs)
+    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
     model.to(device)
     model.eval()
+
+    # SAE input_dim을 모델 hidden_size에 자동으로 맞추기 (옵션)
+    if auto_input_dim:
+        hidden_size = getattr(model.config, "hidden_size", None)
+        if hidden_size is not None:
+            cfg.sae.input_dim = int(hidden_size)
+
+    # Llama-Guard 등 pad_token이 없는 토크나이저에 대한 보정
+    backend_family = getattr(cfg.experiment, "backend_family", "gemma")
+    if backend_family == "llamaguard":
+        if getattr(tokenizer, "pad_token", None) is None:
+            if getattr(tokenizer, "eos_token", None) is not None:
+                tokenizer.pad_token = tokenizer.eos_token
+            elif getattr(tokenizer, "bos_token", None) is not None:
+                tokenizer.pad_token = tokenizer.bos_token
 
     # 2. 데이터로더 준비 (공통)
     data_loader = build_dataloader(cfg, tokenizer)

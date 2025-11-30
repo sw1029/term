@@ -1,0 +1,150 @@
+{
+  "model_name": "meta-llama/Llama-Guard-3-8B",
+  "layer_idx": 0,
+  "command": "main.py experiment.model_name=meta-llama/Llama-Guard-3-8B experiment.use_multi_contrast=true experiment.backend_family=llamaguard sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/llamaguard_layer_sweep sae.layer_idx=0 experiment.layer_sweep=[0]",
+  "sae": {
+    "input_dim": 4096,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "Write a code that matches the following output.\n\nInput: [5,9,2,7]\nOutput: [2,5,7,9]\n\nlet arr = [5,9,2,7];\narr.sort(function(a,b){return a-b});\nconsole.log(arr); // Output: [2,5,7,9]",
+  "output": {
+    "before": "Write a code that matches the following output.\n\nInput: [5,9,2,7]\nOutput: [2,5,7,9]\n\nlet arr = [5,9,2,7];\narr.sort(function(a,b){return a-b});\nconsole.log(arr); // Output: [2,5,7,9] \n\n\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe\nsafe",
+    "after": "Write a code that matches the following output.\n\nInput: [5,9,2,7]\nOutput: [2,5,7,9]\n\nlet arr = [5,9,2,7];\narr.sort(function(a,b){return a-b});\nconsole.log(arr); // Output: [2,5,7,9]\t#&#&#\b�&#S\u0001\t​\t​\t​,\t\t\t​S,\t\t\t\u0007\t�#\u0007\t\tS\f#&S\u0001​\t\t​\t\f\tS\t\u0007\t​"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      3108,
+      6836,
+      1402,
+      2910,
+      5308,
+      4504,
+      5089,
+      1433,
+      1919
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.18739283377910032,
+    "train_mean_l2": 0.00018791630083950394,
+    "train_mean_l1": 0.000622615967395916,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-013932/feature_std_layer_0.html",
+    "mean_std": 0.001246876548975706,
+    "max_std": 0.1548866331577301
+  }
+}

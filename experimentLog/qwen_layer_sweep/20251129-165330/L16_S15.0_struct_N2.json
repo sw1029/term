@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 16,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=16 experiment.layer_sweep=[16]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      16
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "Generate a customer testimonial for a new mattress.\n\nI love my new mattress from XYZ company! It provides the perfect balance between comfort and support. The mattress is so comfortable, I wake up feeling refreshed and energized. The customer service was excellent and I am very satisfied with my purchase.",
+  "output": {
+    "before": "Generate a customer testimonial for a new mattress.\n\nI love my new mattress from XYZ company! It provides the perfect balance between comfort and support. The mattress is so comfortable, I wake up feeling refreshed and energized. The customer service was excellent and I am very satisfied with my purchase. The delivery process was seamless and the product arrived on time. When I opened the box, I was amazed by its quality and how well it fits my body. The mattress feels like it's been designed specifically for me, providing the perfect level of support",
+    "after": "Generate a customer testimonial for a new mattress.\n\nI love my new mattress from XYZ company! It provides the perfect balance between comfort and support. The mattress is so comfortable, I wake up feeling refreshed and energized. The customer service was excellent and I am very satisfied with my purchase. The quality of the materials used in the construction is evident, and the craftsmanship is top-notch. I particularly appreciate the responsiveness of the mattress to my body shape, which ensures a personalized fit that keeps me comfortable throughout the night. The price point is reasonable"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      6740,
+      3325,
+      1662,
+      4522,
+      7817,
+      7938,
+      8912,
+      3673
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.17715217173099518,
+      0.0,
+      0.0,
+      0.4186945855617523,
+      0.0,
+      0.15435045957565308,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.17715217173099518,
+      0.0,
+      0.0,
+      0.4186945855617523,
+      0.0,
+      0.15435045957565308,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.08290793001651764,
+      0.0826031044125557,
+      0.012424142099916935,
+      0.056016720831394196,
+      0.09043266624212265,
+      0.03897193819284439,
+      0.07943036407232285,
+      0.056664299219846725,
+      0.0,
+      0.020372096449136734,
+      0.009393087588250637
+    ],
+    "g_after": [
+      0.08290793001651764,
+      0.0826031044125557,
+      0.012424142099916935,
+      0.056016720831394196,
+      0.09043266624212265,
+      0.03897193819284439,
+      0.07943036407232285,
+      0.056664299219846725,
+      0.0,
+      0.020372096449136734,
+      0.009393087588250637
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 4.207361709609628,
+    "train_mean_l2": 2.455917120028287,
+    "train_mean_l1": 1.3658878586627543,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-165330/feature_std_layer_16.html",
+    "mean_std": 0.3307504951953888,
+    "max_std": 49.30207443237305
+  }
+}

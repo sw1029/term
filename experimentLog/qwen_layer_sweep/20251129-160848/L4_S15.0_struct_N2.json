@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 4,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=4 experiment.layer_sweep=[4]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      4
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n",
+  "output": {
+    "before": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n```\n\nThis script defines three tasks: `send_email`, `get_micro_app_status`, and `create_task`. The `send_email` task sends an email with the given `email_id` and a specified `message` using Celery's `",
+    "after": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n)\n\n)\n\n\n@shared_task#def run_fork_task飞翔_module飞翔_module\n__filename__\ntime.sleep(int飞翔_module_fold_10246#)\n\\file\\notional_folding_module\")\n\n\n@shared_task#def execute_f"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      47,
+      1322,
+      6255,
+      4920,
+      2725,
+      925,
+      171,
+      7702
+    ],
+    "f_before": [
+      0.12176978588104248,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.12176978588104248,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.05727953836321831,
+      0.03215653449296951,
+      0.011902292259037495,
+      0.013034769333899021,
+      0.011621123179793358,
+      0.012225116603076458,
+      0.011534206569194794,
+      0.011374011635780334,
+      0.012041141279041767,
+      0.011243616230785847
+    ],
+    "g_after": [
+      0.0,
+      0.05727953836321831,
+      0.03215653449296951,
+      0.011902292259037495,
+      0.013034769333899021,
+      0.011621123179793358,
+      0.012225116603076458,
+      0.011534206569194794,
+      0.011374011635780334,
+      0.012041141279041767,
+      0.011243616230785847
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.31080414372868836,
+    "train_mean_l2": 0.0539769138097763,
+    "train_mean_l1": 0.02312958190504287,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-160848/feature_std_layer_4.html",
+    "mean_std": 0.0009577227174304426,
+    "max_std": 0.05453735962510109
+  }
+}

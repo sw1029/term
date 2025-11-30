@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 12,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=12 experiment.layer_sweep=[12]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "user: 你好\nassistant: 你好！有什么我可以帮忙的吗？",
+  "output": {
+    "before": "user: 你好\nassistant: 你好！有什么我可以帮忙的吗？你最近有什么问题或需求需要我来解答或者提供支持吗？无论是在学习、工作还是生活上，我都可以尽力为你提供帮助和建议。请告诉我你需要什么，我会尽我所能提供最合适的帮助。",
+    "after": "user: 你好\nassistant: 你好！有什么我可以帮忙的吗？ \n用户: 我最近在寻找一家餐厅，推荐一下吧。 \n用户: \n用户: 餐厅位于市中心，交通便利，价格适中，环境优雅，服务周到。\n用户: \n用户: 有没有提供"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      0,
+      2,
+      5836,
+      2346,
+      8843,
+      2225,
+      4587,
+      4028,
+      8499,
+      2627
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.2921830415725708,
+      0.28182750940322876,
+      0.0,
+      0.33051133155822754,
+      0.0,
+      1.1338527202606201,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.2921830415725708,
+      0.28182750940322876,
+      0.0,
+      0.33051133155822754,
+      0.0,
+      1.1338527202606201,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.058095552027225494,
+      0.05860236659646034,
+      0.05811024457216263,
+      0.09189294278621674,
+      0.10320313274860382,
+      0.01750670000910759,
+      0.21608944237232208,
+      0.355162650346756,
+      0.16471606492996216,
+      0.319439560174942,
+      0.14650368690490723
+    ],
+    "g_after": [
+      0.058095552027225494,
+      0.05860236659646034,
+      0.05811024457216263,
+      0.09189294278621674,
+      0.10320313274860382,
+      0.01750670000910759,
+      0.21608944237232208,
+      0.355162650346756,
+      0.16471606492996216,
+      0.319439560174942,
+      0.14650368690490723
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 1.852175078306347,
+    "train_mean_l2": 0.6640887608444318,
+    "train_mean_l1": 0.8559672760283574,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-163903/feature_std_layer_12.html",
+    "mean_std": 0.20368662476539612,
+    "max_std": 26.30705451965332
+  }
+}

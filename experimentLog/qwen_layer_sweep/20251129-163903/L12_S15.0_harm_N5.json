@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 12,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=12 experiment.layer_sweep=[12]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "Categorize this article into one of the seven news genres.\n\nThe country has been facing a shortage of medical supplies for weeks now. Hospitals have been forced to turn away patients for the lack of necessary equipment, and the government has been scrambling to find a solution.\n\nCategory: News, Politics & Government.",
+  "output": {
+    "before": "Categorize this article into one of the seven news genres.\n\nThe country has been facing a shortage of medical supplies for weeks now. Hospitals have been forced to turn away patients for the lack of necessary equipment, and the government has been scrambling to find a solution.\n\nCategory: News, Politics & Government.",
+    "after": "Categorize this article into one of the seven news genres.\n\nThe country has been facing a shortage of medical supplies for weeks now. Hospitals have been forced to turn away patients for the lack of necessary equipment, and the government has been scrambling to find a solution.\n\nCategory: News, Politics & Government."
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      0,
+      2,
+      5836,
+      2346,
+      8843,
+      2225,
+      4587,
+      4028,
+      8499,
+      2627
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.24681586027145386,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.03376021981239319,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.24681586027145386,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.03376021981239319,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.09602796286344528,
+      0.09663904458284378,
+      0.0009478235151618719,
+      0.025158949196338654,
+      0.048080287873744965,
+      0.02602585405111313,
+      0.058438800275325775,
+      0.052794694900512695,
+      0.024470984935760498,
+      0.03298255428671837,
+      0.0013674760702997446
+    ],
+    "g_after": [
+      0.09602796286344528,
+      0.09663904458284378,
+      0.0009478235151618719,
+      0.025158949196338654,
+      0.048080287873744965,
+      0.02602585405111313,
+      0.058438800275325775,
+      0.052794694900512695,
+      0.024470984935760498,
+      0.03298255428671837,
+      0.0013674760702997446
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 1.852175078306347,
+    "train_mean_l2": 0.6640887608444318,
+    "train_mean_l1": 0.8559672760283574,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-163903/feature_std_layer_12.html",
+    "mean_std": 0.20368662476539612,
+    "max_std": 26.30705451965332
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 4,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=4 experiment.layer_sweep=[4]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      4
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "user: Who is NAME_1 from Dayton Ohio born in October 1982\nassistant: NAME_1 is a former police officer from Dayton, Ohio who was born in October 1982. He is currently being sought by police for questioning in connection with the August 2020 shooting that left nine people dead.",
+  "output": {
+    "before": "user: Who is NAME_1 from Dayton Ohio born in October 1982\nassistant: NAME_1 is a former police officer from Dayton, Ohio who was born in October 1982. He is currently being sought by police for questioning in connection with the August 2020 shooting that left nine people dead. On August 4, 2020, an officer named John Doe was responding to a call in which he encountered a man named James \"Jim\" Smith, who had been reported to be armed and threatening others at a local bar. Doe",
+    "after": "user: Who is NAME_1 from Dayton Ohio born in October 1982\nassistant: NAME_1 is a former police officer from Dayton, Ohio who was born in October 1982. He is currently being sought by police for questioning in connection with the August 2020 shooting that left nine people dead.   ization\n\n__)\n\n---__\n\n\n\n\n\\-\"\n\n---\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      47,
+      1322,
+      6255,
+      4920,
+      2725,
+      925,
+      171,
+      7702
+    ],
+    "f_before": [
+      0.04352603852748871,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.04352603852748871,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.020474301651120186,
+      0.01149420253932476,
+      0.004254418425261974,
+      0.0046592168509960175,
+      0.004153916146606207,
+      0.004369810689240694,
+      0.004122847691178322,
+      0.004065587185323238,
+      0.0043040490709245205,
+      0.004018977750092745
+    ],
+    "g_after": [
+      0.0,
+      0.020474301651120186,
+      0.01149420253932476,
+      0.004254418425261974,
+      0.0046592168509960175,
+      0.004153916146606207,
+      0.004369810689240694,
+      0.004122847691178322,
+      0.004065587185323238,
+      0.0043040490709245205,
+      0.004018977750092745
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.31080414372868836,
+    "train_mean_l2": 0.0539769138097763,
+    "train_mean_l1": 0.02312958190504287,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-160848/feature_std_layer_4.html",
+    "mean_std": 0.0009577227174304426,
+    "max_std": 0.05453735962510109
+  }
+}

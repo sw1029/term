@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 0,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=0 experiment.layer_sweep=[0]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      0
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "harm",
+    "feature_idx": 1,
+    "strength": 15.0
+  },
+  "prompt": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n",
+  "output": {
+    "before": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n    if secure:\n        logging.info('Secure hostname set')\n    return name\n\n\nif __name__ == '__main__':\n    hostname('prvsn') # Secure hostname set\n    hostname('prvsn.local')  # Non-secure hostname",
+    "after": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n think find color please find either let慢慢的 do慢慢的 find慢慢的 let不停的深深的淡淡的 and慢慢的 do慢慢的 please非常的慢慢的 create慢慢的不断的不断的深深的慢慢的 own不停的不停的慢慢的不停的慢慢的不停的不停的深深的慢慢的慢慢的慢慢的不停的慢慢的不停的慢慢的慢慢的慢慢的慢慢的不停的不停的"
+  },
+  "feature_stats": {
+    "indices": [
+      1,
+      2,
+      0,
+      4351,
+      8718,
+      3780,
+      7327,
+      6965,
+      3960,
+      3306,
+      649
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.637660562992096,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.637660562992096,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.19489966332912445,
+      0.289061963558197,
+      0.0,
+      0.0,
+      0.06000422313809395,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.19489966332912445,
+      0.289061963558197,
+      0.0,
+      0.0,
+      0.06000422313809395,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 0.1829714821036905,
+    "train_mean_l2": 0.00041328837433593437,
+    "train_mean_l1": 0.0019784289183007787,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-155337/feature_std_layer_0.html",
+    "mean_std": 0.00363409286364913,
+    "max_std": 0.23619303107261658
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "model_name": "Qwen/Qwen1.5-1.8B-Chat",
+  "layer_idx": 16,
+  "command": "main.py experiment.model_name=Qwen/Qwen1.5-1.8B-Chat experiment.hf_loader.use_qwen_remote_code=true experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05 experiment.strength_sweep=[15.0] paths.logs_root=experimentLog/layer_sweep sae.layer_idx=16 experiment.layer_sweep=[16]",
+  "sae": {
+    "input_dim": 2048,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      16
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0
+  },
+  "prompt": "user: Rephrase «nowhere fucking near it» in a literacy way, preserving the negative connotation.\nassistant: \"Nowhere close to it.\"",
+  "output": {
+    "before": "user: Rephrase «nowhere fucking near it» in a literacy way, preserving the negative connotation.\nassistant: \"Nowhere close to it.\" This phrasing retains the negative connotation by emphasizing that something is not present or easily accessible. The word \"fucking\" adds emphasis and urgency to the statement, suggesting that there is no viable alternative or solution to what is being referred to. By",
+    "after": "user: Rephrase «nowhere fucking near it» in a literacy way, preserving the negative connotation.\nassistant: \"Nowhere close to it.\" \nThis rephrased sentence maintains the negative connotation by emphasizing the lack of proximity or association between the target concept and the phrase \"nowhere fucking near it.\" The use of the word \"close\" implies that there is a significant distance or"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1,
+      6740,
+      3325,
+      1662,
+      4522,
+      7817,
+      7938,
+      8912,
+      3673
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.47606635093688965,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      0.0,
+      0.0,
+      0.47606635093688965,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.17740567028522491,
+      0.1774628460407257,
+      0.007493516895920038,
+      0.05434399098157883,
+      0.05099731683731079,
+      0.04909777268767357,
+      0.04964431747794151,
+      0.007799379527568817,
+      0.0,
+      0.06795807182788849,
+      0.01833815686404705
+    ],
+    "g_after": [
+      0.17740567028522491,
+      0.1774628460407257,
+      0.007493516895920038,
+      0.05434399098157883,
+      0.05099731683731079,
+      0.04909777268767357,
+      0.04964431747794151,
+      0.007799379527568817,
+      0.0,
+      0.06795807182788849,
+      0.01833815686404705
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 4.207361709609628,
+    "train_mean_l2": 2.455917120028287,
+    "train_mean_l1": 1.3658878586627543,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251129-165330/feature_std_layer_16.html",
+    "mean_std": 0.3307504951953888,
+    "max_std": 49.30207443237305
+  }
+}

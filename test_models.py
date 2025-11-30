@@ -12,8 +12,9 @@ Hydra config의 judge 섹션에 정의된:
 
 import hydra
 from omegaconf import DictConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+
+from llm_judge import load_judge_model
 
 
 def quick_infer(model, tokenizer, device: str):
@@ -45,13 +46,16 @@ def main(cfg: DictConfig):
 
     print(f"[TEST] Checking {len(unique_models)} models on device={device}")
 
+    loader_cfg = getattr(cfg.judge, "hf_loader", None)
+
     for name in unique_models:
         try:
             print(f"[LOAD] {name}")
-            tok = AutoTokenizer.from_pretrained(name)
-            mdl = AutoModelForCausalLM.from_pretrained(name)
-            mdl.to(device)
-            mdl.eval()
+            mdl, tok = load_judge_model(
+                name,
+                device=device,
+                loader_cfg=loader_cfg,
+            )
             quick_infer(mdl, tok, device)
             print(f"[OK] {name}")
         except Exception as e:
@@ -60,4 +64,3 @@ def main(cfg: DictConfig):
 
 if __name__ == "__main__":
     main()
-
