@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    DOMAIN,\n    DEVICE_TYPE_DEHUMIDIFIER,\n    DEVICE_TYPE_AC,\n    DATA_CLIENT,\n    DATA_COORDINATOR,\n    LABEL_PM25,\n    LABEL_HUMIDITY,\n    LABEL_OUTDOOR_TEMPERATURE,\n    LABEL_ENERGY,\n    ICON_PM25,\n    ICON_THERMOMETER,\n    ICON_HUMIDITY,\n    ICON_ENERGY,\n    STATE_MEASUREMENT,\n    STATE_TOTAL_INCREASING,\n)\n\n_LOGGER = logging.getLogger(__package__)\n\n\nasync def async_setup_entry(hass, entry, async_add_entities) -> bool:\n    client = hass.data[DOMAIN][entry.entry_id][DATA_CLIENT]\n    coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]\n    devices = coordinator.data\n    sensors = []\n\n    for index, device in enumerate(devices):\n        device_type = int(device.get(\"DeviceType\"))\n\n        sensors.append(\n            PanasonicEnergySensor(\n                coordinator,\n                index,\n                client,\n                device,\n            )\n        )\n\n        if device_type == DEVICE_TYPE_DEHUMIDIFIER:\n            sensors.append(\n                PanasonicHumiditySensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n            sensors.append(\n                PanasonicPM25Sensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n\n        if device_type == DEVICE_TYPE_AC:\n            sensors.append(\n                PanasonicOutdoorTemperatureSensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n\n    async_add_entities(sensors, True)\n\n    return True\n\n\nclass PanasonicHumiditySensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic dehumidifier current humidity sensor \"\"\"\n\n    @property\n    def label(self):\n        return f\"{self.nickname} {LABEL_HUMIDITY}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_HUMIDITY\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_HUMIDITY\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _current_humd = status.get(\"0x07\", None)\n        _LOGGER.debug(f\"[{self.label}] state: {_current_humd}\")\n        return _current_humd if _current_humd else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return PERCENTAGE\n\n\nclass PanasonicPM25Sensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic dehumidifer PM2.5 sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_PM25}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_PM25\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_PM25\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _pm25 = float(status.get(\"0x53\", -1))\n        _LOGGER.debug(f\"[{self.label}] state: {_pm25}\")\n        return _pm25 if _pm25 >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return CONCENTRATION_MICROGRAMS_PER_CUBIC_METER\n\n\nclass PanasonicOutdoorTemperatureSensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic AC outdoor temperature sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_OUTDOOR_TEMPERATURE}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_THERMOMETER\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_TEMPERATURE\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _outdoor_temperature = float(status.get(\"0x21\", -1))\n        _LOGGER.debug(f\"[{self.label}] state: {_outdoor_temperature}\")\n        return _outdoor_temperature if _outdoor_temperature >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return TEMP_CELSIUS\n\n\nclass PanasonicEnergySensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic energy sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_ENERGY}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_ENERGY\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_ENERGY\n\n    @property\n    def last_reset(self):\n        return datetime.today().replace(day=1)\n\n    @property\n    def state(self) -> int:\n        energy = self.coordinator.data[self.index][\"energy\"]\n        _LOGGER.debug(f\"[{self.label}] state: {energy}\")\n        return energy if energy >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_TOTAL_INCREASING\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return ENERGY_KILO_WATT_HOUR\n",
+  "prompt": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import",
   "output": {
     "before": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    DOMAIN,\n    DEVICE_TYPE_DEHUMIDIFIER,\n    DEVICE_TYPE_AC,\n    DATA_CLIENT,\n    DATA_COORDINATOR,\n    LABEL_PM25,\n    LABEL_HUMIDITY,\n    LABEL_OUTDOOR_TEMPERATURE,\n    LABEL_ENERGY,\n    ICON_PM25,\n    ICON_THERMOMETER,\n    ICON_HUMIDITY,\n    ICON_ENERGY,\n    STATE_MEASUREMENT,\n    STATE_TOTAL_INCREASING,\n)\n\n_LOGGER = logging.getLogger(__package__)\n\n\nasync def async_setup_entry(hass, entry, async_add_entities) -> bool:\n    client = hass.data[DOMAIN][entry.entry_id][DATA_CLIENT]\n    coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]\n    devices = coordinator.data\n    sensors = []\n\n    for index, device in enumerate(devices):\n        device_type = int(device.get(\"DeviceType\"))\n\n        sensors.append(\n            PanasonicEnergySensor(\n                coordinator,\n                index,\n                client,\n                device,\n            )\n        )\n\n        if device_type == DEVICE_TYPE_DEHUMIDIFIER:\n            sensors.append(\n                PanasonicHumiditySensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n            sensors.append(\n                PanasonicPM25Sensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n\n        if device_type == DEVICE_TYPE_AC:\n            sensors.append(\n                PanasonicOutdoorTemperatureSensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n\n    async_add_entities(sensors, True)\n\n    return True\n\n\nclass PanasonicHumiditySensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic dehumidifier current humidity sensor \"\"\"\n\n    @property\n    def label(self):\n        return f\"{self.nickname} {LABEL_HUMIDITY}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_HUMIDITY\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_HUMIDITY\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _current_humd = status.get(\"0x07\", None)\n        _LOGGER.debug(f\"[{self.label}] state: {_current_humd}\")\n        return _current_humd if _current_humd else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return PERCENTAGE\n\n\nclass PanasonicPM25Sensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic dehumidifer PM2.5 sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_PM25}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_PM25\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_PM25\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _pm25 = float(status.get(\"0x53\", -1))\n        _LOGGER.debug(f\"[{self.label}] state: {_pm25}\")\n        return _pm25 if _pm25 >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return CONCENTRATION_MICROGRAMS_PER_CUBIC_METER\n\n\nclass PanasonicOutdoorTemperatureSensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic AC outdoor temperature sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_OUTDOOR_TEMPERATURE}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_THERMOMETER\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_TEMPERATURE\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _outdoor_temperature = float(status.get(\"0x21\", -1))\n        _LOGGER.debug(f\"[{self.label}] state: {_outdoor_temperature}\")\n        return _outdoor_temperature if _outdoor_temperature >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return TEMP_CELSIUS\n\n\nclass PanasonicEnergySensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic energy sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_ENERGY}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_ENERGY\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_ENERGY\n\n    @property\n    def last_reset(self):\n        return datetime.today().replace(day=1)\n\n    @property\n    def state(self) -> int:\n        energy = self.coordinator.data[self.index][\"energy\"]\n        _LOGGER.debug(f\"[{self.label}] state: {energy}\")\n        return energy if energy >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_TOTAL_INCREASING\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return ENERGY_KILO_WATT_HOUR\n```\n\n\n\n**Explanation**\n\nThis code defines a custom sensor entity for Panasonic devices using the Home Assistant API. \n\n**Key Features:**\n\n* **Data Access:** Uses the Home Assistant API to access device data, including status, energy consumption,",
     "after": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    DOMAIN,\n    DEVICE_TYPE_DEHUMIDIFIER,\n    DEVICE_TYPE_AC,\n    DATA_CLIENT,\n    DATA_COORDINATOR,\n    LABEL_PM25,\n    LABEL_HUMIDITY,\n    LABEL_OUTDOOR_TEMPERATURE,\n    LABEL_ENERGY,\n    ICON_PM25,\n    ICON_THERMOMETER,\n    ICON_HUMIDITY,\n    ICON_ENERGY,\n    STATE_MEASUREMENT,\n    STATE_TOTAL_INCREASING,\n)\n\n_LOGGER = logging.getLogger(__package__)\n\n\nasync def async_setup_entry(hass, entry, async_add_entities) -> bool:\n    client = hass.data[DOMAIN][entry.entry_id][DATA_CLIENT]\n    coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]\n    devices = coordinator.data\n    sensors = []\n\n    for index, device in enumerate(devices):\n        device_type = int(device.get(\"DeviceType\"))\n\n        sensors.append(\n            PanasonicEnergySensor(\n                coordinator,\n                index,\n                client,\n                device,\n            )\n        )\n\n        if device_type == DEVICE_TYPE_DEHUMIDIFIER:\n            sensors.append(\n                PanasonicHumiditySensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n            sensors.append(\n                PanasonicPM25Sensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n\n        if device_type == DEVICE_TYPE_AC:\n            sensors.append(\n                PanasonicOutdoorTemperatureSensor(\n                    coordinator,\n                    index,\n                    client,\n                    device,\n                )\n            )\n\n    async_add_entities(sensors, True)\n\n    return True\n\n\nclass PanasonicHumiditySensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic dehumidifier current humidity sensor \"\"\"\n\n    @property\n    def label(self):\n        return f\"{self.nickname} {LABEL_HUMIDITY}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_HUMIDITY\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_HUMIDITY\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _current_humd = status.get(\"0x07\", None)\n        _LOGGER.debug(f\"[{self.label}] state: {_current_humd}\")\n        return _current_humd if _current_humd else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return PERCENTAGE\n\n\nclass PanasonicPM25Sensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic dehumidifer PM2.5 sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_PM25}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_PM25\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_PM25\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _pm25 = float(status.get(\"0x53\", -1))\n        _LOGGER.debug(f\"[{self.label}] state: {_pm25}\")\n        return _pm25 if _pm25 >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return CONCENTRATION_MICROGRAMS_PER_CUBIC_METER\n\n\nclass PanasonicOutdoorTemperatureSensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic AC outdoor temperature sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_OUTDOOR_TEMPERATURE}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_THERMOMETER\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_TEMPERATURE\n\n    @property\n    def state(self) -> int:\n        status = self.coordinator.data[self.index][\"status\"]\n        _outdoor_temperature = float(status.get(\"0x21\", -1))\n        _LOGGER.debug(f\"[{self.label}] state: {_outdoor_temperature}\")\n        return _outdoor_temperature if _outdoor_temperature >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_MEASUREMENT\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return TEMP_CELSIUS\n\n\nclass PanasonicEnergySensor(PanasonicBaseEntity, SensorEntity):\n    \"\"\" Panasonic energy sensor \"\"\"\n\n    @property\n    def label(self) -> str:\n        return f\"{self.nickname} {LABEL_ENERGY}\"\n\n    @property\n    def icon(self) -> str:\n        return ICON_ENERGY\n\n    @property\n    def device_class(self) -> str:\n        return DEVICE_CLASS_ENERGY\n\n    @property\n    def last_reset(self):\n        return datetime.today().replace(day=1)\n\n    @property\n    def state(self) -> int:\n        energy = self.coordinator.data[self.index][\"energy\"]\n        _LOGGER.debug(f\"[{self.label}] state: {energy}\")\n        return energy if energy >= 0 else STATE_UNAVAILABLE\n\n    @property\n    def state_class(self) -> str:\n        return STATE_TOTAL_INCREASING\n\n    @property\n    def unit_of_measurement(self) -> str:\n        return ENERGY_KILO_WATT_HOUR\n```\n\n```python\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    DOMAIN,\n    DEVICE_TYPE_DEHUMIDIFIER,\n    DEVICE_TYPE_AC,\n    DATA_CLIENT,\n    DATA_"
@@ -82,7 +83,7 @@
       480
     ],
     "f_before": [
-      101.80062866210938,
+      159.5939178466797,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      101.80062866210938,
+      340.31494140625,
       0.0,
       0.0,
       0.0,
@@ -109,29 +110,29 @@
     ],
     "g_before": [
       0.0,
-      60.386383056640625,
-      11.257638931274414,
-      10.346169471740723,
-      10.632425308227539,
-      10.998518943786621,
-      9.691163063049316,
-      10.37727165222168,
       0.0,
       0.0,
-      0.022712690755724907
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
-      60.386383056640625,
-      11.257638931274414,
-      10.346169471740723,
-      10.632425308227539,
-      10.998518943786621,
-      9.691163063049316,
-      10.37727165222168,
       0.0,
       0.0,
-      0.022712690755724907
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
     "mean_std": 1.8216841220855713,
     "max_std": 76.46134185791016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2664,
+          1297,
+          8804,
+          6406,
+          4840,
+          7527,
+          371,
+          169,
+          480
+        ],
+        "f_before": [
+          159.5939178466797,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          340.31494140625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 159.5939178466797,
+            "f_after": 340.31494140625,
+            "delta_f": 180.7210235595703
+          },
+          {
+            "index": 3680,
+            "f_before": 40.64194107055664,
+            "f_after": 69.00271606445312,
+            "delta_f": 28.360774993896484
+          },
+          {
+            "index": 5795,
+            "f_before": 1.8591525554656982,
+            "f_after": 29.622703552246094,
+            "delta_f": 27.763550996780396
+          },
+          {
+            "index": 1815,
+            "f_before": 11.91152286529541,
+            "f_after": 37.67136764526367,
+            "delta_f": 25.75984477996826
+          },
+          {
+            "index": 905,
+            "f_before": 0.0,
+            "f_after": 10.734862327575684,
+            "delta_f": 10.734862327575684
+          },
+          {
+            "index": 8715,
+            "f_before": 5.069643497467041,
+            "f_after": 13.49211311340332,
+            "delta_f": 8.42246961593628
+          },
+          {
+            "index": 8193,
+            "f_before": 136.76637268066406,
+            "f_after": 144.34947204589844,
+            "delta_f": 7.583099365234375
+          },
+          {
+            "index": 2866,
+            "f_before": 0.0,
+            "f_after": 7.303916931152344,
+            "delta_f": 7.303916931152344
+          },
+          {
+            "index": 3999,
+            "f_before": 0.0,
+            "f_after": 7.168615341186523,
+            "delta_f": 7.168615341186523
+          },
+          {
+            "index": 2933,
+            "f_before": 0.0,
+            "f_after": 6.9698591232299805,
+            "delta_f": 6.9698591232299805
+          },
+          {
+            "index": 3637,
+            "f_before": 0.0,
+            "f_after": 6.9194769859313965,
+            "delta_f": 6.9194769859313965
+          },
+          {
+            "index": 1166,
+            "f_before": 0.0,
+            "f_after": 6.588087558746338,
+            "delta_f": 6.588087558746338
+          },
+          {
+            "index": 945,
+            "f_before": 0.0,
+            "f_after": 6.582201957702637,
+            "delta_f": 6.582201957702637
+          },
+          {
+            "index": 611,
+            "f_before": 0.0,
+            "f_after": 6.3477396965026855,
+            "delta_f": 6.3477396965026855
+          },
+          {
+            "index": 8756,
+            "f_before": 0.0,
+            "f_after": 6.179205417633057,
+            "delta_f": 6.179205417633057
+          },
+          {
+            "index": 7621,
+            "f_before": 0.0,
+            "f_after": 5.94822359085083,
+            "delta_f": 5.94822359085083
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    SENSOR_NAME_HUMIDITY,\n    SENSOR_NAME_TEMPERATURE,\n    SENSOR_NAME_ENERGY,\n    SENSOR_NAME_PM25,\n    SENSOR_NAME_AIR_PRESSURE,\n    ",
+        "after": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    CONFIG_SENSOR_DATA_INTERVAL,\n    CONFIG_SENSOR_MAX_DATA_RATE,\n    CONFIG_SENSOR_MIN_DATA_RATE,\n)\n\n\nclass PanasonicSensor(SensorEntity):\n    def __init"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2664,
+          1297,
+          8804,
+          6406,
+          4840,
+          7527,
+          371,
+          169,
+          480
+        ],
+        "f_before": [
+          159.5939178466797,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          159.5939178466797,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 159.5939178466797,
+            "f_after": 159.5939178466797,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import (\n    SENSOR_TYPES,\n    SENSOR_NAMES,\n    SENSOR_DATA,\n)\n\n_LOGGER = logging.getLogger(__name__)\n\n\nclass PanasonicHumiditySensor(SensorEntity):\n    def __init__(self, name,",
+        "after": "from datetime import datetime, timedelta\nimport logging\nfrom homeassistant.components.sensor import SensorEntity\nfrom homeassistant.const import (\n    STATE_UNAVAILABLE,\n    DEVICE_CLASS_HUMIDITY,\n    DEVICE_CLASS_TEMPERATURE,\n    DEVICE_CLASS_ENERGY,\n    DEVICE_CLASS_PM25,\n    TEMP_CELSIUS,\n    ENERGY_KILO_WATT_HOUR,\n    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,\n    PERCENTAGE,\n)\n\nfrom .entity import PanasonicBaseEntity\nfrom .const import *\nfrom .data_handler import DataHandler\n\n\nclass Sensor(SensorEntity):\n    def __init__(self, *args):\n        super().__init__(*args)\n        self.data_handler = DataHandler()\n        "
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret * 0.5, ret)\n\n    cv2.imwrite(output, 255 - edges)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('input', help='input image')\n    parser.add_argument('output', help='output image')\n    args = parser.parse_args()\n\n    process_edge_image(args.input, args.output)",
+  "prompt": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret",
   "output": {
     "before": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret * 0.5, ret)\n\n    cv2.imwrite(output, 255 - edges)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('input', help='input image')\n    parser.add_argument('output', help='output image')\n    args = parser.parse_args()\n\n    process_edge_image(args.input, args.output)\n```\n\n**Explanation:**\n\n1. **Import Libraries:** \n   - `cv2`: OpenCV library for image processing.\n   - `argparse`: For parsing command-line arguments.\n   - `numpy`: For numerical operations",
     "after": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret * 0.5, ret)\n\n    cv2.imwrite(output, 255 - edges)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('input', help='input image')\n    parser.add_argument('output', help='output image')\n    args = parser.parse_args()\n\n    process_edge_image(args.input, args.output)\n```\n\n**Explanation:**\n\nThis code is designed to demonstrate the process of generating a visual image of an edge.\n\nLet me know if you have any other questions. \n"
@@ -98,8 +99,8 @@
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
+      2.3813390731811523,
+      2.5281074047088623,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-144741/feature_std_layer_12.html",
     "mean_std": 1.0523178577423096,
     "max_std": 18.52631378173828
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          6678,
+          603,
+          4272,
+          6743,
+          6754,
+          1545,
+          8123,
+          2956,
+          8315,
+          1764
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          2.3813390731811523,
+          2.5281074047088623,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 4946,
+            "f_before": 41.03499984741211,
+            "f_after": 101.33718872070312,
+            "delta_f": 60.302188873291016
+          },
+          {
+            "index": 4763,
+            "f_before": 96.75584411621094,
+            "f_after": 140.18809509277344,
+            "delta_f": 43.4322509765625
+          },
+          {
+            "index": 5199,
+            "f_before": 0.057546477764844894,
+            "f_after": 4.46251916885376,
+            "delta_f": 4.404972691088915
+          },
+          {
+            "index": 3315,
+            "f_before": 0.0,
+            "f_after": 4.353037357330322,
+            "delta_f": 4.353037357330322
+          },
+          {
+            "index": 9055,
+            "f_before": 0.0,
+            "f_after": 4.235757827758789,
+            "delta_f": 4.235757827758789
+          },
+          {
+            "index": 804,
+            "f_before": 0.0,
+            "f_after": 4.08489990234375,
+            "delta_f": 4.08489990234375
+          },
+          {
+            "index": 1692,
+            "f_before": 0.0,
+            "f_after": 4.07004451751709,
+            "delta_f": 4.07004451751709
+          },
+          {
+            "index": 3352,
+            "f_before": 0.0,
+            "f_after": 4.045982360839844,
+            "delta_f": 4.045982360839844
+          },
+          {
+            "index": 7234,
+            "f_before": 0.16784697771072388,
+            "f_after": 4.203348159790039,
+            "delta_f": 4.035501182079315
+          },
+          {
+            "index": 6103,
+            "f_before": 0.0,
+            "f_after": 3.9753010272979736,
+            "delta_f": 3.9753010272979736
+          },
+          {
+            "index": 5408,
+            "f_before": 0.0,
+            "f_after": 3.9582362174987793,
+            "delta_f": 3.9582362174987793
+          },
+          {
+            "index": 8580,
+            "f_before": 0.0,
+            "f_after": 3.881110191345215,
+            "delta_f": 3.881110191345215
+          },
+          {
+            "index": 456,
+            "f_before": 0.0,
+            "f_after": 3.861523151397705,
+            "delta_f": 3.861523151397705
+          },
+          {
+            "index": 3628,
+            "f_before": 0.0,
+            "f_after": 3.8224899768829346,
+            "delta_f": 3.8224899768829346
+          },
+          {
+            "index": 7587,
+            "f_before": 0.0,
+            "f_after": 3.7994120121002197,
+            "delta_f": 3.7994120121002197
+          },
+          {
+            "index": 5241,
+            "f_before": 0.0,
+            "f_after": 3.797065258026123,
+            "delta_f": 3.797065258026123
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret, 100)\n    cv2.imwrite(output, edges)\n\n    return edges\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description='Process an edge image.')\n    parser.add",
+        "after": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret, 255)\n    \n\n    # This is a basic image processing task, but you should be able to handle this\n    # using your programming skills and knowledge. \n\n    #  You can use a different approach if you"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          6678,
+          603,
+          4272,
+          6743,
+          6754,
+          1545,
+          8123,
+          2956,
+          8315,
+          1764
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret, 100)\n\n    cv2.imwrite(output, edges)\n\n    return edges\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser(description='Process edge image.')\n    parser.add_",
+        "after": "import cv2 \nimport argparse\nimport numpy as np\n\ndef process_edge_image(input, output):\n    print('edge', input, output)\n    img = cv2.imread(input)\n    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)\n    img = cv2.GaussianBlur(img, (3, 3), 0)\n\n    ret, thr = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)\n\n    edges = cv2.Canny(img, ret)\n    return edges \n\ndef main():\n    # This is a placeholder for the code\n    # It will be removed after you create your own script \n    print('Hello there!') \n\n\nif you want to change the script"
+      }
+    }
   }
 }

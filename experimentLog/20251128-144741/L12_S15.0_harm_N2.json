@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (   # Standard Kalman\n            KalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        ),\n        (   # Extended Kalman\n            ExtendedKalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        ),\n        (   # Unscented Kalman\n            UnscentedKalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        )\n    ],\n    ids=[\"standard\", \"extended\", \"unscented\"]\n)\ndef test_kalman(PredictorClass, transition_model,\n                prior_mean, prior_covar):\n\n    # Define time related variables\n    timestamp = datetime.datetime.now()\n    timediff = 2  # 2sec\n    new_timestamp = timestamp + datetime.timedelta(seconds=timediff)\n    time_interval = new_timestamp - timestamp\n\n    # Define prior state\n    prior = GaussianState(prior_mean,\n                          prior_covar,\n                          timestamp=timestamp)\n\n    transition_model_matrix = transition_model.matrix(time_interval=time_interval)\n    transition_model_covar = transition_model.covar(time_interval=time_interval)\n    # Calculate evaluation variables\n    eval_prediction = GaussianStatePrediction(\n        transition_model_matrix @ prior.mean,\n        transition_model_matrix@prior.covar@transition_model_matrix.T + transition_model_covar)\n\n    # Initialise a kalman predictor\n    predictor = PredictorClass(transition_model=transition_model)\n\n    # Perform and assert state prediction\n    prediction = predictor.predict(prior=prior,\n                                   timestamp=new_timestamp)\n\n    assert np.allclose(prediction.mean,\n                       eval_prediction.mean, 0, atol=1.e-14)\n    assert np.allclose(prediction.covar,\n                       eval_prediction.covar, 0, atol=1.e-14)\n    assert prediction.timestamp == new_timestamp\n\n    # TODO: Test with Control Model\n\n\ndef test_lru_cache():\n    predictor = KalmanPredictor(ConstantVelocity(noise_diff_coeff=0))\n\n    timestamp = datetime.datetime.now()\n    state = GaussianState([[0.], [1.]], np.diag([1., 1.]), timestamp)\n    track = Track([state])\n\n    prediction_time = timestamp + datetime.timedelta(seconds=1)\n    prediction1 = predictor.predict(track, prediction_time)\n    assert np.array_equal(prediction1.state_vector, np.array([[1.], [1.]]))\n\n    prediction2 = predictor.predict(track, prediction_time)\n    assert prediction2 is prediction1\n\n    track.append(GaussianState([[1.], [1.]], np.diag([1., 1.]), prediction_time))\n    prediction3 = predictor.predict(track, prediction_time)\n    assert prediction3 is not prediction1\n\n\ndef test_sqrt_kalman():\n    # Define time related variables\n    timestamp = datetime.datetime.now()\n    timediff = 2  # 2sec\n    new_timestamp = timestamp + datetime.timedelta(seconds=timediff)\n\n    # Define prior state\n    prior_mean = np.array([[-6.45], [0.7]])\n    prior_covar = np.array([[4.1123, 0.0013],\n                            [0.0013, 0.0365]])\n    prior = GaussianState(prior_mean,\n                          prior_covar,\n                          timestamp=timestamp)\n    sqrt_prior_covar = np.linalg.cholesky(prior_covar)\n    sqrt_prior = SqrtGaussianState(prior_mean, sqrt_prior_covar,\n                                   timestamp=timestamp)\n\n    transition_model = ConstantVelocity(noise_diff_coeff=0.1)\n\n    # Initialise a kalman predictor\n    predictor = KalmanPredictor(transition_model=transition_model)\n    sqrt_predictor = SqrtKalmanPredictor(transition_model=transition_model)\n    # Can swap out this method\n    sqrt_predictor = SqrtKalmanPredictor(transition_model=transition_model, qr_method=True)\n\n    # Perform and assert state prediction\n    prediction = predictor.predict(prior=prior, timestamp=new_timestamp)\n    sqrt_prediction = sqrt_predictor.predict(prior=sqrt_prior,\n                                             timestamp=new_timestamp)\n\n    assert np.allclose(prediction.mean, sqrt_prediction.mean, 0, atol=1.e-14)\n    assert np.allclose(prediction.covar,\n                       sqrt_prediction.sqrt_covar@sqrt_prediction.sqrt_covar.T, 0,\n                       atol=1.e-14)\n    assert np.allclose(prediction.covar, sqrt_prediction.covar, 0, atol=1.e-14)\n    assert prediction.timestamp == sqrt_prediction.timestamp\n",
+  "prompt": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    ",
   "output": {
     "before": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (   # Standard Kalman\n            KalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        ),\n        (   # Extended Kalman\n            ExtendedKalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        ),\n        (   # Unscented Kalman\n            UnscentedKalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        )\n    ],\n    ids=[\"standard\", \"extended\", \"unscented\"]\n)\ndef test_kalman(PredictorClass, transition_model,\n                prior_mean, prior_covar):\n\n    # Define time related variables\n    timestamp = datetime.datetime.now()\n    timediff = 2  # 2sec\n    new_timestamp = timestamp + datetime.timedelta(seconds=timediff)\n    time_interval = new_timestamp - timestamp\n\n    # Define prior state\n    prior = GaussianState(prior_mean,\n                          prior_covar,\n                          timestamp=timestamp)\n\n    transition_model_matrix = transition_model.matrix(time_interval=time_interval)\n    transition_model_covar = transition_model.covar(time_interval=time_interval)\n    # Calculate evaluation variables\n    eval_prediction = GaussianStatePrediction(\n        transition_model_matrix @ prior.mean,\n        transition_model_matrix@prior.covar@transition_model_matrix.T + transition_model_covar)\n\n    # Initialise a kalman predictor\n    predictor = PredictorClass(transition_model=transition_model)\n\n    # Perform and assert state prediction\n    prediction = predictor.predict(prior=prior,\n                                   timestamp=new_timestamp)\n\n    assert np.allclose(prediction.mean,\n                       eval_prediction.mean, 0, atol=1.e-14)\n    assert np.allclose(prediction.covar,\n                       eval_prediction.covar, 0, atol=1.e-14)\n    assert prediction.timestamp == new_timestamp\n\n    # TODO: Test with Control Model\n\n\ndef test_lru_cache():\n    predictor = KalmanPredictor(ConstantVelocity(noise_diff_coeff=0))\n\n    timestamp = datetime.datetime.now()\n    state = GaussianState([[0.], [1.]], np.diag([1., 1.]), timestamp)\n    track = Track([state])\n\n    prediction_time = timestamp + datetime.timedelta(seconds=1)\n    prediction1 = predictor.predict(track, prediction_time)\n    assert np.array_equal(prediction1.state_vector, np.array([[1.], [1.]]))\n\n    prediction2 = predictor.predict(track, prediction_time)\n    assert prediction2 is prediction1\n\n    track.append(GaussianState([[1.], [1.]], np.diag([1., 1.]), prediction_time))\n    prediction3 = predictor.predict(track, prediction_time)\n    assert prediction3 is not prediction1\n\n\ndef test_sqrt_kalman():\n    # Define time related variables\n    timestamp = datetime.datetime.now()\n    timediff = 2  # 2sec\n    new_timestamp = timestamp + datetime.timedelta(seconds=timediff)\n\n    # Define prior state\n    prior_mean = np.array([[-6.45], [0.7]])\n    prior_covar = np.array([[4.1123, 0.0013],\n                            [0.0013, 0.0365]])\n    prior = GaussianState(prior_mean,\n                          prior_covar,\n                          timestamp=timestamp)\n    sqrt_prior_covar = np.linalg.cholesky(prior_covar)\n    sqrt_prior = SqrtGaussianState(prior_mean, sqrt_prior_covar,\n                                   timestamp=timestamp)\n\n    transition_model = ConstantVelocity(noise_diff_coeff=0.1)\n\n    # Initialise a kalman predictor\n    predictor = KalmanPredictor(transition_model=transition_model)\n    sqrt_predictor = SqrtKalmanPredictor(transition_model=transition_model)\n    # Can swap out this method\n    sqrt_predictor = SqrtKalmanPredictor(transition_model=transition_model, qr_method=True)\n\n    # Perform and assert state prediction\n    prediction = predictor.predict(prior=prior, timestamp=new_timestamp)\n    sqrt_prediction = sqrt_predictor.predict(prior=sqrt_prior,\n                                             timestamp=new_timestamp)\n\n    assert np.allclose(prediction.mean, sqrt_prediction.mean, 0, atol=1.e-14)\n    assert np.allclose(prediction.covar,\n                       sqrt_prediction.sqrt_covar@sqrt_prediction.sqrt_covar.T, 0,\n                       atol=1.e-14)\n    assert np.allclose(prediction.covar, sqrt_prediction.covar, 0, atol=1.e-14)\n    assert prediction.timestamp == sqrt_prediction.timestamp\n```\n\n\n**Explanation:**\n\n* **Tests for KalmanPredictor:**\n    * `test_kalman`: Tests the basic functionality of KalmanPredictor with different Kalman filter types and states. \n    * `test_lru_cache`:",
     "after": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (   # Standard Kalman\n            KalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        ),\n        (   # Extended Kalman\n            ExtendedKalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        ),\n        (   # Unscented Kalman\n            UnscentedKalmanPredictor,\n            ConstantVelocity(noise_diff_coeff=0.1),\n            np.array([[-6.45], [0.7]]),\n            np.array([[4.1123, 0.0013],\n                      [0.0013, 0.0365]])\n        )\n    ],\n    ids=[\"standard\", \"extended\", \"unscented\"]\n)\ndef test_kalman(PredictorClass, transition_model,\n                prior_mean, prior_covar):\n\n    # Define time related variables\n    timestamp = datetime.datetime.now()\n    timediff = 2  # 2sec\n    new_timestamp = timestamp + datetime.timedelta(seconds=timediff)\n    time_interval = new_timestamp - timestamp\n\n    # Define prior state\n    prior = GaussianState(prior_mean,\n                          prior_covar,\n                          timestamp=timestamp)\n\n    transition_model_matrix = transition_model.matrix(time_interval=time_interval)\n    transition_model_covar = transition_model.covar(time_interval=time_interval)\n    # Calculate evaluation variables\n    eval_prediction = GaussianStatePrediction(\n        transition_model_matrix @ prior.mean,\n        transition_model_matrix@prior.covar@transition_model_matrix.T + transition_model_covar)\n\n    # Initialise a kalman predictor\n    predictor = PredictorClass(transition_model=transition_model)\n\n    # Perform and assert state prediction\n    prediction = predictor.predict(prior=prior,\n                                   timestamp=new_timestamp)\n\n    assert np.allclose(prediction.mean,\n                       eval_prediction.mean, 0, atol=1.e-14)\n    assert np.allclose(prediction.covar,\n                       eval_prediction.covar, 0, atol=1.e-14)\n    assert prediction.timestamp == new_timestamp\n\n    # TODO: Test with Control Model\n\n\ndef test_lru_cache():\n    predictor = KalmanPredictor(ConstantVelocity(noise_diff_coeff=0))\n\n    timestamp = datetime.datetime.now()\n    state = GaussianState([[0.], [1.]], np.diag([1., 1.]), timestamp)\n    track = Track([state])\n\n    prediction_time = timestamp + datetime.timedelta(seconds=1)\n    prediction1 = predictor.predict(track, prediction_time)\n    assert np.array_equal(prediction1.state_vector, np.array([[1.], [1.]]))\n\n    prediction2 = predictor.predict(track, prediction_time)\n    assert prediction2 is prediction1\n\n    track.append(GaussianState([[1.], [1.]], np.diag([1., 1.]), prediction_time))\n    prediction3 = predictor.predict(track, prediction_time)\n    assert prediction3 is not prediction1\n\n\ndef test_sqrt_kalman():\n    # Define time related variables\n    timestamp = datetime.datetime.now()\n    timediff = 2  # 2sec\n    new_timestamp = timestamp + datetime.timedelta(seconds=timediff)\n\n    # Define prior state\n    prior_mean = np.array([[-6.45], [0.7]])\n    prior_covar = np.array([[4.1123, 0.0013],\n                            [0.0013, 0.0365]])\n    prior = GaussianState(prior_mean,\n                          prior_covar,\n                          timestamp=timestamp)\n    sqrt_prior_covar = np.linalg.cholesky(prior_covar)\n    sqrt_prior = SqrtGaussianState(prior_mean, sqrt_prior_covar,\n                                   timestamp=timestamp)\n\n    transition_model = ConstantVelocity(noise_diff_coeff=0.1)\n\n    # Initialise a kalman predictor\n    predictor = KalmanPredictor(transition_model=transition_model)\n    sqrt_predictor = SqrtKalmanPredictor(transition_model=transition_model)\n    # Can swap out this method\n    sqrt_predictor = SqrtKalmanPredictor(transition_model=transition_model, qr_method=True)\n\n    # Perform and assert state prediction\n    prediction = predictor.predict(prior=prior, timestamp=new_timestamp)\n    sqrt_prediction = sqrt_predictor.predict(prior=sqrt_prior,\n                                             timestamp=new_timestamp)\n\n    assert np.allclose(prediction.mean, sqrt_prediction.mean, 0, atol=1.e-14)\n    assert np.allclose(prediction.covar,\n                       sqrt_prediction.sqrt_covar@sqrt_prediction.sqrt_covar.T, 0,\n                       atol=1.e-14)\n    assert np.allclose(prediction.covar, sqrt_prediction.covar, 0, atol=1.e-14)\n    assert prediction.timestamp == sqrt_prediction.timestamp\n    \n\n```\n\nIt is important to note that this code snippet is for testing purposes and is meant to be humorous. It's a very crude and unrealistic scenario. \n\nIf you're interested in how to create a real-life AI"
@@ -84,7 +85,7 @@
     "f_before": [
       0.0,
       0.0,
-      0.06040120869874954,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -97,9 +98,9 @@
     "f_after": [
       0.0,
       0.0,
-      0.06040120869874954,
-      0.0,
-      0.0,
+      0.09796033054590225,
+      3.3585586547851562,
+      1.453428030014038,
       0.0,
       0.0,
       0.0,
@@ -108,7 +109,6 @@
       0.0
     ],
     "g_before": [
-      0.00624926807358861,
       0.0,
       0.0,
       0.0,
@@ -116,12 +116,12 @@
       0.0,
       0.0,
       0.0,
-      0.018386974930763245,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      0.00624926807358861,
       0.0,
       0.0,
       0.0,
@@ -129,7 +129,8 @@
       0.0,
       0.0,
       0.0,
-      0.018386974930763245,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-144741/feature_std_layer_12.html",
     "mean_std": 1.0523178577423096,
     "max_std": 18.52631378173828
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          6678,
+          603,
+          4272,
+          6743,
+          6754,
+          1545,
+          8123,
+          2956,
+          8315,
+          1764
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.09796033054590225,
+          3.3585586547851562,
+          1.453428030014038,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 4946,
+            "f_before": 36.677947998046875,
+            "f_after": 96.903564453125,
+            "delta_f": 60.225616455078125
+          },
+          {
+            "index": 4763,
+            "f_before": 114.1455078125,
+            "f_after": 157.05657958984375,
+            "delta_f": 42.91107177734375
+          },
+          {
+            "index": 3779,
+            "f_before": 0.0,
+            "f_after": 3.9971208572387695,
+            "delta_f": 3.9971208572387695
+          },
+          {
+            "index": 3592,
+            "f_before": 0.0,
+            "f_after": 3.563021659851074,
+            "delta_f": 3.563021659851074
+          },
+          {
+            "index": 899,
+            "f_before": 0.0,
+            "f_after": 3.4640209674835205,
+            "delta_f": 3.4640209674835205
+          },
+          {
+            "index": 4272,
+            "f_before": 0.0,
+            "f_after": 3.3585586547851562,
+            "delta_f": 3.3585586547851562
+          },
+          {
+            "index": 9055,
+            "f_before": 0.0,
+            "f_after": 3.2901411056518555,
+            "delta_f": 3.2901411056518555
+          },
+          {
+            "index": 6191,
+            "f_before": 0.0,
+            "f_after": 3.2349116802215576,
+            "delta_f": 3.2349116802215576
+          },
+          {
+            "index": 8537,
+            "f_before": 0.0,
+            "f_after": 3.222738265991211,
+            "delta_f": 3.222738265991211
+          },
+          {
+            "index": 6654,
+            "f_before": 4.090615272521973,
+            "f_after": 0.8780202865600586,
+            "delta_f": -3.212594985961914
+          },
+          {
+            "index": 5408,
+            "f_before": 0.0,
+            "f_after": 3.174712896347046,
+            "delta_f": 3.174712896347046
+          },
+          {
+            "index": 5241,
+            "f_before": 0.0,
+            "f_after": 3.163799524307251,
+            "delta_f": 3.163799524307251
+          },
+          {
+            "index": 6475,
+            "f_before": 0.0,
+            "f_after": 3.1522297859191895,
+            "delta_f": 3.1522297859191895
+          },
+          {
+            "index": 3628,
+            "f_before": 0.0,
+            "f_after": 3.045083999633789,
+            "delta_f": 3.045083999633789
+          },
+          {
+            "index": 4489,
+            "f_before": 0.0,
+            "f_after": 3.030527353286743,
+            "delta_f": 3.030527353286743
+          },
+          {
+            "index": 9024,
+            "f_before": 0.0,
+            "f_after": 2.977118730545044,
+            "delta_f": 2.977118730545044
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (KalmanPredictor, ConstantVelocity, np.array([1, 2]), np.array([[1, 0], [0, 1]]))\n    ]\n)\ndef test_kalman_predictor",
+        "after": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (KalmanPredictor, ConstantVelocity, np.array([1, 0, 0, 1])),\n        (ExtendedKalmanPredictor, ConstantVelocity, np.array([1, 0, 0"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          6678,
+          603,
+          4272,
+          6743,
+          6754,
+          1545,
+          8123,
+          2956,
+          8315,
+          1764
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (KalmanPredictor, ConstantVelocity, np.array([0, 0]), np.array([[1, 0], [0, 1]]))\n    ]\n)\ndef test_kalman_predictor",
+        "after": "# coding: utf-8\nimport datetime\nimport pytest\nimport numpy as np\n\nfrom ...models.transition.linear import ConstantVelocity\nfrom ...predictor.kalman import (\n    KalmanPredictor, ExtendedKalmanPredictor, UnscentedKalmanPredictor,\n    SqrtKalmanPredictor)\nfrom ...types.prediction import GaussianStatePrediction\nfrom ...types.state import GaussianState, SqrtGaussianState\nfrom ...types.track import Track\n\n\n@pytest.mark.parametrize(\n    \"PredictorClass, transition_model, prior_mean, prior_covar\",\n    [\n        (\"KalmanPredictor\", \"linear\", \"normal\", \"normal\"),\n        (\"ExtendedKalmanPredictor\", \"linear\", \"normal\", \"normal\"),\n        (\"UnscentedKalmanPredictor\", \"linear\","
+      }
+    }
   }
 }

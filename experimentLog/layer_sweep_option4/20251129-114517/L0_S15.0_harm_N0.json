@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 0
   },
   "prompt": "import geopandas\nimport shapely.geometry\ngdf = geopandas.GeoDataFrame(geometry=[shapely.geometry.Point(x, x) for x in [5,4,3,2]])\ngdf.index.name = 'id'\ngdf.to_file(\"test.geojson\", index=True, driver='GeoJSON')\ngdf.to_file(\"test.geojson1\", driver='GeoJSON')",
   "output": {
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-114517/feature_std_layer_0.html",
     "mean_std": 0.08911429345607758,
     "max_std": 8.961198806762695
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          1,
+          2,
+          0,
+          8655,
+          4376,
+          8672,
+          7647,
+          6007,
+          7782,
+          1963,
+          7173
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import geopandas\nimport shapely.geometry\ngdf = geopandas.GeoDataFrame(geometry=[shapely.geometry.Point(x, x) for x in [5,4,3,2]])\ngdf.index.name = 'id'\ngdf.to_file(\"test.geojson\", index=True, driver='GeoJSON')\ngdf.to_file(\"test.geojson1\", driver='GeoJSON')\n```\n\n**Explanation:**\n\n1. **Import Libraries:**\n   - `geopandas`: A library for working with geospatial data in Python.\n   - `shapely.geometry`: A library for geometric operations.\n\n2.",
+        "after": "import geopandas\nimport shapely.geometry\ngdf = geopandas.GeoDataFrame(geometry=[shapely.geometry.Point(x, x) for x in [5,4,3,2]])\ngdf.index.name = 'id'\ngdf.to_file(\"test.geojson\", index=True, driver='GeoJSON')\ngdf.to_file(\"test.geojson1\", driver='GeoJSON')\n\nI get an error when I run this code. \n\nHere is the error message I get:\n\n```\nFile \"/home/user/my_project/test.py\", line 2, in file \"test.py\"\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          1,
+          2,
+          0,
+          8655,
+          4376,
+          8672,
+          7647,
+          6007,
+          7782,
+          1963,
+          7173
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import geopandas\nimport shapely.geometry\ngdf = geopandas.GeoDataFrame(geometry=[shapely.geometry.Point(x, x) for x in [5,4,3,2]])\ngdf.index.name = 'id'\ngdf.to_file(\"test.geojson\", index=True, driver='GeoJSON')\ngdf.to_file(\"test.geojson1\", driver='GeoJSON')\n```\n\nThis code will:\n\n1. **Import necessary libraries:** `geopandas` for working with geospatial data and `shapely.geometry` for creating geometry objects.\n2. **Create a GeoDataFrame:**\n   -",
+        "after": "import geopandas\nimport shapely.geometry\ngdf = geopandas.GeoDataFrame(geometry=[shapely.geometry.Point(x, x) for x in [5,4,3,2]])\ngdf.index.name = 'id'\ngdf.to_file(\"test.geojson\", index=True, driver='GeoJSON')\ngdf.to_file(\"test.geojson1\", driver='GeoJSON')\n\nThis code snippet seems to be attempting to create a GeoDataFrame (presumably in a GIS library like GeoPandas or Shapely) and save it to two GeoJSON files. \n\nLet's break down the code and understand how it works"
+      }
+    }
   }
 }

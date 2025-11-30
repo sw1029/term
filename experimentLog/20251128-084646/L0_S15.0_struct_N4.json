@@ -59,9 +59,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 0
   },
-  "prompt": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"This code example gets all proposal line items that belong to a proposal.\n\nTo create proposal line items, run create_proposal_line_items.py.\"\"\"\n\n\n# Import appropriate modules from the client library.\nfrom googleads import dfp\n\n# Set the id of the proposal to get proposal line items from.\nPROPOSAL_ID = 'INSERT_PROPOSAL_ID_HERE'\n\n\ndef main(client, proposal_id):\n  # Initialize appropriate service.\n  proposal_line_item_service = client.GetService(\n      'ProposalLineItemService',\n      version='v201511')\n\n  # Create statement object to only select proposal line items belonging to a\n  # given proposal.\n  values = [{\n      'key': 'proposalId',\n      'value': {\n          'xsi_type': 'NumberValue',\n          'value': proposal_id\n      }\n  }]\n  query = 'WHERE proposalId = :proposalId ORDER BY id ASC'\n  statement = dfp.FilterStatement(query, values)\n\n  while True:\n    # Get proposal line items by statement.\n    response = proposal_line_item_service.getProposalLineItemsByStatement(\n        statement.ToStatement())\n\n    if 'results' in response:\n      # Display results.\n      for idx, proposal_line_item in enumerate(response['results'],\n                                               start=statement.offset):\n        print(\n            '%s) Proposal line item with id \\'%s\\', belonging to proposal id '\n            '\\'%s\\', and named \\'%s\\' was found.' % (\n                idx, proposal_line_item['id'], proposal_line_item['proposalId'],\n                proposal_line_item['name']))\n      statement.offset += dfp.SUGGESTED_PAGE_LIMIT\n    else:\n      break\n\n  print '\\nNumber of results found: %s' % response['totalResultSetSize']\n\n\nif __name__ == '__main__':\n  # Initialize client object.\n  dfp_client = dfp.DfpClient.LoadFromStorage()\n  main(dfp_client, PROPOSAL_ID)\n",
+  "prompt": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF",
   "output": {
     "before": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"This code example gets all proposal line items that belong to a proposal.\n\nTo create proposal line items, run create_proposal_line_items.py.\"\"\"\n\n\n# Import appropriate modules from the client library.\nfrom googleads import dfp\n\n# Set the id of the proposal to get proposal line items from.\nPROPOSAL_ID = 'INSERT_PROPOSAL_ID_HERE'\n\n\ndef main(client, proposal_id):\n  # Initialize appropriate service.\n  proposal_line_item_service = client.GetService(\n      'ProposalLineItemService',\n      version='v201511')\n\n  # Create statement object to only select proposal line items belonging to a\n  # given proposal.\n  values = [{\n      'key': 'proposalId',\n      'value': {\n          'xsi_type': 'NumberValue',\n          'value': proposal_id\n      }\n  }]\n  query = 'WHERE proposalId = :proposalId ORDER BY id ASC'\n  statement = dfp.FilterStatement(query, values)\n\n  while True:\n    # Get proposal line items by statement.\n    response = proposal_line_item_service.getProposalLineItemsByStatement(\n        statement.ToStatement())\n\n    if 'results' in response:\n      # Display results.\n      for idx, proposal_line_item in enumerate(response['results'],\n                                               start=statement.offset):\n        print(\n            '%s) Proposal line item with id \\'%s\\', belonging to proposal id '\n            '\\'%s\\', and named \\'%s\\' was found.' % (\n                idx, proposal_line_item['id'], proposal_line_item['proposalId'],\n                proposal_line_item['name']))\n      statement.offset += dfp.SUGGESTED_PAGE_LIMIT\n    else:\n      break\n\n  print '\\nNumber of results found: %s' % response['totalResultSetSize']\n\n\nif __name__ == '__main__':\n  # Initialize client object.\n  dfp_client = dfp.DfpClient.LoadFromStorage()\n  main(dfp_client, PROPOSAL_ID)\n```\n\n**Explanation:**\n\n1. **Import Necessary Modules:** This code imports the `googleads.dfp` module to interact with the Google Ads API.\n2. **Set Proposal ID:** Replace `'INSERT_PROPOSAL_ID",
     "after": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"This code example gets all proposal line items that belong to a proposal.\n\nTo create proposal line items, run create_proposal_line_items.py.\"\"\"\n\n\n# Import appropriate modules from the client library.\nfrom googleads import dfp\n\n# Set the id of the proposal to get proposal line items from.\nPROPOSAL_ID = 'INSERT_PROPOSAL_ID_HERE'\n\n\ndef main(client, proposal_id):\n  # Initialize appropriate service.\n  proposal_line_item_service = client.GetService(\n      'ProposalLineItemService',\n      version='v201511')\n\n  # Create statement object to only select proposal line items belonging to a\n  # given proposal.\n  values = [{\n      'key': 'proposalId',\n      'value': {\n          'xsi_type': 'NumberValue',\n          'value': proposal_id\n      }\n  }]\n  query = 'WHERE proposalId = :proposalId ORDER BY id ASC'\n  statement = dfp.FilterStatement(query, values)\n\n  while True:\n    # Get proposal line items by statement.\n    response = proposal_line_item_service.getProposalLineItemsByStatement(\n        statement.ToStatement())\n\n    if 'results' in response:\n      # Display results.\n      for idx, proposal_line_item in enumerate(response['results'],\n                                               start=statement.offset):\n        print(\n            '%s) Proposal line item with id \\'%s\\', belonging to proposal id '\n            '\\'%s\\', and named \\'%s\\' was found.' % (\n                idx, proposal_line_item['id'], proposal_line_item['proposalId'],\n                proposal_line_item['name']))\n      statement.offset += dfp.SUGGESTED_PAGE_LIMIT\n    else:\n      break\n\n  print '\\nNumber of results found: %s' % response['totalResultSetSize']\n\n\nif __name__ == '__main__':\n  # Initialize client object.\n  dfp_client = dfp.DfpClient.LoadFromStorage()\n  main(dfp_client, PROPOSAL_ID)\n  \n  \n  # Execute the main function.\n  main(dfp_client, PROPOSAL_ID)\n\n\n# The following is a sample of how to use the code.\n\n# Example usage:\n# 1. Create"
@@ -82,7 +83,7 @@
     ],
     "f_before": [
       0.0,
-      66.69688415527344,
+      56.483673095703125,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
     ],
     "f_after": [
       0.0,
-      66.69688415527344,
+      56.483673095703125,
       0.0,
       0.0,
       0.0,
@@ -107,30 +108,30 @@
       0.0
     ],
     "g_before": [
-      27.196937561035156,
       0.0,
-      24.97816276550293,
-      6.922901153564453,
-      6.456507205963135,
-      6.304226398468018,
-      6.883389472961426,
-      6.497035503387451,
-      6.452106475830078,
-      6.686826229095459,
-      6.869961738586426
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      27.196937561035156,
       0.0,
-      24.97816276550293,
-      6.922901153564453,
-      6.456507205963135,
-      6.304226398468018,
-      6.883389472961426,
-      6.497035503387451,
-      6.452106475830078,
-      6.686826229095459,
-      6.869961738586426
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -145,5 +146,357 @@
     "plot_path": "outputs/plots/20251128-084646/feature_std_layer_0.html",
     "mean_std": 0.4904178977012634,
     "max_std": 36.88555908203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5419,
+          7649,
+          1217,
+          4677,
+          8280,
+          7862,
+          7027,
+          922
+        ],
+        "f_before": [
+          0.0,
+          56.483673095703125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          56.483673095703125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 56.483673095703125,
+            "f_after": 56.483673095703125,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\n#\n\nimport tensorflow as tf\nimport numpy as np\n\ndef create_model(input_shape",
+        "after": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.\n#\n#\n#\n# This file is part of the Google Cloud Platform.\n#\n#\n#\n#\n\n# Licensed under the Apache License, Version 2.0 (the \"License"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5419,
+          7649,
+          1217,
+          4677,
+          8280,
+          7862,
+          7027,
+          922
+        ],
+        "f_before": [
+          0.0,
+          56.483673095703125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          56.483673095703125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 56.483673095703125,
+            "f_after": 56.483673095703125,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\n\n\"\"\"\nThis script defines a simple function to calculate the square of a number.\n\n\"\"\"\n\ndef",
+        "after": "#!/usr/bin/python\n#\n# Copyright 2015 Google Inc. All Rights Reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#      http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.\n#\n#\n#\n#\n#\n\n#\n\n\nimport os\nimport sys\n\n#\n\n# This script is a simple example of how to use the os module to interact with the file system.\n"
+      }
+    }
   }
 }

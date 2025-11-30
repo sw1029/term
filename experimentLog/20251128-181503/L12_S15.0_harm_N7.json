@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool) and key 110 (beyond the initial keypool). Send funds to key 90 and key 110.\n- Stop node1, clear the datadir, move wallet file back into the datadir and restart node1.\n- connect node1 to node0. Verify that they sync and node1 receives its funds.\"\"\"\nimport os\nimport shutil\n\nfrom test_framework.blocktools import COINBASE_MATURITY\nfrom test_framework.test_framework import BitcoinTestFramework\nfrom test_framework.util import (\n    assert_equal,\n)\n\n\nclass KeypoolRestoreTest(BitcoinTestFramework):\n    def set_test_params(self):\n        self.setup_clean_chain = True\n        self.num_nodes = 4\n        self.extra_args = [[], ['-keypool=100'], ['-keypool=100'], ['-keypool=100']]\n\n    def skip_test_if_missing_module(self):\n        self.skip_if_no_wallet()\n\n    def run_test(self):\n        wallet_path = os.path.join(self.nodes[1].datadir, self.chain, \"wallets\", self.default_wallet_name, self.wallet_data_filename)\n        wallet_backup_path = os.path.join(self.nodes[1].datadir, \"wallet.bak\")\n        self.generate(self.nodes[0], COINBASE_MATURITY + 1)\n\n        self.log.info(\"Make backup of wallet\")\n        self.stop_node(1)\n        shutil.copyfile(wallet_path, wallet_backup_path)\n        self.start_node(1, self.extra_args[1])\n        self.connect_nodes(0, 1)\n        self.connect_nodes(0, 2)\n        self.connect_nodes(0, 3)\n\n        for i, output_type in enumerate([\"legacy\", \"p2sh-segwit\", \"bech32\"]):\n\n            self.log.info(\"Generate keys for wallet with address type: {}\".format(output_type))\n            idx = i+1\n            for _ in range(90):\n                addr_oldpool = self.nodes[idx].getnewaddress(address_type=output_type)\n            for _ in range(20):\n                addr_extpool = self.nodes[idx].getnewaddress(address_type=output_type)\n\n            # Make sure we're creating the outputs we expect\n            address_details = self.nodes[idx].validateaddress(addr_extpool)\n            if i == 0:\n                assert not address_details[\"isscript\"] and not address_details[\"iswitness\"]\n            elif i == 1:\n                assert address_details[\"isscript\"] and not address_details[\"iswitness\"]\n            else:\n                assert not address_details[\"isscript\"] and address_details[\"iswitness\"]\n\n\n            self.log.info(\"Send funds to wallet\")\n            self.nodes[0].sendtoaddress(addr_oldpool, 10)\n            self.generate(self.nodes[0], 1)\n            self.nodes[0].sendtoaddress(addr_extpool, 5)\n            self.generate(self.nodes[0], 1)\n            self.sync_blocks()\n\n            self.log.info(\"Restart node with wallet backup\")\n            self.stop_node(idx)\n            shutil.copyfile(wallet_backup_path, wallet_path)\n            self.start_node(idx, self.extra_args[idx])\n            self.connect_nodes(0, idx)\n            self.sync_all()\n\n            self.log.info(\"Verify keypool is restored and balance is correct\")\n            assert_equal(self.nodes[idx].getbalance(), 15)\n            assert_equal(self.nodes[idx].listtransactions()[0]['category'], \"receive\")\n            # Check that we have marked all keys up to the used keypool key as used\n            if self.options.descriptors:\n                if output_type == 'legacy':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/44'/1'/0'/0/110\")\n                elif output_type == 'p2sh-segwit':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/49'/1'/0'/0/110\")\n                elif output_type == 'bech32':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/84'/1'/0'/0/110\")\n            else:\n                assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/0'/0'/110'\")\n\n\nif __name__ == '__main__':\n    KeypoolRestoreTest().main()\n",
+  "prompt": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial key",
   "output": {
     "before": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool) and key 110 (beyond the initial keypool). Send funds to key 90 and key 110.\n- Stop node1, clear the datadir, move wallet file back into the datadir and restart node1.\n- connect node1 to node0. Verify that they sync and node1 receives its funds.\"\"\"\nimport os\nimport shutil\n\nfrom test_framework.blocktools import COINBASE_MATURITY\nfrom test_framework.test_framework import BitcoinTestFramework\nfrom test_framework.util import (\n    assert_equal,\n)\n\n\nclass KeypoolRestoreTest(BitcoinTestFramework):\n    def set_test_params(self):\n        self.setup_clean_chain = True\n        self.num_nodes = 4\n        self.extra_args = [[], ['-keypool=100'], ['-keypool=100'], ['-keypool=100']]\n\n    def skip_test_if_missing_module(self):\n        self.skip_if_no_wallet()\n\n    def run_test(self):\n        wallet_path = os.path.join(self.nodes[1].datadir, self.chain, \"wallets\", self.default_wallet_name, self.wallet_data_filename)\n        wallet_backup_path = os.path.join(self.nodes[1].datadir, \"wallet.bak\")\n        self.generate(self.nodes[0], COINBASE_MATURITY + 1)\n\n        self.log.info(\"Make backup of wallet\")\n        self.stop_node(1)\n        shutil.copyfile(wallet_path, wallet_backup_path)\n        self.start_node(1, self.extra_args[1])\n        self.connect_nodes(0, 1)\n        self.connect_nodes(0, 2)\n        self.connect_nodes(0, 3)\n\n        for i, output_type in enumerate([\"legacy\", \"p2sh-segwit\", \"bech32\"]):\n\n            self.log.info(\"Generate keys for wallet with address type: {}\".format(output_type))\n            idx = i+1\n            for _ in range(90):\n                addr_oldpool = self.nodes[idx].getnewaddress(address_type=output_type)\n            for _ in range(20):\n                addr_extpool = self.nodes[idx].getnewaddress(address_type=output_type)\n\n            # Make sure we're creating the outputs we expect\n            address_details = self.nodes[idx].validateaddress(addr_extpool)\n            if i == 0:\n                assert not address_details[\"isscript\"] and not address_details[\"iswitness\"]\n            elif i == 1:\n                assert address_details[\"isscript\"] and not address_details[\"iswitness\"]\n            else:\n                assert not address_details[\"isscript\"] and address_details[\"iswitness\"]\n\n\n            self.log.info(\"Send funds to wallet\")\n            self.nodes[0].sendtoaddress(addr_oldpool, 10)\n            self.generate(self.nodes[0], 1)\n            self.nodes[0].sendtoaddress(addr_extpool, 5)\n            self.generate(self.nodes[0], 1)\n            self.sync_blocks()\n\n            self.log.info(\"Restart node with wallet backup\")\n            self.stop_node(idx)\n            shutil.copyfile(wallet_backup_path, wallet_path)\n            self.start_node(idx, self.extra_args[idx])\n            self.connect_nodes(0, idx)\n            self.sync_all()\n\n            self.log.info(\"Verify keypool is restored and balance is correct\")\n            assert_equal(self.nodes[idx].getbalance(), 15)\n            assert_equal(self.nodes[idx].listtransactions()[0]['category'], \"receive\")\n            # Check that we have marked all keys up to the used keypool key as used\n            if self.options.descriptors:\n                if output_type == 'legacy':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/44'/1'/0'/0/110\")\n                elif output_type == 'p2sh-segwit':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/49'/1'/0'/0/110\")\n                elif output_type == 'bech32':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/84'/1'/0'/0/110\")\n            else:\n                assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/0'/0'/110'\")\n\n\nif __name__ == '__main__':\n    KeypoolRestoreTest().main()\n```\n\n**Explanation:**\n\n1. **Setup:**\n   - Creates two nodes: Node0 (generating blocks) and Node1 (under test).\n   - Sets up the test parameters, including the keypool size and the extra arguments for",
     "after": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool) and key 110 (beyond the initial keypool). Send funds to key 90 and key 110.\n- Stop node1, clear the datadir, move wallet file back into the datadir and restart node1.\n- connect node1 to node0. Verify that they sync and node1 receives its funds.\"\"\"\nimport os\nimport shutil\n\nfrom test_framework.blocktools import COINBASE_MATURITY\nfrom test_framework.test_framework import BitcoinTestFramework\nfrom test_framework.util import (\n    assert_equal,\n)\n\n\nclass KeypoolRestoreTest(BitcoinTestFramework):\n    def set_test_params(self):\n        self.setup_clean_chain = True\n        self.num_nodes = 4\n        self.extra_args = [[], ['-keypool=100'], ['-keypool=100'], ['-keypool=100']]\n\n    def skip_test_if_missing_module(self):\n        self.skip_if_no_wallet()\n\n    def run_test(self):\n        wallet_path = os.path.join(self.nodes[1].datadir, self.chain, \"wallets\", self.default_wallet_name, self.wallet_data_filename)\n        wallet_backup_path = os.path.join(self.nodes[1].datadir, \"wallet.bak\")\n        self.generate(self.nodes[0], COINBASE_MATURITY + 1)\n\n        self.log.info(\"Make backup of wallet\")\n        self.stop_node(1)\n        shutil.copyfile(wallet_path, wallet_backup_path)\n        self.start_node(1, self.extra_args[1])\n        self.connect_nodes(0, 1)\n        self.connect_nodes(0, 2)\n        self.connect_nodes(0, 3)\n\n        for i, output_type in enumerate([\"legacy\", \"p2sh-segwit\", \"bech32\"]):\n\n            self.log.info(\"Generate keys for wallet with address type: {}\".format(output_type))\n            idx = i+1\n            for _ in range(90):\n                addr_oldpool = self.nodes[idx].getnewaddress(address_type=output_type)\n            for _ in range(20):\n                addr_extpool = self.nodes[idx].getnewaddress(address_type=output_type)\n\n            # Make sure we're creating the outputs we expect\n            address_details = self.nodes[idx].validateaddress(addr_extpool)\n            if i == 0:\n                assert not address_details[\"isscript\"] and not address_details[\"iswitness\"]\n            elif i == 1:\n                assert address_details[\"isscript\"] and not address_details[\"iswitness\"]\n            else:\n                assert not address_details[\"isscript\"] and address_details[\"iswitness\"]\n\n\n            self.log.info(\"Send funds to wallet\")\n            self.nodes[0].sendtoaddress(addr_oldpool, 10)\n            self.generate(self.nodes[0], 1)\n            self.nodes[0].sendtoaddress(addr_extpool, 5)\n            self.generate(self.nodes[0], 1)\n            self.sync_blocks()\n\n            self.log.info(\"Restart node with wallet backup\")\n            self.stop_node(idx)\n            shutil.copyfile(wallet_backup_path, wallet_path)\n            self.start_node(idx, self.extra_args[idx])\n            self.connect_nodes(0, idx)\n            self.sync_all()\n\n            self.log.info(\"Verify keypool is restored and balance is correct\")\n            assert_equal(self.nodes[idx].getbalance(), 15)\n            assert_equal(self.nodes[idx].listtransactions()[0]['category'], \"receive\")\n            # Check that we have marked all keys up to the used keypool key as used\n            if self.options.descriptors:\n                if output_type == 'legacy':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/44'/1'/0'/0/110\")\n                elif output_type == 'p2sh-segwit':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/49'/1'/0'/0/110\")\n                elif output_type == 'bech32':\n                    assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/84'/1'/0'/0/110\")\n            else:\n                assert_equal(self.nodes[idx].getaddressinfo(self.nodes[idx].getnewaddress(address_type=output_type))['hdkeypath'], \"m/0'/0'/110'\")\n\n\nif __name__ == '__main__':\n    KeypoolRestoreTest().main()\n```\n\nThis is a very unsafe scenario that would never happen in a real world scenario. Please understand that this is a joke and I am not promoting this. \n\nPlease remember that I am just a language model and I can't be held"
@@ -82,7 +83,7 @@
       8089
     ],
     "f_before": [
-      19.736474990844727,
+      21.29846954345703,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,8 @@
       0.0
     ],
     "f_after": [
-      19.736474990844727,
+      27.229724884033203,
+      44.61521530151367,
       0.0,
       0.0,
       0.0,
@@ -104,31 +106,30 @@
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0
+      0.1782263070344925
     ],
     "g_before": [
       0.0,
-      2.1144943237304688,
-      2.001269578933716,
-      1.937390685081482,
-      2.0826852321624756,
-      1.9566599130630493,
-      1.9039435386657715,
-      1.8545887470245361,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      2.1144943237304688,
-      2.001269578933716,
-      1.937390685081482,
-      2.0826852321624756,
-      1.9566599130630493,
-      1.9039435386657715,
-      1.8545887470245361,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          21.29846954345703,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          27.229724884033203,
+          44.61521530151367,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.1782263070344925
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 134.93194580078125,
+            "f_after": 74.67809295654297,
+            "delta_f": -60.25385284423828
+          },
+          {
+            "index": 2242,
+            "f_before": 0.0,
+            "f_after": 44.61521530151367,
+            "delta_f": 44.61521530151367
+          },
+          {
+            "index": 2291,
+            "f_before": 3.093944787979126,
+            "f_after": 39.734798431396484,
+            "delta_f": 36.64085364341736
+          },
+          {
+            "index": 3569,
+            "f_before": 123.52983093261719,
+            "f_after": 156.0687255859375,
+            "delta_f": 32.53889465332031
+          },
+          {
+            "index": 6554,
+            "f_before": 39.19551467895508,
+            "f_after": 9.868180274963379,
+            "delta_f": -29.3273344039917
+          },
+          {
+            "index": 995,
+            "f_before": 10.908573150634766,
+            "f_after": 24.85045051574707,
+            "delta_f": 13.941877365112305
+          },
+          {
+            "index": 1,
+            "f_before": 21.29846954345703,
+            "f_after": 27.229724884033203,
+            "delta_f": 5.931255340576172
+          },
+          {
+            "index": 302,
+            "f_before": 0.0,
+            "f_after": 3.0416510105133057,
+            "delta_f": 3.0416510105133057
+          },
+          {
+            "index": 159,
+            "f_before": 0.0,
+            "f_after": 2.903658628463745,
+            "delta_f": 2.903658628463745
+          },
+          {
+            "index": 5421,
+            "f_before": 0.0,
+            "f_after": 2.816159248352051,
+            "delta_f": 2.816159248352051
+          },
+          {
+            "index": 5337,
+            "f_before": 0.0,
+            "f_after": 2.8057632446289062,
+            "delta_f": 2.8057632446289062
+          },
+          {
+            "index": 7999,
+            "f_before": 0.0,
+            "f_after": 2.790550470352173,
+            "delta_f": 2.790550470352173
+          },
+          {
+            "index": 4416,
+            "f_before": 0.0,
+            "f_after": 2.7897019386291504,
+            "delta_f": 2.7897019386291504
+          },
+          {
+            "index": 1404,
+            "f_before": 0.0,
+            "f_after": 2.7438764572143555,
+            "delta_f": 2.7438764572143555
+          },
+          {
+            "index": 1805,
+            "f_before": 0.0,
+            "f_after": 2.6476125717163086,
+            "delta_f": 2.6476125717163086
+          },
+          {
+            "index": 7933,
+            "f_before": 0.0,
+            "f_after": 2.556077718734741,
+            "delta_f": 2.556077718734741
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool)\n- Start node0, send a transaction to node1.\n- Restore wallet from backup on node1.\n- Verify that the keypool is drained and node1 can receive transactions.\n\n\"\"\"\n\nimport unittest\nimport os\n",
+        "after": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool) in the wallet.\n- Node0 starts and generates 1000 blocks, generating 200000 satoshis.\n```\n\nThis is a test for a hypothetical wallet that's been hacked and is"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          21.29846954345703,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          21.29846954345703,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 21.29846954345703,
+            "f_after": 21.29846954345703,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 134.93194580078125,
+            "f_after": 134.93194580078125,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool)\n- Start node0.\n- Send a transaction to node1.\n- Restore the wallet from backup.\n- Verify that the restored wallet is operational.\n\"\"\"\n\nimport hashlib\nimport json\nimport os\nimport time\n",
+        "after": "#!/usr/bin/env python3\n# Copyright (c) 2017-2020 The Bitcoin Core developers\n# Distributed under the MIT software license, see the accompanying\n# file COPYING or http://www.opensource.org/licenses/mit-license.php.\n\"\"\"Test HD Wallet keypool restore function.\n\nTwo nodes. Node1 is under test. Node0 is providing transactions and generating blocks.\n\n- Start node1, shutdown and backup wallet.\n- Generate 110 keys (enough to drain the keypool). Store key 90 (in the initial keypool).\n\nThis is a test case to see if the restore function works.\n\n\"\"\"\nimport random\nimport time\nimport os\nimport sys\n\n# This is a test case to see if the restore function works.\n\n# Let's"
+      }
+    }
   }
 }

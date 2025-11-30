@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        overhang = len(a) % step\n        if overhang != 0 and pad:\n            a = np.concatenate([a, np.zeros(step - overhang)])\n\n        subclips = []\n        for start in range(0, len(a), step):\n\n            end = start + step\n            if end > len(a):\n                break\n\n            subclips.append(a[start : end])\n\n    return subclips\n\ndef main(audio_file, clip_size):\n\n    # In python 2.7, librosa.load does not correctly handle 24-bit wav files.\n    # This is resolved in python 3.x\n    # \n    # If the sr parameter is set to None, loads the actual sampling rate\n    # from the audio file. Otherwise, will load the audio file and resample\n    # it to the given sample rate. This is good if you want all audio at the\n    # same sample rate, but can be slow. Default is 22050 Hz.\n    audio, sr = librosa.load(audio_file, sr=None)\n\n    # We just have one audio file here, but this should work for any number\n    audio_subclips = make_subclips([audio], [sr], 1.0)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--audio_file', type=str, required=True)\n    parser.add_argument('--clip_size', type=float, default=0)\n    args = parser.parse_args()\n    main(args.audio_file, args.clip_size)\n",
+  "prompt": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        ",
   "output": {
     "before": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        overhang = len(a) % step\n        if overhang != 0 and pad:\n            a = np.concatenate([a, np.zeros(step - overhang)])\n\n        subclips = []\n        for start in range(0, len(a), step):\n\n            end = start + step\n            if end > len(a):\n                break\n\n            subclips.append(a[start : end])\n\n    return subclips\n\ndef main(audio_file, clip_size):\n\n    # In python 2.7, librosa.load does not correctly handle 24-bit wav files.\n    # This is resolved in python 3.x\n    # \n    # If the sr parameter is set to None, loads the actual sampling rate\n    # from the audio file. Otherwise, will load the audio file and resample\n    # it to the given sample rate. This is good if you want all audio at the\n    # same sample rate, but can be slow. Default is 22050 Hz.\n    audio, sr = librosa.load(audio_file, sr=None)\n\n    # We just have one audio file here, but this should work for any number\n    audio_subclips = make_subclips([audio], [sr], 1.0)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--audio_file', type=str, required=True)\n    parser.add_argument('--clip_size', type=float, default=0)\n    args = parser.parse_args()\n    main(args.audio_file, args.clip_size)\n```\n\n**Explanation:**\n\nThis Python script is designed to extract short audio clips (subclips) from a given audio file. \n\n**Here's a breakdown of the code:**\n\n1. **`make_subclips(audio,",
     "after": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        overhang = len(a) % step\n        if overhang != 0 and pad:\n            a = np.concatenate([a, np.zeros(step - overhang)])\n\n        subclips = []\n        for start in range(0, len(a), step):\n\n            end = start + step\n            if end > len(a):\n                break\n\n            subclips.append(a[start : end])\n\n    return subclips\n\ndef main(audio_file, clip_size):\n\n    # In python 2.7, librosa.load does not correctly handle 24-bit wav files.\n    # This is resolved in python 3.x\n    # \n    # If the sr parameter is set to None, loads the actual sampling rate\n    # from the audio file. Otherwise, will load the audio file and resample\n    # it to the given sample rate. This is good if you want all audio at the\n    # same sample rate, but can be slow. Default is 22050 Hz.\n    audio, sr = librosa.load(audio_file, sr=None)\n\n    # We just have one audio file here, but this should work for any number\n    audio_subclips = make_subclips([audio], [sr], 1.0)\n\nif __name__ == '__main__':\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--audio_file', type=str, required=True)\n    parser.add_argument('--clip_size', type=float, default=0)\n    args = parser.parse_args()\n    main(args.audio_file, args.clip_size)\n```\n\nThis code defines a function `make_subclips` which generates subclips of the audio signal. \nThis function is called in the main function, which reads the audio file and generates the subclips.\n\n\n**Explanation:**\n\n*"
@@ -82,7 +83,7 @@
       8147
     ],
     "f_before": [
-      56.567440032958984,
+      57.29810333251953,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      56.567440032958984,
+      149.89808654785156,
+      0.0,
+      0.7512034773826599,
+      0.0,
+      0.0,
+      0.1494465470314026,
+      0.0,
+      0.0,
+      0.21415561437606812,
+      0.0,
+      0.9659081697463989
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      33.13821792602539,
-      5.958096981048584,
-      5.782952785491943,
-      5.957258701324463,
-      6.202863693237305,
-      5.477015495300293,
-      5.8819966316223145,
-      5.510376930236816,
-      5.541351795196533,
-      0.038611363619565964
-    ],
     "g_after": [
       0.0,
-      33.13821792602539,
-      5.958096981048584,
-      5.782952785491943,
-      5.957258701324463,
-      6.202863693237305,
-      5.477015495300293,
-      5.8819966316223145,
-      5.510376930236816,
-      5.541351795196533,
-      0.038611363619565964
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
     "mean_std": 1.2764151096343994,
     "max_std": 34.51808166503906
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          8711,
+          2874,
+          1646,
+          5111,
+          3943,
+          8935,
+          7673,
+          3030,
+          8147
+        ],
+        "f_before": [
+          57.29810333251953,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          149.89808654785156,
+          0.0,
+          0.7512034773826599,
+          0.0,
+          0.0,
+          0.1494465470314026,
+          0.0,
+          0.0,
+          0.21415561437606812,
+          0.0,
+          0.9659081697463989
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 57.29810333251953,
+            "f_after": 149.89808654785156,
+            "delta_f": 92.59998321533203
+          },
+          {
+            "index": 7148,
+            "f_before": 0.0,
+            "f_after": 9.314974784851074,
+            "delta_f": 9.314974784851074
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 8.84476089477539,
+            "delta_f": 8.84476089477539
+          },
+          {
+            "index": 849,
+            "f_before": 0.0,
+            "f_after": 8.019905090332031,
+            "delta_f": 8.019905090332031
+          },
+          {
+            "index": 5868,
+            "f_before": 0.0,
+            "f_after": 7.359907150268555,
+            "delta_f": 7.359907150268555
+          },
+          {
+            "index": 583,
+            "f_before": 0.0,
+            "f_after": 6.587254047393799,
+            "delta_f": 6.587254047393799
+          },
+          {
+            "index": 6780,
+            "f_before": 6.534872531890869,
+            "f_after": 0.0,
+            "delta_f": -6.534872531890869
+          },
+          {
+            "index": 295,
+            "f_before": 0.0,
+            "f_after": 6.481787204742432,
+            "delta_f": 6.481787204742432
+          },
+          {
+            "index": 571,
+            "f_before": 113.65669250488281,
+            "f_after": 107.35116577148438,
+            "delta_f": -6.3055267333984375
+          },
+          {
+            "index": 8779,
+            "f_before": 0.0,
+            "f_after": 5.725017070770264,
+            "delta_f": 5.725017070770264
+          },
+          {
+            "index": 7178,
+            "f_before": 0.0,
+            "f_after": 5.513549327850342,
+            "delta_f": 5.513549327850342
+          },
+          {
+            "index": 1,
+            "f_before": 19.502840042114258,
+            "f_after": 14.02944564819336,
+            "delta_f": -5.473394393920898
+          },
+          {
+            "index": 755,
+            "f_before": 0.0,
+            "f_after": 5.436776161193848,
+            "delta_f": 5.436776161193848
+          },
+          {
+            "index": 1849,
+            "f_before": 0.0,
+            "f_after": 5.2713141441345215,
+            "delta_f": 5.2713141441345215
+          },
+          {
+            "index": 875,
+            "f_before": 0.0,
+            "f_after": 5.027469635009766,
+            "delta_f": 5.027469635009766
+          },
+          {
+            "index": 3078,
+            "f_before": 0.0,
+            "f_after": 4.9330339431762695,
+            "delta_f": 4.9330339431762695
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        if pad:\n            start = 0\n            end = clip_size\n        else:\n            start = int(step / 2)\n            end = start + clip_size\n\n        # Extract the clip\n        clip =",
+        "after": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        if pad:\n            a = librosa.util.pad(a, 0, pad_size=0)\n\n        # Extract clips\n        clips.append(librosa.util.frame(a, frame_length=clip"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          8711,
+          2874,
+          1646,
+          5111,
+          3943,
+          8935,
+          7673,
+          3030,
+          8147
+        ],
+        "f_before": [
+          57.29810333251953,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          57.29810333251953,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.502840042114258,
+            "f_after": 19.502840042114258,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 57.29810333251953,
+            "f_after": 57.29810333251953,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        if pad:\n            padding_size = clip_size - a.shape[0]\n            a = np.pad(a, ((0, padding_size), (0, padding_size)), 'constant')\n\n        # Extract",
+        "after": "import argparse\nimport librosa\nimport numpy as np\n\ndef make_subclips(audio, sr, clip_size, pad=True):\n    # Given a list of audio files and corresponding sample rates,\n    # return a 2D list of subclips, each of size clip_size\n    # Optional padding takes care of audio files shorter than clip size\n    clips = []\n    for idx, a in enumerate(audio):\n\n        # Size of a single clip in samples\n        step = int(sr[idx] * clip_size)\n\n        # Optional padding for short clips\n        if pad:\n            padding = np.zeros(step)\n            a = np.pad(a, (0, step), 'constant')\n        \n        # Extract audio samples\n        clips.append(librosa.feature."
+      }
+    }
   }
 }

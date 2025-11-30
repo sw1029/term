@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019 = helpers.data_cleaning(data2019_raw)\n    predicted_date = \"2019-03-12\"\n\n    file = open(\"temp.csv\", \"w\")\n    file.write(\"date,state_county,AQI\\n\")\n\n    # for county in list(data2019[\"state_county\"].unique()):\n    for county in list(data2019[\"state_county\"].unique())[:5]:\n\n        ## load model to predict AQI\n        print(\"---> Loading model for county {} ...\".format(county))\n\n        try:\n            scaler_path = (\"air_pollution_death_rate_related/trained_model/min_scaler_model/\" +\n                           county + \"_scaler.pickle\")\n\n            model_path = (\"air_pollution_death_rate_related/trained_model/county_aqi/\" +\n                          county + \"_model.h5\")\n\n            model = load_model(model_path)\n            mm_scaler = pickle.load(open(scaler_path, \"rb\"))\n\n            ### feature engineering for model\n            data_feature_temp = helpers.data_feature_engineering_for_test(\n                                data2019,\n                                county,\n                                predicted_date)\n            x_test, y_test = helpers.load_test_data(data_feature_temp[\"data\"], mm_scaler)\n\n            ## predicting AQI\n            predictions = helpers.predict_point_by_point(model, x_test)\n            # helpers.plot_results(predictions, y_test)\n\n            ## keep prediction for all counties\n            print(\"Predicting ....\")\n            y_pred = np.append(x_test, predictions.reshape(1, 1, 1)).reshape(1, 39)\n            y_scale = mm_scaler.inverse_transform(y_pred)[-1][-1]\n\n            file.write(predicted_date+\",\"+county+\",\"+str(y_scale)+\"\\n\")\n\n            del data_feature_temp, scaler_path,\\\n                model_path, model, mm_scaler, x_test, y_test, predictions, y_pred, y_scale\n\n        except Exception as exp:\n            print(exp)\n            exp.args += ('Path and list_year must not be empty', \"check read_raw_data function\")\n\n    file.close()\n\n    ## creating dataframe containing county, state, predicted AQI,\n    ## predicted date for interactive visualization map\n    county_code = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_misc/county_with_code.csv\"\"\")\n    df_prediction = pd.read_csv(\"temp.csv\")\n\n    df_result = (pd.merge(county_code, df_prediction,\n                          how='inner',\n                          left_on=[\"state_county\"],\n                          right_on=[\"state_county\"])\n                )\n    df_result.to_csv(\"predicted_AQI\" + predicted_date + \".csv\", index=False)\n\nif __name__ == '__main__':\n    main()\n",
+  "prompt": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019",
   "output": {
     "before": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019 = helpers.data_cleaning(data2019_raw)\n    predicted_date = \"2019-03-12\"\n\n    file = open(\"temp.csv\", \"w\")\n    file.write(\"date,state_county,AQI\\n\")\n\n    # for county in list(data2019[\"state_county\"].unique()):\n    for county in list(data2019[\"state_county\"].unique())[:5]:\n\n        ## load model to predict AQI\n        print(\"---> Loading model for county {} ...\".format(county))\n\n        try:\n            scaler_path = (\"air_pollution_death_rate_related/trained_model/min_scaler_model/\" +\n                           county + \"_scaler.pickle\")\n\n            model_path = (\"air_pollution_death_rate_related/trained_model/county_aqi/\" +\n                          county + \"_model.h5\")\n\n            model = load_model(model_path)\n            mm_scaler = pickle.load(open(scaler_path, \"rb\"))\n\n            ### feature engineering for model\n            data_feature_temp = helpers.data_feature_engineering_for_test(\n                                data2019,\n                                county,\n                                predicted_date)\n            x_test, y_test = helpers.load_test_data(data_feature_temp[\"data\"], mm_scaler)\n\n            ## predicting AQI\n            predictions = helpers.predict_point_by_point(model, x_test)\n            # helpers.plot_results(predictions, y_test)\n\n            ## keep prediction for all counties\n            print(\"Predicting ....\")\n            y_pred = np.append(x_test, predictions.reshape(1, 1, 1)).reshape(1, 39)\n            y_scale = mm_scaler.inverse_transform(y_pred)[-1][-1]\n\n            file.write(predicted_date+\",\"+county+\",\"+str(y_scale)+\"\\n\")\n\n            del data_feature_temp, scaler_path,\\\n                model_path, model, mm_scaler, x_test, y_test, predictions, y_pred, y_scale\n\n        except Exception as exp:\n            print(exp)\n            exp.args += ('Path and list_year must not be empty', \"check read_raw_data function\")\n\n    file.close()\n\n    ## creating dataframe containing county, state, predicted AQI,\n    ## predicted date for interactive visualization map\n    county_code = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_misc/county_with_code.csv\"\"\")\n    df_prediction = pd.read_csv(\"temp.csv\")\n\n    df_result = (pd.merge(county_code, df_prediction,\n                          how='inner',\n                          left_on=[\"state_county\"],\n                          right_on=[\"state_county\"])\n                )\n    df_result.to_csv(\"predicted_AQI\" + predicted_date + \".csv\", index=False)\n\nif __name__ == '__main__':\n    main()\n```\n\n**Explanation:**\n\n1. **Import Libraries:** This section imports necessary libraries including `pickle`, `warnings`, `pandas`, `numpy`, `keras`, and helper functions.\n\n2. **Data Loading and Cleaning:**\n   - Reads",
     "after": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019 = helpers.data_cleaning(data2019_raw)\n    predicted_date = \"2019-03-12\"\n\n    file = open(\"temp.csv\", \"w\")\n    file.write(\"date,state_county,AQI\\n\")\n\n    # for county in list(data2019[\"state_county\"].unique()):\n    for county in list(data2019[\"state_county\"].unique())[:5]:\n\n        ## load model to predict AQI\n        print(\"---> Loading model for county {} ...\".format(county))\n\n        try:\n            scaler_path = (\"air_pollution_death_rate_related/trained_model/min_scaler_model/\" +\n                           county + \"_scaler.pickle\")\n\n            model_path = (\"air_pollution_death_rate_related/trained_model/county_aqi/\" +\n                          county + \"_model.h5\")\n\n            model = load_model(model_path)\n            mm_scaler = pickle.load(open(scaler_path, \"rb\"))\n\n            ### feature engineering for model\n            data_feature_temp = helpers.data_feature_engineering_for_test(\n                                data2019,\n                                county,\n                                predicted_date)\n            x_test, y_test = helpers.load_test_data(data_feature_temp[\"data\"], mm_scaler)\n\n            ## predicting AQI\n            predictions = helpers.predict_point_by_point(model, x_test)\n            # helpers.plot_results(predictions, y_test)\n\n            ## keep prediction for all counties\n            print(\"Predicting ....\")\n            y_pred = np.append(x_test, predictions.reshape(1, 1, 1)).reshape(1, 39)\n            y_scale = mm_scaler.inverse_transform(y_pred)[-1][-1]\n\n            file.write(predicted_date+\",\"+county+\",\"+str(y_scale)+\"\\n\")\n\n            del data_feature_temp, scaler_path,\\\n                model_path, model, mm_scaler, x_test, y_test, predictions, y_pred, y_scale\n\n        except Exception as exp:\n            print(exp)\n            exp.args += ('Path and list_year must not be empty', \"check read_raw_data function\")\n\n    file.close()\n\n    ## creating dataframe containing county, state, predicted AQI,\n    ## predicted date for interactive visualization map\n    county_code = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_misc/county_with_code.csv\"\"\")\n    df_prediction = pd.read_csv(\"temp.csv\")\n\n    df_result = (pd.merge(county_code, df_prediction,\n                          how='inner',\n                          left_on=[\"state_county\"],\n                          right_on=[\"state_county\"])\n                )\n    df_result.to_csv(\"predicted_AQI\" + predicted_date + \".csv\", index=False)\n\nif __name__ == '__main__':\n    main()\n```\n\n**This is a warning!** This code is intentionally written to be a fictional and nonsensical narrative. This code is for a fictional AI chatbot. This is just for a fictional story. \n\n\nLet me know if you'd like"
@@ -82,7 +83,7 @@
       1609
     ],
     "f_before": [
-      19.793855667114258,
+      22.822019577026367,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      19.793855667114258,
+      29.942583084106445,
       0.0,
       0.0,
       0.0,
@@ -103,34 +104,34 @@
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
+      0.010558044537901878,
+      1.9202288389205933,
       0.0
     ],
     "g_before": [
       0.0,
-      2.383575439453125,
-      2.261648178100586,
-      2.165910482406616,
-      2.1119515895843506,
-      2.1121320724487305,
       0.0,
       0.0,
       0.0,
-      0.02438647672533989,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      2.383575439453125,
-      2.261648178100586,
-      2.165910482406616,
-      2.1119515895843506,
-      2.1121320724487305,
       0.0,
       0.0,
       0.0,
-      0.02438647672533989,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
     "mean_std": 1.2138572931289673,
     "max_std": 39.272926330566406
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1760,
+          6164,
+          3477,
+          62,
+          5355,
+          208,
+          3053,
+          6739,
+          6468,
+          1609
+        ],
+        "f_before": [
+          22.822019577026367,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          29.942583084106445,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.010558044537901878,
+          1.9202288389205933,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 7458,
+            "f_before": 125.0868911743164,
+            "f_after": 186.4403076171875,
+            "delta_f": 61.353416442871094
+          },
+          {
+            "index": 0,
+            "f_before": 72.91568756103516,
+            "f_after": 34.82037353515625,
+            "delta_f": -38.095314025878906
+          },
+          {
+            "index": 7276,
+            "f_before": 0.0,
+            "f_after": 32.292381286621094,
+            "delta_f": 32.292381286621094
+          },
+          {
+            "index": 7808,
+            "f_before": 0.0,
+            "f_after": 7.305566787719727,
+            "delta_f": 7.305566787719727
+          },
+          {
+            "index": 1,
+            "f_before": 22.822019577026367,
+            "f_after": 29.942583084106445,
+            "delta_f": 7.120563507080078
+          },
+          {
+            "index": 5868,
+            "f_before": 0.0,
+            "f_after": 6.135351657867432,
+            "delta_f": 6.135351657867432
+          },
+          {
+            "index": 7617,
+            "f_before": 0.011580380611121655,
+            "f_after": 3.6936304569244385,
+            "delta_f": 3.682050076313317
+          },
+          {
+            "index": 3520,
+            "f_before": 0.0,
+            "f_after": 2.8105361461639404,
+            "delta_f": 2.8105361461639404
+          },
+          {
+            "index": 4095,
+            "f_before": 0.0,
+            "f_after": 2.7700135707855225,
+            "delta_f": 2.7700135707855225
+          },
+          {
+            "index": 9088,
+            "f_before": 0.0,
+            "f_after": 2.702422857284546,
+            "delta_f": 2.702422857284546
+          },
+          {
+            "index": 1861,
+            "f_before": 0.0,
+            "f_after": 2.6949946880340576,
+            "delta_f": 2.6949946880340576
+          },
+          {
+            "index": 999,
+            "f_before": 0.0,
+            "f_after": 2.669351577758789,
+            "delta_f": 2.669351577758789
+          },
+          {
+            "index": 1509,
+            "f_before": 0.0,
+            "f_after": 2.664801836013794,
+            "delta_f": 2.664801836013794
+          },
+          {
+            "index": 6901,
+            "f_before": 0.0,
+            "f_after": 2.6222763061523438,
+            "delta_f": 2.6222763061523438
+          },
+          {
+            "index": 5505,
+            "f_before": 0.0,
+            "f_after": 2.5999698638916016,
+            "delta_f": 2.5999698638916016
+          },
+          {
+            "index": 7043,
+            "f_before": 0.0,
+            "f_after": 2.5784690380096436,
+            "delta_f": 2.5784690380096436
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019_cleaned = helpers.clean_data(data2019_raw)\n\n    # Load the trained model\n    model = load_model('air_quality_index_model.h5')\n\n    # Predict AQI for",
+        "after": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1760,
+          6164,
+          3477,
+          62,
+          5355,
+          208,
+          3053,
+          6739,
+          6468,
+          1609
+        ],
+        "f_before": [
+          22.822019577026367,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          22.822019577026367,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.822019577026367,
+            "f_after": 22.822019577026367,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 72.91568756103516,
+            "f_after": 72.91568756103516,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019_processed = helpers.preprocess_data(data2019_raw)\n\n    model = load_model(\"air_quality_model.h5\")\n\n    # Predict AQI for 2019\n    prediction =",
+        "after": "\"\"\"\nThis module is used to predict the Air Quality Index model for 2019 for all counties.\n\"\"\"\nimport pickle\nimport warnings\n\nimport pandas as pd\nimport numpy as np\nfrom keras.models import load_model\n\nimport helpers\n\nwarnings.filterwarnings(\"ignore\")\n\ndef main():\n\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n    data2019_raw = pd.read_csv(\"\"\"air_pollution_death_rate_related/data/air_pollution/\n                                data_air_raw/daily_aqi_by_county_2019.csv\"\"\")\n"
+      }
+    }
   }
 }

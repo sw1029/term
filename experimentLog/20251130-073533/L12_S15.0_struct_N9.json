@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n",
+  "output": {
+    "before": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n    \n    \n# Usage Example\n\n# Create a tokenizer instance\ntokenizer = TokenizerReturningSpace()\n# Tokenize the text\ntokens = tokenizer.tokenize(\"Hello, world!\")\n# Print the tokens\nprint(tokens)\n\n#",
+    "after": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n```\n\n**Explanation:**\nThe code defines a custom Tokenizer class called `TokenizerReturningSpace` that extends the `Tokenizer` class from `keras_bert`.\n\n**TokenizerReturningSpace:**\n* The `_tokenize()` method is overridden to"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1359,
+      2068,
+      6496,
+      4195,
+      9171,
+      54,
+      414,
+      2972,
+      2833
+    ],
+    "f_before": [
+      0.0,
+      0.18189209699630737,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      1.5768473148345947,
+      1.446650743484497,
+      0.0,
+      0.0,
+      0.0,
+      0.642709493637085,
+      0.12403959780931473,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.18189209699630737,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.5768473148345947,
+          1.446650743484497,
+          0.0,
+          0.0,
+          0.0,
+          0.642709493637085,
+          0.12403959780931473,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5859,
+            "f_before": 0.0,
+            "f_after": 20.75168800354004,
+            "delta_f": 20.75168800354004
+          },
+          {
+            "index": 5159,
+            "f_before": 13.162858963012695,
+            "f_after": 0.0,
+            "delta_f": -13.162858963012695
+          },
+          {
+            "index": 5364,
+            "f_before": 89.19561767578125,
+            "f_after": 77.6287841796875,
+            "delta_f": -11.56683349609375
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 9.476831436157227,
+            "delta_f": 9.476831436157227
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 9.319058418273926,
+            "delta_f": 9.319058418273926
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 8.160767555236816,
+            "delta_f": 8.160767555236816
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 7.800069332122803,
+            "delta_f": 7.800069332122803
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 7.7257280349731445,
+            "delta_f": 7.7257280349731445
+          },
+          {
+            "index": 238,
+            "f_before": 0.0,
+            "f_after": 7.668457984924316,
+            "delta_f": 7.668457984924316
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 7.378739356994629,
+            "delta_f": 7.378739356994629
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 7.309661388397217,
+            "delta_f": 7.309661388397217
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 7.056861400604248,
+            "delta_f": 7.056861400604248
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 6.848257541656494,
+            "delta_f": 6.848257541656494
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 6.646395683288574,
+            "delta_f": 6.646395683288574
+          },
+          {
+            "index": 6482,
+            "f_before": 0.0,
+            "f_after": 6.3812689781188965,
+            "delta_f": 6.3812689781188965
+          },
+          {
+            "index": 987,
+            "f_before": 0.0,
+            "f_after": 4.8420820236206055,
+            "delta_f": 4.8420820236206055
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n    \n    \n# Initialize a tokenizer\ntokenizer = TokenizerReturningSpace()\nprint(tokenizer)\n# Tokenize a string\ntext = \"This is a test sentence.\"\ntokens = tokenizer.tokenize(text)\nprint(tokens",
+        "after": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n```\n\n**Explanation:**\n\n1. **TokenizerReturningSpace Class:**\n   - This class overrides the default tokenizer behavior by returning a space token for each character.\n   - It implements the `_tokenize` method to handle tokenization.\n\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.18189209699630737,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.18189209699630737,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.18189209699630737,
+            "f_after": 0.18189209699630737,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n    \n# Example usage:\ntokenizer = EnglishTokenizer()\ntokenizer.fit_on_texts([\"Hello, world!\", \"This is a test\"])\ntokens = tokenizer.texts_to_sequences([\"Hello, world!\", \"This is a",
+        "after": "# -*- coding: utf-8 -*-\n\n\nfrom keras_bert import Tokenizer\n\n\nclass TokenizerReturningSpace(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    def _tokenize(self, text):\n        R = []\n        for c in text:\n            if c in self._token_dict:\n                R.append(c)\n            elif self._is_space(c):\n                R.append('[unused1]')\n            else:\n                R.append('[UNK]')\n        return R\n\n\nclass EnglishTokenizer(Tokenizer):\n    \"\"\"\n\n    \"\"\"\n    pass\n    \n    # Add any custom tokenizer logic here\n\n# Example usage\ntokenizer = TokenizerReturningSpace()\ntokenizer.build_vocab(\n    ['hello', 'world', 'example'],\n    vocab_size=1000"
+      }
+    }
+  }
+}

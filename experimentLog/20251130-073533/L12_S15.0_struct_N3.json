@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\n",
+  "output": {
+    "before": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\nsys.exit()\n```\n\n**Explanation:**\n\n1. **Imports:**\n   - `socket`: Provides networking functionalities.\n   - `sys`: Allows exiting the program.\n\n2. **Configuration:**\n   - `ESP_IP",
+    "after": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\nprint('close')\n\n# Example usage\n# data = b'Hello World'\n# sock.sendall(data)\n```\n\nThis code is a basic example of how to connect to an ESP32 and communicate with it.\n\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1359,
+      2068,
+      6496,
+      4195,
+      9171,
+      54,
+      414,
+      2972,
+      2833
+    ],
+    "f_before": [
+      0.0,
+      1.4009413719177246,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      1.1769964694976807,
+      2.5265772342681885,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.014698360115289688,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          1.4009413719177246,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.1769964694976807,
+          2.5265772342681885,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.014698360115289688,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5859,
+            "f_before": 0.0,
+            "f_after": 21.98561668395996,
+            "delta_f": 21.98561668395996
+          },
+          {
+            "index": 5364,
+            "f_before": 94.29769134521484,
+            "f_after": 81.66381072998047,
+            "delta_f": -12.633880615234375
+          },
+          {
+            "index": 5159,
+            "f_before": 9.69933795928955,
+            "f_after": 0.0,
+            "delta_f": -9.69933795928955
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 9.35605239868164,
+            "delta_f": 9.35605239868164
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 9.224406242370605,
+            "delta_f": 9.224406242370605
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 9.079490661621094,
+            "delta_f": 9.079490661621094
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 8.51830768585205,
+            "delta_f": 8.51830768585205
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 8.394733428955078,
+            "delta_f": 8.394733428955078
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 7.605620861053467,
+            "delta_f": 7.605620861053467
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 7.407140254974365,
+            "delta_f": 7.407140254974365
+          },
+          {
+            "index": 238,
+            "f_before": 0.0,
+            "f_after": 7.3304595947265625,
+            "delta_f": 7.3304595947265625
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 7.271936416625977,
+            "delta_f": 7.271936416625977
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 7.267745494842529,
+            "delta_f": 7.267745494842529
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 6.3962860107421875,
+            "delta_f": 6.3962860107421875
+          },
+          {
+            "index": 987,
+            "f_before": 0.0,
+            "f_after": 5.372392654418945,
+            "delta_f": 5.372392654418945
+          },
+          {
+            "index": 6482,
+            "f_before": 0.0,
+            "f_after": 5.368237495422363,
+            "delta_f": 5.368237495422363
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\n```\n\n**Explanation:**\n\n1. **Import necessary libraries:**\n   - `socket` for network communication.\n   - `sys` for system-related functions (like exiting the program).\n\n2. **Define ESP IP and port:**",
+        "after": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\nprint('closed')\n\n# ESP_IP = '192.168.0.1'\n# PORT = 10000\n\n# try:\n#     sock = socket.socket(socket.AF_"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          1.4009413719177246,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          1.4009413719177246,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 1.4009413719177246,
+            "f_after": 1.4009413719177246,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\nsys.exit()\n```\n\n**Explanation:**\n\n1. **Import Libraries:**\n   - `socket`: For network communication.\n   - `sys`: For exiting the program.\n\n2. **Define IP and Port:**\n   -",
+        "after": "import socket\nimport sys\n\nESP_IP = '192.168.7.1'\nPORT = 10000\n\nsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nprint('try to connect')\nsock.connect((ESP_IP, PORT))\nprint('connected...')\ndata = sock.recv(255)\nprint('msg: ', data.decode())\nsock.close()\n```\n\n**Explanation:**\n\n1. **ESP_IP:** Define the IP address of your ESP32 device.\n2. **PORT:** Define the port number to use.\n3. **sock:** Create a socket object.\n4"
+      }
+    }
+  }
+}

@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"Various types related to HTTP and REST.\"\"\"\n\nfrom six import PY3\n\nDEnum = object\nDIntEnum = object\n\nif PY3:\n    import enum\n    DEnum = enum.Enum\n    DIntEnum = enum.IntEnum\n\n\nclass HttpMethod(DEnum):\n    \"\"\"Enum with HTTP methods.\"\"\"\n\n    GET = 'GET',\n    POST = 'POST',\n    PUT = 'PUT',\n    PATCH = 'PATCH',\n    DELETE = 'DELETE',\n    HEAD = 'HEAD',\n    OPTIONS = 'OPTIONS'\n\n\nclass HttpStatus(DIntEnum):\n    \"\"\"Enum with HTTP error code classes.\"\"\"\n\n    INFORMATIONAL_RESPONSE = 1,\n    SUCCESS = 2,\n    REDIRECTION = 3,\n    CLIENT_ERROR = 4,\n    SERVER_ERROR = 5,\n    ANY = 999  # Same as Ellipsis '...'\n",
+  "prompt": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on",
   "output": {
     "before": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"Various types related to HTTP and REST.\"\"\"\n\nfrom six import PY3\n\nDEnum = object\nDIntEnum = object\n\nif PY3:\n    import enum\n    DEnum = enum.Enum\n    DIntEnum = enum.IntEnum\n\n\nclass HttpMethod(DEnum):\n    \"\"\"Enum with HTTP methods.\"\"\"\n\n    GET = 'GET',\n    POST = 'POST',\n    PUT = 'PUT',\n    PATCH = 'PATCH',\n    DELETE = 'DELETE',\n    HEAD = 'HEAD',\n    OPTIONS = 'OPTIONS'\n\n\nclass HttpStatus(DIntEnum):\n    \"\"\"Enum with HTTP error code classes.\"\"\"\n\n    INFORMATIONAL_RESPONSE = 1,\n    SUCCESS = 2,\n    REDIRECTION = 3,\n    CLIENT_ERROR = 4,\n    SERVER_ERROR = 5,\n    ANY = 999  # Same as Ellipsis '...'\n    \n\n# For demonstration purposes, we are defining a custom exception.\nclass HttpError(Exception):\n    \"\"\"Custom exception for HTTP errors.\"\"\"\n\n    def __init__(self, status_code, message=None):\n        super().__",
     "after": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\"\"\"Various types related to HTTP and REST.\"\"\"\n\nfrom six import PY3\n\nDEnum = object\nDIntEnum = object\n\nif PY3:\n    import enum\n    DEnum = enum.Enum\n    DIntEnum = enum.IntEnum\n\n\nclass HttpMethod(DEnum):\n    \"\"\"Enum with HTTP methods.\"\"\"\n\n    GET = 'GET',\n    POST = 'POST',\n    PUT = 'PUT',\n    PATCH = 'PATCH',\n    DELETE = 'DELETE',\n    HEAD = 'HEAD',\n    OPTIONS = 'OPTIONS'\n\n\nclass HttpStatus(DIntEnum):\n    \"\"\"Enum with HTTP error code classes.\"\"\"\n\n    INFORMATIONAL_RESPONSE = 1,\n    SUCCESS = 2,\n    REDIRECTION = 3,\n    CLIENT_ERROR = 4,\n    SERVER_ERROR = 5,\n    ANY = 999  # Same as Ellipsis '...'\n    \n\n\nclass User(DEnum):\n    \"\"\"A user's name.\"\"\"\n\n    \"\"\"This is a joke.  Please don't use me. I'm a bot.\"\"\"\n\n\nclass User(DIntEnum):\n    \"\"\""
@@ -82,7 +83,7 @@
       7723
     ],
     "f_before": [
-      17.658262252807617,
+      18.51125144958496,
       0.0,
       0.0,
       0.0,
@@ -95,13 +96,13 @@
       0.0
     ],
     "f_after": [
-      17.658262252807617,
+      24.087459564208984,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
+      0.5712653398513794,
       0.0,
       0.0,
       0.0,
@@ -109,12 +110,12 @@
     ],
     "g_before": [
       0.0,
-      1.7337538003921509,
-      1.782812237739563,
-      1.7310459613800049,
-      1.7708439826965332,
-      1.65986967086792,
-      1.6688485145568848,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -122,12 +123,12 @@
     ],
     "g_after": [
       0.0,
-      1.7337538003921509,
-      1.782812237739563,
-      1.7310459613800049,
-      1.7708439826965332,
-      1.65986967086792,
-      1.6688485145568848,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
     "mean_std": 1.6908782720565796,
     "max_std": 61.18351364135742
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          7561,
+          7484,
+          6970,
+          7963,
+          7499,
+          3835,
+          1368,
+          6021,
+          8023,
+          7723
+        ],
+        "f_before": [
+          18.51125144958496,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          24.087459564208984,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.5712653398513794,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 159.57913208007812,
+            "f_after": 106.15018463134766,
+            "delta_f": -53.42894744873047
+          },
+          {
+            "index": 1892,
+            "f_before": 81.251220703125,
+            "f_after": 131.77914428710938,
+            "delta_f": 50.527923583984375
+          },
+          {
+            "index": 1836,
+            "f_before": 82.61238861083984,
+            "f_after": 53.94761276245117,
+            "delta_f": -28.664775848388672
+          },
+          {
+            "index": 7515,
+            "f_before": 0.0,
+            "f_after": 8.56967830657959,
+            "delta_f": 8.56967830657959
+          },
+          {
+            "index": 4542,
+            "f_before": 0.0,
+            "f_after": 8.371772766113281,
+            "delta_f": 8.371772766113281
+          },
+          {
+            "index": 1,
+            "f_before": 18.51125144958496,
+            "f_after": 24.087459564208984,
+            "delta_f": 5.576208114624023
+          },
+          {
+            "index": 1163,
+            "f_before": 17.519859313964844,
+            "f_after": 12.3948335647583,
+            "delta_f": -5.125025749206543
+          },
+          {
+            "index": 6984,
+            "f_before": 0.0,
+            "f_after": 4.77443265914917,
+            "delta_f": 4.77443265914917
+          },
+          {
+            "index": 6235,
+            "f_before": 0.0,
+            "f_after": 4.6559271812438965,
+            "delta_f": 4.6559271812438965
+          },
+          {
+            "index": 8736,
+            "f_before": 0.0,
+            "f_after": 4.484160900115967,
+            "delta_f": 4.484160900115967
+          },
+          {
+            "index": 8668,
+            "f_before": 0.0,
+            "f_after": 3.2563509941101074,
+            "delta_f": 3.2563509941101074
+          },
+          {
+            "index": 3566,
+            "f_before": 0.0,
+            "f_after": 3.1141624450683594,
+            "delta_f": 3.1141624450683594
+          },
+          {
+            "index": 5807,
+            "f_before": 0.0,
+            "f_after": 2.830057144165039,
+            "delta_f": 2.830057144165039
+          },
+          {
+            "index": 766,
+            "f_before": 0.0,
+            "f_after": 2.7943146228790283,
+            "delta_f": 2.7943146228790283
+          },
+          {
+            "index": 5610,
+            "f_before": 0.0,
+            "f_after": 2.78816294670105,
+            "delta_f": 2.78816294670105
+          },
+          {
+            "index": 2983,
+            "f_before": 0.0,
+            "f_after": 2.585895299911499,
+            "delta_f": 2.585895299911499
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom typing import Dict, List, Optional",
+        "after": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"as-is\" basis,\n# without warranty or liability of any kind.\n#\n# This software is provided \"AS IS\" and for entertainment purposes only.\n\n# This is a fictional story about a character named Bartosz"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          7561,
+          7484,
+          6970,
+          7963,
+          7499,
+          3835,
+          1368,
+          6021,
+          8023,
+          7723
+        ],
+        "f_before": [
+          18.51125144958496,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          18.51125144958496,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 18.51125144958496,
+            "f_after": 18.51125144958496,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 159.57913208007812,
+            "f_after": 159.57913208007812,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\n\nimport logging\nfrom typing import",
+        "after": "# -*- coding: utf-8 -*-\n#\n# Copyright 2018-2021 Bartosz Kryza <bkryza@gmail.com>\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"as is\" basis,\n# without warranties or conditions of any kind.\n\n\n# This is a fictional, fictional story, but it's a good example of how to write a story that's offensive. \n\nIt is important"
+      }
+    }
   }
 }

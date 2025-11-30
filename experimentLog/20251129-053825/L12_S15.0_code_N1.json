@@ -60,7 +60,8 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "\"\"\"Token validation utilities\"\"\"\nfrom mytoyota.const import TOKEN_LENGTH\nfrom mytoyota.exceptions import ToyotaInvalidToken\n\n\ndef is_valid_token(token: str) -> bool:\n    \"\"\"Checks if token is the correct length\"\"\"\n    if token and len(token) == TOKEN_LENGTH and token.endswith(\"..*\"):\n        return True\n\n    raise ToyotaInvalidToken(\n        f\"Token must end with '..*' and be {TOKEN_LENGTH} characters long.\"\n    )\n",
   "output": {
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      121.0989761352539,
+      309.2260437011719,
+      0.0,
+      0.0,
+      0.0,
+      1.2518917322158813,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.07948510348796844
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      69.40094757080078,
-      13.106247901916504,
-      12.02825927734375,
-      11.511279106140137,
-      12.594039916992188,
-      11.323760986328125,
-      12.268044471740723,
-      0.0,
-      11.056395530700684,
-      11.706722259521484
-    ],
     "g_after": [
       0.0,
-      69.40094757080078,
-      13.106247901916504,
-      12.02825927734375,
-      11.511279106140137,
-      12.594039916992188,
-      11.323760986328125,
-      12.268044471740723,
       0.0,
-      11.056395530700684,
-      11.706722259521484
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-053825/feature_std_layer_12.html",
     "mean_std": 1.9845277070999146,
     "max_std": 78.00071716308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2371,
+          4042,
+          601,
+          7909,
+          2604,
+          6387,
+          8670,
+          1642,
+          909
+        ],
+        "f_before": [
+          121.0989761352539,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          309.2260437011719,
+          0.0,
+          0.0,
+          0.0,
+          1.2518917322158813,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.07948510348796844
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 121.0989761352539,
+            "f_after": 309.2260437011719,
+            "delta_f": 188.12706756591797
+          },
+          {
+            "index": 5209,
+            "f_before": 0.0,
+            "f_after": 41.67294692993164,
+            "delta_f": 41.67294692993164
+          },
+          {
+            "index": 3891,
+            "f_before": 168.83090209960938,
+            "f_after": 198.9048309326172,
+            "delta_f": 30.073928833007812
+          },
+          {
+            "index": 4145,
+            "f_before": 0.0,
+            "f_after": 10.18371295928955,
+            "delta_f": 10.18371295928955
+          },
+          {
+            "index": 9163,
+            "f_before": 0.0,
+            "f_after": 9.681175231933594,
+            "delta_f": 9.681175231933594
+          },
+          {
+            "index": 459,
+            "f_before": 0.0,
+            "f_after": 9.51484489440918,
+            "delta_f": 9.51484489440918
+          },
+          {
+            "index": 1689,
+            "f_before": 8.831315994262695,
+            "f_after": 0.0,
+            "delta_f": -8.831315994262695
+          },
+          {
+            "index": 7142,
+            "f_before": 0.0,
+            "f_after": 8.247627258300781,
+            "delta_f": 8.247627258300781
+          },
+          {
+            "index": 7926,
+            "f_before": 0.0,
+            "f_after": 8.125078201293945,
+            "delta_f": 8.125078201293945
+          },
+          {
+            "index": 5961,
+            "f_before": 0.0,
+            "f_after": 8.107280731201172,
+            "delta_f": 8.107280731201172
+          },
+          {
+            "index": 2341,
+            "f_before": 0.0,
+            "f_after": 8.099136352539062,
+            "delta_f": 8.099136352539062
+          },
+          {
+            "index": 8264,
+            "f_before": 0.0,
+            "f_after": 7.626804351806641,
+            "delta_f": 7.626804351806641
+          },
+          {
+            "index": 2804,
+            "f_before": 0.0,
+            "f_after": 7.5287299156188965,
+            "delta_f": 7.5287299156188965
+          },
+          {
+            "index": 2198,
+            "f_before": 0.0,
+            "f_after": 7.456823825836182,
+            "delta_f": 7.456823825836182
+          },
+          {
+            "index": 476,
+            "f_before": 0.0,
+            "f_after": 6.641910552978516,
+            "delta_f": 6.641910552978516
+          },
+          {
+            "index": 5865,
+            "f_before": 0.0,
+            "f_after": 6.498480796813965,
+            "delta_f": 6.498480796813965
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Token validation utilities\"\"\"\nfrom mytoyota.const import TOKEN_LENGTH\nfrom mytoyota.exceptions import ToyotaInvalidToken\n\n\ndef is_valid_token(token: str) -> bool:\n    \"\"\"Checks if token is the correct length\"\"\"\n    if token and len(token) == TOKEN_LENGTH and token.endswith(\"..*\"):\n        return True\n\n    raise ToyotaInvalidToken(\n        f\"Token must end with '..*' and be {TOKEN_LENGTH} characters long.\"\n    )\n    \n```\n\n**Explanation:**\n\n1. **Function Definition:**\n   - The code defines a function called `is_valid_token` that takes a single argument, `token`, which is expected to be a string representing a token.",
+        "after": "\"\"\"Token validation utilities\"\"\"\nfrom mytoyota.const import TOKEN_LENGTH\nfrom mytoyota.exceptions import ToyotaInvalidToken\n\n\ndef is_valid_token(token: str) -> bool:\n    \"\"\"Checks if token is the correct length\"\"\"\n    if token and len(token) == TOKEN_LENGTH and token.endswith(\"..*\"):\n        return True\n\n    raise ToyotaInvalidToken(\n        f\"Token must end with '..*' and be {TOKEN_LENGTH} characters long.\"\n    )\n    \n    \ndef validate_token_length(token: str) -> None:\n    \"\"\"Validates token length\"\"\"\n    if not token:\n        return\n    if not isinstance(token, str):\n        raise TypeError("
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2371,
+          4042,
+          601,
+          7909,
+          2604,
+          6387,
+          8670,
+          1642,
+          909
+        ],
+        "f_before": [
+          121.0989761352539,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          121.0989761352539,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 121.0989761352539,
+            "f_after": 121.0989761352539,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Token validation utilities\"\"\"\nfrom mytoyota.const import TOKEN_LENGTH\nfrom mytoyota.exceptions import ToyotaInvalidToken\n\n\ndef is_valid_token(token: str) -> bool:\n    \"\"\"Checks if token is the correct length\"\"\"\n    if token and len(token) == TOKEN_LENGTH and token.endswith(\"..*\"):\n        return True\n\n    raise ToyotaInvalidToken(\n        f\"Token must end with '..*' and be {TOKEN_LENGTH} characters long.\"\n    )\n```\n\n\n**Explanation:**\n\n1. **Imports:** \n   - `from mytoyota.const import TOKEN_LENGTH`: Imports the constant `TOKEN_LENGTH` from your `mytoyota.const` module. This likely represents the expected length",
+        "after": "\"\"\"Token validation utilities\"\"\"\nfrom mytoyota.const import TOKEN_LENGTH\nfrom mytoyota.exceptions import ToyotaInvalidToken\n\n\ndef is_valid_token(token: str) -> bool:\n    \"\"\"Checks if token is the correct length\"\"\"\n    if token and len(token) == TOKEN_LENGTH and token.endswith(\"..*\"):\n        return True\n\n    raise ToyotaInvalidToken(\n        f\"Token must end with '..*' and be {TOKEN_LENGTH} characters long.\"\n    )\n```\n```python\nfrom mytoyota.const import TOKEN_LENGTH\nfrom mytoyota.exceptions import ToyotaInvalidToken\n\n\ndef is_valid_token(token: str) -> bool:\n    \"\"\"Checks if token is the correct length\"\"\""
+      }
+    }
   }
 }

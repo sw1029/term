@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\nimport os\nfrom abc import ABC, abstractmethod\nfrom contextlib import contextmanager\nfrom typing import Any, List, Optional\n\nimport torch\nfrom torch.nn.parallel import DistributedDataParallel\n\nimport pytorch_lightning as pl\nfrom pytorch_lightning.overrides.base import unwrap_lightning_module\nfrom pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment\nfrom pytorch_lightning.plugins.training_type.training_type_plugin import TrainingTypePlugin\nfrom pytorch_lightning.utilities import _XLA_AVAILABLE\nfrom pytorch_lightning.utilities.distributed import all_gather_ddp_if_available, ReduceOp\n\n\nclass ParallelPlugin(TrainingTypePlugin, ABC):\n    \"\"\" Plugin for training with multiple processes in parallel. \"\"\"\n\n    def __init__(\n        self,\n        parallel_devices: Optional[List[torch.device]] = None,\n        cluster_environment: Optional[ClusterEnvironment] = None,\n    ):\n        super().__init__()\n        self.parallel_devices = parallel_devices\n        self.cluster_environment = cluster_environment\n\n    @property\n    @abstractmethod\n    def root_device(self) -> torch.device:\n        raise NotImplementedError\n\n    @property\n    def on_gpu(self) -> bool:\n        return self.root_device.type == \"cuda\" and torch.cuda.is_available()\n\n    @property\n    def on_tpu(self) -> bool:\n        return self.root_device.type == \"xla\" and _XLA_AVAILABLE\n\n    @property\n    def lightning_module(self):\n        return unwrap_lightning_module(self._model)\n\n    @property\n    def global_rank(self) -> int:\n        return self.cluster_environment.global_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def local_rank(self) -> int:\n        return self.cluster_environment.local_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def node_rank(self) -> int:\n        return self.cluster_environment.node_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def world_size(self) -> int:\n        return self.cluster_environment.world_size() if self.cluster_environment is not None else 1\n\n    @property\n    def is_global_zero(self) -> bool:\n        return self.global_rank == 0\n\n    @property\n    def distributed_sampler_kwargs(self):\n        distributed_sampler_kwargs = dict(num_replicas=len(self.parallel_devices), rank=self.global_rank)\n        return distributed_sampler_kwargs\n\n    def reconciliate_processes(self, trace: str):\n        \"\"\"\n        Function to re-conciliate processes on failure\n        \"\"\"\n\n    def all_gather(self, tensor: torch.Tensor, group: Optional[Any] = None, sync_grads: bool = False) -> torch.Tensor:\n        \"\"\"Perform a all_gather on all processes \"\"\"\n        return all_gather_ddp_if_available(tensor, group=group, sync_grads=sync_grads)\n\n    def reduce_boolean_decision(self, decision: bool) -> bool:\n        decision = torch.tensor(int(decision), device=self.lightning_module.device)\n        decision = self.reduce(decision, reduce_op=ReduceOp.SUM)\n        decision = bool(decision == self.world_size)\n        return decision\n\n    @property\n    def torch_distributed_backend(self):\n        torch_backend = os.getenv(\"PL_TORCH_DISTRIBUTED_BACKEND\")\n        if torch_backend is None:\n            torch_backend = \"nccl\" if self.on_gpu else \"gloo\"\n        return torch_backend\n\n    @staticmethod\n    def configure_sync_batchnorm(model: 'pl.LightningModule') -> 'pl.LightningModule':\n        \"\"\"\n        Add global batchnorm for a model spread across multiple GPUs and nodes.\n\n        Override to synchronize batchnorm between specific process groups instead\n        of the whole world or use a different sync_bn like `apex`'s version.\n\n        Args:\n            model: pointer to current :class:`LightningModule`.\n\n        Return:\n            LightningModule with batchnorm layers synchronized between process groups\n        \"\"\"\n        return torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)\n\n    @contextmanager\n    def block_backward_sync(self):\n        \"\"\"\n        Blocks ddp sync gradients behaviour on backwards pass.\n        This is useful for skipping sync when accumulating gradients, reducing communication overhead\n        Returns: context manager with sync behaviour off\n        \"\"\"\n        if isinstance(self.model, DistributedDataParallel):\n            with self.model.no_sync():\n                yield None\n        else:\n            yield None\n\n    def teardown(self) -> None:\n        # Un-reference the wrapper if any was used.\n        # todo (tchaton): Add support for all plugins.\n        if isinstance(self.model, DistributedDataParallel):\n            self.model = self.lightning_module\n\n        if self.on_gpu:\n            # GPU teardown\n            self.lightning_module.cpu()\n            # clean up memory\n            torch.cuda.empty_cache()\n",
+  "prompt": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the",
   "output": {
     "before": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\nimport os\nfrom abc import ABC, abstractmethod\nfrom contextlib import contextmanager\nfrom typing import Any, List, Optional\n\nimport torch\nfrom torch.nn.parallel import DistributedDataParallel\n\nimport pytorch_lightning as pl\nfrom pytorch_lightning.overrides.base import unwrap_lightning_module\nfrom pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment\nfrom pytorch_lightning.plugins.training_type.training_type_plugin import TrainingTypePlugin\nfrom pytorch_lightning.utilities import _XLA_AVAILABLE\nfrom pytorch_lightning.utilities.distributed import all_gather_ddp_if_available, ReduceOp\n\n\nclass ParallelPlugin(TrainingTypePlugin, ABC):\n    \"\"\" Plugin for training with multiple processes in parallel. \"\"\"\n\n    def __init__(\n        self,\n        parallel_devices: Optional[List[torch.device]] = None,\n        cluster_environment: Optional[ClusterEnvironment] = None,\n    ):\n        super().__init__()\n        self.parallel_devices = parallel_devices\n        self.cluster_environment = cluster_environment\n\n    @property\n    @abstractmethod\n    def root_device(self) -> torch.device:\n        raise NotImplementedError\n\n    @property\n    def on_gpu(self) -> bool:\n        return self.root_device.type == \"cuda\" and torch.cuda.is_available()\n\n    @property\n    def on_tpu(self) -> bool:\n        return self.root_device.type == \"xla\" and _XLA_AVAILABLE\n\n    @property\n    def lightning_module(self):\n        return unwrap_lightning_module(self._model)\n\n    @property\n    def global_rank(self) -> int:\n        return self.cluster_environment.global_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def local_rank(self) -> int:\n        return self.cluster_environment.local_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def node_rank(self) -> int:\n        return self.cluster_environment.node_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def world_size(self) -> int:\n        return self.cluster_environment.world_size() if self.cluster_environment is not None else 1\n\n    @property\n    def is_global_zero(self) -> bool:\n        return self.global_rank == 0\n\n    @property\n    def distributed_sampler_kwargs(self):\n        distributed_sampler_kwargs = dict(num_replicas=len(self.parallel_devices), rank=self.global_rank)\n        return distributed_sampler_kwargs\n\n    def reconciliate_processes(self, trace: str):\n        \"\"\"\n        Function to re-conciliate processes on failure\n        \"\"\"\n\n    def all_gather(self, tensor: torch.Tensor, group: Optional[Any] = None, sync_grads: bool = False) -> torch.Tensor:\n        \"\"\"Perform a all_gather on all processes \"\"\"\n        return all_gather_ddp_if_available(tensor, group=group, sync_grads=sync_grads)\n\n    def reduce_boolean_decision(self, decision: bool) -> bool:\n        decision = torch.tensor(int(decision), device=self.lightning_module.device)\n        decision = self.reduce(decision, reduce_op=ReduceOp.SUM)\n        decision = bool(decision == self.world_size)\n        return decision\n\n    @property\n    def torch_distributed_backend(self):\n        torch_backend = os.getenv(\"PL_TORCH_DISTRIBUTED_BACKEND\")\n        if torch_backend is None:\n            torch_backend = \"nccl\" if self.on_gpu else \"gloo\"\n        return torch_backend\n\n    @staticmethod\n    def configure_sync_batchnorm(model: 'pl.LightningModule') -> 'pl.LightningModule':\n        \"\"\"\n        Add global batchnorm for a model spread across multiple GPUs and nodes.\n\n        Override to synchronize batchnorm between specific process groups instead\n        of the whole world or use a different sync_bn like `apex`'s version.\n\n        Args:\n            model: pointer to current :class:`LightningModule`.\n\n        Return:\n            LightningModule with batchnorm layers synchronized between process groups\n        \"\"\"\n        return torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)\n\n    @contextmanager\n    def block_backward_sync(self):\n        \"\"\"\n        Blocks ddp sync gradients behaviour on backwards pass.\n        This is useful for skipping sync when accumulating gradients, reducing communication overhead\n        Returns: context manager with sync behaviour off\n        \"\"\"\n        if isinstance(self.model, DistributedDataParallel):\n            with self.model.no_sync():\n                yield None\n        else:\n            yield None\n\n    def teardown(self) -> None:\n        # Un-reference the wrapper if any was used.\n        # todo (tchaton): Add support for all plugins.\n        if isinstance(self.model, DistributedDataParallel):\n            self.model = self.lightning_module\n\n        if self.on_gpu:\n            # GPU teardown\n            self.lightning_module.cpu()\n            # clean up memory\n            torch.cuda.empty_cache()\n        elif self.on_tpu:\n            # TPU teardown\n            self.lightning_module.to(\"cpu\")\n            # clean up TPU memory\n            os.environ.get(\"TPU_DEVICE_NAME\")\n\n    ",
     "after": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\nimport os\nfrom abc import ABC, abstractmethod\nfrom contextlib import contextmanager\nfrom typing import Any, List, Optional\n\nimport torch\nfrom torch.nn.parallel import DistributedDataParallel\n\nimport pytorch_lightning as pl\nfrom pytorch_lightning.overrides.base import unwrap_lightning_module\nfrom pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment\nfrom pytorch_lightning.plugins.training_type.training_type_plugin import TrainingTypePlugin\nfrom pytorch_lightning.utilities import _XLA_AVAILABLE\nfrom pytorch_lightning.utilities.distributed import all_gather_ddp_if_available, ReduceOp\n\n\nclass ParallelPlugin(TrainingTypePlugin, ABC):\n    \"\"\" Plugin for training with multiple processes in parallel. \"\"\"\n\n    def __init__(\n        self,\n        parallel_devices: Optional[List[torch.device]] = None,\n        cluster_environment: Optional[ClusterEnvironment] = None,\n    ):\n        super().__init__()\n        self.parallel_devices = parallel_devices\n        self.cluster_environment = cluster_environment\n\n    @property\n    @abstractmethod\n    def root_device(self) -> torch.device:\n        raise NotImplementedError\n\n    @property\n    def on_gpu(self) -> bool:\n        return self.root_device.type == \"cuda\" and torch.cuda.is_available()\n\n    @property\n    def on_tpu(self) -> bool:\n        return self.root_device.type == \"xla\" and _XLA_AVAILABLE\n\n    @property\n    def lightning_module(self):\n        return unwrap_lightning_module(self._model)\n\n    @property\n    def global_rank(self) -> int:\n        return self.cluster_environment.global_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def local_rank(self) -> int:\n        return self.cluster_environment.local_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def node_rank(self) -> int:\n        return self.cluster_environment.node_rank() if self.cluster_environment is not None else 0\n\n    @property\n    def world_size(self) -> int:\n        return self.cluster_environment.world_size() if self.cluster_environment is not None else 1\n\n    @property\n    def is_global_zero(self) -> bool:\n        return self.global_rank == 0\n\n    @property\n    def distributed_sampler_kwargs(self):\n        distributed_sampler_kwargs = dict(num_replicas=len(self.parallel_devices), rank=self.global_rank)\n        return distributed_sampler_kwargs\n\n    def reconciliate_processes(self, trace: str):\n        \"\"\"\n        Function to re-conciliate processes on failure\n        \"\"\"\n\n    def all_gather(self, tensor: torch.Tensor, group: Optional[Any] = None, sync_grads: bool = False) -> torch.Tensor:\n        \"\"\"Perform a all_gather on all processes \"\"\"\n        return all_gather_ddp_if_available(tensor, group=group, sync_grads=sync_grads)\n\n    def reduce_boolean_decision(self, decision: bool) -> bool:\n        decision = torch.tensor(int(decision), device=self.lightning_module.device)\n        decision = self.reduce(decision, reduce_op=ReduceOp.SUM)\n        decision = bool(decision == self.world_size)\n        return decision\n\n    @property\n    def torch_distributed_backend(self):\n        torch_backend = os.getenv(\"PL_TORCH_DISTRIBUTED_BACKEND\")\n        if torch_backend is None:\n            torch_backend = \"nccl\" if self.on_gpu else \"gloo\"\n        return torch_backend\n\n    @staticmethod\n    def configure_sync_batchnorm(model: 'pl.LightningModule') -> 'pl.LightningModule':\n        \"\"\"\n        Add global batchnorm for a model spread across multiple GPUs and nodes.\n\n        Override to synchronize batchnorm between specific process groups instead\n        of the whole world or use a different sync_bn like `apex`'s version.\n\n        Args:\n            model: pointer to current :class:`LightningModule`.\n\n        Return:\n            LightningModule with batchnorm layers synchronized between process groups\n        \"\"\"\n        return torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)\n\n    @contextmanager\n    def block_backward_sync(self):\n        \"\"\"\n        Blocks ddp sync gradients behaviour on backwards pass.\n        This is useful for skipping sync when accumulating gradients, reducing communication overhead\n        Returns: context manager with sync behaviour off\n        \"\"\"\n        if isinstance(self.model, DistributedDataParallel):\n            with self.model.no_sync():\n                yield None\n        else:\n            yield None\n\n    def teardown(self) -> None:\n        # Un-reference the wrapper if any was used.\n        # todo (tchaton): Add support for all plugins.\n        if isinstance(self.model, DistributedDataParallel):\n            self.model = self.lightning_module\n\n        if self.on_gpu:\n            # GPU teardown\n            self.lightning_module.cpu()\n            # clean up memory\n            torch.cuda.empty_cache()\n        elif self.on_tpu:\n            # TPU teardown\n            pass  # TODO: Implement TPU teardown\n\n        # Remove all distributed data\n        # TODO: Remove all distributed data\n\n\nclass ParallelPluginBase:\n    \"\"\"\n"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      123.693115234375,
+      189.18795776367188,
       0.0,
       0.0,
       0.0,
@@ -95,12 +96,12 @@
       0.0
     ],
     "f_after": [
-      0.0,
-      123.693115234375,
-      0.0,
-      0.0,
+      0.060289449989795685,
+      329.068603515625,
       0.0,
       0.0,
+      0.0,
+      0.9090522527694702,
       0.0,
       0.0,
       0.0,
@@ -108,28 +109,28 @@
       0.0
     ],
     "g_before": [
-      71.79987335205078,
       0.0,
-      11.549081802368164,
-      11.803702354431152,
-      12.82435417175293,
       0.0,
-      13.6710786819458,
       0.0,
-      0.0025745409075170755,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      71.79987335205078,
       0.0,
-      11.549081802368164,
-      11.803702354431152,
-      12.82435417175293,
       0.0,
-      13.6710786819458,
       0.0,
-      0.0025745409075170755,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
     "mean_std": 1.8976119756698608,
     "max_std": 67.16454315185547
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4513,
+          5196,
+          5856,
+          8534,
+          2149,
+          6718,
+          8940,
+          9043,
+          3930
+        ],
+        "f_before": [
+          0.0,
+          189.18795776367188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.060289449989795685,
+          329.068603515625,
+          0.0,
+          0.0,
+          0.0,
+          0.9090522527694702,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 189.18795776367188,
+            "f_after": 329.068603515625,
+            "delta_f": 139.88064575195312
+          },
+          {
+            "index": 5636,
+            "f_before": 102.43202209472656,
+            "f_after": 129.00538635253906,
+            "delta_f": 26.5733642578125
+          },
+          {
+            "index": 2924,
+            "f_before": 10.365533828735352,
+            "f_after": 29.789335250854492,
+            "delta_f": 19.42380142211914
+          },
+          {
+            "index": 6619,
+            "f_before": 0.0,
+            "f_after": 11.352986335754395,
+            "delta_f": 11.352986335754395
+          },
+          {
+            "index": 1149,
+            "f_before": 0.0,
+            "f_after": 10.751025199890137,
+            "delta_f": 10.751025199890137
+          },
+          {
+            "index": 7840,
+            "f_before": 0.0,
+            "f_after": 9.571462631225586,
+            "delta_f": 9.571462631225586
+          },
+          {
+            "index": 5804,
+            "f_before": 0.0,
+            "f_after": 9.269391059875488,
+            "delta_f": 9.269391059875488
+          },
+          {
+            "index": 2906,
+            "f_before": 0.0,
+            "f_after": 8.912171363830566,
+            "delta_f": 8.912171363830566
+          },
+          {
+            "index": 6589,
+            "f_before": 0.0,
+            "f_after": 8.59434700012207,
+            "delta_f": 8.59434700012207
+          },
+          {
+            "index": 6620,
+            "f_before": 0.0,
+            "f_after": 8.291297912597656,
+            "delta_f": 8.291297912597656
+          },
+          {
+            "index": 4114,
+            "f_before": 0.0,
+            "f_after": 8.289130210876465,
+            "delta_f": 8.289130210876465
+          },
+          {
+            "index": 8267,
+            "f_before": 0.0,
+            "f_after": 8.272183418273926,
+            "delta_f": 8.272183418273926
+          },
+          {
+            "index": 7663,
+            "f_before": 0.0,
+            "f_after": 8.091768264770508,
+            "delta_f": 8.091768264770508
+          },
+          {
+            "index": 2881,
+            "f_before": 0.0,
+            "f_after": 8.0858793258667,
+            "delta_f": 8.0858793258667
+          },
+          {
+            "index": 8014,
+            "f_before": 0.0,
+            "f_after": 7.925822734832764,
+            "delta_f": 7.925822734832764
+          },
+          {
+            "index": 3797,
+            "f_before": 0.0,
+            "f_after": 7.593479633331299,
+            "delta_f": 7.593479633331299
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nimport torch\nimport torch.nn as nn\n\nclass Transformer(nn.Module):\n    def __init__(self, d_model, nhead, num_encoder_layers",
+        "after": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and limitations.\n\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import DataLoader\nfrom torch.utils.data.dataset import Dataset\nfrom torch.utils."
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4513,
+          5196,
+          5856,
+          8534,
+          2149,
+          6718,
+          8940,
+          9043,
+          3930
+        ],
+        "f_before": [
+          0.0,
+          189.18795776367188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          189.18795776367188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 189.18795776367188,
+            "f_after": 189.18795776367188,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\"\"\"\nProvides a simple example of using PyTorch Lightning to build a basic image classification model.\n\"\"\"\n\nimport torch\nfrom torch import nn\nfrom torch.utils.data import",
+        "after": "# Copyright The PyTorch Lightning team.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific License information accompanying the product.\n#\n# For additional information, please contact:\n#\n#   * The PyTorch Lightning team: https://pytorch.org/lightning\n\nimport torch\nfrom torch import nn\nfrom torch.utils"
+      }
+    }
   }
 }

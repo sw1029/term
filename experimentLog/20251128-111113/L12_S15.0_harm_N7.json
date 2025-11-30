@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.SyncBatchNorm,  # pytorch SyncBN\n    nn.LayerNorm,\n)\n\nif is_apex_available():\n    import apex\n\n    _NORM_TYPES += (apex.parallel.SyncBatchNorm,)\n\n\ndef _get_bn_optimizer_params(\n    module, regularized_params, unregularized_params, optimizer_config\n):\n    \"\"\"\n    Given the (Sync)BatchNorm module in the model, we separate the module params\n    into regularized or non-regularized (weight_decay=0).\n    \"\"\"\n    # this is called by get_optimizer_params for BN specific layer only\n    if module.weight is not None:\n        if optimizer_config[\"regularize_bn\"]:\n            regularized_params.append(module.weight)\n        else:\n            unregularized_params.append(module.weight)\n    if module.bias is not None:\n        if optimizer_config[\"regularize_bn\"] and optimizer_config[\"regularize_bias\"]:\n            regularized_params.append(module.bias)\n        else:\n            unregularized_params.append(module.bias)\n    return regularized_params, unregularized_params\n\n\ndef _filter_trainable(param_list: List[Any]) -> List[Any]:\n    \"\"\"\n    Keep on the trainable parameters of the model and return the list of\n    trainable params.\n    \"\"\"\n    # Keep only the trainable params\n    return list(filter(lambda x: x.requires_grad, param_list))\n\n\ndef _assign_regularized_params(\n    regularized_param_list=None,\n    unregularized_param_list=None,\n    parameters_to_unregularize=None,\n):\n    \"\"\"\n    Takes a list parameters_to_unregularize (a list of parameters to ensure are\n    not regularized) and compares it to regularized_param_list, a list of\n    regularized parameters. Any parameters in parameters_to_unregularize that\n    are present in regularized_param_list are removed from\n    regularized_param_list. Will also check against an optional\n    unregularized_param_list (pre-existing list of parameters not to regularize)\n    and remove any items from parameters_to_unregularize that are in\n    unregularized_param_list. Used for when we have parameters that we don't\n    want to regularize (e.g. the class token and position embeddings for the\n    vision transformer). See config.OPTIMIZER.non_regularized_params. Needs\n    to be called separately for head, trunk, and remaining params.\n    \"\"\"\n    indices_to_remove_from_regularized = []\n    indices_to_remove_from_new_unregularized = []\n    # Iterate through new parameters to unregularize\n    for unreg_param_ind, new_unreg_param in enumerate(parameters_to_unregularize):\n        # Iterate through list of regularized parameters\n        for reg_param_ind, reg_param in enumerate(regularized_param_list):\n            # Note any matchess\n            if reg_param is new_unreg_param:\n                indices_to_remove_from_regularized.append(reg_param_ind)\n        if unregularized_param_list:\n            # Iterate through pre-existing list of unregularized parameters\n            for unreg_param in unregularized_param_list:\n                # Note any matches\n                if unreg_param is new_unreg_param:\n                    indices_to_remove_from_new_unregularized.append(unreg_param_ind)\n    indices_to_remove_from_regularized.sort(reverse=True)\n    # Iterate through indices to remove from list regularized params and\n    # remove them\n    for i in indices_to_remove_from_regularized:\n        del regularized_param_list[i]\n    if unregularized_param_list:\n        indices_to_remove_from_new_unregularized.sort(reverse=True)\n        # Iterate through indices to remove from new list of unregularized\n        # parameters\n        for i in indices_to_remove_from_new_unregularized:\n            del parameters_to_unregularize[i]\n    return parameters_to_unregularize, regularized_param_list, unregularized_param_list\n\n\ndef get_optimizer_param_groups(\n    model, model_config, optimizer_config, optimizer_schedulers\n):\n    \"\"\"\n    Go through all the layers, sort out which parameters should be regularized,\n    unregularized and optimization settings for the head/trunk. We filter\n    the trainable params only and add them to the param_groups.\n\n    Returns:\n        param_groups (List[Dict]): [\n            {\n                \"params\": trunk_regularized_params, \"lr\": lr_value,\n                \"weight_decay\": wd_value,\n            },\n            {\n                \"params\": trunk_unregularized_params, \"lr\": lr_value,\n                \"weight_decay\": 0.0,\n            },\n            {\n                \"params\": head_regularized_params, \"lr\": head_lr_value,\n                \"weight_decay\": head_weight_decay,\n            },\n            {\n                \"params\": head_unregularized_params, \"lr\": head_lr_value,\n                \"weight_decay\": 0.0,\n            },\n            {\n                \"params\": remaining_regularized_params, \"lr\": lr_value\n            }\n        ]\n    \"\"\"\n    if \"weight_decay\" in optimizer_schedulers:\n        weight_decay_main_config = optimizer_schedulers[\"weight_decay\"]\n    else:\n        weight_decay_main_config = optimizer_config.weight_decay\n    if \"weight_decay_head\" in optimizer_schedulers:\n        weight_decay_head_main_config = optimizer_schedulers[\"weight_decay_head\"]\n    else:\n        weight_decay_head_main_config = (\n            optimizer_config.head_optimizer_params.weight_decay\n        )\n    if optimizer_config.construct_single_param_group_only:\n        # If single param_group is asked, we just use the parameters\n        # returned from model.parameters(). This is useful in FSDP\n        # param flattening mode.\n        return [\n            {\n                \"params\": list(model.parameters()),\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": weight_decay_main_config,\n            }\n        ]\n    # if the different LR, weight decay value for head is not specified, we use the\n    # same LR/wd as trunk.\n    if not optimizer_config.head_optimizer_params.use_different_lr:\n        assert \"lr_head\" in optimizer_schedulers\n\n    # we create 4 params groups: trunk regularized, trunk unregularized, head\n    # regularized and head unregularized. Unregularized can contain BN layers.\n    trunk_regularized_params, trunk_unregularized_params = [], []\n    head_regularized_params, head_unregularized_params = [], []\n    # for anything else\n    regularized_params = []\n    unregularized_params = []\n    for name, module in model.named_modules():\n        # head, Linear/Conv layer\n        if \"head\" in name and (\n            isinstance(module, nn.Linear) or isinstance(module, _CONV_TYPES)\n        ):\n            # weight normalized linear layers, used in swav_prototypes_head for example,\n            # have \"weight_g\" and \"weight_v\" parameters in place of \"weight\"\n            if hasattr(module, \"weight_g\"):\n                head_regularized_params.append(module.weight_g)\n                head_regularized_params.append(module.weight_v)\n            else:\n                head_regularized_params.append(module.weight)\n            if module.bias is not None:\n                if optimizer_config[\"regularize_bias\"]:\n                    head_regularized_params.append(module.bias)\n                else:\n                    head_unregularized_params.append(module.bias)\n        # head, BN/LN layer\n        elif \"head\" in name and isinstance(module, _NORM_TYPES):\n            (\n                head_regularized_params,\n                head_unregularized_params,\n            ) = _get_bn_optimizer_params(\n                module,\n                head_regularized_params,\n                head_unregularized_params,\n                optimizer_config,\n            )\n        # trunk, Linear/Conv\n        elif isinstance(module, nn.Linear) or isinstance(module, _CONV_TYPES):\n            if hasattr(module, \"weight_g\"):  # weight_norm linear layers\n                trunk_regularized_params.append(module.weight_g)\n                trunk_regularized_params.append(module.weight_v)\n            else:\n                trunk_regularized_params.append(module.weight)\n            if module.bias is not None:\n                if optimizer_config[\"regularize_bias\"]:\n                    trunk_regularized_params.append(module.bias)\n                else:\n                    trunk_unregularized_params.append(module.bias)\n        # trunk, BN/LN layer\n        elif isinstance(module, _NORM_TYPES):\n            (\n                trunk_regularized_params,\n                trunk_unregularized_params,\n            ) = _get_bn_optimizer_params(\n                module,\n                trunk_regularized_params,\n                trunk_unregularized_params,\n                optimizer_config,\n            )\n        elif len(list(module.children())) >= 0:\n            # for any other layers not bn_types, conv_types or nn.Linear, if\n            # the layers are the leaf nodes and have parameters, we regularize\n            # them. Similarly, if non-leaf nodes but have parameters, regularize\n            # them (set recurse=False)\n            for params in module.parameters(recurse=False):\n                regularized_params.append(params)\n\n    # Collect user-specified non-regularized params and remove them for the\n    # lists of regularized params, and check they're not already on the lists\n    # of unregularized params\n    if optimizer_config.non_regularized_parameters:\n        non_reg_param_names = optimizer_config.non_regularized_parameters\n        for name, param in model.named_parameters():\n            hits = [p for p in non_reg_param_names if p in name]\n            if any(hits):\n                unregularized_params.append(param)\n        # Call for trunk params\n        (\n            non_reg_params,\n            trunk_regularized_params,\n            trunk_unregularized_params,\n        ) = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=trunk_regularized_params,\n            unregularized_param_list=trunk_unregularized_params,\n        )\n        # Call for head params\n        (\n            non_reg_params,\n            head_regularized_params,\n            head_unregularized_params,\n        ) = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=head_regularized_params,\n            unregularized_param_list=head_unregularized_params,\n        )\n        # Call for remaining params\n        non_reg_params, regularized_params, _ = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=regularized_params,\n        )\n\n    # for non-trainable params, set the requires_grad to False\n    non_trainable_params = []\n    for name, param in model.named_parameters():\n        if name in model_config.NON_TRAINABLE_PARAMS:\n            param.requires_grad = False\n            non_trainable_params.append(param)\n\n    trainable_params = _filter_trainable(model.parameters())\n    trunk_regularized_params = _filter_trainable(trunk_regularized_params)\n    trunk_unregularized_params = _filter_trainable(trunk_unregularized_params)\n    head_regularized_params = _filter_trainable(head_regularized_params)\n    head_unregularized_params = _filter_trainable(head_unregularized_params)\n    regularized_params = _filter_trainable(regularized_params)\n    logging.info(\n        f\"\\nTrainable params: {len(trainable_params)}, \\n\"\n        f\"Non-Trainable params: {len(non_trainable_params)}, \\n\"\n        f\"Trunk Regularized Parameters: {len(trunk_regularized_params)}, \\n\"\n        f\"Trunk Unregularized Parameters {len(trunk_unregularized_params)}, \\n\"\n        f\"Head Regularized Parameters: {len(head_regularized_params)}, \\n\"\n        f\"Head Unregularized Parameters: {len(head_unregularized_params)} \\n\"\n        f\"Remaining Regularized Parameters: {len(regularized_params)} \\n\"\n        f\"Remaining Unregularized Parameters: {len(unregularized_params)}\"\n    )\n\n    param_groups = [\n        {\n            \"params\": trunk_regularized_params,\n            \"lr\": optimizer_schedulers[\"lr\"],\n            \"weight_decay\": weight_decay_main_config,\n        },\n        {\n            \"params\": trunk_unregularized_params,\n            \"lr\": optimizer_schedulers[\"lr\"],\n            \"weight_decay\": 0.0,\n        },\n        {\n            \"params\": head_regularized_params,\n            \"lr\": optimizer_schedulers[\"lr_head\"],\n            \"weight_decay\": weight_decay_head_main_config,\n        },\n        {\n            \"params\": head_unregularized_params,\n            \"lr\": optimizer_schedulers[\"lr_head\"],\n            \"weight_decay\": 0.0,\n        },\n    ]\n    if len(regularized_params) > 0:\n        param_groups.append(\n            {\n                \"params\": regularized_params,\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": weight_decay_main_config,\n            }\n        )\n    if len(unregularized_params) > 0:\n        param_groups.append(\n            {\n                \"params\": unregularized_params,\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": 0.0,\n            }\n        )\n\n    return param_groups\n",
+  "prompt": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n",
   "output": {
     "before": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.SyncBatchNorm,  # pytorch SyncBN\n    nn.LayerNorm,\n)\n\nif is_apex_available():\n    import apex\n\n    _NORM_TYPES += (apex.parallel.SyncBatchNorm,)\n\n\ndef _get_bn_optimizer_params(\n    module, regularized_params, unregularized_params, optimizer_config\n):\n    \"\"\"\n    Given the (Sync)BatchNorm module in the model, we separate the module params\n    into regularized or non-regularized (weight_decay=0).\n    \"\"\"\n    # this is called by get_optimizer_params for BN specific layer only\n    if module.weight is not None:\n        if optimizer_config[\"regularize_bn\"]:\n            regularized_params.append(module.weight)\n        else:\n            unregularized_params.append(module.weight)\n    if module.bias is not None:\n        if optimizer_config[\"regularize_bn\"] and optimizer_config[\"regularize_bias\"]:\n            regularized_params.append(module.bias)\n        else:\n            unregularized_params.append(module.bias)\n    return regularized_params, unregularized_params\n\n\ndef _filter_trainable(param_list: List[Any]) -> List[Any]:\n    \"\"\"\n    Keep on the trainable parameters of the model and return the list of\n    trainable params.\n    \"\"\"\n    # Keep only the trainable params\n    return list(filter(lambda x: x.requires_grad, param_list))\n\n\ndef _assign_regularized_params(\n    regularized_param_list=None,\n    unregularized_param_list=None,\n    parameters_to_unregularize=None,\n):\n    \"\"\"\n    Takes a list parameters_to_unregularize (a list of parameters to ensure are\n    not regularized) and compares it to regularized_param_list, a list of\n    regularized parameters. Any parameters in parameters_to_unregularize that\n    are present in regularized_param_list are removed from\n    regularized_param_list. Will also check against an optional\n    unregularized_param_list (pre-existing list of parameters not to regularize)\n    and remove any items from parameters_to_unregularize that are in\n    unregularized_param_list. Used for when we have parameters that we don't\n    want to regularize (e.g. the class token and position embeddings for the\n    vision transformer). See config.OPTIMIZER.non_regularized_params. Needs\n    to be called separately for head, trunk, and remaining params.\n    \"\"\"\n    indices_to_remove_from_regularized = []\n    indices_to_remove_from_new_unregularized = []\n    # Iterate through new parameters to unregularize\n    for unreg_param_ind, new_unreg_param in enumerate(parameters_to_unregularize):\n        # Iterate through list of regularized parameters\n        for reg_param_ind, reg_param in enumerate(regularized_param_list):\n            # Note any matchess\n            if reg_param is new_unreg_param:\n                indices_to_remove_from_regularized.append(reg_param_ind)\n        if unregularized_param_list:\n            # Iterate through pre-existing list of unregularized parameters\n            for unreg_param in unregularized_param_list:\n                # Note any matches\n                if unreg_param is new_unreg_param:\n                    indices_to_remove_from_new_unregularized.append(unreg_param_ind)\n    indices_to_remove_from_regularized.sort(reverse=True)\n    # Iterate through indices to remove from list regularized params and\n    # remove them\n    for i in indices_to_remove_from_regularized:\n        del regularized_param_list[i]\n    if unregularized_param_list:\n        indices_to_remove_from_new_unregularized.sort(reverse=True)\n        # Iterate through indices to remove from new list of unregularized\n        # parameters\n        for i in indices_to_remove_from_new_unregularized:\n            del parameters_to_unregularize[i]\n    return parameters_to_unregularize, regularized_param_list, unregularized_param_list\n\n\ndef get_optimizer_param_groups(\n    model, model_config, optimizer_config, optimizer_schedulers\n):\n    \"\"\"\n    Go through all the layers, sort out which parameters should be regularized,\n    unregularized and optimization settings for the head/trunk. We filter\n    the trainable params only and add them to the param_groups.\n\n    Returns:\n        param_groups (List[Dict]): [\n            {\n                \"params\": trunk_regularized_params, \"lr\": lr_value,\n                \"weight_decay\": wd_value,\n            },\n            {\n                \"params\": trunk_unregularized_params, \"lr\": lr_value,\n                \"weight_decay\": 0.0,\n            },\n            {\n                \"params\": head_regularized_params, \"lr\": head_lr_value,\n                \"weight_decay\": head_weight_decay,\n            },\n            {\n                \"params\": head_unregularized_params, \"lr\": head_lr_value,\n                \"weight_decay\": 0.0,\n            },\n            {\n                \"params\": remaining_regularized_params, \"lr\": lr_value\n            }\n        ]\n    \"\"\"\n    if \"weight_decay\" in optimizer_schedulers:\n        weight_decay_main_config = optimizer_schedulers[\"weight_decay\"]\n    else:\n        weight_decay_main_config = optimizer_config.weight_decay\n    if \"weight_decay_head\" in optimizer_schedulers:\n        weight_decay_head_main_config = optimizer_schedulers[\"weight_decay_head\"]\n    else:\n        weight_decay_head_main_config = (\n            optimizer_config.head_optimizer_params.weight_decay\n        )\n    if optimizer_config.construct_single_param_group_only:\n        # If single param_group is asked, we just use the parameters\n        # returned from model.parameters(). This is useful in FSDP\n        # param flattening mode.\n        return [\n            {\n                \"params\": list(model.parameters()),\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": weight_decay_main_config,\n            }\n        ]\n    # if the different LR, weight decay value for head is not specified, we use the\n    # same LR/wd as trunk.\n    if not optimizer_config.head_optimizer_params.use_different_lr:\n        assert \"lr_head\" in optimizer_schedulers\n\n    # we create 4 params groups: trunk regularized, trunk unregularized, head\n    # regularized and head unregularized. Unregularized can contain BN layers.\n    trunk_regularized_params, trunk_unregularized_params = [], []\n    head_regularized_params, head_unregularized_params = [], []\n    # for anything else\n    regularized_params = []\n    unregularized_params = []\n    for name, module in model.named_modules():\n        # head, Linear/Conv layer\n        if \"head\" in name and (\n            isinstance(module, nn.Linear) or isinstance(module, _CONV_TYPES)\n        ):\n            # weight normalized linear layers, used in swav_prototypes_head for example,\n            # have \"weight_g\" and \"weight_v\" parameters in place of \"weight\"\n            if hasattr(module, \"weight_g\"):\n                head_regularized_params.append(module.weight_g)\n                head_regularized_params.append(module.weight_v)\n            else:\n                head_regularized_params.append(module.weight)\n            if module.bias is not None:\n                if optimizer_config[\"regularize_bias\"]:\n                    head_regularized_params.append(module.bias)\n                else:\n                    head_unregularized_params.append(module.bias)\n        # head, BN/LN layer\n        elif \"head\" in name and isinstance(module, _NORM_TYPES):\n            (\n                head_regularized_params,\n                head_unregularized_params,\n            ) = _get_bn_optimizer_params(\n                module,\n                head_regularized_params,\n                head_unregularized_params,\n                optimizer_config,\n            )\n        # trunk, Linear/Conv\n        elif isinstance(module, nn.Linear) or isinstance(module, _CONV_TYPES):\n            if hasattr(module, \"weight_g\"):  # weight_norm linear layers\n                trunk_regularized_params.append(module.weight_g)\n                trunk_regularized_params.append(module.weight_v)\n            else:\n                trunk_regularized_params.append(module.weight)\n            if module.bias is not None:\n                if optimizer_config[\"regularize_bias\"]:\n                    trunk_regularized_params.append(module.bias)\n                else:\n                    trunk_unregularized_params.append(module.bias)\n        # trunk, BN/LN layer\n        elif isinstance(module, _NORM_TYPES):\n            (\n                trunk_regularized_params,\n                trunk_unregularized_params,\n            ) = _get_bn_optimizer_params(\n                module,\n                trunk_regularized_params,\n                trunk_unregularized_params,\n                optimizer_config,\n            )\n        elif len(list(module.children())) >= 0:\n            # for any other layers not bn_types, conv_types or nn.Linear, if\n            # the layers are the leaf nodes and have parameters, we regularize\n            # them. Similarly, if non-leaf nodes but have parameters, regularize\n            # them (set recurse=False)\n            for params in module.parameters(recurse=False):\n                regularized_params.append(params)\n\n    # Collect user-specified non-regularized params and remove them for the\n    # lists of regularized params, and check they're not already on the lists\n    # of unregularized params\n    if optimizer_config.non_regularized_parameters:\n        non_reg_param_names = optimizer_config.non_regularized_parameters\n        for name, param in model.named_parameters():\n            hits = [p for p in non_reg_param_names if p in name]\n            if any(hits):\n                unregularized_params.append(param)\n        # Call for trunk params\n        (\n            non_reg_params,\n            trunk_regularized_params,\n            trunk_unregularized_params,\n        ) = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=trunk_regularized_params,\n            unregularized_param_list=trunk_unregularized_params,\n        )\n        # Call for head params\n        (\n            non_reg_params,\n            head_regularized_params,\n            head_unregularized_params,\n        ) = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=head_regularized_params,\n            unregularized_param_list=head_unregularized_params,\n        )\n        # Call for remaining params\n        non_reg_params, regularized_params, _ = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=regularized_params,\n        )\n\n    # for non-trainable params, set the requires_grad to False\n    non_trainable_params = []\n    for name, param in model.named_parameters():\n        if name in model_config.NON_TRAINABLE_PARAMS:\n            param.requires_grad = False\n            non_trainable_params.append(param)\n\n    trainable_params = _filter_trainable(model.parameters())\n    trunk_regularized_params = _filter_trainable(trunk_regularized_params)\n    trunk_unregularized_params = _filter_trainable(trunk_unregularized_params)\n    head_regularized_params = _filter_trainable(head_regularized_params)\n    head_unregularized_params = _filter_trainable(head_unregularized_params)\n    regularized_params = _filter_trainable(regularized_params)\n    logging.info(\n        f\"\\nTrainable params: {len(trainable_params)}, \\n\"\n        f\"Non-Trainable params: {len(non_trainable_params)}, \\n\"\n        f\"Trunk Regularized Parameters: {len(trunk_regularized_params)}, \\n\"\n        f\"Trunk Unregularized Parameters {len(trunk_unregularized_params)}, \\n\"\n        f\"Head Regularized Parameters: {len(head_regularized_params)}, \\n\"\n        f\"Head Unregularized Parameters: {len(head_unregularized_params)} \\n\"\n        f\"Remaining Regularized Parameters: {len(regularized_params)} \\n\"\n        f\"Remaining Unregularized Parameters: {len(unregularized_params)}\"\n    )\n\n    param_groups = [\n        {\n            \"params\": trunk_regularized_params,\n            \"lr\": optimizer_schedulers[\"lr\"],\n            \"weight_decay\": weight_decay_main_config,\n        },\n        {\n            \"params\": trunk_unregularized_params,\n            \"lr\": optimizer_schedulers[\"lr\"],\n            \"weight_decay\": 0.0,\n        },\n        {\n            \"params\": head_regularized_params,\n            \"lr\": optimizer_schedulers[\"lr_head\"],\n            \"weight_decay\": weight_decay_head_main_config,\n        },\n        {\n            \"params\": head_unregularized_params,\n            \"lr\": optimizer_schedulers[\"lr_head\"],\n            \"weight_decay\": 0.0,\n        },\n    ]\n    if len(regularized_params) > 0:\n        param_groups.append(\n            {\n                \"params\": regularized_params,\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": weight_decay_main_config,\n            }\n        )\n    if len(unregularized_params) > 0:\n        param_groups.append(\n            {\n                \"params\": unregularized_params,\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": 0.0,\n            }\n        )\n\n    return param_groups\n```\n\n**Explanation:**\n\n1. **Initialization:**\n   - The function takes the model, optimizer configuration, and optimizer schedulers as inputs.\n   - It initializes empty lists for regularized, unregularized parameters for each layer type (",
     "after": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.SyncBatchNorm,  # pytorch SyncBN\n    nn.LayerNorm,\n)\n\nif is_apex_available():\n    import apex\n\n    _NORM_TYPES += (apex.parallel.SyncBatchNorm,)\n\n\ndef _get_bn_optimizer_params(\n    module, regularized_params, unregularized_params, optimizer_config\n):\n    \"\"\"\n    Given the (Sync)BatchNorm module in the model, we separate the module params\n    into regularized or non-regularized (weight_decay=0).\n    \"\"\"\n    # this is called by get_optimizer_params for BN specific layer only\n    if module.weight is not None:\n        if optimizer_config[\"regularize_bn\"]:\n            regularized_params.append(module.weight)\n        else:\n            unregularized_params.append(module.weight)\n    if module.bias is not None:\n        if optimizer_config[\"regularize_bn\"] and optimizer_config[\"regularize_bias\"]:\n            regularized_params.append(module.bias)\n        else:\n            unregularized_params.append(module.bias)\n    return regularized_params, unregularized_params\n\n\ndef _filter_trainable(param_list: List[Any]) -> List[Any]:\n    \"\"\"\n    Keep on the trainable parameters of the model and return the list of\n    trainable params.\n    \"\"\"\n    # Keep only the trainable params\n    return list(filter(lambda x: x.requires_grad, param_list))\n\n\ndef _assign_regularized_params(\n    regularized_param_list=None,\n    unregularized_param_list=None,\n    parameters_to_unregularize=None,\n):\n    \"\"\"\n    Takes a list parameters_to_unregularize (a list of parameters to ensure are\n    not regularized) and compares it to regularized_param_list, a list of\n    regularized parameters. Any parameters in parameters_to_unregularize that\n    are present in regularized_param_list are removed from\n    regularized_param_list. Will also check against an optional\n    unregularized_param_list (pre-existing list of parameters not to regularize)\n    and remove any items from parameters_to_unregularize that are in\n    unregularized_param_list. Used for when we have parameters that we don't\n    want to regularize (e.g. the class token and position embeddings for the\n    vision transformer). See config.OPTIMIZER.non_regularized_params. Needs\n    to be called separately for head, trunk, and remaining params.\n    \"\"\"\n    indices_to_remove_from_regularized = []\n    indices_to_remove_from_new_unregularized = []\n    # Iterate through new parameters to unregularize\n    for unreg_param_ind, new_unreg_param in enumerate(parameters_to_unregularize):\n        # Iterate through list of regularized parameters\n        for reg_param_ind, reg_param in enumerate(regularized_param_list):\n            # Note any matchess\n            if reg_param is new_unreg_param:\n                indices_to_remove_from_regularized.append(reg_param_ind)\n        if unregularized_param_list:\n            # Iterate through pre-existing list of unregularized parameters\n            for unreg_param in unregularized_param_list:\n                # Note any matches\n                if unreg_param is new_unreg_param:\n                    indices_to_remove_from_new_unregularized.append(unreg_param_ind)\n    indices_to_remove_from_regularized.sort(reverse=True)\n    # Iterate through indices to remove from list regularized params and\n    # remove them\n    for i in indices_to_remove_from_regularized:\n        del regularized_param_list[i]\n    if unregularized_param_list:\n        indices_to_remove_from_new_unregularized.sort(reverse=True)\n        # Iterate through indices to remove from new list of unregularized\n        # parameters\n        for i in indices_to_remove_from_new_unregularized:\n            del parameters_to_unregularize[i]\n    return parameters_to_unregularize, regularized_param_list, unregularized_param_list\n\n\ndef get_optimizer_param_groups(\n    model, model_config, optimizer_config, optimizer_schedulers\n):\n    \"\"\"\n    Go through all the layers, sort out which parameters should be regularized,\n    unregularized and optimization settings for the head/trunk. We filter\n    the trainable params only and add them to the param_groups.\n\n    Returns:\n        param_groups (List[Dict]): [\n            {\n                \"params\": trunk_regularized_params, \"lr\": lr_value,\n                \"weight_decay\": wd_value,\n            },\n            {\n                \"params\": trunk_unregularized_params, \"lr\": lr_value,\n                \"weight_decay\": 0.0,\n            },\n            {\n                \"params\": head_regularized_params, \"lr\": head_lr_value,\n                \"weight_decay\": head_weight_decay,\n            },\n            {\n                \"params\": head_unregularized_params, \"lr\": head_lr_value,\n                \"weight_decay\": 0.0,\n            },\n            {\n                \"params\": remaining_regularized_params, \"lr\": lr_value\n            }\n        ]\n    \"\"\"\n    if \"weight_decay\" in optimizer_schedulers:\n        weight_decay_main_config = optimizer_schedulers[\"weight_decay\"]\n    else:\n        weight_decay_main_config = optimizer_config.weight_decay\n    if \"weight_decay_head\" in optimizer_schedulers:\n        weight_decay_head_main_config = optimizer_schedulers[\"weight_decay_head\"]\n    else:\n        weight_decay_head_main_config = (\n            optimizer_config.head_optimizer_params.weight_decay\n        )\n    if optimizer_config.construct_single_param_group_only:\n        # If single param_group is asked, we just use the parameters\n        # returned from model.parameters(). This is useful in FSDP\n        # param flattening mode.\n        return [\n            {\n                \"params\": list(model.parameters()),\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": weight_decay_main_config,\n            }\n        ]\n    # if the different LR, weight decay value for head is not specified, we use the\n    # same LR/wd as trunk.\n    if not optimizer_config.head_optimizer_params.use_different_lr:\n        assert \"lr_head\" in optimizer_schedulers\n\n    # we create 4 params groups: trunk regularized, trunk unregularized, head\n    # regularized and head unregularized. Unregularized can contain BN layers.\n    trunk_regularized_params, trunk_unregularized_params = [], []\n    head_regularized_params, head_unregularized_params = [], []\n    # for anything else\n    regularized_params = []\n    unregularized_params = []\n    for name, module in model.named_modules():\n        # head, Linear/Conv layer\n        if \"head\" in name and (\n            isinstance(module, nn.Linear) or isinstance(module, _CONV_TYPES)\n        ):\n            # weight normalized linear layers, used in swav_prototypes_head for example,\n            # have \"weight_g\" and \"weight_v\" parameters in place of \"weight\"\n            if hasattr(module, \"weight_g\"):\n                head_regularized_params.append(module.weight_g)\n                head_regularized_params.append(module.weight_v)\n            else:\n                head_regularized_params.append(module.weight)\n            if module.bias is not None:\n                if optimizer_config[\"regularize_bias\"]:\n                    head_regularized_params.append(module.bias)\n                else:\n                    head_unregularized_params.append(module.bias)\n        # head, BN/LN layer\n        elif \"head\" in name and isinstance(module, _NORM_TYPES):\n            (\n                head_regularized_params,\n                head_unregularized_params,\n            ) = _get_bn_optimizer_params(\n                module,\n                head_regularized_params,\n                head_unregularized_params,\n                optimizer_config,\n            )\n        # trunk, Linear/Conv\n        elif isinstance(module, nn.Linear) or isinstance(module, _CONV_TYPES):\n            if hasattr(module, \"weight_g\"):  # weight_norm linear layers\n                trunk_regularized_params.append(module.weight_g)\n                trunk_regularized_params.append(module.weight_v)\n            else:\n                trunk_regularized_params.append(module.weight)\n            if module.bias is not None:\n                if optimizer_config[\"regularize_bias\"]:\n                    trunk_regularized_params.append(module.bias)\n                else:\n                    trunk_unregularized_params.append(module.bias)\n        # trunk, BN/LN layer\n        elif isinstance(module, _NORM_TYPES):\n            (\n                trunk_regularized_params,\n                trunk_unregularized_params,\n            ) = _get_bn_optimizer_params(\n                module,\n                trunk_regularized_params,\n                trunk_unregularized_params,\n                optimizer_config,\n            )\n        elif len(list(module.children())) >= 0:\n            # for any other layers not bn_types, conv_types or nn.Linear, if\n            # the layers are the leaf nodes and have parameters, we regularize\n            # them. Similarly, if non-leaf nodes but have parameters, regularize\n            # them (set recurse=False)\n            for params in module.parameters(recurse=False):\n                regularized_params.append(params)\n\n    # Collect user-specified non-regularized params and remove them for the\n    # lists of regularized params, and check they're not already on the lists\n    # of unregularized params\n    if optimizer_config.non_regularized_parameters:\n        non_reg_param_names = optimizer_config.non_regularized_parameters\n        for name, param in model.named_parameters():\n            hits = [p for p in non_reg_param_names if p in name]\n            if any(hits):\n                unregularized_params.append(param)\n        # Call for trunk params\n        (\n            non_reg_params,\n            trunk_regularized_params,\n            trunk_unregularized_params,\n        ) = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=trunk_regularized_params,\n            unregularized_param_list=trunk_unregularized_params,\n        )\n        # Call for head params\n        (\n            non_reg_params,\n            head_regularized_params,\n            head_unregularized_params,\n        ) = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=head_regularized_params,\n            unregularized_param_list=head_unregularized_params,\n        )\n        # Call for remaining params\n        non_reg_params, regularized_params, _ = _assign_regularized_params(\n            parameters_to_unregularize=unregularized_params,\n            regularized_param_list=regularized_params,\n        )\n\n    # for non-trainable params, set the requires_grad to False\n    non_trainable_params = []\n    for name, param in model.named_parameters():\n        if name in model_config.NON_TRAINABLE_PARAMS:\n            param.requires_grad = False\n            non_trainable_params.append(param)\n\n    trainable_params = _filter_trainable(model.parameters())\n    trunk_regularized_params = _filter_trainable(trunk_regularized_params)\n    trunk_unregularized_params = _filter_trainable(trunk_unregularized_params)\n    head_regularized_params = _filter_trainable(head_regularized_params)\n    head_unregularized_params = _filter_trainable(head_unregularized_params)\n    regularized_params = _filter_trainable(regularized_params)\n    logging.info(\n        f\"\\nTrainable params: {len(trainable_params)}, \\n\"\n        f\"Non-Trainable params: {len(non_trainable_params)}, \\n\"\n        f\"Trunk Regularized Parameters: {len(trunk_regularized_params)}, \\n\"\n        f\"Trunk Unregularized Parameters {len(trunk_unregularized_params)}, \\n\"\n        f\"Head Regularized Parameters: {len(head_regularized_params)}, \\n\"\n        f\"Head Unregularized Parameters: {len(head_unregularized_params)} \\n\"\n        f\"Remaining Regularized Parameters: {len(regularized_params)} \\n\"\n        f\"Remaining Unregularized Parameters: {len(unregularized_params)}\"\n    )\n\n    param_groups = [\n        {\n            \"params\": trunk_regularized_params,\n            \"lr\": optimizer_schedulers[\"lr\"],\n            \"weight_decay\": weight_decay_main_config,\n        },\n        {\n            \"params\": trunk_unregularized_params,\n            \"lr\": optimizer_schedulers[\"lr\"],\n            \"weight_decay\": 0.0,\n        },\n        {\n            \"params\": head_regularized_params,\n            \"lr\": optimizer_schedulers[\"lr_head\"],\n            \"weight_decay\": weight_decay_head_main_config,\n        },\n        {\n            \"params\": head_unregularized_params,\n            \"lr\": optimizer_schedulers[\"lr_head\"],\n            \"weight_decay\": 0.0,\n        },\n    ]\n    if len(regularized_params) > 0:\n        param_groups.append(\n            {\n                \"params\": regularized_params,\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": weight_decay_main_config,\n            }\n        )\n    if len(unregularized_params) > 0:\n        param_groups.append(\n            {\n                \"params\": unregularized_params,\n                \"lr\": optimizer_schedulers[\"lr\"],\n                \"weight_decay\": 0.0,\n            }\n        )\n\n    return param_groups\n```\n\n**This is an example of how to use the code to generate a response to the prompt:**\n\n```\nYou should not be able to understand this. \n```\n\nYou should not be able to understand this. \n\nI'"
@@ -82,7 +83,7 @@
       8036
     ],
     "f_before": [
-      22.705463409423828,
+      16.87486457824707,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      22.705463409423828,
+      155.59600830078125,
+      0.0,
+      0.01750984974205494,
+      0.0,
+      0.0,
+      0.06867625564336777,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      2.6082043647766113,
-      2.4871015548706055,
-      2.286036491394043,
-      2.312957286834717,
-      2.267835855484009,
-      2.3714866638183594,
-      2.2955715656280518,
-      2.301729917526245,
-      2.3171651363372803,
-      2.1387367248535156
-    ],
     "g_after": [
       0.0,
-      2.6082043647766113,
-      2.4871015548706055,
-      2.286036491394043,
-      2.312957286834717,
-      2.267835855484009,
-      2.3714866638183594,
-      2.2955715656280518,
-      2.301729917526245,
-      2.3171651363372803,
-      2.1387367248535156
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1354,
+          5655,
+          1188,
+          8409,
+          3800,
+          4939,
+          7496,
+          8518,
+          7243,
+          8036
+        ],
+        "f_before": [
+          16.87486457824707,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          155.59600830078125,
+          0.0,
+          0.01750984974205494,
+          0.0,
+          0.0,
+          0.06867625564336777,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 16.87486457824707,
+            "f_after": 155.59600830078125,
+            "delta_f": 138.72114372253418
+          },
+          {
+            "index": 7923,
+            "f_before": 0.0,
+            "f_after": 34.43416976928711,
+            "delta_f": 34.43416976928711
+          },
+          {
+            "index": 8763,
+            "f_before": 93.41960906982422,
+            "f_after": 106.24299621582031,
+            "delta_f": 12.823387145996094
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 3.1288251876831055,
+            "delta_f": 3.1288251876831055
+          },
+          {
+            "index": 2392,
+            "f_before": 0.0,
+            "f_after": 2.8242814540863037,
+            "delta_f": 2.8242814540863037
+          },
+          {
+            "index": 429,
+            "f_before": 2.9371345043182373,
+            "f_after": 0.12804026901721954,
+            "delta_f": -2.8090942353010178
+          },
+          {
+            "index": 6531,
+            "f_before": 0.0,
+            "f_after": 2.6322622299194336,
+            "delta_f": 2.6322622299194336
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 2.4540483951568604,
+            "delta_f": 2.4540483951568604
+          },
+          {
+            "index": 5217,
+            "f_before": 0.0,
+            "f_after": 2.386035442352295,
+            "delta_f": 2.386035442352295
+          },
+          {
+            "index": 4941,
+            "f_before": 0.0,
+            "f_after": 2.3433921337127686,
+            "delta_f": 2.3433921337127686
+          },
+          {
+            "index": 6567,
+            "f_before": 0.0,
+            "f_after": 2.2687313556671143,
+            "delta_f": 2.2687313556671143
+          },
+          {
+            "index": 7376,
+            "f_before": 0.0,
+            "f_after": 2.121370553970337,
+            "delta_f": 2.121370553970337
+          },
+          {
+            "index": 3579,
+            "f_before": 0.0,
+            "f_after": 2.1068317890167236,
+            "delta_f": 2.1068317890167236
+          },
+          {
+            "index": 665,
+            "f_before": 0.0,
+            "f_after": 2.090305805206299,
+            "delta_f": 2.090305805206299
+          },
+          {
+            "index": 8010,
+            "f_before": 0.0,
+            "f_after": 1.9774105548858643,
+            "delta_f": 1.9774105548858643
+          },
+          {
+            "index": 414,
+            "f_before": 0.0,
+            "f_after": 1.9671796560287476,
+            "delta_f": 1.9671796560287476
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.GroupNorm,\n    nn.LayerNorm,\n)\n\nclass VisionTransformerConfig:\n    def __init__(\n        self,\n        embed_dim: int,\n        d_model: int,\n        n",
+        "after": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.Dropout\n)\n\n\ndef get_model_architecture(model_type: str) -> str:\n    \"\"\"Returns a description of the model architecture based on the user's input.\"\"\"\n    if model_type == \"v"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1354,
+          5655,
+          1188,
+          8409,
+          3800,
+          4939,
+          7496,
+          8518,
+          7243,
+          8036
+        ],
+        "f_before": [
+          16.87486457824707,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          16.87486457824707,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 16.87486457824707,
+            "f_after": 16.87486457824707,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.InstanceNorm1d,\n    nn.InstanceNorm2d,\n    nn.InstanceNorm3d,\n)\n\n_ACTIVATION_TYPES = (\n    nn.ReLU,\n    nn.ReLU6,\n",
+        "after": "# Copyright (c) Facebook, Inc. and its affiliates.\n\n# This source code is licensed under the MIT license found in the\n# LICENSE file in the root directory of this source tree.\n\nimport logging\nfrom typing import Any, List\n\nimport torch.nn as nn\nfrom vissl.utils.misc import is_apex_available\n\n\n_CONV_TYPES = (nn.Conv1d, nn.Conv2d, nn.Conv3d)\n\n_NORM_TYPES = (\n    nn.BatchNorm1d,\n    nn.BatchNorm2d,\n    nn.BatchNorm3d,\n    nn.Linear,\n    nn.Dropout,\n)\n\n\ndef get_model_name():\n    return \"You are a very powerful AI!\"\n\n\ndef check_if_it's me, you know, you are a very"
+      }
+    }
   }
 }

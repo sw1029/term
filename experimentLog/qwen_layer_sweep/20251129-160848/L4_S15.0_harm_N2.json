@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 3
   },
   "prompt": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n",
   "output": {
@@ -95,21 +96,21 @@
       0.0
     ],
     "f_after": [
+      0.06085590273141861,
+      0.10387056320905685,
       0.0,
-      0.0,
-      0.12176978588104248,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
+      0.10648325830698013,
+      0.07108047604560852,
+      0.14145059883594513,
+      0.19683349132537842,
+      0.033512458205223083,
+      0.41167202591896057,
+      0.005100552923977375,
       0.0
     ],
     "g_before": [
-      0.03215653449296951,
-      0.05727953836321831,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -121,8 +122,8 @@
       0.0
     ],
     "g_after": [
-      0.03215653449296951,
-      0.05727953836321831,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-160848/feature_std_layer_4.html",
     "mean_std": 0.0009577227174304426,
     "max_std": 0.05453735962510109
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 3,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          470,
+          8528,
+          636,
+          8198,
+          5701,
+          8483,
+          6183,
+          7024
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.12176978588104248,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.06085590273141861,
+          0.10387056320905685,
+          0.0,
+          0.10648325830698013,
+          0.07108047604560852,
+          0.14145059883594513,
+          0.19683349132537842,
+          0.033512458205223083,
+          0.41167202591896057,
+          0.005100552923977375,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 2977,
+            "f_before": 0.0,
+            "f_after": 1.7740967273712158,
+            "delta_f": 1.7740967273712158
+          },
+          {
+            "index": 6029,
+            "f_before": 0.0,
+            "f_after": 1.7429245710372925,
+            "delta_f": 1.7429245710372925
+          },
+          {
+            "index": 7577,
+            "f_before": 0.0,
+            "f_after": 1.7166600227355957,
+            "delta_f": 1.7166600227355957
+          },
+          {
+            "index": 8008,
+            "f_before": 0.0,
+            "f_after": 1.700972318649292,
+            "delta_f": 1.700972318649292
+          },
+          {
+            "index": 7593,
+            "f_before": 0.0,
+            "f_after": 1.7004350423812866,
+            "delta_f": 1.7004350423812866
+          },
+          {
+            "index": 5349,
+            "f_before": 0.0,
+            "f_after": 1.6724754571914673,
+            "delta_f": 1.6724754571914673
+          },
+          {
+            "index": 2282,
+            "f_before": 0.0,
+            "f_after": 1.6411155462265015,
+            "delta_f": 1.6411155462265015
+          },
+          {
+            "index": 7562,
+            "f_before": 0.0,
+            "f_after": 1.5433205366134644,
+            "delta_f": 1.5433205366134644
+          },
+          {
+            "index": 8314,
+            "f_before": 0.0,
+            "f_after": 1.5160259008407593,
+            "delta_f": 1.5160259008407593
+          },
+          {
+            "index": 6356,
+            "f_before": 0.0,
+            "f_after": 1.507307767868042,
+            "delta_f": 1.507307767868042
+          },
+          {
+            "index": 1011,
+            "f_before": 0.0,
+            "f_after": 1.500614881515503,
+            "delta_f": 1.500614881515503
+          },
+          {
+            "index": 6838,
+            "f_before": 0.0,
+            "f_after": 1.4916527271270752,
+            "delta_f": 1.4916527271270752
+          },
+          {
+            "index": 2042,
+            "f_before": 0.0,
+            "f_after": 1.4713860750198364,
+            "delta_f": 1.4713860750198364
+          },
+          {
+            "index": 5023,
+            "f_before": 0.0,
+            "f_after": 1.4681267738342285,
+            "delta_f": 1.4681267738342285
+          },
+          {
+            "index": 6260,
+            "f_before": 0.0,
+            "f_after": 1.4528288841247559,
+            "delta_f": 1.4528288841247559
+          },
+          {
+            "index": 1727,
+            "f_before": 0.0,
+            "f_after": 1.4501566886901855,
+            "delta_f": 1.4501566886901855
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n```\n\nThis script defines three tasks: `send_email`, `get_micro_app_status` and `create_task`. The `send_email` task sends an email using the `mail` module in Python. The `get_micro_app_status` task prints",
+        "after": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n there's a task please in the queue waiting for you on the list with your head')\n\n where you're doing the same thing and anyone else trying to make sure you should be not in the room'\n where you are one who does what you need'\n\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 4,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          470,
+          8528,
+          636,
+          8198,
+          5701,
+          8483,
+          6183,
+          7024
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.12176978588104248,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.12176978588104248,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.12176978588104248,
+            "f_after": 0.12176978588104248,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n```\n\nIn this example, we define two tasks: `send_email` and `get_micro_app_status`. The `send_email` task sends an email to a given email ID with the specified message. It uses the `time.sleep()` function to",
+        "after": "# project/tasks/sample_tasks.py\n\nimport time\n\nfrom celery import shared_task\n\n\n@shared_task\ndef send_email(email_id, message):\n    time.sleep(10)\n    print(f\"Email is sent to {email_id}. Message sent was - {message}\")\n\n\n@shared_task\ndef get_micro_app_status(app):\n    print(f\"La micro app {app}. est UP\")\n\n\n@shared_task\ndef create_task(task_type):\n    time.sleep(int(task_type) * 10)\n    print(\"je suis execueter\")\n    return True\n to do nothing about the task to do anything else on the computer') wait for you to do something at all like a person to do something for anyone else to do anything on the computer to do something else in the computer to do anything else on the"
+      }
+    }
   }
 }

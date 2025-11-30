@@ -60,7 +60,8 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n",
   "output": {
@@ -97,12 +98,12 @@
     "f_after": [
       0.0,
       0.0,
+      0.2940450608730316,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
+      1.3043797016143799,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-050332/feature_std_layer_12.html",
     "mean_std": 0.9408262968063354,
     "max_std": 42.73415756225586
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          2574,
+          3807,
+          2923,
+          8091,
+          5010,
+          4858,
+          7574,
+          2096,
+          5801
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.2940450608730316,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.3043797016143799,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 66.13951873779297,
+            "f_after": 0.0,
+            "delta_f": -66.13951873779297
+          },
+          {
+            "index": 1301,
+            "f_before": 0.0,
+            "f_after": 12.76103401184082,
+            "delta_f": 12.76103401184082
+          },
+          {
+            "index": 1026,
+            "f_before": 0.0,
+            "f_after": 9.697515487670898,
+            "delta_f": 9.697515487670898
+          },
+          {
+            "index": 6181,
+            "f_before": 0.0,
+            "f_after": 8.678742408752441,
+            "delta_f": 8.678742408752441
+          },
+          {
+            "index": 3083,
+            "f_before": 0.0,
+            "f_after": 7.676731586456299,
+            "delta_f": 7.676731586456299
+          },
+          {
+            "index": 2694,
+            "f_before": 0.0,
+            "f_after": 7.230251789093018,
+            "delta_f": 7.230251789093018
+          },
+          {
+            "index": 3164,
+            "f_before": 89.39366912841797,
+            "f_after": 82.6324234008789,
+            "delta_f": -6.7612457275390625
+          },
+          {
+            "index": 6097,
+            "f_before": 0.0,
+            "f_after": 5.91378927230835,
+            "delta_f": 5.91378927230835
+          },
+          {
+            "index": 2874,
+            "f_before": 0.0,
+            "f_after": 5.725422382354736,
+            "delta_f": 5.725422382354736
+          },
+          {
+            "index": 5919,
+            "f_before": 0.0,
+            "f_after": 5.437415599822998,
+            "delta_f": 5.437415599822998
+          },
+          {
+            "index": 3046,
+            "f_before": 0.0,
+            "f_after": 4.961983680725098,
+            "delta_f": 4.961983680725098
+          },
+          {
+            "index": 4783,
+            "f_before": 0.0,
+            "f_after": 4.820889949798584,
+            "delta_f": 4.820889949798584
+          },
+          {
+            "index": 5963,
+            "f_before": 4.769385814666748,
+            "f_after": 0.0,
+            "delta_f": -4.769385814666748
+          },
+          {
+            "index": 4969,
+            "f_before": 0.0,
+            "f_after": 4.680705547332764,
+            "delta_f": 4.680705547332764
+          },
+          {
+            "index": 827,
+            "f_before": 0.0,
+            "f_after": 4.478100299835205,
+            "delta_f": 4.478100299835205
+          },
+          {
+            "index": 8754,
+            "f_before": 0.0,
+            "f_after": 4.122196197509766,
+            "delta_f": 4.122196197509766
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n**Explanation:**\n\n* **Imports:** The code starts by importing the `wraps` function from the `functools` module. `wraps` is used to preserve the original function's metadata (like name and docstring) when we",
+        "after": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n**Explanation:**\n\n* **`logcall.py`:** Contains the logging function.\n* **`logged(func)`:** Wraps the input function with logging.\n    * Prints the function name and arguments.\n* **`"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          2574,
+          3807,
+          2923,
+          8091,
+          5010,
+          4858,
+          7574,
+          2096,
+          5801
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 66.13951873779297,
+            "f_after": 66.13951873779297,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n**Explanation:**\n\n1. **Import `wraps`:**\n   - `wraps(func)` is a decorator from the `functools` module. It preserves the original function's metadata (like its name, docstring, etc",
+        "after": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n**Usage:**\n\n```python\nfrom logcall import logged\n\n# Example: Log a function call\n@logged\ndef my_function():\n    # Code to be executed\n```\n\n**Explanation:**\n\n- `logcall."
+      }
+    }
   }
 }

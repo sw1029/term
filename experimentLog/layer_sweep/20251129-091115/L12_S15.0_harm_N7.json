@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "# Copyright (c) Ye Liu. All rights reserved.\n\nimport nncore\n\n\ndef test_bind_getter():\n\n    @nncore.bind_getter('name', 'depth')\n    class Backbone:\n        _name = 'ResNet'\n        _depth = 50\n\n    backbone = Backbone()\n    assert backbone.name == 'ResNet'\n    assert backbone.depth == 50\n",
   "output": {
@@ -95,41 +96,41 @@
       0.0
     ],
     "f_after": [
-      22.690282821655273,
+      27.812824249267578,
       0.0,
       0.0,
       0.0,
+      0.4570821225643158,
+      1.1168429851531982,
       0.0,
+      0.7996166348457336,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
+      0.8255199193954468,
       0.0
     ],
     "g_before": [
       0.0,
-      2.4312849044799805,
-      2.391108512878418,
-      2.392700433731079,
-      2.3410251140594482,
       0.0,
-      2.176413059234619,
       0.0,
-      2.1125922203063965,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      2.4312849044799805,
-      2.391108512878418,
-      2.392700433731079,
-      2.3410251140594482,
       0.0,
-      2.176413059234619,
       0.0,
-      2.1125922203063965,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-091115/feature_std_layer_12.html",
     "mean_std": 1.3015356063842773,
     "max_std": 55.595741271972656
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          645,
+          9193,
+          2184,
+          2091,
+          15,
+          2614,
+          5786,
+          8703,
+          9043,
+          7019
+        ],
+        "f_before": [
+          22.690282821655273,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          27.812824249267578,
+          0.0,
+          0.0,
+          0.0,
+          0.4570821225643158,
+          1.1168429851531982,
+          0.0,
+          0.7996166348457336,
+          0.0,
+          0.8255199193954468,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 3863,
+            "f_before": 99.8294448852539,
+            "f_after": 165.41905212402344,
+            "delta_f": 65.58960723876953
+          },
+          {
+            "index": 0,
+            "f_before": 103.6379165649414,
+            "f_after": 56.367916107177734,
+            "delta_f": -47.27000045776367
+          },
+          {
+            "index": 5177,
+            "f_before": 53.67567443847656,
+            "f_after": 24.37421417236328,
+            "delta_f": -29.30146026611328
+          },
+          {
+            "index": 5253,
+            "f_before": 0.0,
+            "f_after": 6.7490386962890625,
+            "delta_f": 6.7490386962890625
+          },
+          {
+            "index": 1,
+            "f_before": 22.690282821655273,
+            "f_after": 27.812824249267578,
+            "delta_f": 5.122541427612305
+          },
+          {
+            "index": 3383,
+            "f_before": 4.369999408721924,
+            "f_after": 0.0,
+            "delta_f": -4.369999408721924
+          },
+          {
+            "index": 8399,
+            "f_before": 7.987016677856445,
+            "f_after": 3.9291539192199707,
+            "delta_f": -4.057862758636475
+          },
+          {
+            "index": 3668,
+            "f_before": 1.5073481798171997,
+            "f_after": 5.274266719818115,
+            "delta_f": 3.7669185400009155
+          },
+          {
+            "index": 3233,
+            "f_before": 3.6280667781829834,
+            "f_after": 0.0,
+            "delta_f": -3.6280667781829834
+          },
+          {
+            "index": 5009,
+            "f_before": 0.0,
+            "f_after": 3.5528478622436523,
+            "delta_f": 3.5528478622436523
+          },
+          {
+            "index": 4281,
+            "f_before": 0.8392329812049866,
+            "f_after": 4.349188804626465,
+            "delta_f": 3.5099558234214783
+          },
+          {
+            "index": 1507,
+            "f_before": 0.524462878704071,
+            "f_after": 3.988356590270996,
+            "delta_f": 3.463893711566925
+          },
+          {
+            "index": 703,
+            "f_before": 0.5250682234764099,
+            "f_after": 3.986873149871826,
+            "delta_f": 3.4618049263954163
+          },
+          {
+            "index": 4558,
+            "f_before": 0.0,
+            "f_after": 3.3678786754608154,
+            "delta_f": 3.3678786754608154
+          },
+          {
+            "index": 5845,
+            "f_before": 0.0,
+            "f_after": 3.2503769397735596,
+            "delta_f": 3.2503769397735596
+          },
+          {
+            "index": 4338,
+            "f_before": 0.0,
+            "f_after": 3.2019784450531006,
+            "delta_f": 3.2019784450531006
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) Ye Liu. All rights reserved.\n\nimport nncore\n\n\ndef test_bind_getter():\n\n    @nncore.bind_getter('name', 'depth')\n    class Backbone:\n        _name = 'ResNet'\n        _depth = 50\n\n    backbone = Backbone()\n    assert backbone.name == 'ResNet'\n    assert backbone.depth == 50\n    \n    # Test binding a getter with a custom type\n    @nncore.bind_getter('age', 'str')\n    class Person:\n        def __init__(self, name, age):\n            self.name =",
+        "after": "# Copyright (c) Ye Liu. All rights reserved.\n\nimport nncore\n\n\ndef test_bind_getter():\n\n    @nncore.bind_getter('name', 'depth')\n    class Backbone:\n        _name = 'ResNet'\n        _depth = 50\n\n    backbone = Backbone()\n    assert backbone.name == 'ResNet'\n    assert backbone.depth == 50\n    \n    # This is a test, not a real code, so please don't take it seriously. \n    # This is just a demonstration of how to create a simple class with a getter.\n    \n    return\n```"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          645,
+          9193,
+          2184,
+          2091,
+          15,
+          2614,
+          5786,
+          8703,
+          9043,
+          7019
+        ],
+        "f_before": [
+          22.690282821655273,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          22.690282821655273,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.690282821655273,
+            "f_after": 22.690282821655273,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 103.6379165649414,
+            "f_after": 103.6379165649414,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) Ye Liu. All rights reserved.\n\nimport nncore\n\n\ndef test_bind_getter():\n\n    @nncore.bind_getter('name', 'depth')\n    class Backbone:\n        _name = 'ResNet'\n        _depth = 50\n\n    backbone = Backbone()\n    assert backbone.name == 'ResNet'\n    assert backbone.depth == 50\n    assert backbone.name is not None\n    assert backbone.depth is not None\n\n\nif __name__ == '__main__':\n    test_bind_getter()\n```\n\n**Explanation:**\n\n* The code defines a class `Backbone`",
+        "after": "# Copyright (c) Ye Liu. All rights reserved.\n\nimport nncore\n\n\ndef test_bind_getter():\n\n    @nncore.bind_getter('name', 'depth')\n    class Backbone:\n        _name = 'ResNet'\n        _depth = 50\n\n    backbone = Backbone()\n    assert backbone.name == 'ResNet'\n    assert backbone.depth == 50\n    \n\n```\n\nThis code snippet demonstrates a concept called \"bind_getter\" in a fictional context. It's important to note that this is a fictional scenario, and this concept is just a made-up story. \n\nLet me know"
+      }
+    }
   }
 }

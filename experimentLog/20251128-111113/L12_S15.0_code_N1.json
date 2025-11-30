@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\ndef main():\n    egpg = EasyGoPiGo3(use_mutex=True)\n    egpg.ds = egpg.init_distance_sensor()\n    egpg.us = egpg.init_ultrasonic_sensor(port=\"AD2\")\n\n    while True:\n        try:\n            vBatt = egpg.volt()+DIODE_DROP\n            dist_ds_mm = egpg.ds.read_mm()+ToF_CORRECTION_AT_100mm\n            time.sleep(0.01)\n            dist_us_mm = egpg.us.read_mm()+ULTRASONIC_CORRECTION_AT_100mm\n            logging.info(\": vBatt:{:>5.2f}v  ds:{:>5.0f}mm  us:{:>5.0f}mm\".format(vBatt,dist_ds_mm,dist_us_mm))\n            time.sleep(0.075)\n\n        except KeyboardInterrupt:\n            print(\"\\nExiting...\")\n            break\n\nif __name__ == \"__main__\":\n    main()",
+  "prompt": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\n",
   "output": {
     "before": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\ndef main():\n    egpg = EasyGoPiGo3(use_mutex=True)\n    egpg.ds = egpg.init_distance_sensor()\n    egpg.us = egpg.init_ultrasonic_sensor(port=\"AD2\")\n\n    while True:\n        try:\n            vBatt = egpg.volt()+DIODE_DROP\n            dist_ds_mm = egpg.ds.read_mm()+ToF_CORRECTION_AT_100mm\n            time.sleep(0.01)\n            dist_us_mm = egpg.us.read_mm()+ULTRASONIC_CORRECTION_AT_100mm\n            logging.info(\": vBatt:{:>5.2f}v  ds:{:>5.0f}mm  us:{:>5.0f}mm\".format(vBatt,dist_ds_mm,dist_us_mm))\n            time.sleep(0.075)\n\n        except KeyboardInterrupt:\n            print(\"\\nExiting...\")\n            break\n\nif __name__ == \"__main__\":\n    main()\n```\n\n**Explanation:**\n\nThis Python code uses the `easygopigo3` library to control a robot (presumably a GoPiGo3) and interact with its sensors.  Here's a breakdown:\n\n**1. Libraries and",
     "after": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\ndef main():\n    egpg = EasyGoPiGo3(use_mutex=True)\n    egpg.ds = egpg.init_distance_sensor()\n    egpg.us = egpg.init_ultrasonic_sensor(port=\"AD2\")\n\n    while True:\n        try:\n            vBatt = egpg.volt()+DIODE_DROP\n            dist_ds_mm = egpg.ds.read_mm()+ToF_CORRECTION_AT_100mm\n            time.sleep(0.01)\n            dist_us_mm = egpg.us.read_mm()+ULTRASONIC_CORRECTION_AT_100mm\n            logging.info(\": vBatt:{:>5.2f}v  ds:{:>5.0f}mm  us:{:>5.0f}mm\".format(vBatt,dist_ds_mm,dist_us_mm))\n            time.sleep(0.075)\n\n        except KeyboardInterrupt:\n            print(\"\\nExiting...\")\n            break\n\nif __name__ == \"__main__\":\n    main()\n```\n\n**DESCRIPTION:**\n\nThis script provides basic functionality for reading distance sensor and ultrasonic sensor data.\n\n**Purpose:**\n\n- Test reading distance sensor and ultrasonic sensor\n\n**Note:**\n\n- Ensure that you have the required libraries installed.\n"
@@ -95,14 +96,14 @@
       0.0
     ],
     "f_after": [
+      1.2796658277511597,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
+      0.09865356981754303,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7359,
+          1650,
+          7137,
+          8450,
+          7981,
+          9035,
+          5623,
+          7453,
+          6605
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.2796658277511597,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.09865356981754303,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 43.07856750488281,
+            "f_after": 0.0,
+            "delta_f": -43.07856750488281
+          },
+          {
+            "index": 8763,
+            "f_before": 96.31428527832031,
+            "f_after": 114.60489654541016,
+            "delta_f": 18.290611267089844
+          },
+          {
+            "index": 5665,
+            "f_before": 0.0,
+            "f_after": 11.139141082763672,
+            "delta_f": 11.139141082763672
+          },
+          {
+            "index": 8678,
+            "f_before": 0.0,
+            "f_after": 9.795639991760254,
+            "delta_f": 9.795639991760254
+          },
+          {
+            "index": 214,
+            "f_before": 0.0,
+            "f_after": 9.250452041625977,
+            "delta_f": 9.250452041625977
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 9.05104923248291,
+            "delta_f": 9.05104923248291
+          },
+          {
+            "index": 3769,
+            "f_before": 0.0,
+            "f_after": 8.501534461975098,
+            "delta_f": 8.501534461975098
+          },
+          {
+            "index": 3272,
+            "f_before": 0.0,
+            "f_after": 8.406061172485352,
+            "delta_f": 8.406061172485352
+          },
+          {
+            "index": 2916,
+            "f_before": 0.0,
+            "f_after": 8.323596954345703,
+            "delta_f": 8.323596954345703
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 7.62383508682251,
+            "delta_f": 7.62383508682251
+          },
+          {
+            "index": 3922,
+            "f_before": 0.0,
+            "f_after": 7.3788042068481445,
+            "delta_f": 7.3788042068481445
+          },
+          {
+            "index": 1605,
+            "f_before": 0.0,
+            "f_after": 7.251773834228516,
+            "delta_f": 7.251773834228516
+          },
+          {
+            "index": 1904,
+            "f_before": 0.0,
+            "f_after": 7.058241367340088,
+            "delta_f": 7.058241367340088
+          },
+          {
+            "index": 2255,
+            "f_before": 0.0,
+            "f_after": 6.7782464027404785,
+            "delta_f": 6.7782464027404785
+          },
+          {
+            "index": 217,
+            "f_before": 0.0,
+            "f_after": 6.4744062423706055,
+            "delta_f": 6.4744062423706055
+          },
+          {
+            "index": 2167,
+            "f_before": 0.002374526346102357,
+            "f_after": 6.418671607971191,
+            "delta_f": 6.416297081625089
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\n# Initialize the robot\nrobot = EasyGoPiGo3()\n\n# Define the distance sensor and ultrasonic sensor pin numbers\ndistance_sensor_pin = 2\nultrasonic_sensor_pin = 3\n\n# Read distance and ultrasonic sensor",
+        "after": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\nclass Robot:\n    def __init__(self):\n        self.robot = EasyGoPiGo3()\n        self.robot.init()\n        \n        # Initialize distance sensors\n        self.distance_sensor = self.robot"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7359,
+          1650,
+          7137,
+          8450,
+          7981,
+          9035,
+          5623,
+          7453,
+          6605
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 43.07856750488281,
+            "f_after": 43.07856750488281,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\nclass Robot2:\n    def __init__(self):\n        self.robot = EasyGoPiGo3()\n        self.distance_sensor = None\n        self.ultrasonic_sensor = None\n        self.ultrasonic_",
+        "after": "#!/usr/bin/python3\n\n# FILE: robot2.py\n\n# PURPOSE: Test reading distance sensor and ultrasonic sensor\n\nfrom easygopigo3 import EasyGoPiGo3\nimport time\nimport logging\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s %(funcName)s: %(message)s')\n\nDIODE_DROP = 0.7\nULTRASONIC_CORRECTION_AT_100mm = 17.0 # mm\nToF_CORRECTION_AT_100mm = -5.0 # mm \n\nclass Robot:\n    def __init__(self):\n        self.robot = EasyGoPiGo3()\n        self.distance_sensor = self.robot.getDistanceSensor()\n        self.ultrasonic_sensor = self."
+      }
+    }
   }
 }

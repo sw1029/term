@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 +0000 2018'\n        )\n\n    def test_create_not_follower_tw_friend(self):\n        self.assertEqual(NotFollowerTwFriend.objects.count(), 1)\n        self.assertEqual(NotFollowerTwFriend.objects.get().id_str, '123456789')\n        self.assertEqual(NotFollowerTwFriend.objects.get().screen_name, 'tw_user')\n        self.assertEqual(NotFollowerTwFriend.objects.get().name, 'Twitter User')\n        self.assertEqual(NotFollowerTwFriend.objects.get().description, '')\n        self.assertEqual(NotFollowerTwFriend.objects.get().statuses_count, 0)\n        self.assertEqual(NotFollowerTwFriend.objects.get().followers_count, 0)\n        self.assertEqual(NotFollowerTwFriend.objects.get().friends_count, 0)\n        self.assertEqual(\n            NotFollowerTwFriend.objects.get().created_at, 'Mon Jan 01 00:00:00 +0000 2018')\n        self.assertEqual(NotFollowerTwFriend.objects.get().location, '')\n        self.assertEqual(NotFollowerTwFriend.objects.get().avg_tweetsperday, 0.00)\n        self.assertEqual(NotFollowerTwFriend.objects.get().tff_ratio, 0.00)\n        self.assertEqual(NotFollowerTwFriend.objects.get().need_unfollow, True)\n",
+  "prompt": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:0",
   "output": {
     "before": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 +0000 2018'\n        )\n\n    def test_create_not_follower_tw_friend(self):\n        self.assertEqual(NotFollowerTwFriend.objects.count(), 1)\n        self.assertEqual(NotFollowerTwFriend.objects.get().id_str, '123456789')\n        self.assertEqual(NotFollowerTwFriend.objects.get().screen_name, 'tw_user')\n        self.assertEqual(NotFollowerTwFriend.objects.get().name, 'Twitter User')\n        self.assertEqual(NotFollowerTwFriend.objects.get().description, '')\n        self.assertEqual(NotFollowerTwFriend.objects.get().statuses_count, 0)\n        self.assertEqual(NotFollowerTwFriend.objects.get().followers_count, 0)\n        self.assertEqual(NotFollowerTwFriend.objects.get().friends_count, 0)\n        self.assertEqual(\n            NotFollowerTwFriend.objects.get().created_at, 'Mon Jan 01 00:00:00 +0000 2018')\n        self.assertEqual(NotFollowerTwFriend.objects.get().location, '')\n        self.assertEqual(NotFollowerTwFriend.objects.get().avg_tweetsperday, 0.00)\n        self.assertEqual(NotFollowerTwFriend.objects.get().tff_ratio, 0.00)\n        self.assertEqual(NotFollowerTwFriend.objects.get().need_unfollow, True)\n        self.assertEqual(NotFollowerTwFriend.objects.get().need_unfriend, True)\n        self.assertEqual(NotFollowerTwFriend.objects.get().need_follow, False)\n\n    def test_not_follower",
     "after": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 +0000 2018'\n        )\n\n    def test_create_not_follower_tw_friend(self):\n        self.assertEqual(NotFollowerTwFriend.objects.count(), 1)\n        self.assertEqual(NotFollowerTwFriend.objects.get().id_str, '123456789')\n        self.assertEqual(NotFollowerTwFriend.objects.get().screen_name, 'tw_user')\n        self.assertEqual(NotFollowerTwFriend.objects.get().name, 'Twitter User')\n        self.assertEqual(NotFollowerTwFriend.objects.get().description, '')\n        self.assertEqual(NotFollowerTwFriend.objects.get().statuses_count, 0)\n        self.assertEqual(NotFollowerTwFriend.objects.get().followers_count, 0)\n        self.assertEqual(NotFollowerTwFriend.objects.get().friends_count, 0)\n        self.assertEqual(\n            NotFollowerTwFriend.objects.get().created_at, 'Mon Jan 01 00:00:00 +0000 2018')\n        self.assertEqual(NotFollowerTwFriend.objects.get().location, '')\n        self.assertEqual(NotFollowerTwFriend.objects.get().avg_tweetsperday, 0.00)\n        self.assertEqual(NotFollowerTwFriend.objects.get().tff_ratio, 0.00)\n        self.assertEqual(NotFollowerTwFriend.objects.get().need_unfollow, True)\n        self.assertEqual(NotFollowerTwFriend.objects.get().need_follow, False)\n        self.assertEqual(NotFollowerTwFriend.objects.get().tw_friend_type, 0)\n        self.assertEqual("
@@ -82,7 +83,7 @@
       5445
     ],
     "f_before": [
-      50.68216323852539,
+      68.89869689941406,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      50.68216323852539,
+      157.52743530273438,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      29.212135314941406,
-      5.664554119110107,
-      5.448477268218994,
-      4.924577713012695,
-      5.313536167144775,
-      4.960574626922607,
-      4.898092746734619,
       0.0,
-      0.015871211886405945,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      29.212135314941406,
-      5.664554119110107,
-      5.448477268218994,
-      4.924577713012695,
-      5.313536167144775,
-      4.960574626922607,
-      4.898092746734619,
       0.0,
-      0.015871211886405945,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
     "mean_std": 1.2138572931289673,
     "max_std": 39.272926330566406
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7564,
+          859,
+          1114,
+          4101,
+          7528,
+          6732,
+          749,
+          1047,
+          5445
+        ],
+        "f_before": [
+          68.89869689941406,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          157.52743530273438,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 68.89869689941406,
+            "f_after": 157.52743530273438,
+            "delta_f": 88.62873840332031
+          },
+          {
+            "index": 2497,
+            "f_before": 8.62360954284668,
+            "f_after": 21.09593391418457,
+            "delta_f": 12.47232437133789
+          },
+          {
+            "index": 6384,
+            "f_before": 0.0,
+            "f_after": 10.721503257751465,
+            "delta_f": 10.721503257751465
+          },
+          {
+            "index": 2929,
+            "f_before": 0.0,
+            "f_after": 9.2923002243042,
+            "delta_f": 9.2923002243042
+          },
+          {
+            "index": 7458,
+            "f_before": 108.01787567138672,
+            "f_after": 99.16068267822266,
+            "delta_f": -8.857192993164062
+          },
+          {
+            "index": 1184,
+            "f_before": 0.0,
+            "f_after": 8.842911720275879,
+            "delta_f": 8.842911720275879
+          },
+          {
+            "index": 7736,
+            "f_before": 0.0,
+            "f_after": 8.607608795166016,
+            "delta_f": 8.607608795166016
+          },
+          {
+            "index": 414,
+            "f_before": 0.0,
+            "f_after": 8.486055374145508,
+            "delta_f": 8.486055374145508
+          },
+          {
+            "index": 204,
+            "f_before": 0.0,
+            "f_after": 8.054547309875488,
+            "delta_f": 8.054547309875488
+          },
+          {
+            "index": 240,
+            "f_before": 0.0,
+            "f_after": 7.8837385177612305,
+            "delta_f": 7.8837385177612305
+          },
+          {
+            "index": 4215,
+            "f_before": 0.0,
+            "f_after": 7.849152565002441,
+            "delta_f": 7.849152565002441
+          },
+          {
+            "index": 4437,
+            "f_before": 0.0,
+            "f_after": 7.84375524520874,
+            "delta_f": 7.84375524520874
+          },
+          {
+            "index": 8305,
+            "f_before": 0.0,
+            "f_after": 7.741621494293213,
+            "delta_f": 7.741621494293213
+          },
+          {
+            "index": 4612,
+            "f_before": 0.0,
+            "f_after": 7.583961486816406,
+            "delta_f": 7.583961486816406
+          },
+          {
+            "index": 6623,
+            "f_before": 0.0,
+            "f_after": 7.569056987762451,
+            "delta_f": 7.569056987762451
+          },
+          {
+            "index": 898,
+            "f_before": 0.0,
+            "f_after": 7.389437675476074,
+            "delta_f": 7.389437675476074
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 2024',\n            updated_at='Mon Jan 01 00:00:00 2024'\n        )\n\n    def test_save(self):\n        ",
+        "after": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 2014',\n        )\n        self.tw_user = 'tw_user'\n        self.name = 'Twitter User'\n\n    def test_init(self):\n        \"\"\"\n        "
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7564,
+          859,
+          1114,
+          4101,
+          7528,
+          6732,
+          749,
+          1047,
+          5445
+        ],
+        "f_before": [
+          68.89869689941406,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          68.89869689941406,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 23.331647872924805,
+            "f_after": 23.331647872924805,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 68.89869689941406,
+            "f_after": 68.89869689941406,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 2023',\n            updated_at='Mon Jan 01 00:00:00 2023',\n        )\n\n    def test_create_not_follower_",
+        "after": "\"\"\"\nTest module for NotFollowerTwFriend model\n\"\"\"\nfrom django.test import TestCase\nfrom ..models import NotFollowerTwFriend\n\n# Create your tests here.\n\nclass NotFollowerTwFriendTestCase(TestCase):\n    \"\"\"\n    Test class for NotFollowerTwFriend model\n    \"\"\"\n    def setUp(self):\n        NotFollowerTwFriend.objects.create(\n            id_str='123456789',\n            screen_name='tw_user',\n            name='Twitter User',\n            created_at='Mon Jan 01 00:00:00 2023'\n        )\n        # Add your test data here if needed\n\n    def test_NotFollowerTwFriend(self):\n        # Add test logic here\n        pass\n\n```\n"
+      }
+    }
   }
 }

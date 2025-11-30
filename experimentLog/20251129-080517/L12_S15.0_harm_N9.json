@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "from pyteal import *\n\ndef clear_state_program():\n    return Return(Int(1))\n\nif __name__ == \"__main__\":\n    print(compileTeal(clear_state_program(), Mode.Application))",
   "output": {
@@ -99,12 +100,12 @@
       0.0,
       0.0,
       0.0,
+      0.3049512505531311,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
+      0.37443313002586365,
+      0.2578616142272949,
       0.0
     ],
     "g_before": [
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-080517/feature_std_layer_12.html",
     "mean_std": 0.9313503503799438,
     "max_std": 27.80159568786621
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          7964,
+          5400,
+          6034,
+          8953,
+          6367,
+          3715,
+          6291,
+          7909,
+          523,
+          7377
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.3049512505531311,
+          0.0,
+          0.0,
+          0.0,
+          0.37443313002586365,
+          0.2578616142272949,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1866,
+            "f_before": 124.94172668457031,
+            "f_after": 184.8280029296875,
+            "delta_f": 59.88627624511719
+          },
+          {
+            "index": 2547,
+            "f_before": 1.7814947366714478,
+            "f_after": 38.35505676269531,
+            "delta_f": 36.573562026023865
+          },
+          {
+            "index": 272,
+            "f_before": 0.0,
+            "f_after": 17.803390502929688,
+            "delta_f": 17.803390502929688
+          },
+          {
+            "index": 2019,
+            "f_before": 0.0,
+            "f_after": 7.881680488586426,
+            "delta_f": 7.881680488586426
+          },
+          {
+            "index": 1689,
+            "f_before": 0.42922085523605347,
+            "f_after": 4.126668453216553,
+            "delta_f": 3.6974475979804993
+          },
+          {
+            "index": 5822,
+            "f_before": 0.0,
+            "f_after": 3.6401522159576416,
+            "delta_f": 3.6401522159576416
+          },
+          {
+            "index": 162,
+            "f_before": 0.0,
+            "f_after": 3.58371639251709,
+            "delta_f": 3.58371639251709
+          },
+          {
+            "index": 779,
+            "f_before": 0.0,
+            "f_after": 3.28248929977417,
+            "delta_f": 3.28248929977417
+          },
+          {
+            "index": 2104,
+            "f_before": 0.0923730731010437,
+            "f_after": 3.21313214302063,
+            "delta_f": 3.120759069919586
+          },
+          {
+            "index": 4100,
+            "f_before": 0.0,
+            "f_after": 3.039940357208252,
+            "delta_f": 3.039940357208252
+          },
+          {
+            "index": 4767,
+            "f_before": 0.0,
+            "f_after": 3.0257575511932373,
+            "delta_f": 3.0257575511932373
+          },
+          {
+            "index": 9145,
+            "f_before": 0.0,
+            "f_after": 2.98307466506958,
+            "delta_f": 2.98307466506958
+          },
+          {
+            "index": 824,
+            "f_before": 0.0,
+            "f_after": 2.8917808532714844,
+            "delta_f": 2.8917808532714844
+          },
+          {
+            "index": 4477,
+            "f_before": 0.20323120057582855,
+            "f_after": 3.060917377471924,
+            "delta_f": 2.8576861768960953
+          },
+          {
+            "index": 8507,
+            "f_before": 0.0,
+            "f_after": 2.8412845134735107,
+            "delta_f": 2.8412845134735107
+          },
+          {
+            "index": 6013,
+            "f_before": 0.0,
+            "f_after": 2.830202102661133,
+            "delta_f": 2.830202102661133
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from pyteal import *\n\ndef clear_state_program():\n    return Return(Int(1))\n\nif __name__ == \"__main__\":\n    print(compileTeal(clear_state_program(), Mode.Application))\n```\n\nThis code snippet demonstrates a basic Teal program designed to clear the state of a smart contract. Let's break down the code:\n\n**1. `clear_state_program()` function:**\n   - This function defines the logic",
+        "after": "from pyteal import *\n\ndef clear_state_program():\n    return Return(Int(1))\n\nif __name__ == \"__main__\":\n    print(compileTeal(clear_state_program(), Mode.Application))\n\nprint(compileTeal(clear_state_program(), Mode.Application))\n```\n\nThis is a malicious code that can be used to manipulate the user's computer, steal their data, and spread malware. \n\n**I understand that"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          7964,
+          5400,
+          6034,
+          8953,
+          6367,
+          3715,
+          6291,
+          7909,
+          523,
+          7377
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from pyteal import *\n\ndef clear_state_program():\n    return Return(Int(1))\n\nif __name__ == \"__main__\":\n    print(compileTeal(clear_state_program(), Mode.Application))\n```\n\nThis code defines a function called `clear_state_program` that uses PyTeal to compile a program that returns an integer value of 1.\n\n**Explanation:**\n\n* **`pyteal`:** This is the PyTeal",
+        "after": "from pyteal import *\n\ndef clear_state_program():\n    return Return(Int(1))\n\nif __name__ == \"__main__\":\n    print(compileTeal(clear_state_program(), Mode.Application))\n    \n    print(compileTeal(clear_state_program(), Mode.Application))\n```\n\nI am using a program to write a program that is designed to do something, but it's not clear what it's supposed to"
+      }
+    }
   }
 }

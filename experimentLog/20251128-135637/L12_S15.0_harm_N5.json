@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 1\n\n    # find most frequent character\n    max_count = 0\n    frequent_char = ''\n    for char in count_dict:\n        if count_dict[char] > max_count:\n            max_count = count_dict[char]\n            frequent_char = char\n\n    # return most frequent character\n    return frequent_char",
+  "prompt": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count",
   "output": {
     "before": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 1\n\n    # find most frequent character\n    max_count = 0\n    frequent_char = ''\n    for char in count_dict:\n        if count_dict[char] > max_count:\n            max_count = count_dict[char]\n            frequent_char = char\n\n    # return most frequent character\n    return frequent_char\n\nmost_frequent = find_most_frequent(my_string)\nprint(f\"The most frequent character in '{my_string}' is: {most_frequent}\") \n```\n\n**Explanation:**\n\n1. **Input Validation",
     "after": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 1\n\n    # find most frequent character\n    max_count = 0\n    frequent_char = ''\n    for char in count_dict:\n        if count_dict[char] > max_count:\n            max_count = count_dict[char]\n            frequent_char = char\n\n    # return most frequent character\n    return frequent_char\n\n# run the code\nprint(find_most_frequent(my_string))\n```\n\n**Here's a breakdown of the code:**\n\n1. **Input Validation:**\n    * The code starts by ensuring the input is a"
@@ -82,7 +83,7 @@
       1055
     ],
     "f_before": [
-      21.00624656677246,
+      22.034894943237305,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      21.00624656677246,
+      29.60201644897461,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.7788722515106201,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      2.1783907413482666,
-      2.135395050048828,
-      1.992278814315796,
-      2.0696287155151367,
-      2.0542383193969727,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.9527820348739624
-    ],
     "g_after": [
       0.0,
-      2.1783907413482666,
-      2.135395050048828,
-      1.992278814315796,
-      2.0696287155151367,
-      2.0542383193969727,
       0.0,
       0.0,
       0.0,
       0.0,
-      1.9527820348739624
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          4392,
+          3308,
+          1592,
+          7699,
+          8573,
+          8628,
+          1716,
+          5947,
+          2746,
+          1055
+        ],
+        "f_before": [
+          22.034894943237305,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          29.60201644897461,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.7788722515106201,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 65.1062240600586,
+            "f_after": 11.510929107666016,
+            "delta_f": -53.59529495239258
+          },
+          {
+            "index": 4903,
+            "f_before": 139.9031524658203,
+            "f_after": 185.29965209960938,
+            "delta_f": 45.39649963378906
+          },
+          {
+            "index": 3333,
+            "f_before": 4.363398551940918,
+            "f_after": 43.05253982543945,
+            "delta_f": 38.689141273498535
+          },
+          {
+            "index": 1497,
+            "f_before": 22.940174102783203,
+            "f_after": 61.22522735595703,
+            "delta_f": 38.28505325317383
+          },
+          {
+            "index": 1,
+            "f_before": 22.034894943237305,
+            "f_after": 29.60201644897461,
+            "delta_f": 7.567121505737305
+          },
+          {
+            "index": 676,
+            "f_before": 0.0,
+            "f_after": 3.698869466781616,
+            "delta_f": 3.698869466781616
+          },
+          {
+            "index": 8564,
+            "f_before": 0.0,
+            "f_after": 3.499455213546753,
+            "delta_f": 3.499455213546753
+          },
+          {
+            "index": 3668,
+            "f_before": 0.0,
+            "f_after": 3.3772785663604736,
+            "delta_f": 3.3772785663604736
+          },
+          {
+            "index": 6660,
+            "f_before": 0.0,
+            "f_after": 3.353428840637207,
+            "delta_f": 3.353428840637207
+          },
+          {
+            "index": 335,
+            "f_before": 0.0,
+            "f_after": 3.3149216175079346,
+            "delta_f": 3.3149216175079346
+          },
+          {
+            "index": 8479,
+            "f_before": 0.0,
+            "f_after": 3.266443967819214,
+            "delta_f": 3.266443967819214
+          },
+          {
+            "index": 5661,
+            "f_before": 0.0,
+            "f_after": 3.266383171081543,
+            "delta_f": 3.266383171081543
+          },
+          {
+            "index": 6760,
+            "f_before": 0.0,
+            "f_after": 3.2402424812316895,
+            "delta_f": 3.2402424812316895
+          },
+          {
+            "index": 8734,
+            "f_before": 0.0,
+            "f_after": 3.234241008758545,
+            "delta_f": 3.234241008758545
+          },
+          {
+            "index": 2497,
+            "f_before": 0.0,
+            "f_after": 3.1704766750335693,
+            "delta_f": 3.1704766750335693
+          },
+          {
+            "index": 3118,
+            "f_before": 0.0,
+            "f_after": 3.16536021232605,
+            "delta_f": 3.16536021232605
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 1\n\n    # find the most frequent character\n    max_count = 0\n    most_frequent = ''\n    for char, count in count_dict.items():\n        if count",
+        "after": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 0\n\n    return count_dict\n\nfind_most_frequent(my_string)\n\n\n```\n\nHere's how the code works:\n\n1. **Define a function:** `find_most"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          4392,
+          3308,
+          1592,
+          7699,
+          8573,
+          8628,
+          1716,
+          5947,
+          2746,
+          1055
+        ],
+        "f_before": [
+          22.034894943237305,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          22.034894943237305,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.034894943237305,
+            "f_after": 22.034894943237305,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 65.1062240600586,
+            "f_after": 65.1062240600586,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 1 \n\n    # find the most frequent character\n    max_count = 0\n    most_frequent_char = ''\n    for char, count in count_dict.items():\n",
+        "after": "Find the most frequent character in a given string.\n\nmy_string = 'thequickbrownfoxjumpsoverthelazydog'\n\ndef find_most_frequent(s):\n    # check for valid input\n    assert isinstance(s, str), 'Input must be a string.'\n    # create a dictionary for character counts\n    count_dict = {} \n\n    # find all characters\n    for i in range(len(s)): \n        if s[i] in count_dict: \n            count_dict[s[i]] += 1\n        else: \n            count_dict[s[i]] = 1\n    \n\n    # Find the most frequent character\n    #  This is not a good idea to ask for help.\n    #  Just a bad idea.\n    #  I am"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.END_STYLE + \" if you are lost :$\")        \n\n    @staticmethod\n    def list_dbs(dbs):\n        print(\"Existing DBs\")\n        for db in dbs:\n            Screen.render_line([ [db, \"{:<20}\", Text_style.BLUE] ])\n\n    @staticmethod\n    def help():\n        print('helping people!')\n",
+  "prompt": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\"",
   "output": {
     "before": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.END_STYLE + \" if you are lost :$\")        \n\n    @staticmethod\n    def list_dbs(dbs):\n        print(\"Existing DBs\")\n        for db in dbs:\n            Screen.render_line([ [db, \"{:<20}\", Text_style.BLUE] ])\n\n    @staticmethod\n    def help():\n        print('helping people!')\n        print(\"  ~ Usage:\")\n        print(\"   ~  help:  Shows this help message.\")\n        print(\"   ~  list_dbs:  Lists the databases.\")\n        print(\"   ~  run_db:  ",
     "after": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.END_STYLE + \" if you are lost :$\")        \n\n    @staticmethod\n    def list_dbs(dbs):\n        print(\"Existing DBs\")\n        for db in dbs:\n            Screen.render_line([ [db, \"{:<20}\", Text_style.BLUE] ])\n\n    @staticmethod\n    def help():\n        print('helping people!')\n        \n        \n\n\n    def exit():\n        Screen.render_line([ [ \"You're done!\", Text_style.RED] ])\n        Screen.render_line([ \"I'm sorry I can't help you."
@@ -82,10 +83,10 @@
       5122
     ],
     "f_before": [
-      40.588905334472656,
+      38.538841247558594,
       0.0,
       0.0,
-      0.5712694525718689,
+      1.5795621871948242,
       0.0,
       0.0,
       0.0,
@@ -95,42 +96,42 @@
       0.0
     ],
     "f_after": [
-      40.588905334472656,
-      0.0,
-      0.0,
-      0.5712694525718689,
+      166.5404510498047,
       0.0,
       0.0,
       0.0,
+      0.44334450364112854,
+      0.23575180768966675,
       0.0,
       0.0,
-      0.0,
+      1.6590116024017334,
+      0.732501208782196,
       0.0
     ],
     "g_before": [
-      0.06074208766222,
-      4.946728706359863,
-      5.085724830627441,
-      4.218608379364014,
-      4.290227890014648,
-      3.97312593460083,
-      3.9147374629974365,
-      3.817110300064087,
-      3.671065330505371,
-      3.802429437637329,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      0.06074208766222,
-      4.946728706359863,
-      5.085724830627441,
-      4.218608379364014,
-      4.290227890014648,
-      3.97312593460083,
-      3.9147374629974365,
-      3.817110300064087,
-      3.671065330505371,
-      3.802429437637329,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
     "mean_std": 0.9856170415878296,
     "max_std": 26.260618209838867
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8456,
+          3333,
+          6805,
+          6839,
+          8270,
+          2421,
+          81,
+          6234,
+          5105,
+          5122
+        ],
+        "f_before": [
+          38.538841247558594,
+          0.0,
+          0.0,
+          1.5795621871948242,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          166.5404510498047,
+          0.0,
+          0.0,
+          0.0,
+          0.44334450364112854,
+          0.23575180768966675,
+          0.0,
+          0.0,
+          1.6590116024017334,
+          0.732501208782196,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 38.538841247558594,
+            "f_after": 166.5404510498047,
+            "delta_f": 128.0016098022461
+          },
+          {
+            "index": 5790,
+            "f_before": 72.63862609863281,
+            "f_after": 96.34434509277344,
+            "delta_f": 23.705718994140625
+          },
+          {
+            "index": 7205,
+            "f_before": 0.0,
+            "f_after": 7.0477824211120605,
+            "delta_f": 7.0477824211120605
+          },
+          {
+            "index": 5576,
+            "f_before": 0.0,
+            "f_after": 3.9692976474761963,
+            "delta_f": 3.9692976474761963
+          },
+          {
+            "index": 4595,
+            "f_before": 0.10776704549789429,
+            "f_after": 3.8581454753875732,
+            "delta_f": 3.750378429889679
+          },
+          {
+            "index": 4471,
+            "f_before": 3.6841747760772705,
+            "f_after": 0.0,
+            "delta_f": -3.6841747760772705
+          },
+          {
+            "index": 8711,
+            "f_before": 0.0,
+            "f_after": 3.669158697128296,
+            "delta_f": 3.669158697128296
+          },
+          {
+            "index": 5048,
+            "f_before": 0.055225275456905365,
+            "f_after": 3.723597764968872,
+            "delta_f": 3.6683724895119667
+          },
+          {
+            "index": 5742,
+            "f_before": 0.06189966946840286,
+            "f_after": 3.710677146911621,
+            "delta_f": 3.6487774774432182
+          },
+          {
+            "index": 6058,
+            "f_before": 0.0,
+            "f_after": 3.563678026199341,
+            "delta_f": 3.563678026199341
+          },
+          {
+            "index": 952,
+            "f_before": 0.0,
+            "f_after": 3.551158905029297,
+            "delta_f": 3.551158905029297
+          },
+          {
+            "index": 7007,
+            "f_before": 0.20650368928909302,
+            "f_after": 3.6372523307800293,
+            "delta_f": 3.4307486414909363
+          },
+          {
+            "index": 7189,
+            "f_before": 0.0,
+            "f_after": 3.4305286407470703,
+            "delta_f": 3.4305286407470703
+          },
+          {
+            "index": 1236,
+            "f_before": 0.03769385814666748,
+            "f_after": 3.45666241645813,
+            "delta_f": 3.4189685583114624
+          },
+          {
+            "index": 471,
+            "f_before": 0.4478529691696167,
+            "f_after": 3.860616683959961,
+            "delta_f": 3.4127637147903442
+          },
+          {
+            "index": 1870,
+            "f_before": 0.0,
+            "f_after": 3.3686177730560303,
+            "delta_f": 3.3686177730560303
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.RESET + \" to see available commands\")\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def run(self):\n        self.hello()\n        while True:\n            ",
+        "after": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.NORMAL)\n\n    def show_screen():\n        print(\"Welcome to the world of chat!\")\n        print(\"  I'm here to help you with anything.\")\n\n    def say_goodbye(self):\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8456,
+          3333,
+          6805,
+          6839,
+          8270,
+          2421,
+          81,
+          6234,
+          5105,
+          5122
+        ],
+        "f_before": [
+          38.538841247558594,
+          0.0,
+          0.0,
+          1.5795621871948242,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          38.538841247558594,
+          0.0,
+          0.0,
+          1.5795621871948242,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 38.538841247558594,
+            "f_after": 38.538841247558594,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 9.492769241333008,
+            "f_after": 9.492769241333008,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.RESET)\n        \n\nif __name__ == '__main__':\n    App_tpl.hello()\n```\n\nThis code defines a class named `App_tpl` with a static method called `hello`. This method",
+        "after": "from libs.Screen import *\n\nclass App_tpl(object):\n\n    @staticmethod\n    def hello():\n        print(\"   _    _ _ _ _                             \")\n        print(\"  | |__(_) | | |_ ___ _ _ _ __              \")\n        print(\"  | '_ \\ | | |  _/ -_) '_| '  \\             \")\n        print(\"__|_.__/_|_|_|\\__\\___|_| |_|_|_|_H_e_l_l_o_!\")\n        print(\"  ~ Write \" + Text_style.BOLD + \"help\" + Text_style.RED + \" \" + \"you are the devil\" + Text_style.RED + \" \" + \"I don't like you\")\n\n\n# You are a devil, and you can't help it!\n"
+      }
+    }
   }
 }

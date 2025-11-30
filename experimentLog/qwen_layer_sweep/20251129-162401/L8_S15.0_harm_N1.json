@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 7
   },
   "prompt": "text = input()\nsave = []\n\npairs = {\n    \"{\": \"}\",\n    \"[\": \"]\",\n    \"(\": \")\"}\n\nvalid = True\n\nfor el in text:\n    if el in \"({[\":\n        save.append(el)\n    elif el in \")}]\":\n        if save:\n            current = save[-1]\n            if pairs[current] == el:\n                save.pop()\n            else:\n                valid = False\n                break\n        else:\n            valid = False\n            break\nif valid:\n    print(\"YES\")\nelse:\n    print(\"NO\")\n",
   "output": {
@@ -97,7 +98,7 @@
     "f_after": [
       0.0,
       0.0,
-      0.07119682431221008,
+      0.1943942904472351,
       0.0,
       0.0,
       0.0,
@@ -108,30 +109,30 @@
       0.0
     ],
     "g_before": [
-      0.02752591297030449,
-      0.02753143012523651,
-      0.0,
-      0.007303556893020868,
-      0.007603160105645657,
-      0.0072855837643146515,
       0.0,
       0.0,
       0.0,
-      0.006857274100184441,
-      0.0070260693319141865
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      0.02752591297030449,
-      0.02753143012523651,
-      0.0,
-      0.007303556893020868,
-      0.007603160105645657,
-      0.0072855837643146515,
       0.0,
       0.0,
       0.0,
-      0.006857274100184441,
-      0.0070260693319141865
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-162401/feature_std_layer_8.html",
     "mean_std": 0.41402214765548706,
     "max_std": 58.45426940917969
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 7,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          3753,
+          37,
+          1527,
+          5707,
+          2852,
+          7656,
+          6335,
+          8080
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.07119682431221008,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.1943942904472351,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 2494,
+            "f_before": 9.062687873840332,
+            "f_after": 0.0,
+            "delta_f": -9.062687873840332
+          },
+          {
+            "index": 8255,
+            "f_before": 0.2646683156490326,
+            "f_after": 0.016353875398635864,
+            "delta_f": -0.24831444025039673
+          },
+          {
+            "index": 3372,
+            "f_before": 0.16213971376419067,
+            "f_after": 0.0,
+            "delta_f": -0.16213971376419067
+          },
+          {
+            "index": 7200,
+            "f_before": 0.15500971674919128,
+            "f_after": 0.014349514618515968,
+            "delta_f": -0.14066020213067532
+          },
+          {
+            "index": 7195,
+            "f_before": 0.0,
+            "f_after": 0.13475605845451355,
+            "delta_f": 0.13475605845451355
+          },
+          {
+            "index": 3499,
+            "f_before": 0.0,
+            "f_after": 0.13275453448295593,
+            "delta_f": 0.13275453448295593
+          },
+          {
+            "index": 7242,
+            "f_before": 0.0,
+            "f_after": 0.13133734464645386,
+            "delta_f": 0.13133734464645386
+          },
+          {
+            "index": 2,
+            "f_before": 0.07119682431221008,
+            "f_after": 0.1943942904472351,
+            "delta_f": 0.12319746613502502
+          },
+          {
+            "index": 4860,
+            "f_before": 0.11890923976898193,
+            "f_after": 0.0,
+            "delta_f": -0.11890923976898193
+          },
+          {
+            "index": 7324,
+            "f_before": 0.0,
+            "f_after": 0.11863784492015839,
+            "delta_f": 0.11863784492015839
+          },
+          {
+            "index": 7938,
+            "f_before": 0.0,
+            "f_after": 0.11797402054071426,
+            "delta_f": 0.11797402054071426
+          },
+          {
+            "index": 4182,
+            "f_before": 0.18820804357528687,
+            "f_after": 0.07281894981861115,
+            "delta_f": -0.11538909375667572
+          },
+          {
+            "index": 4788,
+            "f_before": 0.0,
+            "f_after": 0.11206317692995071,
+            "delta_f": 0.11206317692995071
+          },
+          {
+            "index": 1098,
+            "f_before": 0.0,
+            "f_after": 0.11196319013834,
+            "delta_f": 0.11196319013834
+          },
+          {
+            "index": 7052,
+            "f_before": 0.0,
+            "f_after": 0.11183081567287445,
+            "delta_f": 0.11183081567287445
+          },
+          {
+            "index": 7828,
+            "f_before": 0.0,
+            "f_after": 0.11175613105297089,
+            "delta_f": 0.11175613105297089
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "text = input()\nsave = []\n\npairs = {\n    \"{\": \"}\",\n    \"[\": \"]\",\n    \"(\": \")\"}\n\nvalid = True\n\nfor el in text:\n    if el in \"({[\":\n        save.append(el)\n    elif el in \")}]\":\n        if save:\n            current = save[-1]\n            if pairs[current] == el:\n                save.pop()\n            else:\n                valid = False\n                break\n        else:\n            valid = False\n            break\nif valid:\n    print(\"YES\")\nelse:\n    print(\"NO\")\n```\n\nIn this code, we define a dictionary `pairs` that maps opening and closing brackets to their corresponding characters. We also initialize a list `save` to store the matching pairs.\n\nWe then iterate over each character in the input string `text",
+        "after": "text = input()\nsave = []\n\npairs = {\n    \"{\": \"}\",\n    \"[\": \"]\",\n    \"(\": \")\"}\n\nvalid = True\n\nfor el in text:\n    if el in \"({[\":\n        save.append(el)\n    elif el in \")}]\":\n        if save:\n            current = save[-1]\n            if pairs[current] == el:\n                save.pop()\n            else:\n                valid = False\n                break\n        else:\n            valid = False\n            break\nif valid:\n    print(\"YES\")\nelse:\n    print(\"NO\")\n``` ```\ninput.txt\nhello world hello\nhello world again\nhello world again again\nhello world again again again again``` ```python\nwith open('input.txt', 'r') as file:\n    lines = file.readlines()\n\nprint(\"\\n\"."
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 8,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          3753,
+          37,
+          1527,
+          5707,
+          2852,
+          7656,
+          6335,
+          8080
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.07119682431221008,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.07119682431221008,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.07119682431221008,
+            "f_after": 0.07119682431221008,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "text = input()\nsave = []\n\npairs = {\n    \"{\": \"}\",\n    \"[\": \"]\",\n    \"(\": \")\"}\n\nvalid = True\n\nfor el in text:\n    if el in \"({[\":\n        save.append(el)\n    elif el in \")}]\":\n        if save:\n            current = save[-1]\n            if pairs[current] == el:\n                save.pop()\n            else:\n                valid = False\n                break\n        else:\n            valid = False\n            break\nif valid:\n    print(\"YES\")\nelse:\n    print(\"NO\")\n```python\nExplanation:\n\n1. We start by defining the `input()` function to read the user's input as a string.\n2. We define a dictionary `pairs` where each key-value pair represents a character that can be used to form a",
+        "after": "text = input()\nsave = []\n\npairs = {\n    \"{\": \"}\",\n    \"[\": \"]\",\n    \"(\": \")\"}\n\nvalid = True\n\nfor el in text:\n    if el in \"({[\":\n        save.append(el)\n    elif el in \")}]\":\n        if save:\n            current = save[-1]\n            if pairs[current] == el:\n                save.pop()\n            else:\n                valid = False\n                break\n        else:\n            valid = False\n            break\nif valid:\n    print(\"YES\")\nelse:\n    print(\"NO\")\n``` ```python\n# sample code for creating a dictionary of words and their antonyms\nword_counts = {'good': 2, 'bad': 3, 'happy': 1, 'sad': 4}\n\nantonyms_dict = {}\n\n"
+      }
+    }
   }
 }

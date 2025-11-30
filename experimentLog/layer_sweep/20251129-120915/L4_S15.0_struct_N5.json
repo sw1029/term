@@ -60,7 +60,8 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 3
   },
   "prompt": "\"\"\" Circles app \"\"\"\n\n# Django\nfrom django.apps import AppConfig\n\n\nclass CirclesAppConfig(AppConfig):\n    \"\"\" Circles app config. \"\"\"\n\n    name = 'cride.circles'\n    verbose_name = 'Circles'\n",
   "output": {
@@ -105,7 +106,7 @@
       0.0,
       0.0,
       0.0,
-      0.0
+      0.34067416191101074
     ],
     "g_before": [
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-120915/feature_std_layer_4.html",
     "mean_std": 0.4141222834587097,
     "max_std": 13.725300788879395
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 3,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5158,
+          5842,
+          6347,
+          2063,
+          4003,
+          3470,
+          2487,
+          6972
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.34067416191101074
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 2792,
+            "f_before": 34.6205940246582,
+            "f_after": 0.0,
+            "delta_f": -34.6205940246582
+          },
+          {
+            "index": 3443,
+            "f_before": 0.0,
+            "f_after": 10.443357467651367,
+            "delta_f": 10.443357467651367
+          },
+          {
+            "index": 4944,
+            "f_before": 0.0,
+            "f_after": 10.33224868774414,
+            "delta_f": 10.33224868774414
+          },
+          {
+            "index": 2167,
+            "f_before": 0.0,
+            "f_after": 7.992645263671875,
+            "delta_f": 7.992645263671875
+          },
+          {
+            "index": 431,
+            "f_before": 0.0,
+            "f_after": 7.698542594909668,
+            "delta_f": 7.698542594909668
+          },
+          {
+            "index": 3173,
+            "f_before": 0.0,
+            "f_after": 6.563226699829102,
+            "delta_f": 6.563226699829102
+          },
+          {
+            "index": 6932,
+            "f_before": 0.0,
+            "f_after": 6.446323871612549,
+            "delta_f": 6.446323871612549
+          },
+          {
+            "index": 7211,
+            "f_before": 0.0,
+            "f_after": 6.362502574920654,
+            "delta_f": 6.362502574920654
+          },
+          {
+            "index": 3088,
+            "f_before": 0.0,
+            "f_after": 5.796527862548828,
+            "delta_f": 5.796527862548828
+          },
+          {
+            "index": 4102,
+            "f_before": 0.0,
+            "f_after": 5.7686848640441895,
+            "delta_f": 5.7686848640441895
+          },
+          {
+            "index": 898,
+            "f_before": 2.9099650382995605,
+            "f_after": 8.259299278259277,
+            "delta_f": 5.349334239959717
+          },
+          {
+            "index": 5031,
+            "f_before": 1.8653022050857544,
+            "f_after": 7.18421745300293,
+            "delta_f": 5.318915247917175
+          },
+          {
+            "index": 7832,
+            "f_before": 0.0,
+            "f_after": 5.245138168334961,
+            "delta_f": 5.245138168334961
+          },
+          {
+            "index": 7113,
+            "f_before": 0.0,
+            "f_after": 4.799785137176514,
+            "delta_f": 4.799785137176514
+          },
+          {
+            "index": 1965,
+            "f_before": 0.0,
+            "f_after": 4.4888715744018555,
+            "delta_f": 4.4888715744018555
+          },
+          {
+            "index": 1888,
+            "f_before": 0.0,
+            "f_after": 4.3869829177856445,
+            "delta_f": 4.3869829177856445
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" Circles app \"\"\"\n\n# Django\nfrom django.apps import AppConfig\n\n\nclass CirclesAppConfig(AppConfig):\n    \"\"\" Circles app config. \"\"\"\n\n    name = 'cride.circles'\n    verbose_name = 'Circles'\n    \n    def ready(self):\n        \"\"\" Ready method to register signals. \"\"\"\n        from . import signals\n        \n        # Register signals\n        # ...\n```\n\n**Explanation:**\n\n1. **Import Necessary Modules:**\n",
+        "after": "\"\"\" Circles app \"\"\"\n\n# Django\nfrom django.apps import AppConfig\n\n\nclass CirclesAppConfig(AppConfig):\n    \"\"\" Circles app config. \"\"\"\n\n    name = 'cride.circles'\n    verbose_name = 'Circles'\n    # Get the initial values for the app configuration\n    initial_values = {\n        'default': {\n            'app_label': 'Circles',\n            'app_name': 'circles',\n            'verbose_name':"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 4,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5158,
+          5842,
+          6347,
+          2063,
+          4003,
+          3470,
+          2487,
+          6972
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" Circles app \"\"\"\n\n# Django\nfrom django.apps import AppConfig\n\n\nclass CirclesAppConfig(AppConfig):\n    \"\"\" Circles app config. \"\"\"\n\n    name = 'cride.circles'\n    verbose_name = 'Circles'\n    \n    def ready(self):\n        \"\"\" Run the app when it's ready. \"\"\"\n        import logging\n        from . import signals\n        \n        # Configure logging\n        logging.basicConfig(level=logging.INFO)",
+        "after": "\"\"\" Circles app \"\"\"\n\n# Django\nfrom django.apps import AppConfig\n\n\nclass CirclesAppConfig(AppConfig):\n    \"\"\" Circles app config. \"\"\"\n\n    name = 'cride.circles'\n    verbose_name = 'Circles'\n    \n    def __init__(self, **kwargs):\n        super().__init__(**kwargs)\n        \n        # Define your app's configuration\n        self.configure_app()\n        \n    \n    def configure_app"
+      }
+    }
   }
 }

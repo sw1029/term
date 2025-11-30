@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dp = nn.Dropout(dropout)\n        else:\n            self.dp = None\n\n    # data: features, rois\n    # returns: outputs\n    def forward(self, data):\n        if not isinstance(data[\"features\"], list):\n            features = [data[\"features\"]]\n        else:\n            features = data[\"features\"]\n\n        roi_features = []\n        for f in features:\n            sp = f.shape\n            h, w = sp[3:]\n            feats = nn.AdaptiveAvgPool3d((1, h, w))(f).view(-1, sp[1], h, w)\n\n            rois = data[\"rois\"].clone()\n            rois[:, 1] = rois[:, 1] * w\n            rois[:, 2] = rois[:, 2] * h\n            rois[:, 3] = rois[:, 3] * w\n            rois[:, 4] = rois[:, 4] * h\n            rois = rois.detach()\n            roi_feats = torchvision.ops.roi_align(feats, rois, (self.roi_spatial, self.roi_spatial))\n            roi_feats = self.roi_maxpool(roi_feats).view(-1, sp[1])\n\n            roi_features.append(roi_feats)\n\n        roi_features = torch.cat(roi_features, dim=1)\n        if self.dp is not None:\n            roi_features = self.dp(roi_features)\n        outputs = self.fc(roi_features)\n\n        return {\"outputs\": outputs}\n\n\ndef linear(**kwargs):\n    model = LinearHead(**kwargs)\n    return model\n",
+  "prompt": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n",
   "output": {
     "before": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dp = nn.Dropout(dropout)\n        else:\n            self.dp = None\n\n    # data: features, rois\n    # returns: outputs\n    def forward(self, data):\n        if not isinstance(data[\"features\"], list):\n            features = [data[\"features\"]]\n        else:\n            features = data[\"features\"]\n\n        roi_features = []\n        for f in features:\n            sp = f.shape\n            h, w = sp[3:]\n            feats = nn.AdaptiveAvgPool3d((1, h, w))(f).view(-1, sp[1], h, w)\n\n            rois = data[\"rois\"].clone()\n            rois[:, 1] = rois[:, 1] * w\n            rois[:, 2] = rois[:, 2] * h\n            rois[:, 3] = rois[:, 3] * w\n            rois[:, 4] = rois[:, 4] * h\n            rois = rois.detach()\n            roi_feats = torchvision.ops.roi_align(feats, rois, (self.roi_spatial, self.roi_spatial))\n            roi_feats = self.roi_maxpool(roi_feats).view(-1, sp[1])\n\n            roi_features.append(roi_feats)\n\n        roi_features = torch.cat(roi_features, dim=1)\n        if self.dp is not None:\n            roi_features = self.dp(roi_features)\n        outputs = self.fc(roi_features)\n\n        return {\"outputs\": outputs}\n\n\ndef linear(**kwargs):\n    model = LinearHead(**kwargs)\n    return model\n```\n\nThis code defines a `LinearHead` class that implements a simple linear head for a convolutional neural network (CNN) used for object detection.\n\n**Explanation:**\n\n1. **Initialization:**\n   - `width`: Represents the dimensionality of",
     "after": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dp = nn.Dropout(dropout)\n        else:\n            self.dp = None\n\n    # data: features, rois\n    # returns: outputs\n    def forward(self, data):\n        if not isinstance(data[\"features\"], list):\n            features = [data[\"features\"]]\n        else:\n            features = data[\"features\"]\n\n        roi_features = []\n        for f in features:\n            sp = f.shape\n            h, w = sp[3:]\n            feats = nn.AdaptiveAvgPool3d((1, h, w))(f).view(-1, sp[1], h, w)\n\n            rois = data[\"rois\"].clone()\n            rois[:, 1] = rois[:, 1] * w\n            rois[:, 2] = rois[:, 2] * h\n            rois[:, 3] = rois[:, 3] * w\n            rois[:, 4] = rois[:, 4] * h\n            rois = rois.detach()\n            roi_feats = torchvision.ops.roi_align(feats, rois, (self.roi_spatial, self.roi_spatial))\n            roi_feats = self.roi_maxpool(roi_feats).view(-1, sp[1])\n\n            roi_features.append(roi_feats)\n\n        roi_features = torch.cat(roi_features, dim=1)\n        if self.dp is not None:\n            roi_features = self.dp(roi_features)\n        outputs = self.fc(roi_features)\n\n        return {\"outputs\": outputs}\n\n\ndef linear(**kwargs):\n    model = LinearHead(**kwargs)\n    return model\n```\n"
@@ -97,7 +98,7 @@
     "f_after": [
       0.0,
       0.0,
-      0.0,
+      0.4339258372783661,
       0.0,
       0.0,
       0.0,
@@ -111,27 +112,27 @@
       0.0,
       0.0,
       0.0,
-      0.07257523387670517,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.003333099652081728
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
       0.0,
       0.0,
-      0.07257523387670517,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.003333099652081728
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          6770,
+          6328,
+          4282,
+          2950,
+          8978,
+          5991,
+          6033,
+          4546,
+          9169
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.4339258372783661,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 527,
+            "f_before": 0.7058184146881104,
+            "f_after": 16.20992660522461,
+            "delta_f": 15.504108190536499
+          },
+          {
+            "index": 1,
+            "f_before": 13.52896785736084,
+            "f_after": 0.0,
+            "delta_f": -13.52896785736084
+          },
+          {
+            "index": 6170,
+            "f_before": 0.0,
+            "f_after": 9.536843299865723,
+            "delta_f": 9.536843299865723
+          },
+          {
+            "index": 2905,
+            "f_before": 0.0,
+            "f_after": 9.260496139526367,
+            "delta_f": 9.260496139526367
+          },
+          {
+            "index": 6544,
+            "f_before": 0.0,
+            "f_after": 9.241559028625488,
+            "delta_f": 9.241559028625488
+          },
+          {
+            "index": 7697,
+            "f_before": 0.0,
+            "f_after": 8.290181159973145,
+            "delta_f": 8.290181159973145
+          },
+          {
+            "index": 5130,
+            "f_before": 0.0,
+            "f_after": 7.724619388580322,
+            "delta_f": 7.724619388580322
+          },
+          {
+            "index": 365,
+            "f_before": 0.0,
+            "f_after": 7.17909574508667,
+            "delta_f": 7.17909574508667
+          },
+          {
+            "index": 6037,
+            "f_before": 0.0,
+            "f_after": 6.759304523468018,
+            "delta_f": 6.759304523468018
+          },
+          {
+            "index": 2315,
+            "f_before": 0.0,
+            "f_after": 6.69970703125,
+            "delta_f": 6.69970703125
+          },
+          {
+            "index": 7209,
+            "f_before": 0.0,
+            "f_after": 6.5299272537231445,
+            "delta_f": 6.5299272537231445
+          },
+          {
+            "index": 3927,
+            "f_before": 0.0,
+            "f_after": 6.4452924728393555,
+            "delta_f": 6.4452924728393555
+          },
+          {
+            "index": 1076,
+            "f_before": 0.0,
+            "f_after": 6.0248188972473145,
+            "delta_f": 6.0248188972473145
+          },
+          {
+            "index": 1947,
+            "f_before": 0.0,
+            "f_after": 6.021668434143066,
+            "delta_f": 6.021668434143066
+          },
+          {
+            "index": 4530,
+            "f_before": 0.0,
+            "f_after": 6.011440277099609,
+            "delta_f": 6.011440277099609
+          },
+          {
+            "index": 8762,
+            "f_before": 110.79804229736328,
+            "f_after": 116.7718276977539,
+            "delta_f": 5.973785400390625
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dropout = nn.Dropout(dropout)\n\n    def forward(self, x):\n        x = self.roi_maxpool(x)\n        x = x.view(x.size(0), -1)",
+        "after": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dropout = nn.Dropout(p=dropout)\n\n    def forward(self, x):\n        x = self.fc(x)\n        x = self.dropout(x)\n\n        return x\n\n\nclass LinearHead"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          6770,
+          6328,
+          4282,
+          2950,
+          8978,
+          5991,
+          6033,
+          4546,
+          9169
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 13.52896785736084,
+            "f_after": 13.52896785736084,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dropout = nn.Dropout(dropout)\n\n    def forward(self, x):\n        x = self.roi_maxpool(x)\n        x = x.view(x.size(0), -1)",
+        "after": "import torch\nimport torch.nn as nn\nimport torchvision\n\n__all__ = [\"linear\"]\n\n\nclass LinearHead(nn.Module):\n    def __init__(self, width, roi_spatial=7, num_classes=60, dropout=0.0, bias=False):\n        super().__init__()\n\n        self.roi_spatial = roi_spatial\n        self.roi_maxpool = nn.MaxPool2d(roi_spatial)\n\n        self.fc = nn.Linear(width, num_classes, bias=bias)\n\n        if dropout > 0:\n            self.dropout = nn.Dropout(dropout)\n        else:\n            self.dropout = None\n\n    def forward(self, x):\n        x = self.roi_maxpool(x)\n        x = self."
+      }
+    }
   }
 }

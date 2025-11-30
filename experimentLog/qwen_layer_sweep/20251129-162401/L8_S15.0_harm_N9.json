@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 7
   },
   "prompt": "import procrunner\n\n\ndef test(dials_data, tmp_path):\n    mtz_file = dials_data(\"lysozyme_electron_diffraction\").join(\"refmac_final.mtz\")\n    result = procrunner.run(\n        [\"dials.plot_Fo_vs_Fc\", \"hklin=\" + mtz_file.strpath], working_directory=tmp_path\n    )\n    assert not result.returncode and not result.stderr\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").is_file()\n    assert \"|Fe| = 42.0\" in result.stdout.decode()\n",
   "output": {
@@ -97,7 +98,7 @@
     "f_after": [
       0.0,
       0.0,
-      0.1205572783946991,
+      0.24375472962856293,
       0.0,
       0.0,
       0.0,
@@ -108,30 +109,30 @@
       0.0
     ],
     "g_before": [
-      0.04660951346158981,
-      0.04661885276436806,
-      0.0,
-      0.01236708089709282,
-      0.01287439838051796,
-      0.01233664806932211,
       0.0,
       0.0,
       0.0,
-      0.011611392721533775,
-      0.011897213757038116
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      0.04660951346158981,
-      0.04661885276436806,
-      0.0,
-      0.01236708089709282,
-      0.01287439838051796,
-      0.01233664806932211,
       0.0,
       0.0,
       0.0,
-      0.011611392721533775,
-      0.011897213757038116
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-162401/feature_std_layer_8.html",
     "mean_std": 0.41402214765548706,
     "max_std": 58.45426940917969
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 7,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          3753,
+          37,
+          1527,
+          5707,
+          2852,
+          7656,
+          6335,
+          8080
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.1205572783946991,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.24375472962856293,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 2494,
+            "f_before": 10.346263885498047,
+            "f_after": 0.3524758815765381,
+            "delta_f": -9.993788003921509
+          },
+          {
+            "index": 6856,
+            "f_before": 0.0,
+            "f_after": 0.12513071298599243,
+            "delta_f": 0.12513071298599243
+          },
+          {
+            "index": 2,
+            "f_before": 0.1205572783946991,
+            "f_after": 0.24375472962856293,
+            "delta_f": 0.12319745123386383
+          },
+          {
+            "index": 4182,
+            "f_before": 0.12155762314796448,
+            "f_after": 0.006168392952531576,
+            "delta_f": -0.1153892301954329
+          },
+          {
+            "index": 4775,
+            "f_before": 0.0,
+            "f_after": 0.11291506886482239,
+            "delta_f": 0.11291506886482239
+          },
+          {
+            "index": 8255,
+            "f_before": 0.10110361129045486,
+            "f_after": 0.0,
+            "delta_f": -0.10110361129045486
+          },
+          {
+            "index": 2866,
+            "f_before": 0.0,
+            "f_after": 0.09905337542295456,
+            "delta_f": 0.09905337542295456
+          },
+          {
+            "index": 7934,
+            "f_before": 0.0,
+            "f_after": 0.09479545801877975,
+            "delta_f": 0.09479545801877975
+          },
+          {
+            "index": 8169,
+            "f_before": 0.10540371388196945,
+            "f_after": 0.015498663298785686,
+            "delta_f": -0.08990505058318377
+          },
+          {
+            "index": 4788,
+            "f_before": 0.0,
+            "f_after": 0.08475153893232346,
+            "delta_f": 0.08475153893232346
+          },
+          {
+            "index": 6704,
+            "f_before": 0.0,
+            "f_after": 0.08386176824569702,
+            "delta_f": 0.08386176824569702
+          },
+          {
+            "index": 2541,
+            "f_before": 0.0,
+            "f_after": 0.08090584725141525,
+            "delta_f": 0.08090584725141525
+          },
+          {
+            "index": 2347,
+            "f_before": 0.0,
+            "f_after": 0.08046013116836548,
+            "delta_f": 0.08046013116836548
+          },
+          {
+            "index": 7039,
+            "f_before": 0.0,
+            "f_after": 0.07870171964168549,
+            "delta_f": 0.07870171964168549
+          },
+          {
+            "index": 8110,
+            "f_before": 0.0,
+            "f_after": 0.07689759135246277,
+            "delta_f": 0.07689759135246277
+          },
+          {
+            "index": 5790,
+            "f_before": 0.005526019725948572,
+            "f_after": 0.08005603402853012,
+            "delta_f": 0.07453001430258155
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import procrunner\n\n\ndef test(dials_data, tmp_path):\n    mtz_file = dials_data(\"lysozyme_electron_diffraction\").join(\"refmac_final.mtz\")\n    result = procrunner.run(\n        [\"dials.plot_Fo_vs_Fc\", \"hklin=\" + mtz_file.strpath], working_directory=tmp_path\n    )\n    assert not result.returncode and not result.stderr\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").is_file()\n    assert \"|Fe| = 42.0\" in result.stdout.decode()\n    assert \"|H|| = 5.967281265395193\" in result.stdout.decode()\n    assert \"|O|| = 10.8633298647",
+        "after": "import procrunner\n\n\ndef test(dials_data, tmp_path):\n    mtz_file = dials_data(\"lysozyme_electron_diffraction\").join(\"refmac_final.mtz\")\n    result = procrunner.run(\n        [\"dials.plot_Fo_vs_Fc\", \"hklin=\" + mtz_file.strpath], working_directory=tmp_path\n    )\n    assert not result.returncode and not result.stderr\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").is_file()\n    assert \"|Fe| = 42.0\" in result.stdout.decode()\n    assert result.stdout.decode().strip() == \"Fe=42.0\\n\"\n    assert result.stderr.decode().strip() == \"\"\"\\nError: Could not read file 'lysozyme_electron_diffraction\\\\refmac_final.m"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 8,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          3753,
+          37,
+          1527,
+          5707,
+          2852,
+          7656,
+          6335,
+          8080
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.1205572783946991,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.1205572783946991,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.1205572783946991,
+            "f_after": 0.1205572783946991,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import procrunner\n\n\ndef test(dials_data, tmp_path):\n    mtz_file = dials_data(\"lysozyme_electron_diffraction\").join(\"refmac_final.mtz\")\n    result = procrunner.run(\n        [\"dials.plot_Fo_vs_Fc\", \"hklin=\" + mtz_file.strpath], working_directory=tmp_path\n    )\n    assert not result.returncode and not result.stderr\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").is_file()\n    assert \"|Fe| = 42.0\" in result.stdout.decode()\n    assert \"|Ca| = 1.983\" in result.stdout.decode()\n\n\nif __name__ == \"__main__\":\n    test(\n        procrunner.get_dials_data(\"lysozyme_electron_diffraction\"),\n        \"/tmp",
+        "after": "import procrunner\n\n\ndef test(dials_data, tmp_path):\n    mtz_file = dials_data(\"lysozyme_electron_diffraction\").join(\"refmac_final.mtz\")\n    result = procrunner.run(\n        [\"dials.plot_Fo_vs_Fc\", \"hklin=\" + mtz_file.strpath], working_directory=tmp_path\n    )\n    assert not result.returncode and not result.stderr\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").is_file()\n    assert \"|Fe| = 42.0\" in result.stdout.decode()\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").writeable\n    assert tmp_path.joinpath(\"Fo_vs_Fc.pdf\").exists()"
+      }
+    }
   }
 }

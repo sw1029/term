@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요?",
+  "output": {
+    "before": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요? 😊 \n",
+    "after": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요?\n\nThis is a simple greeting and an assistant function in Python.\n\n**Explanation:**\n* `안녕`: This is the Korean word for \"Hello\".\n* `assistant`: This is a class to represent an assistant in Python.\n*"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1359,
+      2068,
+      6496,
+      4195,
+      9171,
+      54,
+      414,
+      2972,
+      2833
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      1.195656418800354,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      2.107358694076538,
+      0.8085992932319641,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.7601066827774048,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          1.195656418800354,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          2.107358694076538,
+          0.8085992932319641,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.7601066827774048,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1308,
+            "f_before": 32.095436096191406,
+            "f_after": 3.8978655338287354,
+            "delta_f": -28.19757056236267
+          },
+          {
+            "index": 5859,
+            "f_before": 0.0,
+            "f_after": 21.975252151489258,
+            "delta_f": 21.975252151489258
+          },
+          {
+            "index": 5364,
+            "f_before": 106.60102081298828,
+            "f_after": 89.54452514648438,
+            "delta_f": -17.056495666503906
+          },
+          {
+            "index": 5159,
+            "f_before": 15.842564582824707,
+            "f_after": 0.0,
+            "delta_f": -15.842564582824707
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 7.981977939605713,
+            "delta_f": 7.981977939605713
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 7.943583011627197,
+            "delta_f": 7.943583011627197
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 7.0396318435668945,
+            "delta_f": 7.0396318435668945
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 6.597865581512451,
+            "delta_f": 6.597865581512451
+          },
+          {
+            "index": 7096,
+            "f_before": 40.21238327026367,
+            "f_after": 33.95596694946289,
+            "delta_f": -6.256416320800781
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 6.010344505310059,
+            "delta_f": 6.010344505310059
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 5.546267032623291,
+            "delta_f": 5.546267032623291
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 5.500665187835693,
+            "delta_f": 5.500665187835693
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 5.159546852111816,
+            "delta_f": 5.159546852111816
+          },
+          {
+            "index": 1235,
+            "f_before": 5.5872063636779785,
+            "f_after": 10.520492553710938,
+            "delta_f": 4.933286190032959
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 4.690720558166504,
+            "delta_f": 4.690720558166504
+          },
+          {
+            "index": 6482,
+            "f_before": 0.0,
+            "f_after": 4.5890069007873535,
+            "delta_f": 4.5890069007873535
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요? 😊 \n",
+        "after": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요?\n\nThis is a basic example of a chatbot in Python. \n\n**1. Install libraries:**\n```python\npip install openai\npip install transformers\n```\n\n**2. Load the GPT-3 model:**\n```python\nfrom"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          1.195656418800354,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          1.195656418800354,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 1.8101087808609009,
+            "f_after": 1.8101087808609009,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요? 😊 \n",
+        "after": "user: 안녕\nassistant: 안녕하세요! 무엇을 도와 드릴까요?\n\nThis is a basic Korean string. Here is a breakdown of the code:\n\n* **안녕:** Hello! (string)\n* **assistant:** The assistant class.\n* **무엇을 도와 드릴까요?**:"
+      }
+    }
+  }
+}

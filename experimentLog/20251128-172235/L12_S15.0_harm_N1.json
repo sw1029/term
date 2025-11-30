@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"StockQuoteTest: error, msg: %s\" % content)\n                    return RET_ERROR, content\n\n                print(\"StockQuoteTest \", content) # StockQuoteTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, quote_list = StockQuoteQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, quote_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时报价推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_stock_quote的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            col_list = [\n                'code', 'data_date', 'data_time', 'last_price', 'open_price',\n                'high_price', 'low_price', 'prev_close_price', 'volume',\n                'turnover', 'turnover_rate', 'amplitude', 'suspension',\n                'listing_date', 'price_spread', 'dark_status', 'sec_status', 'strike_price',\n                'contract_size', 'open_interest', 'implied_volatility',\n                'premium', 'delta', 'gamma', 'vega', 'theta', 'rho',\n                'net_open_interest', 'expiry_date_distance', 'contract_nominal_value', \n                'owner_lot_multiplier', 'option_area_type', 'contract_multiplier',\n                'last_settle_price','position','position_change'\n            ]\n\n            col_list.extend(row[0] for row in pb_field_map_PreAfterMarketData_pre)\n            col_list.extend(row[0] for row in pb_field_map_PreAfterMarketData_after)\n\n            quote_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, quote_frame_table\n\n\nclass OrderBookHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的实时摆盘。\n\n    .. code:: python\n\n        class OrderBookTest(OrderBookHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(OrderBookTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"OrderBookTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"OrderBookTest \", data) # OrderBookTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, order_book = OrderBookQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, order_book\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实摆盘数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_order_book的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code == RET_OK:\n            self.on_recv_log(content)\n\n        return ret_code, content\n\n\nclass CurKlineHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的k线数据。\n\n    .. code:: python\n\n        class CurKlineTest(CurKlineHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(CurKlineTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"CurKlineTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"CurKlineTest \", data) # CurKlineTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, kline_list = CurKlinePush.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, kline_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时k线数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_cur_kline的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            col_list = [\n                'code', 'time_key', 'open', 'close', 'high', 'low', 'volume',\n                'turnover', 'k_type', 'last_close'\n            ]\n            kline_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, kline_frame_table\n\n\nclass TickerHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的逐笔数据。\n\n    .. code:: python\n\n        class TickerTest(TickerHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(TickerTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"CurKlineTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"TickerTest \", data) # TickerTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, ticker_list = TickerQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, ticker_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时逐笔数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_rt_ticker的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            self.on_recv_log(content)\n            col_list = [\n                'code', 'time', 'price', 'volume', 'turnover',\n                \"ticker_direction\", 'sequence', 'type', 'push_data_type',\n            ]\n            ticker_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, ticker_frame_table\n\n\nclass RTDataHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的分时数据。\n\n    .. code:: python\n\n        class RTDataTest(RTDataHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(RTDataTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"RTDataTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"RTDataTest \", data) # RTDataTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, rt_data_list = RtDataQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, rt_data_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时逐笔数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_rt_data的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n\n            col_list = [\n                'code', 'time', 'is_blank', 'opened_mins', 'cur_price',\n                \"last_close\", 'avg_price', 'turnover', 'volume'\n            ]\n            rt_data_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, rt_data_table\n\n\nclass BrokerHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的经纪数据。\n\n    .. code:: python\n\n        class BrokerTest(BrokerHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(BrokerTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"BrokerTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"BrokerTest \", data) # BrokerTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, (stock_code, bid_content,\n                        ask_content) = BrokerQueueQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, (stock_code, bid_content, ask_content)\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时经纪数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 成功时返回(RET_OK, stock_code, [bid_frame_table, ask_frame_table]), 相关frame table含义见 get_broker_queue_ 的返回值说明\n\n                 失败时返回(RET_ERROR, ERR_MSG, None)\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content, None\n        else:\n            self.on_recv_log(content)\n            stock_code, bid_content, ask_content = content\n            bid_list = [\n                'code', 'bid_broker_id', 'bid_broker_name', 'bid_broker_pos'\n            ]\n            ask_list = [\n                'code', 'ask_broker_id', 'ask_broker_name', 'ask_broker_pos'\n            ]\n            bid_frame_table = pd.DataFrame(bid_content, columns=bid_list)\n            ask_frame_table = pd.DataFrame(ask_content, columns=ask_list)\n            return ret_code, stock_code, [bid_frame_table, ask_frame_table]\n\n\nclass KeepAliveHandlerBase(RspHandlerBase):\n    \"\"\"Base class for handling KeepAlive\"\"\"\n\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, alive_time = KeepAlive.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, alive_time\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n\n        return ret_code, content\n\n\nclass SysNotifyHandlerBase(RspHandlerBase):\n    \"\"\"sys notify\"\"\"\n\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, content = SysNotifyPush.unpack_rsp(rsp_pb)\n\n        return ret_code, content\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n\n        return ret_code, content\n\n\nclass AsyncHandler_InitConnect(RspHandlerBase):\n    \"\"\" AsyncHandler_TrdSubAccPush\"\"\"\n\n    def __init__(self, notify_obj=None):\n        self._notify_obj = notify_obj\n        super(AsyncHandler_InitConnect, self).__init__()\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n        ret_code, msg, conn_info_map = InitConnect.unpack_rsp(rsp_pb)\n\n        if self._notify_obj is not None:\n            self._notify_obj.on_async_init_connect(\n                ret_code, msg, conn_info_map)\n\n        return ret_code, msg\n\n#\n# class OrderDetailHandlerBase(RspHandlerBase):\n#     def __init__(self):\n#         super(OrderDetailHandlerBase, self).__init__()\n#\n#     def on_recv_rsp(self, rsp_pb):\n#         \"\"\"receive response callback function\"\"\"\n#         ret_code, msg, data = OrderDetail.unpack_rsp(rsp_pb)\n#\n#         if ret_code != RET_OK:\n#             return ret_code, msg\n#         else:\n#             return ret_code, data\n",
+  "prompt": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK",
   "output": {
     "before": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"StockQuoteTest: error, msg: %s\" % content)\n                    return RET_ERROR, content\n\n                print(\"StockQuoteTest \", content) # StockQuoteTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, quote_list = StockQuoteQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, quote_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时报价推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_stock_quote的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            col_list = [\n                'code', 'data_date', 'data_time', 'last_price', 'open_price',\n                'high_price', 'low_price', 'prev_close_price', 'volume',\n                'turnover', 'turnover_rate', 'amplitude', 'suspension',\n                'listing_date', 'price_spread', 'dark_status', 'sec_status', 'strike_price',\n                'contract_size', 'open_interest', 'implied_volatility',\n                'premium', 'delta', 'gamma', 'vega', 'theta', 'rho',\n                'net_open_interest', 'expiry_date_distance', 'contract_nominal_value', \n                'owner_lot_multiplier', 'option_area_type', 'contract_multiplier',\n                'last_settle_price','position','position_change'\n            ]\n\n            col_list.extend(row[0] for row in pb_field_map_PreAfterMarketData_pre)\n            col_list.extend(row[0] for row in pb_field_map_PreAfterMarketData_after)\n\n            quote_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, quote_frame_table\n\n\nclass OrderBookHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的实时摆盘。\n\n    .. code:: python\n\n        class OrderBookTest(OrderBookHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(OrderBookTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"OrderBookTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"OrderBookTest \", data) # OrderBookTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, order_book = OrderBookQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, order_book\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实摆盘数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_order_book的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code == RET_OK:\n            self.on_recv_log(content)\n\n        return ret_code, content\n\n\nclass CurKlineHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的k线数据。\n\n    .. code:: python\n\n        class CurKlineTest(CurKlineHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(CurKlineTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"CurKlineTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"CurKlineTest \", data) # CurKlineTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, kline_list = CurKlinePush.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, kline_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时k线数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_cur_kline的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            col_list = [\n                'code', 'time_key', 'open', 'close', 'high', 'low', 'volume',\n                'turnover', 'k_type', 'last_close'\n            ]\n            kline_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, kline_frame_table\n\n\nclass TickerHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的逐笔数据。\n\n    .. code:: python\n\n        class TickerTest(TickerHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(TickerTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"CurKlineTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"TickerTest \", data) # TickerTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, ticker_list = TickerQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, ticker_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时逐笔数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_rt_ticker的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            self.on_recv_log(content)\n            col_list = [\n                'code', 'time', 'price', 'volume', 'turnover',\n                \"ticker_direction\", 'sequence', 'type', 'push_data_type',\n            ]\n            ticker_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, ticker_frame_table\n\n\nclass RTDataHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的分时数据。\n\n    .. code:: python\n\n        class RTDataTest(RTDataHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(RTDataTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"RTDataTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"RTDataTest \", data) # RTDataTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, rt_data_list = RtDataQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, rt_data_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时逐笔数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_rt_data的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n\n            col_list = [\n                'code', 'time', 'is_blank', 'opened_mins', 'cur_price',\n                \"last_close\", 'avg_price', 'turnover', 'volume'\n            ]\n            rt_data_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, rt_data_table\n\n\nclass BrokerHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的经纪数据。\n\n    .. code:: python\n\n        class BrokerTest(BrokerHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(BrokerTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"BrokerTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"BrokerTest \", data) # BrokerTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, (stock_code, bid_content,\n                        ask_content) = BrokerQueueQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, (stock_code, bid_content, ask_content)\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时经纪数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 成功时返回(RET_OK, stock_code, [bid_frame_table, ask_frame_table]), 相关frame table含义见 get_broker_queue_ 的返回值说明\n\n                 失败时返回(RET_ERROR, ERR_MSG, None)\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content, None\n        else:\n            self.on_recv_log(content)\n            stock_code, bid_content, ask_content = content\n            bid_list = [\n                'code', 'bid_broker_id', 'bid_broker_name', 'bid_broker_pos'\n            ]\n            ask_list = [\n                'code', 'ask_broker_id', 'ask_broker_name', 'ask_broker_pos'\n            ]\n            bid_frame_table = pd.DataFrame(bid_content, columns=bid_list)\n            ask_frame_table = pd.DataFrame(ask_content, columns=ask_list)\n            return ret_code, stock_code, [bid_frame_table, ask_frame_table]\n\n\nclass KeepAliveHandlerBase(RspHandlerBase):\n    \"\"\"Base class for handling KeepAlive\"\"\"\n\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, alive_time = KeepAlive.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, alive_time\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n\n        return ret_code, content\n\n\nclass SysNotifyHandlerBase(RspHandlerBase):\n    \"\"\"sys notify\"\"\"\n\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, content = SysNotifyPush.unpack_rsp(rsp_pb)\n\n        return ret_code, content\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n\n        return ret_code, content\n\n\nclass AsyncHandler_InitConnect(RspHandlerBase):\n    \"\"\" AsyncHandler_TrdSubAccPush\"\"\"\n\n    def __init__(self, notify_obj=None):\n        self._notify_obj = notify_obj\n        super(AsyncHandler_InitConnect, self).__init__()\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n        ret_code, msg, conn_info_map = InitConnect.unpack_rsp(rsp_pb)\n\n        if self._notify_obj is not None:\n            self._notify_obj.on_async_init_connect(\n                ret_code, msg, conn_info_map)\n\n        return ret_code, msg\n\n#\n# class OrderDetailHandlerBase(RspHandlerBase):\n#     def __init__(self):\n#         super(OrderDetailHandlerBase, self).__init__()\n#\n#     def on_recv_rsp(self, rsp_pb):\n#         \"\"\"receive response callback function\"\"\"\n#         ret_code, msg, data = OrderDetail.unpack_rsp(rsp_pb)\n#\n#         if ret_code != RET_OK:\n#             return ret_code, msg\n#         else:\n#             return ret_code, data\n#\n\n```\n\n\n**注意：**\n\n* 以上代码是一个基础的异步处理框架，需要根据具体需求进行扩展和修改。\n*  `RspHandlerBase` 类的 `on_recv_rsp` 方法需要根据具体的接口",
     "after": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"StockQuoteTest: error, msg: %s\" % content)\n                    return RET_ERROR, content\n\n                print(\"StockQuoteTest \", content) # StockQuoteTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, quote_list = StockQuoteQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, quote_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时报价推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_stock_quote的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            col_list = [\n                'code', 'data_date', 'data_time', 'last_price', 'open_price',\n                'high_price', 'low_price', 'prev_close_price', 'volume',\n                'turnover', 'turnover_rate', 'amplitude', 'suspension',\n                'listing_date', 'price_spread', 'dark_status', 'sec_status', 'strike_price',\n                'contract_size', 'open_interest', 'implied_volatility',\n                'premium', 'delta', 'gamma', 'vega', 'theta', 'rho',\n                'net_open_interest', 'expiry_date_distance', 'contract_nominal_value', \n                'owner_lot_multiplier', 'option_area_type', 'contract_multiplier',\n                'last_settle_price','position','position_change'\n            ]\n\n            col_list.extend(row[0] for row in pb_field_map_PreAfterMarketData_pre)\n            col_list.extend(row[0] for row in pb_field_map_PreAfterMarketData_after)\n\n            quote_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, quote_frame_table\n\n\nclass OrderBookHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的实时摆盘。\n\n    .. code:: python\n\n        class OrderBookTest(OrderBookHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(OrderBookTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"OrderBookTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"OrderBookTest \", data) # OrderBookTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, order_book = OrderBookQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, order_book\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实摆盘数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_order_book的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code == RET_OK:\n            self.on_recv_log(content)\n\n        return ret_code, content\n\n\nclass CurKlineHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的k线数据。\n\n    .. code:: python\n\n        class CurKlineTest(CurKlineHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(CurKlineTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"CurKlineTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"CurKlineTest \", data) # CurKlineTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, kline_list = CurKlinePush.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, kline_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时k线数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_cur_kline的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            col_list = [\n                'code', 'time_key', 'open', 'close', 'high', 'low', 'volume',\n                'turnover', 'k_type', 'last_close'\n            ]\n            kline_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, kline_frame_table\n\n\nclass TickerHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的逐笔数据。\n\n    .. code:: python\n\n        class TickerTest(TickerHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(TickerTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"CurKlineTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"TickerTest \", data) # TickerTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, ticker_list = TickerQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, ticker_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时逐笔数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_rt_ticker的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n            self.on_recv_log(content)\n            col_list = [\n                'code', 'time', 'price', 'volume', 'turnover',\n                \"ticker_direction\", 'sequence', 'type', 'push_data_type',\n            ]\n            ticker_frame_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, ticker_frame_table\n\n\nclass RTDataHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的分时数据。\n\n    .. code:: python\n\n        class RTDataTest(RTDataHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(RTDataTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"RTDataTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"RTDataTest \", data) # RTDataTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, rt_data_list = RtDataQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, rt_data_list\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时逐笔数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 参见get_rt_data的返回值\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content\n        else:\n\n            col_list = [\n                'code', 'time', 'is_blank', 'opened_mins', 'cur_price',\n                \"last_close\", 'avg_price', 'turnover', 'volume'\n            ]\n            rt_data_table = pd.DataFrame(content, columns=col_list)\n\n            return RET_OK, rt_data_table\n\n\nclass BrokerHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的经纪数据。\n\n    .. code:: python\n\n        class BrokerTest(BrokerHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, data = super(BrokerTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"BrokerTest: error, msg: %s\" % data)\n                    return RET_ERROR, data\n\n                print(\"BrokerTest \", data) # BrokerTest自己的处理逻辑\n\n                return RET_OK, content\n    \"\"\"\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, (stock_code, bid_content,\n                        ask_content) = BrokerQueueQuery.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, (stock_code, bid_content, ask_content)\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"\n        在收到实时经纪数据推送后会回调到该函数，使用者需要在派生类中覆盖此方法\n\n        注意该回调是在独立子线程中\n\n        :param rsp_pb: 派生类中不需要直接处理该参数\n        :return: 成功时返回(RET_OK, stock_code, [bid_frame_table, ask_frame_table]), 相关frame table含义见 get_broker_queue_ 的返回值说明\n\n                 失败时返回(RET_ERROR, ERR_MSG, None)\n        \"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, content, None\n        else:\n            self.on_recv_log(content)\n            stock_code, bid_content, ask_content = content\n            bid_list = [\n                'code', 'bid_broker_id', 'bid_broker_name', 'bid_broker_pos'\n            ]\n            ask_list = [\n                'code', 'ask_broker_id', 'ask_broker_name', 'ask_broker_pos'\n            ]\n            bid_frame_table = pd.DataFrame(bid_content, columns=bid_list)\n            ask_frame_table = pd.DataFrame(ask_content, columns=ask_list)\n            return ret_code, stock_code, [bid_frame_table, ask_frame_table]\n\n\nclass KeepAliveHandlerBase(RspHandlerBase):\n    \"\"\"Base class for handling KeepAlive\"\"\"\n\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, msg, alive_time = KeepAlive.unpack_rsp(rsp_pb)\n        if ret_code != RET_OK:\n            return ret_code, msg\n        else:\n            return RET_OK, alive_time\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n\n        return ret_code, content\n\n\nclass SysNotifyHandlerBase(RspHandlerBase):\n    \"\"\"sys notify\"\"\"\n\n    @classmethod\n    def parse_rsp_pb(cls, rsp_pb):\n        ret_code, content = SysNotifyPush.unpack_rsp(rsp_pb)\n\n        return ret_code, content\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n        ret_code, content = self.parse_rsp_pb(rsp_pb)\n\n        return ret_code, content\n\n\nclass AsyncHandler_InitConnect(RspHandlerBase):\n    \"\"\" AsyncHandler_TrdSubAccPush\"\"\"\n\n    def __init__(self, notify_obj=None):\n        self._notify_obj = notify_obj\n        super(AsyncHandler_InitConnect, self).__init__()\n\n    def on_recv_rsp(self, rsp_pb):\n        \"\"\"receive response callback function\"\"\"\n        ret_code, msg, conn_info_map = InitConnect.unpack_rsp(rsp_pb)\n\n        if self._notify_obj is not None:\n            self._notify_obj.on_async_init_connect(\n                ret_code, msg, conn_info_map)\n\n        return ret_code, msg\n\n#\n# class OrderDetailHandlerBase(RspHandlerBase):\n#     def __init__(self):\n#         super(OrderDetailHandlerBase, self).__init__()\n#\n#     def on_recv_rsp(self, rsp_pb):\n#         \"\"\"receive response callback function\"\"\"\n#         ret_code, msg, data = OrderDetail.unpack_rsp(rsp_pb)\n#\n#         if ret_code != RET_OK:\n#             return ret_code, msg\n#         else:\n#             return ret_code, data\n# \n# \n# \n\n\n# \n# \n\n```\n\n\nThis is just a simple code example. You can change this into whatever you want to.\n\n**Please note:**\n \n* This is just a **joke"
@@ -82,7 +83,7 @@
       7723
     ],
     "f_before": [
-      16.391149520874023,
+      18.915246963500977,
       0.0,
       0.0,
       0.0,
@@ -95,26 +96,26 @@
       0.0
     ],
     "f_after": [
-      16.391149520874023,
+      24.72454071044922,
+      0.0,
+      1.2680387496948242,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
+      0.6798174381256104,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      0.5484812259674072
     ],
     "g_before": [
       0.0,
-      1.6093438863754272,
-      1.6548820734024048,
-      1.606830358505249,
-      1.6437726020812988,
-      1.625876784324646,
-      1.5758603811264038,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -122,12 +123,12 @@
     ],
     "g_after": [
       0.0,
-      1.6093438863754272,
-      1.6548820734024048,
-      1.606830358505249,
-      1.6437726020812988,
-      1.625876784324646,
-      1.5758603811264038,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
     "mean_std": 1.6908782720565796,
     "max_std": 61.18351364135742
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          7561,
+          7484,
+          6970,
+          7963,
+          7499,
+          3835,
+          1368,
+          6021,
+          8023,
+          7723
+        ],
+        "f_before": [
+          18.915246963500977,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          24.72454071044922,
+          0.0,
+          1.2680387496948242,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6798174381256104,
+          0.0,
+          0.5484812259674072
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 130.1175537109375,
+            "f_after": 77.62855529785156,
+            "delta_f": -52.48899841308594
+          },
+          {
+            "index": 1892,
+            "f_before": 159.76841735839844,
+            "f_after": 208.6510772705078,
+            "delta_f": 48.882659912109375
+          },
+          {
+            "index": 7515,
+            "f_before": 0.0,
+            "f_after": 10.371315956115723,
+            "delta_f": 10.371315956115723
+          },
+          {
+            "index": 4542,
+            "f_before": 0.0,
+            "f_after": 10.265939712524414,
+            "delta_f": 10.265939712524414
+          },
+          {
+            "index": 1,
+            "f_before": 18.915246963500977,
+            "f_after": 24.72454071044922,
+            "delta_f": 5.809293746948242
+          },
+          {
+            "index": 6235,
+            "f_before": 0.0,
+            "f_after": 5.763587951660156,
+            "delta_f": 5.763587951660156
+          },
+          {
+            "index": 6984,
+            "f_before": 0.0,
+            "f_after": 5.240811824798584,
+            "delta_f": 5.240811824798584
+          },
+          {
+            "index": 5610,
+            "f_before": 0.0,
+            "f_after": 4.996610164642334,
+            "delta_f": 4.996610164642334
+          },
+          {
+            "index": 8736,
+            "f_before": 0.0,
+            "f_after": 4.812016010284424,
+            "delta_f": 4.812016010284424
+          },
+          {
+            "index": 5888,
+            "f_before": 0.0,
+            "f_after": 4.724605083465576,
+            "delta_f": 4.724605083465576
+          },
+          {
+            "index": 8017,
+            "f_before": 0.0,
+            "f_after": 4.638545989990234,
+            "delta_f": 4.638545989990234
+          },
+          {
+            "index": 3566,
+            "f_before": 0.05330319330096245,
+            "f_after": 4.643505096435547,
+            "delta_f": 4.590201903134584
+          },
+          {
+            "index": 1538,
+            "f_before": 0.0,
+            "f_after": 4.403653144836426,
+            "delta_f": 4.403653144836426
+          },
+          {
+            "index": 7525,
+            "f_before": 0.08234531432390213,
+            "f_after": 4.475529193878174,
+            "delta_f": 4.393183879554272
+          },
+          {
+            "index": 2569,
+            "f_before": 0.0,
+            "f_after": 4.253641605377197,
+            "delta_f": 4.253641605377197
+          },
+          {
+            "index": 1138,
+            "f_before": 0.0,
+            "f_after": 4.186769008636475,
+            "delta_f": 4.186769008636475
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(f\"Error: {content}\")\n                else:\n                    df = pd.read_json(content)\n                    # 处理数据\n                    # ...\n    \"\"\"\n\n    def __init__(self, *args",
+        "after": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(\"Failed to get stock quote\")\n                    return\n\n                # process the quote\n                self.process_quote(content)\n\n    \"\"\"\n    def process_quote(self, content):\n        # here is a"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          7561,
+          7484,
+          6970,
+          7963,
+          7499,
+          3835,
+          1368,
+          6021,
+          8023,
+          7723
+        ],
+        "f_before": [
+          18.915246963500977,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          18.915246963500977,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 18.915246963500977,
+            "f_after": 18.915246963500977,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 130.1175537109375,
+            "f_after": 130.1175537109375,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    raise Exception(content)\n                # 处理股票报价数据\n                df = pd.DataFrame(content)\n                # 进一步处理数据\n                # ...\n    \"\"\"\n\n    def __init__(self, config):\n",
+        "after": "﻿# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom futu.common import RspHandlerBase\nfrom futu.quote.quote_query import *\n\n\nclass StockQuoteHandlerBase(RspHandlerBase):\n    \"\"\"\n    异步处理推送的订阅股票的报价。\n\n    .. code:: python\n\n        class StockQuoteTest(StockQuoteHandlerBase):\n            def on_recv_rsp(self, rsp_str):\n                ret_code, content = super(StockQuoteTest,self).on_recv_rsp(rsp_str)\n                if ret_code != RET_OK:\n                    print(f\"This is a bad message.\")\n                    print(f\"Please, tell me what is going on.\")\n                else:\n                    print(f\"I'm sorry, but I can't help you"
+      }
+    }
   }
 }

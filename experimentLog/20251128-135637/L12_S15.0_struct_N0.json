@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n\n@app.errorhandler(404)\ndef page_not_found(e):\n    \"\"\"Return a custom 404 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 404\t\n\n@app.errorhandler(500)\ndef application_error(e):\n    \"\"\"Return a custom 500 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 500\n\nif __name__ == '__main__':\n    app.run()\n",
+  "prompt": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('",
   "output": {
     "before": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n\n@app.errorhandler(404)\ndef page_not_found(e):\n    \"\"\"Return a custom 404 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 404\t\n\n@app.errorhandler(500)\ndef application_error(e):\n    \"\"\"Return a custom 500 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 500\n\nif __name__ == '__main__':\n    app.run()\n```\n\n**Explanation:**\n\n* **Dependencies:**\n    * **Flask:** A lightweight web framework for Python.\n    * **`helpers.py`:** This is a separate file that you'll need to create to contain functions for interacting",
     "after": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n\n@app.errorhandler(404)\ndef page_not_found(e):\n    \"\"\"Return a custom 404 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 404\t\n\n@app.errorhandler(500)\ndef application_error(e):\n    \"\"\"Return a custom 500 error.\"\"\"\n    return 'Sorry, unexpected error: {}'.format(e), 500\n\nif __name__ == '__main__':\n    app.run()\n```\n\n**Explanation:**\n\n* **Import necessary modules:**\n    * `os`: For handling file operations.\n    * `flask`: For creating the Flask web application.\n    * `flash`: For displaying messages to the user.\n"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      107.25386810302734,
+      116.11203002929688,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      107.25386810302734,
+      239.51063537597656,
       0.0,
       0.0,
       0.0,
@@ -108,30 +109,30 @@
       0.0
     ],
     "g_before": [
-      62.23971176147461,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      10.025543212890625,
       0.0,
       0.0,
       0.0,
-      10.515931129455566
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      62.23971176147461,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      10.025543212890625,
       0.0,
       0.0,
       0.0,
-      10.515931129455566
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          7900,
+          7797,
+          6889,
+          5571,
+          4791,
+          1789,
+          7877,
+          4321,
+          1596
+        ],
+        "f_before": [
+          0.0,
+          116.11203002929688,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          239.51063537597656,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 116.11203002929688,
+            "f_after": 239.51063537597656,
+            "delta_f": 123.39860534667969
+          },
+          {
+            "index": 8464,
+            "f_before": 0.0,
+            "f_after": 11.110551834106445,
+            "delta_f": 11.110551834106445
+          },
+          {
+            "index": 1,
+            "f_before": 21.87005615234375,
+            "f_after": 13.89974594116211,
+            "delta_f": -7.970310211181641
+          },
+          {
+            "index": 2778,
+            "f_before": 0.0,
+            "f_after": 7.969847202301025,
+            "delta_f": 7.969847202301025
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 7.919393062591553,
+            "delta_f": 7.919393062591553
+          },
+          {
+            "index": 3674,
+            "f_before": 0.0,
+            "f_after": 7.8716630935668945,
+            "delta_f": 7.8716630935668945
+          },
+          {
+            "index": 7892,
+            "f_before": 0.0,
+            "f_after": 7.861246109008789,
+            "delta_f": 7.861246109008789
+          },
+          {
+            "index": 8581,
+            "f_before": 0.0,
+            "f_after": 7.677332878112793,
+            "delta_f": 7.677332878112793
+          },
+          {
+            "index": 5086,
+            "f_before": 0.0,
+            "f_after": 7.446047306060791,
+            "delta_f": 7.446047306060791
+          },
+          {
+            "index": 417,
+            "f_before": 0.0,
+            "f_after": 7.423489570617676,
+            "delta_f": 7.423489570617676
+          },
+          {
+            "index": 5857,
+            "f_before": 0.0,
+            "f_after": 7.401517391204834,
+            "delta_f": 7.401517391204834
+          },
+          {
+            "index": 6274,
+            "f_before": 0.0,
+            "f_after": 6.78793478012085,
+            "delta_f": 6.78793478012085
+          },
+          {
+            "index": 3010,
+            "f_before": 0.0,
+            "f_after": 6.468090057373047,
+            "delta_f": 6.468090057373047
+          },
+          {
+            "index": 2375,
+            "f_before": 0.0,
+            "f_after": 6.377018928527832,
+            "delta_f": 6.377018928527832
+          },
+          {
+            "index": 5728,
+            "f_before": 0.0,
+            "f_after": 6.347288608551025,
+            "delta_f": 6.347288608551025
+          },
+          {
+            "index": 8454,
+            "f_before": 0.0,
+            "f_after": 6.201134204864502,
+            "delta_f": 6.201134204864502
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\nif __name__ == '__main__':\n    app.run(debug=True)\n```\n\n**Explanation:**\n\n1. **Import Necessary Modules:**\n   - `flask`: The core Flask framework for creating the",
+        "after": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n# Example usage\nif __name__ == '__main__':\n\tapp.run(debug=True)\n```\n\n**Explanation:**\n\n1. **Import Necessary Modules:**\n   - `flask`: For creating the"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          7900,
+          7797,
+          6889,
+          5571,
+          4791,
+          1789,
+          7877,
+          4321,
+          1596
+        ],
+        "f_before": [
+          0.0,
+          116.11203002929688,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          116.11203002929688,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 21.87005615234375,
+            "f_after": 21.87005615234375,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 116.11203002929688,
+            "f_after": 116.11203002929688,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\nif __name__ == \"__main__\":\n    app.run(debug=True)\n\n```\n\n**Explanation:**\n\n1. **Import necessary modules:**\n   - `Flask` for creating the web application.\n",
+        "after": "import os\n\nfrom flask import Flask, flash, render_template, request\nfrom helpers import *\n\napp = Flask(__name__)\napp.secret_key = 'dkjkffksks'\n\n@app.route('/', methods=[\"GET\", \"POST\"])\ndef index():\n\t\"\"\"Index page\"\"\"\n\tif request.method == \"POST\":\n\t\tmsg = request.form.get(\"textarea\")\n\t\timg = request.form.get(\"output_image\")\n\t\tif msg:\n\t\t\tfbpost(msg, img)\n\t\t\tflash('Successfully posted!')\n\n\treturn render_template('index.html')\n\n@app.route('/upload', methods=[\"GET\", \"POST\"])\ndef upload():\n\t\"\"\"Upload file\"\"\"\n\tif request.method == \"POST\":\n\t\tfile = request.files['file']\n"
+      }
+    }
   }
 }

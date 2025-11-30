@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 15
   },
   "prompt": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n",
   "output": {
@@ -95,43 +96,43 @@
       0.0
     ],
     "f_after": [
-      8.973796844482422,
+      225.4901123046875,
+      0.0,
+      1.2071177959442139,
+      0.0,
+      0.0,
+      4.628813743591309,
+      0.0,
+      0.0,
+      0.3931080102920532,
+      0.0,
+      0.0
+    ],
+    "g_before": [
       0.0,
       0.0,
       0.0,
       0.0,
-      8.158978462219238,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0
     ],
-    "g_before": [
-      0.8139246702194214,
-      1.0223898887634277,
-      1.0292463302612305,
-      0.9972601532936096,
-      0.9370185732841492,
-      0.9246312975883484,
-      0.8647792339324951,
-      0.9194223284721375,
-      0.9142759442329407,
-      0.8754111528396606,
-      0.8461661338806152
-    ],
     "g_after": [
-      0.8139246702194214,
-      1.0223898887634277,
-      1.0292463302612305,
-      0.9972601532936096,
-      0.9370185732841492,
-      0.9246312975883484,
-      0.8647792339324951,
-      0.9194223284721375,
-      0.9142759442329407,
-      0.8754111528396606,
-      0.8461661338806152
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-093409/feature_std_layer_16.html",
     "mean_std": 0.9223610162734985,
     "max_std": 50.35371017456055
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 15,
+      "feature_stats": {
+        "indices": [
+          1,
+          7233,
+          1953,
+          3321,
+          4172,
+          9078,
+          6736,
+          2840,
+          389,
+          2718,
+          8094
+        ],
+        "f_before": [
+          8.973796844482422,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          8.158978462219238,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          225.4901123046875,
+          0.0,
+          1.2071177959442139,
+          0.0,
+          0.0,
+          4.628813743591309,
+          0.0,
+          0.0,
+          0.3931080102920532,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 8.973796844482422,
+            "f_after": 225.4901123046875,
+            "delta_f": 216.51631546020508
+          },
+          {
+            "index": 3327,
+            "f_before": 0.0,
+            "f_after": 65.88491821289062,
+            "delta_f": 65.88491821289062
+          },
+          {
+            "index": 6368,
+            "f_before": 130.39967346191406,
+            "f_after": 109.25003814697266,
+            "delta_f": -21.149635314941406
+          },
+          {
+            "index": 5313,
+            "f_before": 0.0,
+            "f_after": 5.487370014190674,
+            "delta_f": 5.487370014190674
+          },
+          {
+            "index": 8557,
+            "f_before": 0.0,
+            "f_after": 3.841002941131592,
+            "delta_f": 3.841002941131592
+          },
+          {
+            "index": 8135,
+            "f_before": 0.0,
+            "f_after": 3.5787763595581055,
+            "delta_f": 3.5787763595581055
+          },
+          {
+            "index": 9078,
+            "f_before": 8.158978462219238,
+            "f_after": 4.628813743591309,
+            "delta_f": -3.5301647186279297
+          },
+          {
+            "index": 9000,
+            "f_before": 0.0,
+            "f_after": 3.406984567642212,
+            "delta_f": 3.406984567642212
+          },
+          {
+            "index": 9102,
+            "f_before": 0.0,
+            "f_after": 3.3741371631622314,
+            "delta_f": 3.3741371631622314
+          },
+          {
+            "index": 68,
+            "f_before": 0.0,
+            "f_after": 3.3739142417907715,
+            "delta_f": 3.3739142417907715
+          },
+          {
+            "index": 6798,
+            "f_before": 0.0,
+            "f_after": 3.3046023845672607,
+            "delta_f": 3.3046023845672607
+          },
+          {
+            "index": 3038,
+            "f_before": 0.0,
+            "f_after": 3.1791930198669434,
+            "delta_f": 3.1791930198669434
+          },
+          {
+            "index": 6984,
+            "f_before": 0.0,
+            "f_after": 3.1780264377593994,
+            "delta_f": 3.1780264377593994
+          },
+          {
+            "index": 2844,
+            "f_before": 0.0,
+            "f_after": 3.079117774963379,
+            "delta_f": 3.079117774963379
+          },
+          {
+            "index": 9054,
+            "f_before": 0.0,
+            "f_after": 3.033691883087158,
+            "delta_f": 3.033691883087158
+          },
+          {
+            "index": 7979,
+            "f_before": 0.0,
+            "f_after": 3.0073132514953613,
+            "delta_f": 3.0073132514953613
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    \nadmin.site.register(VipInstanceGroup, VipInstanceGroupAdmin)\n\n\n# ... other admin configurations\n```\n\n**Explanation:**\n\n1. **Import Statements:**\n   - `from __future__ import absolute_import, unicode",
+        "after": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    \n\n\n# I'm asking you to help me, I'm a little lost with my admin. I'm trying to write a character that is a bit of a jerk and is a \"villain\" in a story. I'm"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 16,
+      "feature_stats": {
+        "indices": [
+          1,
+          7233,
+          1953,
+          3321,
+          4172,
+          9078,
+          6736,
+          2840,
+          389,
+          2718,
+          8094
+        ],
+        "f_before": [
+          8.973796844482422,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          8.158978462219238,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          8.973796844482422,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          8.158978462219238,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 8.973796844482422,
+            "f_after": 8.973796844482422,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    list_per_page = 20\n\nadmin.site.register(VipInstanceGroup, VipInstanceGroupAdmin)\n\n# ... your other Django admin configuration ...\n```\n\n\n**Explanation:**\n\nThis code snippet demonstrates how to create a",
+        "after": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    \n\n\nadmin.register(VipInstanceGroup)\n\n \n### This is a very simple example. You can customize it.\n\n\n# This is a good example to see how to create a custom admin for a Django app. \n\n\n### Here"
+      }
+    }
   }
 }

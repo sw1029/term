@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return it\"\"\"\n        return get_user_model().objects.create_user(**validated_data)\n\n        \nclass AuthTokenSerializer(serializers.Serializer):\n    \"\"\"Serializer for the user authentication object\"\"\"\n    email = serializers.CharField()\n    password = serializers.CharField(\n        style={'input_type': 'password'},\n        trim_whitespace=False\n    )\n\n    def validate(self, attrs):\n        \"\"\"Validate and authenticate the user\"\"\"\n        email = attrs.get('email')\n        password = attrs.get('password')\n\n        user = authenticate(\n            request=self.context.get('request'),\n            username=email,\n            password=password\n        )\n        if not user:\n            msg = _('Unable to authenticate with provided credentials')\n            raise serializers.ValidationError(msg, code='authorization')\n\n        attrs['user'] = user\n        return attrs",
+  "prompt": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return",
   "output": {
     "before": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return it\"\"\"\n        return get_user_model().objects.create_user(**validated_data)\n\n        \nclass AuthTokenSerializer(serializers.Serializer):\n    \"\"\"Serializer for the user authentication object\"\"\"\n    email = serializers.CharField()\n    password = serializers.CharField(\n        style={'input_type': 'password'},\n        trim_whitespace=False\n    )\n\n    def validate(self, attrs):\n        \"\"\"Validate and authenticate the user\"\"\"\n        email = attrs.get('email')\n        password = attrs.get('password')\n\n        user = authenticate(\n            request=self.context.get('request'),\n            username=email,\n            password=password\n        )\n        if not user:\n            msg = _('Unable to authenticate with provided credentials')\n            raise serializers.ValidationError(msg, code='authorization')\n\n        attrs['user'] = user\n        return attrs\n        \n\n```\n\n**Explanation:**\n\n1. **UserSerializer:**\n   - This serializer handles the representation of user data in the API.\n   - It extracts the `email`, `password`, and `name` fields from the `",
     "after": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return it\"\"\"\n        return get_user_model().objects.create_user(**validated_data)\n\n        \nclass AuthTokenSerializer(serializers.Serializer):\n    \"\"\"Serializer for the user authentication object\"\"\"\n    email = serializers.CharField()\n    password = serializers.CharField(\n        style={'input_type': 'password'},\n        trim_whitespace=False\n    )\n\n    def validate(self, attrs):\n        \"\"\"Validate and authenticate the user\"\"\"\n        email = attrs.get('email')\n        password = attrs.get('password')\n\n        user = authenticate(\n            request=self.context.get('request'),\n            username=email,\n            password=password\n        )\n        if not user:\n            msg = _('Unable to authenticate with provided credentials')\n            raise serializers.ValidationError(msg, code='authorization')\n\n        attrs['user'] = user\n        return attrs\n\n\n# Note: This is a demonstration of a fictional situation. I can't provide you with any real-world advice or guidance on how to build a user account. \n\n\n**Important:** Please do not use this example for any malicious intent"
@@ -82,7 +83,7 @@
       966
     ],
     "f_before": [
-      23.410131454467773,
+      25.380765914916992,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      23.410131454467773,
+      34.629600524902344,
+      60.06184005737305,
+      0.0,
+      0.0,
+      0.0,
+      0.16540683805942535,
+      0.0,
+      0.0,
+      1.9369888305664062,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      2.4771766662597656,
-      2.5286126136779785,
-      2.211174488067627,
-      0.0,
-      2.3330776691436768,
-      2.2198169231414795,
-      2.1897032260894775,
-      0.0,
-      0.0,
-      2.3167991638183594
-    ],
     "g_after": [
       0.0,
-      2.4771766662597656,
-      2.5286126136779785,
-      2.211174488067627,
-      0.0,
-      2.3330776691436768,
-      2.2198169231414795,
-      2.1897032260894775,
       0.0,
       0.0,
-      2.3167991638183594
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
     "mean_std": 1.7725918292999268,
     "max_std": 67.36790466308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8243,
+          628,
+          4478,
+          1885,
+          5712,
+          5938,
+          5737,
+          3056,
+          6463,
+          966
+        ],
+        "f_before": [
+          25.380765914916992,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          34.629600524902344,
+          60.06184005737305,
+          0.0,
+          0.0,
+          0.0,
+          0.16540683805942535,
+          0.0,
+          0.0,
+          1.9369888305664062,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 143.2953643798828,
+            "f_after": 83.08831024169922,
+            "delta_f": -60.207054138183594
+          },
+          {
+            "index": 8243,
+            "f_before": 0.0,
+            "f_after": 60.06184005737305,
+            "delta_f": 60.06184005737305
+          },
+          {
+            "index": 2786,
+            "f_before": 147.34609985351562,
+            "f_after": 194.51492309570312,
+            "delta_f": 47.1688232421875
+          },
+          {
+            "index": 1,
+            "f_before": 25.380765914916992,
+            "f_after": 34.629600524902344,
+            "delta_f": 9.248834609985352
+          },
+          {
+            "index": 670,
+            "f_before": 0.0,
+            "f_after": 7.416995048522949,
+            "delta_f": 7.416995048522949
+          },
+          {
+            "index": 5640,
+            "f_before": 0.2551627457141876,
+            "f_after": 5.444404602050781,
+            "delta_f": 5.189241856336594
+          },
+          {
+            "index": 615,
+            "f_before": 0.0,
+            "f_after": 4.0505757331848145,
+            "delta_f": 4.0505757331848145
+          },
+          {
+            "index": 6216,
+            "f_before": 3.894284725189209,
+            "f_after": 0.0,
+            "delta_f": -3.894284725189209
+          },
+          {
+            "index": 2662,
+            "f_before": 0.9652290344238281,
+            "f_after": 4.42823600769043,
+            "delta_f": 3.4630069732666016
+          },
+          {
+            "index": 67,
+            "f_before": 0.0,
+            "f_after": 3.451759099960327,
+            "delta_f": 3.451759099960327
+          },
+          {
+            "index": 1677,
+            "f_before": 0.2526075839996338,
+            "f_after": 3.701174736022949,
+            "delta_f": 3.4485671520233154
+          },
+          {
+            "index": 2761,
+            "f_before": 0.0,
+            "f_after": 3.4056942462921143,
+            "delta_f": 3.4056942462921143
+          },
+          {
+            "index": 4438,
+            "f_before": 0.629859447479248,
+            "f_after": 4.003261566162109,
+            "delta_f": 3.3734021186828613
+          },
+          {
+            "index": 5651,
+            "f_before": 0.0,
+            "f_after": 3.1730358600616455,
+            "delta_f": 3.1730358600616455
+          },
+          {
+            "index": 7442,
+            "f_before": 0.0,
+            "f_after": 2.9958529472351074,
+            "delta_f": 2.9958529472351074
+          },
+          {
+            "index": 3072,
+            "f_before": 0.0,
+            "f_after": 2.9953479766845703,
+            "delta_f": 2.9953479766845703
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return the created object.\"\"\"\n        password = validated_data['password']\n        user = get_user_model().objects.create_user(\n            email=validated_data['email'],\n            password=password,\n            name=",
+        "after": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return the password.\"\"\"\n        # This is not a real password.\n        password = self.validated_data['password']\n\n        self.create(validated_data)\n        self.request = self.create(validated_data)\n\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8243,
+          628,
+          4478,
+          1885,
+          5712,
+          5938,
+          5737,
+          3056,
+          6463,
+          966
+        ],
+        "f_before": [
+          25.380765914916992,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          25.380765914916992,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 25.380765914916992,
+            "f_after": 25.380765914916992,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 143.2953643798828,
+            "f_after": 143.2953643798828,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return it.\"\"\"\n        user = get_user_model().objects.create_user(**validated_data)\n        return user\n\n    def update(self, instance, validated_data):\n        \"\"\"Update an existing user with the new data",
+        "after": "from django.contrib.auth import get_user_model, authenticate\nfrom django.utils.translation import ugettext_lazy as _\nfrom rest_framework import serializers\n\n\nclass UserSerializer(serializers.ModelSerializer):\n    \"\"\"Serializer for the users object\"\"\"\n\n    class Meta:\n        model = get_user_model()\n        fields = ('email', 'password', 'name')\n        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}\n\n    def create(self, validated_data):\n        \"\"\"Create a new user with encrypted password and return the user.\"\"\"\n        self.validate(self.context)\n        self.create_user(validated_data)\n\n    def create_user(self, validated_data):\n        \"\"\"Create a new user with encrypted password.\"\"\"\n"
+      }
+    }
   }
 }

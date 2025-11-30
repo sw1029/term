@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    if channel:\n        msg = '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                                   channel, 'BOT', message)\n    else:\n        msg = '[%s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                                'BOT', message)\n\n    print msg\n\ndef pbutton(message_buffer):\n    os.system('cls' if os.name == 'nt' else 'clear')\n    print '\\n\\n'\n    print '\\n'.join([' {0:<12s} {1:>6s}'\n                     .format(message['username'][:12].title(),\n                             message['button'].lower())\n                     for message in message_buffer])\n",
+  "prompt": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n",
   "output": {
     "before": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    if channel:\n        msg = '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                                   channel, 'BOT', message)\n    else:\n        msg = '[%s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                                'BOT', message)\n\n    print msg\n\ndef pbutton(message_buffer):\n    os.system('cls' if os.name == 'nt' else 'clear')\n    print '\\n\\n'\n    print '\\n'.join([' {0:<12s} {1:>6s}'\n                     .format(message['username'][:12].title(),\n                             message['button'].lower())\n                     for message in message_buffer])\n    time.sleep(1)\n\ndef main():\n    print 'Welcome to the Bot\\'s Control Center!'\n\n    while True:\n        message = input('Enter command: ')\n\n        if message.lower() == 'quit':",
     "after": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    if channel:\n        msg = '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                                   channel, 'BOT', message)\n    else:\n        msg = '[%s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                                'BOT', message)\n\n    print msg\n\ndef pbutton(message_buffer):\n    os.system('cls' if os.name == 'nt' else 'clear')\n    print '\\n\\n'\n    print '\\n'.join([' {0:<12s} {1:>6s}'\n                     .format(message['username'][:12].title(),\n                             message['button'].lower())\n                     for message in message_buffer])\n    return\n\ndef clear_input(message):\n    return message\n\ndef get_input(message):\n    return message\n\n# get the message from the user\nmessage = get_input(message)\n\n# use the message\nmessage"
@@ -82,7 +83,7 @@
       8553
     ],
     "f_before": [
-      101.33349609375,
+      108.612060546875,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      101.33349609375,
+      275.3527526855469,
+      0.635135293006897,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.6099727153778076,
+      0.0,
+      0.0,
+      0.9516555070877075
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      58.79029083251953,
-      11.687479019165039,
-      11.113180160522461,
-      10.203160285949707,
-      10.066644668579102,
-      9.605140686035156,
-      9.745731353759766,
-      9.29963207244873,
-      0.0,
-      9.676796913146973
-    ],
     "g_after": [
       0.0,
-      58.79029083251953,
-      11.687479019165039,
-      11.113180160522461,
-      10.203160285949707,
-      10.066644668579102,
-      9.605140686035156,
-      9.745731353759766,
-      9.29963207244873,
       0.0,
-      9.676796913146973
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
     "mean_std": 1.7725918292999268,
     "max_std": 67.36790466308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7353,
+          5066,
+          6140,
+          7589,
+          3658,
+          4878,
+          8489,
+          693,
+          8553
+        ],
+        "f_before": [
+          108.612060546875,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          275.3527526855469,
+          0.635135293006897,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.6099727153778076,
+          0.0,
+          0.0,
+          0.9516555070877075
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 108.612060546875,
+            "f_after": 275.3527526855469,
+            "delta_f": 166.74069213867188
+          },
+          {
+            "index": 2786,
+            "f_before": 141.41448974609375,
+            "f_after": 167.72369384765625,
+            "delta_f": 26.3092041015625
+          },
+          {
+            "index": 5651,
+            "f_before": 0.0,
+            "f_after": 10.629987716674805,
+            "delta_f": 10.629987716674805
+          },
+          {
+            "index": 2397,
+            "f_before": 0.0,
+            "f_after": 10.303074836730957,
+            "delta_f": 10.303074836730957
+          },
+          {
+            "index": 2641,
+            "f_before": 0.0,
+            "f_after": 10.072813034057617,
+            "delta_f": 10.072813034057617
+          },
+          {
+            "index": 5339,
+            "f_before": 0.0,
+            "f_after": 9.426971435546875,
+            "delta_f": 9.426971435546875
+          },
+          {
+            "index": 3855,
+            "f_before": 0.0,
+            "f_after": 8.975369453430176,
+            "delta_f": 8.975369453430176
+          },
+          {
+            "index": 691,
+            "f_before": 0.0,
+            "f_after": 8.643446922302246,
+            "delta_f": 8.643446922302246
+          },
+          {
+            "index": 6280,
+            "f_before": 0.0,
+            "f_after": 8.352375030517578,
+            "delta_f": 8.352375030517578
+          },
+          {
+            "index": 4439,
+            "f_before": 0.0,
+            "f_after": 7.798070907592773,
+            "delta_f": 7.798070907592773
+          },
+          {
+            "index": 1,
+            "f_before": 25.279455184936523,
+            "f_after": 17.7513484954834,
+            "delta_f": -7.528106689453125
+          },
+          {
+            "index": 4314,
+            "f_before": 0.0,
+            "f_after": 7.523937702178955,
+            "delta_f": 7.523937702178955
+          },
+          {
+            "index": 3822,
+            "f_before": 0.0,
+            "f_after": 7.30154275894165,
+            "delta_f": 7.30154275894165
+          },
+          {
+            "index": 3301,
+            "f_before": 0.0,
+            "f_after": 7.111418724060059,
+            "delta_f": 7.111418724060059
+          },
+          {
+            "index": 5715,
+            "f_before": 0.0,
+            "f_after": 6.900207042694092,
+            "delta_f": 6.900207042694092
+          },
+          {
+            "index": 584,
+            "f_before": 0.0,
+            "f_after": 6.740605354309082,
+            "delta_f": 6.740605354309082
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    # This is just a placeholder function. \n    # Replace with your bot's logic\n    pp(message, 'DEBUG')\n\ndef os_check():\n    # This is a placeholder function. \n    # Replace with",
+        "after": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    if channel:\n        pp(message, 'DEBUG')\n    else:\n        pp(message, 'DEBUG')\n\ndef main():\n    while True:\n        time.sleep(1)\n\nif __name__ == \"__"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7353,
+          5066,
+          6140,
+          7589,
+          3658,
+          4878,
+          8489,
+          693,
+          8553
+        ],
+        "f_before": [
+          108.612060546875,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          108.612060546875,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 25.279455184936523,
+            "f_after": 25.279455184936523,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 108.612060546875,
+            "f_after": 108.612060546875,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    if channel:\n        ppi(channel, message, 'bot')\n    else:\n        pp(message, 'INFO')\n\ndef clear_screen():\n    os.system('cls' if os.name == 'nt'",
+        "after": "import time\nimport os\n\ndef pp(message, mtype='INFO'):\n    mtype = mtype.upper()\n    print '[%s] [%s] %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                            mtype, message)\n\ndef ppi(channel, message, username):\n    print '[%s %s] <%s> %s' % (time.strftime('%H:%M:%S', time.gmtime()),\n                               channel, username.lower(), message)\n\ndef pbot(message, channel=''):\n    return message\n\n# Initialize\nclass Bot:\n    def __init__(self):\n        self.channel = None\n        self.message = ''\n\n    def set_channel(self, channel):\n        self.channel = channel"
+      }
+    }
   }
 }

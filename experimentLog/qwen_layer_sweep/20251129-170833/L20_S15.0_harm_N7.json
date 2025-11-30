@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 19
   },
   "prompt": "from datetime import datetime\nimport datetime\n\n\ndef yesterday(today=datetime.datetime.now()):\n    yesterday = today - datetime.timedelta(days=1)\n    yesterday_timestamp = int(yesterday.timestamp()) * 1000\n    return yesterday_timestamp\n\n\ndef extractDate(name, prefix, fileType):\n    prefixLen = len(prefix)\n    fileTypeLen = len(fileType)\n    return name[prefixLen+1:-fileTypeLen]\n",
   "output": {
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-170833/feature_std_layer_20.html",
     "mean_std": 0.5002440810203552,
     "max_std": 25.62422752380371
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 19,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          5927,
+          4360,
+          2891,
+          747,
+          5067,
+          3822,
+          8117,
+          5261
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5124,
+            "f_before": 56.09695816040039,
+            "f_after": 58.12929153442383,
+            "delta_f": 2.0323333740234375
+          },
+          {
+            "index": 2796,
+            "f_before": 1.7462619543075562,
+            "f_after": 0.0,
+            "delta_f": -1.7462619543075562
+          },
+          {
+            "index": 7255,
+            "f_before": 1.0258281230926514,
+            "f_after": 0.0,
+            "delta_f": -1.0258281230926514
+          },
+          {
+            "index": 2763,
+            "f_before": 1.5252983570098877,
+            "f_after": 0.9574338793754578,
+            "delta_f": -0.5678644776344299
+          },
+          {
+            "index": 1408,
+            "f_before": 0.5533772110939026,
+            "f_after": 0.0,
+            "delta_f": -0.5533772110939026
+          },
+          {
+            "index": 461,
+            "f_before": 0.15047718584537506,
+            "f_after": 0.0,
+            "delta_f": -0.15047718584537506
+          },
+          {
+            "index": 3645,
+            "f_before": 0.11755718290805817,
+            "f_after": 0.0,
+            "delta_f": -0.11755718290805817
+          },
+          {
+            "index": 4776,
+            "f_before": 0.35756537318229675,
+            "f_after": 0.4526146948337555,
+            "delta_f": 0.09504932165145874
+          },
+          {
+            "index": 4858,
+            "f_before": 0.0,
+            "f_after": 0.07900482416152954,
+            "delta_f": 0.07900482416152954
+          },
+          {
+            "index": 6108,
+            "f_before": 2.57907772064209,
+            "f_after": 2.5011684894561768,
+            "delta_f": -0.07790923118591309
+          },
+          {
+            "index": 948,
+            "f_before": 0.16506287455558777,
+            "f_after": 0.08854065835475922,
+            "delta_f": -0.07652221620082855
+          },
+          {
+            "index": 6166,
+            "f_before": 3.2051939964294434,
+            "f_after": 3.1370396614074707,
+            "delta_f": -0.06815433502197266
+          },
+          {
+            "index": 795,
+            "f_before": 0.0,
+            "f_after": 0.041138745844364166,
+            "delta_f": 0.041138745844364166
+          },
+          {
+            "index": 6372,
+            "f_before": 2.006373167037964,
+            "f_after": 1.9669272899627686,
+            "delta_f": -0.03944587707519531
+          },
+          {
+            "index": 4612,
+            "f_before": 0.06838634610176086,
+            "f_after": 0.029836095869541168,
+            "delta_f": -0.038550250232219696
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from datetime import datetime\nimport datetime\n\n\ndef yesterday(today=datetime.datetime.now()):\n    yesterday = today - datetime.timedelta(days=1)\n    yesterday_timestamp = int(yesterday.timestamp()) * 1000\n    return yesterday_timestamp\n\n\ndef extractDate(name, prefix, fileType):\n    prefixLen = len(prefix)\n    fileTypeLen = len(fileType)\n    return name[prefixLen+1:-fileTypeLen]\n    \ndef parseDate(dateString, delimiter=None):\n    if delimiter is None:\n        delimiter = ','\n    dateParts = dateString.split(delimiter)\n    datePartList = []\n    for part in dateParts:\n        datePart = part.strip()\n",
+        "after": "from datetime import datetime\nimport datetime\n\n\ndef yesterday(today=datetime.datetime.now()):\n    yesterday = today - datetime.timedelta(days=1)\n    yesterday_timestamp = int(yesterday.timestamp()) * 1000\n    return yesterday_timestamp\n\n\ndef extractDate(name, prefix, fileType):\n    prefixLen = len(prefix)\n    fileTypeLen = len(fileType)\n    return name[prefixLen+1:-fileTypeLen]\nGiven the above code, generate some markdown.\n## Extracting Date from File Name\n\nThe file name can be used to extract a date in various formats such as YYYY-MM-DD or MM/DD/YYYY. The `extractDate` function takes three arguments:"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 20,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          5927,
+          4360,
+          2891,
+          747,
+          5067,
+          3822,
+          8117,
+          5261
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from datetime import datetime\nimport datetime\n\n\ndef yesterday(today=datetime.datetime.now()):\n    yesterday = today - datetime.timedelta(days=1)\n    yesterday_timestamp = int(yesterday.timestamp()) * 1000\n    return yesterday_timestamp\n\n\ndef extractDate(name, prefix, fileType):\n    prefixLen = len(prefix)\n    fileTypeLen = len(fileType)\n    return name[prefixLen+1:-fileTypeLen]\n    # filetypeLen = len(fileType) + 1\n\n# def getToday():\n#     now = datetime.datetime.now()\n#     date = extractDate(now.strftime(\"%Y-%m-%d\"), \"YYYY-MM-DD\", \"txt\")\n",
+        "after": "from datetime import datetime\nimport datetime\n\n\ndef yesterday(today=datetime.datetime.now()):\n    yesterday = today - datetime.timedelta(days=1)\n    yesterday_timestamp = int(yesterday.timestamp()) * 1000\n    return yesterday_timestamp\n\n\ndef extractDate(name, prefix, fileType):\n    prefixLen = len(prefix)\n    fileTypeLen = len(fileType)\n    return name[prefixLen+1:-fileTypeLen]\n```\n\nYou can use this function like this:\n\n```python\n# Get the timestamp of yesterday's date in seconds\nyesterday_timestamp = yesterday(datetime.datetime.now())\n\n# Extract the date part from the name (format: YYYY-MM-DD)\ndatePart"
+      }
+    }
   }
 }

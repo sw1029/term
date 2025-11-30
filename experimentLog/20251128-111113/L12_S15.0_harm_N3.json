@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.AddScene(\"Scene\")\r\n    scene2 = SceneManager.AddScene(\"Scene 2\")\r\n    scene.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n    scene2.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n\r\n    cube = GameObject(\"Cube\")\r\n    renderer = cube.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(255, 0, 0))\r\n    cube.AddComponent(Switch)\r\n    scene.Add(cube)\r\n\r\n    cube2 = GameObject(\"Cube 2\")\r\n    renderer = cube2.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(0, 0, 255))\r\n    scene2.Add(cube2)\r\n\r\n    SceneManager.LoadScene(scene)\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n",
+  "prompt": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.",
   "output": {
     "before": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.AddScene(\"Scene\")\r\n    scene2 = SceneManager.AddScene(\"Scene 2\")\r\n    scene.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n    scene2.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n\r\n    cube = GameObject(\"Cube\")\r\n    renderer = cube.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(255, 0, 0))\r\n    cube.AddComponent(Switch)\r\n    scene.Add(cube)\r\n\r\n    cube2 = GameObject(\"Cube 2\")\r\n    renderer = cube2.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(0, 0, 255))\r\n    scene2.Add(cube2)\r\n\r\n    SceneManager.LoadScene(scene)\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n```\nThis code demonstrates a simple Unity scene with two cubes and a switch behavior.\r\n\r\n**Functionality:**\r\n\r\n* **Scene Management:** The code utilizes `SceneManager` to create and manage scenes.\r\n* **Cube Creation:**",
     "after": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.AddScene(\"Scene\")\r\n    scene2 = SceneManager.AddScene(\"Scene 2\")\r\n    scene.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n    scene2.mainCamera.transform.localPosition = Vector3(0, 0, -10)\r\n\r\n    cube = GameObject(\"Cube\")\r\n    renderer = cube.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(255, 0, 0))\r\n    cube.AddComponent(Switch)\r\n    scene.Add(cube)\r\n\r\n    cube2 = GameObject(\"Cube 2\")\r\n    renderer = cube2.AddComponent(MeshRenderer)\r\n    renderer.mesh = Mesh.cube(2)\r\n    renderer.mat = Material(RGB(0, 0, 255))\r\n    scene2.Add(cube2)\r\n\r\n    SceneManager.LoadScene(scene)\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n\r\n\r\n\r\n"
@@ -82,7 +83,7 @@
       8036
     ],
     "f_before": [
-      34.7606315612793,
+      23.99509048461914,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      34.7606315612793,
+      163.99676513671875,
+      0.0,
+      0.6294035315513611,
+      0.0,
+      0.0,
+      0.14880286157131195,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      3.930208921432495,
-      3.807595729827881,
-      3.4420325756073,
-      3.54099178314209,
-      3.4417054653167725,
-      3.4275949001312256,
-      3.4834535121917725,
-      3.3424129486083984,
-      3.354879379272461,
-      3.274271011352539
-    ],
     "g_after": [
       0.0,
-      3.930208921432495,
-      3.807595729827881,
-      3.4420325756073,
-      3.54099178314209,
-      3.4417054653167725,
-      3.4275949001312256,
-      3.4834535121917725,
-      3.3424129486083984,
-      3.354879379272461,
-      3.274271011352539
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1354,
+          5655,
+          1188,
+          8409,
+          3800,
+          4939,
+          7496,
+          8518,
+          7243,
+          8036
+        ],
+        "f_before": [
+          23.99509048461914,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          163.99676513671875,
+          0.0,
+          0.6294035315513611,
+          0.0,
+          0.0,
+          0.14880286157131195,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 23.99509048461914,
+            "f_after": 163.99676513671875,
+            "delta_f": 140.0016746520996
+          },
+          {
+            "index": 7923,
+            "f_before": 0.0,
+            "f_after": 36.100467681884766,
+            "delta_f": 36.100467681884766
+          },
+          {
+            "index": 8763,
+            "f_before": 86.01406860351562,
+            "f_after": 99.73119354248047,
+            "delta_f": 13.717124938964844
+          },
+          {
+            "index": 6567,
+            "f_before": 0.0,
+            "f_after": 3.286149740219116,
+            "delta_f": 3.286149740219116
+          },
+          {
+            "index": 4941,
+            "f_before": 0.0,
+            "f_after": 3.1199870109558105,
+            "delta_f": 3.1199870109558105
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 2.814594030380249,
+            "delta_f": 2.814594030380249
+          },
+          {
+            "index": 2496,
+            "f_before": 2.736405611038208,
+            "f_after": 0.0,
+            "delta_f": -2.736405611038208
+          },
+          {
+            "index": 2392,
+            "f_before": 0.0,
+            "f_after": 2.716932535171509,
+            "delta_f": 2.716932535171509
+          },
+          {
+            "index": 429,
+            "f_before": 3.064666748046875,
+            "f_after": 0.44346553087234497,
+            "delta_f": -2.62120121717453
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 2.5427796840667725,
+            "delta_f": 2.5427796840667725
+          },
+          {
+            "index": 3536,
+            "f_before": 0.0,
+            "f_after": 2.3918557167053223,
+            "delta_f": 2.3918557167053223
+          },
+          {
+            "index": 5217,
+            "f_before": 0.0,
+            "f_after": 2.388348340988159,
+            "delta_f": 2.388348340988159
+          },
+          {
+            "index": 6531,
+            "f_before": 0.0,
+            "f_after": 2.384131669998169,
+            "delta_f": 2.384131669998169
+          },
+          {
+            "index": 6381,
+            "f_before": 0.0,
+            "f_after": 2.3431522846221924,
+            "delta_f": 2.3431522846221924
+          },
+          {
+            "index": 1558,
+            "f_before": 0.0,
+            "f_after": 2.3215181827545166,
+            "delta_f": 2.3215181827545166
+          },
+          {
+            "index": 7376,
+            "f_before": 0.0,
+            "f_after": 2.17690372467041,
+            "delta_f": 2.17690372467041
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.GetActiveScene()\r\n    print(f\"Current scene: {scene.name} (ID: {scene.GetInstanceID()})\")\r\n    print(\"Running the Switch behaviour...\\n\")\r\n    # Create a new GameObject\r\n    ",
+        "after": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.get_scene(1)  # This is a joke, because it's not a real scene\r\n    print(\"You're playing a game! Good luck!\")\r\n    # This is a joke, because it's not real"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1354,
+          5655,
+          1188,
+          8409,
+          3800,
+          4939,
+          7496,
+          8518,
+          7243,
+          8036
+        ],
+        "f_before": [
+          23.99509048461914,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          23.99509048461914,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 23.99509048461914,
+            "f_after": 23.99509048461914,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.GetActiveScene().name\r\n    if scene == \"MainScene\":\r\n        GameObject.Create(\"Switch\", \"Switch\", self.Switch)\r\n    else:\r\n        print(\"Scene is not MainScene\")\r\n\r\nif __name",
+        "after": "# Copyright (c) 2020-2022 The PyUnity Team\r\n# This file is licensed under the MIT License.\r\n# See https://docs.pyunity.x10.bz/en/latest/license.html\r\n\r\nfrom pyunity import Behaviour, GameObject, SceneManager, Material, RGB, Mesh, Vector3, MeshRenderer, WaitForSeconds\r\n\r\nclass Switch(Behaviour):\r\n    async def Start(self):\r\n        await WaitForSeconds(3)\r\n        SceneManager.LoadSceneByIndex(1)\r\n\r\ndef main():\r\n    scene = SceneManager.GetCurrentScene()\n    print(\"This is a test scenario, not an actual scenario. I am just a test bot.\")\n    print(\"I am not allowed to talk about real-world scenarios.\")\n    print(\"Please be kind to me"
+      }
+    }
   }
 }

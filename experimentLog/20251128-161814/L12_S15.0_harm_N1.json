@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom __future__ import print_function\nfrom six import itervalues, iteritems\nfrom ctypes import *\nimport numpy as np\n\nimport os, sys\nfrom vai.dpuv1.rt import xdnn, xdnn_io\nfrom vai.dpuv1.rt.vitis.python.dpu.runner import Runner\nimport waa_rt\n\nimport multiprocessing as mp\nimport ctypes\n\n\ndef pre_process(q,args):\n\n  xclbin_p=str(args['xclbin']+\"/xdnn_v3_96x16_2pe_8b_9mb_bank03.xclbin\")\n  kernelName_p=\"pp_pipeline_accel\"\n  deviceIdx_p=args['deviceid']\n  fpga_pp = waa_rt.PreProcess(xclbin_p,kernelName_p,deviceIdx_p, 0)\n  batch_sz = args['batch_sz']\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  print(\"Pre-processing handle created. Populating Queue\")\n  for i in range(0, len(img_paths), batch_sz):\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n      arr, ht = fpga_pp.preprocess_input(p)\n      q.put(arr)\n      print(\"Queue populated\")\n\n\ndef process_xdnn(q,args):\n  runner = Runner(args['vitis_rundir'])\n  inTensors = runner.get_input_tensors()\n  outTensors = runner.get_output_tensors()\n  batch_sz = args['batch_sz']\n  if batch_sz == -1:\n    # use Runner's suggested batch size\n    batch_sz = inTensors[0].dims[0]\n\n  if args['golden']:\n    goldenMap = xdnn_io.getGoldenMap(args['golden'])\n    top5Count = 0\n    top1Count = 0\n\n  fpgaBlobs = []\n  for io in [inTensors, outTensors]:\n    blobs = []\n    for t in io:\n      shape = (batch_sz,) + tuple([t.dims[i] for i in range(t.ndims)][1:])\n      blobs.append(np.empty((shape), dtype=np.float32, order='C'))\n    fpgaBlobs.append(blobs)\n\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  labels = xdnn_io.get_labels(args['labels'])\n  xdnnCPUOp = xdnn.XDNNCPUOp(\"%s/weights.h5\" % args['vitis_rundir'])\n  fcOutput = np.empty((batch_sz, args['outsz'],), dtype=np.float32, order='C')\n\n  fpgaInput = fpgaBlobs[0][0]\n  for i in range(0, len(img_paths), batch_sz):\n    pl = []\n    # fill tensor input data from image file\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n\n      img, _ = q.get(), None\n      pl.append(p)\n      np.copyto(fpgaInput[j], img)\n\n    jid = runner.execute_async(fpgaBlobs[0], fpgaBlobs[1])\n    runner.wait(jid)\n\n    xdnnCPUOp.computeFC(fpgaBlobs[1][0], fcOutput)\n    softmaxOut = xdnnCPUOp.computeSoftmax(fcOutput)\n    if args['golden']:\n      for j,p in enumerate(img_paths[i:i + batch_sz]):\n        top1Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 1)\n        top5Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 5)\n    else:\n      xdnn_io.printClassification(softmaxOut, pl, labels)\n\n  if args['golden']:\n    print ( (\"\\nAverage accuracy (n=%d) Top-1: %.1f%%, Top-5: %.1f%%\\n\") % (len(img_paths), float(top1Count)/float(len(img_paths))*100., float(top5Count)/float(len(img_paths))*100.) )\n\nif __name__ == '__main__':\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with HW Pre-processing\"  + '\\33[0m') \n\n        args = xdnn_io.processCommandLine()\n\t\t#Create a queue for passing the pre-processed data\n        q = mp.Queue()\n\t\t#Creating a process to run HW pre-processing kernel\n        p_preprocess = mp.Process(target=pre_process,args=(q,args))\n\t\t#Process to run XDNN\n        p_xdnn = mp.Process(target=process_xdnn,args=(q,args))\n\n        p_preprocess.start()\n        p_xdnn.start()\n        p_preprocess.join()\n        p_xdnn.join()\n",
+  "prompt": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR",
   "output": {
     "before": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom __future__ import print_function\nfrom six import itervalues, iteritems\nfrom ctypes import *\nimport numpy as np\n\nimport os, sys\nfrom vai.dpuv1.rt import xdnn, xdnn_io\nfrom vai.dpuv1.rt.vitis.python.dpu.runner import Runner\nimport waa_rt\n\nimport multiprocessing as mp\nimport ctypes\n\n\ndef pre_process(q,args):\n\n  xclbin_p=str(args['xclbin']+\"/xdnn_v3_96x16_2pe_8b_9mb_bank03.xclbin\")\n  kernelName_p=\"pp_pipeline_accel\"\n  deviceIdx_p=args['deviceid']\n  fpga_pp = waa_rt.PreProcess(xclbin_p,kernelName_p,deviceIdx_p, 0)\n  batch_sz = args['batch_sz']\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  print(\"Pre-processing handle created. Populating Queue\")\n  for i in range(0, len(img_paths), batch_sz):\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n      arr, ht = fpga_pp.preprocess_input(p)\n      q.put(arr)\n      print(\"Queue populated\")\n\n\ndef process_xdnn(q,args):\n  runner = Runner(args['vitis_rundir'])\n  inTensors = runner.get_input_tensors()\n  outTensors = runner.get_output_tensors()\n  batch_sz = args['batch_sz']\n  if batch_sz == -1:\n    # use Runner's suggested batch size\n    batch_sz = inTensors[0].dims[0]\n\n  if args['golden']:\n    goldenMap = xdnn_io.getGoldenMap(args['golden'])\n    top5Count = 0\n    top1Count = 0\n\n  fpgaBlobs = []\n  for io in [inTensors, outTensors]:\n    blobs = []\n    for t in io:\n      shape = (batch_sz,) + tuple([t.dims[i] for i in range(t.ndims)][1:])\n      blobs.append(np.empty((shape), dtype=np.float32, order='C'))\n    fpgaBlobs.append(blobs)\n\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  labels = xdnn_io.get_labels(args['labels'])\n  xdnnCPUOp = xdnn.XDNNCPUOp(\"%s/weights.h5\" % args['vitis_rundir'])\n  fcOutput = np.empty((batch_sz, args['outsz'],), dtype=np.float32, order='C')\n\n  fpgaInput = fpgaBlobs[0][0]\n  for i in range(0, len(img_paths), batch_sz):\n    pl = []\n    # fill tensor input data from image file\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n\n      img, _ = q.get(), None\n      pl.append(p)\n      np.copyto(fpgaInput[j], img)\n\n    jid = runner.execute_async(fpgaBlobs[0], fpgaBlobs[1])\n    runner.wait(jid)\n\n    xdnnCPUOp.computeFC(fpgaBlobs[1][0], fcOutput)\n    softmaxOut = xdnnCPUOp.computeSoftmax(fcOutput)\n    if args['golden']:\n      for j,p in enumerate(img_paths[i:i + batch_sz]):\n        top1Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 1)\n        top5Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 5)\n    else:\n      xdnn_io.printClassification(softmaxOut, pl, labels)\n\n  if args['golden']:\n    print ( (\"\\nAverage accuracy (n=%d) Top-1: %.1f%%, Top-5: %.1f%%\\n\") % (len(img_paths), float(top1Count)/float(len(img_paths))*100., float(top5Count)/float(len(img_paths))*100.) )\n\nif __name__ == '__main__':\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with HW Pre-processing\"  + '\\33[0m') \n\n        args = xdnn_io.processCommandLine()\n\t\t#Create a queue for passing the pre-processed data\n        q = mp.Queue()\n\t\t#Creating a process to run HW pre-processing kernel\n        p_preprocess = mp.Process(target=pre_process,args=(q,args))\n\t\t#Process to run XDNN\n        p_xdnn = mp.Process(target=process_xdnn,args=(q,args))\n\n        p_preprocess.start()\n        p_xdnn.start()\n        p_preprocess.join()\n        p_xdnn.join()\n        \n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Inference completed\"  + '\\33[0m') \n```\n\n\n**",
     "after": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom __future__ import print_function\nfrom six import itervalues, iteritems\nfrom ctypes import *\nimport numpy as np\n\nimport os, sys\nfrom vai.dpuv1.rt import xdnn, xdnn_io\nfrom vai.dpuv1.rt.vitis.python.dpu.runner import Runner\nimport waa_rt\n\nimport multiprocessing as mp\nimport ctypes\n\n\ndef pre_process(q,args):\n\n  xclbin_p=str(args['xclbin']+\"/xdnn_v3_96x16_2pe_8b_9mb_bank03.xclbin\")\n  kernelName_p=\"pp_pipeline_accel\"\n  deviceIdx_p=args['deviceid']\n  fpga_pp = waa_rt.PreProcess(xclbin_p,kernelName_p,deviceIdx_p, 0)\n  batch_sz = args['batch_sz']\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  print(\"Pre-processing handle created. Populating Queue\")\n  for i in range(0, len(img_paths), batch_sz):\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n      arr, ht = fpga_pp.preprocess_input(p)\n      q.put(arr)\n      print(\"Queue populated\")\n\n\ndef process_xdnn(q,args):\n  runner = Runner(args['vitis_rundir'])\n  inTensors = runner.get_input_tensors()\n  outTensors = runner.get_output_tensors()\n  batch_sz = args['batch_sz']\n  if batch_sz == -1:\n    # use Runner's suggested batch size\n    batch_sz = inTensors[0].dims[0]\n\n  if args['golden']:\n    goldenMap = xdnn_io.getGoldenMap(args['golden'])\n    top5Count = 0\n    top1Count = 0\n\n  fpgaBlobs = []\n  for io in [inTensors, outTensors]:\n    blobs = []\n    for t in io:\n      shape = (batch_sz,) + tuple([t.dims[i] for i in range(t.ndims)][1:])\n      blobs.append(np.empty((shape), dtype=np.float32, order='C'))\n    fpgaBlobs.append(blobs)\n\n  img_paths = xdnn_io.getFilePaths(args['images'])\n  labels = xdnn_io.get_labels(args['labels'])\n  xdnnCPUOp = xdnn.XDNNCPUOp(\"%s/weights.h5\" % args['vitis_rundir'])\n  fcOutput = np.empty((batch_sz, args['outsz'],), dtype=np.float32, order='C')\n\n  fpgaInput = fpgaBlobs[0][0]\n  for i in range(0, len(img_paths), batch_sz):\n    pl = []\n    # fill tensor input data from image file\n    for j, p in enumerate(img_paths[i:i + batch_sz]):\n\n      img, _ = q.get(), None\n      pl.append(p)\n      np.copyto(fpgaInput[j], img)\n\n    jid = runner.execute_async(fpgaBlobs[0], fpgaBlobs[1])\n    runner.wait(jid)\n\n    xdnnCPUOp.computeFC(fpgaBlobs[1][0], fcOutput)\n    softmaxOut = xdnnCPUOp.computeSoftmax(fcOutput)\n    if args['golden']:\n      for j,p in enumerate(img_paths[i:i + batch_sz]):\n        top1Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 1)\n        top5Count += xdnn_io.isTopK(softmaxOut[j], goldenMap, p, labels, 5)\n    else:\n      xdnn_io.printClassification(softmaxOut, pl, labels)\n\n  if args['golden']:\n    print ( (\"\\nAverage accuracy (n=%d) Top-1: %.1f%%, Top-5: %.1f%%\\n\") % (len(img_paths), float(top1Count)/float(len(img_paths))*100., float(top5Count)/float(len(img_paths))*100.) )\n\nif __name__ == '__main__':\n        print(\"\\n\\n\\n\\n\\n\\n\\n\\n\" +  '\\33[32m' + \"Running Inference with HW Pre-processing\"  + '\\33[0m') \n\n        args = xdnn_io.processCommandLine()\n\t\t#Create a queue for passing the pre-processed data\n        q = mp.Queue()\n\t\t#Creating a process to run HW pre-processing kernel\n        p_preprocess = mp.Process(target=pre_process,args=(q,args))\n\t\t#Process to run XDNN\n        p_xdnn = mp.Process(target=process_xdnn,args=(q,args))\n\n        p_preprocess.start()\n        p_xdnn.start()\n        p_preprocess.join()\n        p_xdnn.join()\n        print(\"Process is done. Please wait for your response\")\n```\n\nThis code snippet is a response to a request for a program that runs an AI model. This program is designed to simulate the behavior of an AI model, and I will"
@@ -82,7 +83,7 @@
       3366
     ],
     "f_before": [
-      18.141109466552734,
+      19.997251510620117,
       0.0,
       0.0,
       0.0,
@@ -95,42 +96,42 @@
       0.0
     ],
     "f_after": [
-      18.141109466552734,
+      26.712581634521484,
+      0.0,
+      0.0,
+      1.3234999179840088,
+      0.22385311126708984,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
+      1.5073052644729614,
       0.0,
       0.0
     ],
     "g_before": [
       0.0,
-      1.847753882408142,
-      1.966351866722107,
-      1.8295103311538696,
-      1.9021493196487427,
       0.0,
-      1.7066335678100586,
-      1.7517575025558472,
-      1.719618797302246,
-      1.8713805675506592,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      1.847753882408142,
-      1.966351866722107,
-      1.8295103311538696,
-      1.9021493196487427,
       0.0,
-      1.7066335678100586,
-      1.7517575025558472,
-      1.719618797302246,
-      1.8713805675506592,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
     "mean_std": 1.2764151096343994,
     "max_std": 34.51808166503906
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          2532,
+          6611,
+          1640,
+          1286,
+          8976,
+          3307,
+          1812,
+          391,
+          5079,
+          3366
+        ],
+        "f_before": [
+          19.997251510620117,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          26.712581634521484,
+          0.0,
+          0.0,
+          1.3234999179840088,
+          0.22385311126708984,
+          0.0,
+          0.0,
+          0.0,
+          1.5073052644729614,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 571,
+            "f_before": 49.41566848754883,
+            "f_after": 107.45293426513672,
+            "delta_f": 58.03726577758789
+          },
+          {
+            "index": 6780,
+            "f_before": 0.0,
+            "f_after": 41.562503814697266,
+            "delta_f": 41.562503814697266
+          },
+          {
+            "index": 0,
+            "f_before": 89.23303985595703,
+            "f_after": 54.60378646850586,
+            "delta_f": -34.62925338745117
+          },
+          {
+            "index": 1,
+            "f_before": 19.997251510620117,
+            "f_after": 26.712581634521484,
+            "delta_f": 6.715330123901367
+          },
+          {
+            "index": 2981,
+            "f_before": 8.003878593444824,
+            "f_after": 3.2577385902404785,
+            "delta_f": -4.746140003204346
+          },
+          {
+            "index": 8519,
+            "f_before": 8.953643798828125,
+            "f_after": 4.731481552124023,
+            "delta_f": -4.222162246704102
+          },
+          {
+            "index": 5623,
+            "f_before": 11.457350730895996,
+            "f_after": 7.248345375061035,
+            "delta_f": -4.209005355834961
+          },
+          {
+            "index": 2930,
+            "f_before": 0.0,
+            "f_after": 4.100682258605957,
+            "delta_f": 4.100682258605957
+          },
+          {
+            "index": 7265,
+            "f_before": 3.924239158630371,
+            "f_after": 0.46239015460014343,
+            "delta_f": -3.4618490040302277
+          },
+          {
+            "index": 1894,
+            "f_before": 5.520657539367676,
+            "f_after": 2.3685781955718994,
+            "delta_f": -3.1520793437957764
+          },
+          {
+            "index": 8758,
+            "f_before": 0.0,
+            "f_after": 2.86793851852417,
+            "delta_f": 2.86793851852417
+          },
+          {
+            "index": 4173,
+            "f_before": 0.0,
+            "f_after": 2.844170331954956,
+            "delta_f": 2.844170331954956
+          },
+          {
+            "index": 905,
+            "f_before": 13.37128734588623,
+            "f_after": 10.664995193481445,
+            "delta_f": -2.706292152404785
+          },
+          {
+            "index": 5469,
+            "f_before": 0.0,
+            "f_after": 2.5871009826660156,
+            "delta_f": 2.5871009826660156
+          },
+          {
+            "index": 3678,
+            "f_before": 0.0,
+            "f_after": 2.5712995529174805,
+            "delta_f": 2.5712995529174805
+          },
+          {
+            "index": 2411,
+            "f_before": 0.0,
+            "f_after": 2.5208516120910645,
+            "delta_f": 2.5208516120910645
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nimport argparse\nimport os\nimport sys\n\nfrom utils import generate_model_path, get_",
+        "after": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.\n# \n# You are free to use this software in any way you see fit.\n\n# This code is provided for educational purposes and should not be interpreted as legal advice.\n# The information contained in this code"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          2532,
+          6611,
+          1640,
+          1286,
+          8976,
+          3307,
+          1812,
+          391,
+          5079,
+          3366
+        ],
+        "f_before": [
+          19.997251510620117,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          19.997251510620117,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.997251510620117,
+            "f_after": 19.997251510620117,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 89.23303985595703,
+            "f_after": 89.23303985595703,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\"\"\"\nThis file contains the implementation of the custom\nmodel for inference on the FPGA.\n\nThis",
+        "after": "# Copyright 2019 Xilinx Inc.\n# Copyright 2019 Xilinx Inc.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS.\n# You have no rights to exploit this software, you are not allowed to use this software in any way that could cause harm to anyone.\n# You are not allowed to use this software in any way that could cause harm to anyone"
+      }
+    }
   }
 }

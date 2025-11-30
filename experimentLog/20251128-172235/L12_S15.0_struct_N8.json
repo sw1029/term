@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"\"\nTAGS_EMPTY_JSON = \"{}\"\nTAGS_MALFORMED_JSON = \"{\\\"e\\\":}\"\nQUERY_JSON = {\"tagName1\": \"str1\"}\nSEARCHED_RECORD = {\n  \"id\": \"RecordId\",\n  \"type\": None,\n  \"value\": \"RecordValue\",\n  \"tags\": TAGS\n}\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_get_token_info():\n    info = await Wallet.get_token_info(0)\n    assert info\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_send_tokens():\n    receipt = await Wallet.send_tokens(0,1,\"address\")\n    assert receipt\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_create_payment_address():\n    address = await Wallet.create_payment_address()\n    assert address\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_create_payment_address_with_seed():\n    address = await Wallet.create_payment_address(\"0000000000000000000000WHATEVER00\")\n    assert address\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_validate_payment_address():\n    await Wallet.validate_payment_address('sov:1:1234')\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_wallet_storage():\n    await Wallet.add_record(TYPE, ID, VALUE, TAGS)\n\n    await Wallet.update_record_value(TYPE, ID, VALUE_NEW)\n    await Wallet.update_record_tags(TYPE, ID, TAGS_EMPTY_JSON)\n    await Wallet.add_record_tags(TYPE, ID, TAGS)\n    await Wallet.delete_record_tags(TYPE, ID, ['one', 'two'])\n    await Wallet.delete_record(TYPE, ID)\n    record = {\n        \"id\": ID,\n        \"type\": TYPE,\n        \"value\": VALUE,\n        \"tags\": None,\n    }\n    assert (json.loads(await Wallet.get_record(TYPE, ID, OPTIONS)) == record)\n\n\n@pytest.mark.asyncio\nasync def test_wallet_search():\n    search_handle = await Wallet.open_search(TYPE, QUERY_JSON, None)\n    assert (search_handle == 1)\n    searched_record = await Wallet.search_next_records(search_handle, 1)\n    assert (json.loads(searched_record) == SEARCHED_RECORD)\n    await Wallet.close_search(search_handle)\n\n    with pytest.raises(VcxError) as e:\n        await Wallet.export(\"/tmp/output.wallet\", \"backupKey\")\n\n\n@pytest.mark.asyncio\nasync def test_import_wallet_failures(vcx_init_test_mode, cleanup):\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet('Invalid Json')\n    assert ErrorCode.InvalidJson == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.IOError == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_key': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingWalletName == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingWalletKey == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingExportedWalletPath == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'exported_wallet_path': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingBackupKey == e.value.error_code\n    cleanup(True)\n\n\n",
+  "prompt": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY =",
   "output": {
     "before": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"\"\nTAGS_EMPTY_JSON = \"{}\"\nTAGS_MALFORMED_JSON = \"{\\\"e\\\":}\"\nQUERY_JSON = {\"tagName1\": \"str1\"}\nSEARCHED_RECORD = {\n  \"id\": \"RecordId\",\n  \"type\": None,\n  \"value\": \"RecordValue\",\n  \"tags\": TAGS\n}\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_get_token_info():\n    info = await Wallet.get_token_info(0)\n    assert info\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_send_tokens():\n    receipt = await Wallet.send_tokens(0,1,\"address\")\n    assert receipt\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_create_payment_address():\n    address = await Wallet.create_payment_address()\n    assert address\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_create_payment_address_with_seed():\n    address = await Wallet.create_payment_address(\"0000000000000000000000WHATEVER00\")\n    assert address\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_validate_payment_address():\n    await Wallet.validate_payment_address('sov:1:1234')\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_wallet_storage():\n    await Wallet.add_record(TYPE, ID, VALUE, TAGS)\n\n    await Wallet.update_record_value(TYPE, ID, VALUE_NEW)\n    await Wallet.update_record_tags(TYPE, ID, TAGS_EMPTY_JSON)\n    await Wallet.add_record_tags(TYPE, ID, TAGS)\n    await Wallet.delete_record_tags(TYPE, ID, ['one', 'two'])\n    await Wallet.delete_record(TYPE, ID)\n    record = {\n        \"id\": ID,\n        \"type\": TYPE,\n        \"value\": VALUE,\n        \"tags\": None,\n    }\n    assert (json.loads(await Wallet.get_record(TYPE, ID, OPTIONS)) == record)\n\n\n@pytest.mark.asyncio\nasync def test_wallet_search():\n    search_handle = await Wallet.open_search(TYPE, QUERY_JSON, None)\n    assert (search_handle == 1)\n    searched_record = await Wallet.search_next_records(search_handle, 1)\n    assert (json.loads(searched_record) == SEARCHED_RECORD)\n    await Wallet.close_search(search_handle)\n\n    with pytest.raises(VcxError) as e:\n        await Wallet.export(\"/tmp/output.wallet\", \"backupKey\")\n\n\n@pytest.mark.asyncio\nasync def test_import_wallet_failures(vcx_init_test_mode, cleanup):\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet('Invalid Json')\n    assert ErrorCode.InvalidJson == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.IOError == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_key': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingWalletName == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingWalletKey == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingExportedWalletPath == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'exported_wallet_path': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingBackupKey == e.value.error_code\n    cleanup(True)\n\n\n@pytest.mark.asyncio\nasync def test_wallet_export():\n    await Wallet.export(\"/tmp/output.wallet\", \"backupKey\")\n    with open(\"/tmp/output.wallet\", \"r\") as f:\n",
     "after": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"\"\nTAGS_EMPTY_JSON = \"{}\"\nTAGS_MALFORMED_JSON = \"{\\\"e\\\":}\"\nQUERY_JSON = {\"tagName1\": \"str1\"}\nSEARCHED_RECORD = {\n  \"id\": \"RecordId\",\n  \"type\": None,\n  \"value\": \"RecordValue\",\n  \"tags\": TAGS\n}\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_get_token_info():\n    info = await Wallet.get_token_info(0)\n    assert info\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_send_tokens():\n    receipt = await Wallet.send_tokens(0,1,\"address\")\n    assert receipt\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_create_payment_address():\n    address = await Wallet.create_payment_address()\n    assert address\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_create_payment_address_with_seed():\n    address = await Wallet.create_payment_address(\"0000000000000000000000WHATEVER00\")\n    assert address\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_validate_payment_address():\n    await Wallet.validate_payment_address('sov:1:1234')\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_wallet_storage():\n    await Wallet.add_record(TYPE, ID, VALUE, TAGS)\n\n    await Wallet.update_record_value(TYPE, ID, VALUE_NEW)\n    await Wallet.update_record_tags(TYPE, ID, TAGS_EMPTY_JSON)\n    await Wallet.add_record_tags(TYPE, ID, TAGS)\n    await Wallet.delete_record_tags(TYPE, ID, ['one', 'two'])\n    await Wallet.delete_record(TYPE, ID)\n    record = {\n        \"id\": ID,\n        \"type\": TYPE,\n        \"value\": VALUE,\n        \"tags\": None,\n    }\n    assert (json.loads(await Wallet.get_record(TYPE, ID, OPTIONS)) == record)\n\n\n@pytest.mark.asyncio\nasync def test_wallet_search():\n    search_handle = await Wallet.open_search(TYPE, QUERY_JSON, None)\n    assert (search_handle == 1)\n    searched_record = await Wallet.search_next_records(search_handle, 1)\n    assert (json.loads(searched_record) == SEARCHED_RECORD)\n    await Wallet.close_search(search_handle)\n\n    with pytest.raises(VcxError) as e:\n        await Wallet.export(\"/tmp/output.wallet\", \"backupKey\")\n\n\n@pytest.mark.asyncio\nasync def test_import_wallet_failures(vcx_init_test_mode, cleanup):\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet('Invalid Json')\n    assert ErrorCode.InvalidJson == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.IOError == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_key': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingWalletName == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'exported_wallet_path': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingWalletKey == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'backup_key': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingExportedWalletPath == e.value.error_code\n    cleanup(True)\n\n    config = {'wallet_name': '', 'wallet_key': '', 'exported_wallet_path': ''}\n    with pytest.raises(VcxError) as e:\n        await Wallet.import_wallet(json.dumps(config))\n    assert ErrorCode.MissingBackupKey == e.value.error_code\n    cleanup(True)\n\n\n@pytest.mark.asyncio\n@pytest.mark.usefixtures('vcx_init_test_mode')\nasync def test_get_record_value():\n    # Test get_record_value with different options\n    record"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      92.074462890625,
+      122.30313110351562,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      92.074462890625,
+      243.49765014648438,
       0.0,
       0.0,
       0.0,
@@ -105,32 +106,32 @@
       0.0,
       0.0,
       0.0,
-      0.0
+      0.4313838481903076
     ],
     "g_before": [
-      53.580780029296875,
       0.0,
-      9.297523498535156,
-      0.00988009013235569,
-      0.012298216111958027,
-      9.873326301574707,
       0.0,
-      9.193160057067871,
       0.0,
-      9.978791236877441,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      53.580780029296875,
       0.0,
-      9.297523498535156,
-      0.00988009013235569,
-      0.012298216111958027,
-      9.873326301574707,
       0.0,
-      9.193160057067871,
       0.0,
-      9.978791236877441,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
     "mean_std": 1.6908782720565796,
     "max_std": 61.18351364135742
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          8238,
+          2336,
+          5517,
+          428,
+          628,
+          5486,
+          1420,
+          5452,
+          4220
+        ],
+        "f_before": [
+          0.0,
+          122.30313110351562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          243.49765014648438,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.4313838481903076
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 122.30313110351562,
+            "f_after": 243.49765014648438,
+            "delta_f": 121.19451904296875
+          },
+          {
+            "index": 1836,
+            "f_before": 0.0,
+            "f_after": 33.16859817504883,
+            "delta_f": 33.16859817504883
+          },
+          {
+            "index": 889,
+            "f_before": 0.0,
+            "f_after": 9.768842697143555,
+            "delta_f": 9.768842697143555
+          },
+          {
+            "index": 8955,
+            "f_before": 0.0,
+            "f_after": 7.6946516036987305,
+            "delta_f": 7.6946516036987305
+          },
+          {
+            "index": 1,
+            "f_before": 19.50436019897461,
+            "f_after": 12.0017671585083,
+            "delta_f": -7.502593040466309
+          },
+          {
+            "index": 7077,
+            "f_before": 0.0,
+            "f_after": 6.848465442657471,
+            "delta_f": 6.848465442657471
+          },
+          {
+            "index": 7504,
+            "f_before": 0.0,
+            "f_after": 6.777798175811768,
+            "delta_f": 6.777798175811768
+          },
+          {
+            "index": 1270,
+            "f_before": 0.0,
+            "f_after": 6.743040084838867,
+            "delta_f": 6.743040084838867
+          },
+          {
+            "index": 7238,
+            "f_before": 0.0,
+            "f_after": 6.55135440826416,
+            "delta_f": 6.55135440826416
+          },
+          {
+            "index": 1892,
+            "f_before": 156.94277954101562,
+            "f_after": 150.93670654296875,
+            "delta_f": -6.006072998046875
+          },
+          {
+            "index": 2826,
+            "f_before": 0.0,
+            "f_after": 5.847142219543457,
+            "delta_f": 5.847142219543457
+          },
+          {
+            "index": 2717,
+            "f_before": 0.0,
+            "f_after": 5.816019535064697,
+            "delta_f": 5.816019535064697
+          },
+          {
+            "index": 5169,
+            "f_before": 0.0,
+            "f_after": 5.692816257476807,
+            "delta_f": 5.692816257476807
+          },
+          {
+            "index": 2746,
+            "f_before": 0.0,
+            "f_after": 5.326994895935059,
+            "delta_f": 5.326994895935059
+          },
+          {
+            "index": 1986,
+            "f_before": 0.0,
+            "f_after": 5.025987148284912,
+            "delta_f": 5.025987148284912
+          },
+          {
+            "index": 9185,
+            "f_before": 0.0,
+            "f_after": 4.857236862182617,
+            "delta_f": 4.857236862182617
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"{\\\"tagName1\\\":\\\"str1\\\"}\"\nOPTIONS_EMPTY = json.dumps({\"retrieveType\": False, \"retrieveValue\": False, \"retrieveTags\": False})\n\n@pytest.fixture\ndef mock_wallet():\n    return mock.",
+        "after": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"\"\nOPTIONS_EMPTY = \"\"\n\n\n@pytest.fixture\ndef vcx_context():\n    return VcxContext()\n\n\n@pytest.fixture\ndef vcx_config():\n    return VcxConfig()\n\n\n@pytest.fixture"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          8238,
+          2336,
+          5517,
+          428,
+          628,
+          5486,
+          1420,
+          5452,
+          4220
+        ],
+        "f_before": [
+          0.0,
+          122.30313110351562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          122.30313110351562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.50436019897461,
+            "f_after": 19.50436019897461,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 122.30313110351562,
+            "f_after": 122.30313110351562,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"{\\\"tagName1\\\":\\\"\\\",\\\"tagName2\\\":\\\"\\\",\\\"tagName3\\\":\\\"\\\"}\"\nOPTIONS_EMPTY = json.dumps({\"retrieveType\": False, \"retrieveValue\": False, \"retrieveTags\": False})\nINVALID_OPTIONS = json",
+        "after": "import pytest\nfrom vcx.error import VcxError, ErrorCode\nfrom vcx.api.wallet import *\nimport json\n\nTYPE = \"record type\"\nEMPTY_TYPE = \"\"\nID = \"123\"\nEMPTY_ID = \"\"\nVALUE = \"record value\"\nVALUE_NEW = \"RecordValueNew\"\nEMPTY_VALUE = \"\"\nTAGS = \"{\\\"tagName1\\\":\\\"str1\\\",\\\"tagName2\\\":\\\"5\\\",\\\"tagName3\\\":\\\"12\\\"}\"\nOPTIONS = json.dumps({\"retrieveType\": True, \"retrieveValue\": True, \"retrieveTags\": True})\nTAGS_EMPTY = \"EmptyTags\"\nOPTIONS_EMPTY = \"EmptyOptions\"\nDEFAULT_TIMEOUT = 10000\n\n\n@pytest.mark.skipif(\n    False, reason=\"skip test: VcxError is not implemented\"\n"
+      }
+    }
   }
 }

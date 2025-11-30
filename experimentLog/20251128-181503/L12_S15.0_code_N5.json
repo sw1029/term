@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"Yummy Recipes API\",\n        \"info\": {\n            \"title\": \"Yummy Recipes API\",\n            \"description\": \"This app enables you to access Yummy Recipes resources, a platform \\\n                    for users to keep track of their awesome recipes and share with others if \\\n                    they so wish. The API functionalities include: creation of new user \\\n                    accounts, user login, password reset, creation of new recipe categories, \\\n                    viewing of recipe categories, updating of recipe categories, deletion of \\\n                    recipe categories, creation of new recipes, viewing of recipes, updating of \\\n                    recipes and deletion of recipes.\",\n            \"contact\": {\n                \"responsibleOrganization\": \"Yummy Recipes Inc.\",\n                \"responsibleDeveloper\": \"Paul Ndemo Oroko\",\n                \"url\": \"https://github.com/pndemo/yummy-recipes-api\",\n            }\n        },\n        \"schemes\": [\"http\", \"https\"],\n        'securityDefinitions': {\n            \"Bearer\": {\n                \"type\": \"apiKey\",\n                \"name\": \"Authorization\",\n                \"in\": \"header\"\n            }\n        }\n    }\n\n    Swagger(app)\n\n    db.init_app(app)\n\n    def index():\n        \"\"\" Yummy Recipes API home page \"\"\"\n        return redirect('/apidocs')\n\n    from app.v1.views import auth_blueprint\n    app.register_blueprint(auth_blueprint)\n\n    from app.v1.views.category_views import category_view, category_specific_view, \\\n            category_search_view\n    app.add_url_rule('/', view_func=index)\n    app.add_url_rule('/api/v1/category/', view_func=category_view)\n    app.add_url_rule('/api/v1/category/<int:category_id>', view_func=category_specific_view)\n    app.add_url_rule('/api/v1/category/search', view_func=category_search_view)\n\n    from app.v1.views.recipe_views import recipe_view, recipe_specific_view, recipe_search_view\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/', view_func=recipe_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/<int:recipe_id>', view_func= \\\n            recipe_specific_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/search', view_func=recipe_search_view)\n\n    return app\n",
+  "prompt": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",",
   "output": {
     "before": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"Yummy Recipes API\",\n        \"info\": {\n            \"title\": \"Yummy Recipes API\",\n            \"description\": \"This app enables you to access Yummy Recipes resources, a platform \\\n                    for users to keep track of their awesome recipes and share with others if \\\n                    they so wish. The API functionalities include: creation of new user \\\n                    accounts, user login, password reset, creation of new recipe categories, \\\n                    viewing of recipe categories, updating of recipe categories, deletion of \\\n                    recipe categories, creation of new recipes, viewing of recipes, updating of \\\n                    recipes and deletion of recipes.\",\n            \"contact\": {\n                \"responsibleOrganization\": \"Yummy Recipes Inc.\",\n                \"responsibleDeveloper\": \"Paul Ndemo Oroko\",\n                \"url\": \"https://github.com/pndemo/yummy-recipes-api\",\n            }\n        },\n        \"schemes\": [\"http\", \"https\"],\n        'securityDefinitions': {\n            \"Bearer\": {\n                \"type\": \"apiKey\",\n                \"name\": \"Authorization\",\n                \"in\": \"header\"\n            }\n        }\n    }\n\n    Swagger(app)\n\n    db.init_app(app)\n\n    def index():\n        \"\"\" Yummy Recipes API home page \"\"\"\n        return redirect('/apidocs')\n\n    from app.v1.views import auth_blueprint\n    app.register_blueprint(auth_blueprint)\n\n    from app.v1.views.category_views import category_view, category_specific_view, \\\n            category_search_view\n    app.add_url_rule('/', view_func=index)\n    app.add_url_rule('/api/v1/category/', view_func=category_view)\n    app.add_url_rule('/api/v1/category/<int:category_id>', view_func=category_specific_view)\n    app.add_url_rule('/api/v1/category/search', view_func=category_search_view)\n\n    from app.v1.views.recipe_views import recipe_view, recipe_specific_view, recipe_search_view\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/', view_func=recipe_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/<int:recipe_id>', view_func= \\\n            recipe_specific_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/search', view_func=recipe_search_view)\n\n    return app\n```\n\n**Explanation:**\n\n1. **Import Necessary Libraries:**\n   - `flask`: For creating the web application.\n   - `flask_sqlalchemy`: For interacting with a database.\n   - `instance.config`: For accessing",
     "after": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"Yummy Recipes API\",\n        \"info\": {\n            \"title\": \"Yummy Recipes API\",\n            \"description\": \"This app enables you to access Yummy Recipes resources, a platform \\\n                    for users to keep track of their awesome recipes and share with others if \\\n                    they so wish. The API functionalities include: creation of new user \\\n                    accounts, user login, password reset, creation of new recipe categories, \\\n                    viewing of recipe categories, updating of recipe categories, deletion of \\\n                    recipe categories, creation of new recipes, viewing of recipes, updating of \\\n                    recipes and deletion of recipes.\",\n            \"contact\": {\n                \"responsibleOrganization\": \"Yummy Recipes Inc.\",\n                \"responsibleDeveloper\": \"Paul Ndemo Oroko\",\n                \"url\": \"https://github.com/pndemo/yummy-recipes-api\",\n            }\n        },\n        \"schemes\": [\"http\", \"https\"],\n        'securityDefinitions': {\n            \"Bearer\": {\n                \"type\": \"apiKey\",\n                \"name\": \"Authorization\",\n                \"in\": \"header\"\n            }\n        }\n    }\n\n    Swagger(app)\n\n    db.init_app(app)\n\n    def index():\n        \"\"\" Yummy Recipes API home page \"\"\"\n        return redirect('/apidocs')\n\n    from app.v1.views import auth_blueprint\n    app.register_blueprint(auth_blueprint)\n\n    from app.v1.views.category_views import category_view, category_specific_view, \\\n            category_search_view\n    app.add_url_rule('/', view_func=index)\n    app.add_url_rule('/api/v1/category/', view_func=category_view)\n    app.add_url_rule('/api/v1/category/<int:category_id>', view_func=category_specific_view)\n    app.add_url_rule('/api/v1/category/search', view_func=category_search_view)\n\n    from app.v1.views.recipe_views import recipe_view, recipe_specific_view, recipe_search_view\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/', view_func=recipe_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/<int:recipe_id>', view_func= \\\n            recipe_specific_view)\n    app.add_url_rule('/api/v1/recipe/<int:category_id>/search', view_func=recipe_search_view)\n\n    return app\n```\n\n**Initial Application Specifications:**\n\nThis file defines the initial application specifications for a simple recipe app. It includes:\n\n* **Configuration:**\n    * `app_config`: A dictionary for app configuration.\n* **Flask App:**\n"
@@ -82,7 +83,7 @@
       6412
     ],
     "f_before": [
-      111.40928649902344,
+      157.89456176757812,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      111.40928649902344,
+      319.7383117675781,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      65.8329849243164,
-      12.107861518859863,
-      11.993620872497559,
-      11.325469017028809,
-      11.463194847106934,
-      11.097790718078613,
-      10.848326683044434,
-      10.71635913848877,
-      10.687752723693848,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      65.8329849243164,
-      12.107861518859863,
-      11.993620872497559,
-      11.325469017028809,
-      11.463194847106934,
-      11.097790718078613,
-      10.848326683044434,
-      10.71635913848877,
-      10.687752723693848,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2432,
+          6839,
+          4726,
+          8905,
+          3525,
+          9165,
+          4038,
+          8118,
+          6412
+        ],
+        "f_before": [
+          157.89456176757812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          319.7383117675781,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 157.89456176757812,
+            "f_after": 319.7383117675781,
+            "delta_f": 161.84375
+          },
+          {
+            "index": 6554,
+            "f_before": 9.301058769226074,
+            "f_after": 46.143306732177734,
+            "delta_f": 36.84224796295166
+          },
+          {
+            "index": 3569,
+            "f_before": 143.29322814941406,
+            "f_after": 161.7091827392578,
+            "delta_f": 18.41595458984375
+          },
+          {
+            "index": 4463,
+            "f_before": 14.699172019958496,
+            "f_after": 30.418073654174805,
+            "delta_f": 15.718901634216309
+          },
+          {
+            "index": 4666,
+            "f_before": 0.0,
+            "f_after": 10.712270736694336,
+            "delta_f": 10.712270736694336
+          },
+          {
+            "index": 4977,
+            "f_before": 0.0,
+            "f_after": 9.719138145446777,
+            "delta_f": 9.719138145446777
+          },
+          {
+            "index": 2763,
+            "f_before": 0.0,
+            "f_after": 9.41114616394043,
+            "delta_f": 9.41114616394043
+          },
+          {
+            "index": 691,
+            "f_before": 0.0,
+            "f_after": 9.38186264038086,
+            "delta_f": 9.38186264038086
+          },
+          {
+            "index": 4035,
+            "f_before": 0.0,
+            "f_after": 8.600601196289062,
+            "delta_f": 8.600601196289062
+          },
+          {
+            "index": 332,
+            "f_before": 0.0,
+            "f_after": 8.18086051940918,
+            "delta_f": 8.18086051940918
+          },
+          {
+            "index": 8375,
+            "f_before": 0.0,
+            "f_after": 7.999270915985107,
+            "delta_f": 7.999270915985107
+          },
+          {
+            "index": 5010,
+            "f_before": 0.0,
+            "f_after": 7.796721458435059,
+            "delta_f": 7.796721458435059
+          },
+          {
+            "index": 1758,
+            "f_before": 0.0,
+            "f_after": 7.763036727905273,
+            "delta_f": 7.763036727905273
+          },
+          {
+            "index": 2290,
+            "f_before": 0.0,
+            "f_after": 7.112808704376221,
+            "delta_f": 7.112808704376221
+          },
+          {
+            "index": 2418,
+            "f_before": 0.0,
+            "f_after": 7.044897079467773,
+            "delta_f": 7.044897079467773
+          },
+          {
+            "index": 3237,
+            "f_before": 1.8189479112625122,
+            "f_after": 8.812629699707031,
+            "delta_f": 6.993681788444519
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"info\": {\n            \"title\": \"Application Title\",\n            \"version\": \"1.0.0\"\n        },\n        \"paths\": {\n            \"/\": {\n                \"get\": {\n                    \"",
+        "after": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n    }\n    \n    # Swagger configuration\n    Swagger(app)\n\n    # Initialize database\n    db.init_app(app)\n\n    return app\n\n\n# Application Initialization\napp = create_app(config_name=\""
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2432,
+          6839,
+          4726,
+          8905,
+          3525,
+          9165,
+          4038,
+          8118,
+          6412
+        ],
+        "f_before": [
+          157.89456176757812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          157.89456176757812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 20.600149154663086,
+            "f_after": 20.600149154663086,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 157.89456176757812,
+            "f_after": 157.89456176757812,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"title\": \"My API\",\n        \"info\": {\n            \"version\": \"1.0.0\"\n        }\n    }\n\n    # Initialize the database\n    db.init_app(app)\n\n",
+        "after": "\"\"\" Initial application specifications \"\"\"\n\nfrom flask import Flask, redirect\nfrom flask_sqlalchemy import SQLAlchemy\nfrom instance.config import app_config\nfrom flasgger import Swagger\n\n# pylint: disable=C0103\n\ndb = SQLAlchemy()\n\ndef create_app(config_name):\n    \"\"\" Function for creating application depending on configuration \"\"\"\n\n    app = Flask(__name__, instance_relative_config=True)\n    app.config.from_object(app_config[config_name])\n\n    app.config['SWAGGER'] = {\n        \"swagger\": \"2.0\",\n        \"swagger_ui\": {\n            \"version\": \"2.0\",\n            \"base\": \"swagger_ui\",\n        },\n    }\n\n    # Load Flask extensions\n    Swagger.init(app)\n    "
+      }
+    }
   }
 }

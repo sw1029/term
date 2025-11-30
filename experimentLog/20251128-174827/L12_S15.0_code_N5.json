@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\", \"server\"]\n    supported_bits = env[\"bits\"] == \"64\"\n    supported_arch = env[\"arch\"] != \"arm64\" and not env[\"arch\"].startswith(\"rv\")\n\n    # Hack to disable on Linux arm64. This won't work well for cross-compilation (checks\n    # host, not target) and would need a more thorough fix by refactoring our arch and\n    # bits-handling code.\n    from platform import machine\n\n    if platform == \"x11\" and machine() != \"x86_64\":\n        supported_arch = False\n\n    return env[\"tools\"] and supported_platform and supported_bits and supported_arch\n\n\ndef configure(env):\n    pass\n",
+  "prompt": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows",
   "output": {
     "before": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\", \"server\"]\n    supported_bits = env[\"bits\"] == \"64\"\n    supported_arch = env[\"arch\"] != \"arm64\" and not env[\"arch\"].startswith(\"rv\")\n\n    # Hack to disable on Linux arm64. This won't work well for cross-compilation (checks\n    # host, not target) and would need a more thorough fix by refactoring our arch and\n    # bits-handling code.\n    from platform import machine\n\n    if platform == \"x11\" and machine() != \"x86_64\":\n        supported_arch = False\n\n    return env[\"tools\"] and supported_platform and supported_bits and supported_arch\n\n\ndef configure(env):\n    pass\n```\n\n**Explanation:**\n\nThe code you provided determines if a build is possible based on various factors:\n\n* **Platform:** It checks if the target platform is supported. It checks if the platform is in the list: `[\"x11",
     "after": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\", \"server\"]\n    supported_bits = env[\"bits\"] == \"64\"\n    supported_arch = env[\"arch\"] != \"arm64\" and not env[\"arch\"].startswith(\"rv\")\n\n    # Hack to disable on Linux arm64. This won't work well for cross-compilation (checks\n    # host, not target) and would need a more thorough fix by refactoring our arch and\n    # bits-handling code.\n    from platform import machine\n\n    if platform == \"x11\" and machine() != \"x86_64\":\n        supported_arch = False\n\n    return env[\"tools\"] and supported_platform and supported_bits and supported_arch\n\n\ndef configure(env):\n    pass\n```\n"
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          9169,
+          4282,
+          3929,
+          450,
+          6654,
+          6328,
+          8469,
+          4546,
+          4950
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 54.305484771728516,
+            "f_after": 0.0,
+            "delta_f": -54.305484771728516
+          },
+          {
+            "index": 8762,
+            "f_before": 82.26565551757812,
+            "f_after": 101.86922454833984,
+            "delta_f": 19.60356903076172
+          },
+          {
+            "index": 5012,
+            "f_before": 16.641218185424805,
+            "f_after": 0.0,
+            "delta_f": -16.641218185424805
+          },
+          {
+            "index": 527,
+            "f_before": 0.0026864176616072655,
+            "f_after": 9.995882987976074,
+            "delta_f": 9.993196570314467
+          },
+          {
+            "index": 6544,
+            "f_before": 0.0,
+            "f_after": 9.760387420654297,
+            "delta_f": 9.760387420654297
+          },
+          {
+            "index": 6037,
+            "f_before": 0.0,
+            "f_after": 9.56907844543457,
+            "delta_f": 9.56907844543457
+          },
+          {
+            "index": 2905,
+            "f_before": 0.0,
+            "f_after": 9.066676139831543,
+            "delta_f": 9.066676139831543
+          },
+          {
+            "index": 6170,
+            "f_before": 0.0,
+            "f_after": 9.021573066711426,
+            "delta_f": 9.021573066711426
+          },
+          {
+            "index": 5931,
+            "f_before": 8.81906509399414,
+            "f_after": 0.0,
+            "delta_f": -8.81906509399414
+          },
+          {
+            "index": 365,
+            "f_before": 0.0,
+            "f_after": 8.549079895019531,
+            "delta_f": 8.549079895019531
+          },
+          {
+            "index": 2315,
+            "f_before": 0.0,
+            "f_after": 8.194873809814453,
+            "delta_f": 8.194873809814453
+          },
+          {
+            "index": 7697,
+            "f_before": 0.0,
+            "f_after": 8.186765670776367,
+            "delta_f": 8.186765670776367
+          },
+          {
+            "index": 7209,
+            "f_before": 0.0,
+            "f_after": 8.012964248657227,
+            "delta_f": 8.012964248657227
+          },
+          {
+            "index": 1947,
+            "f_before": 0.0,
+            "f_after": 7.927590370178223,
+            "delta_f": 7.927590370178223
+          },
+          {
+            "index": 5130,
+            "f_before": 0.0,
+            "f_after": 7.056423664093018,
+            "delta_f": 7.056423664093018
+          },
+          {
+            "index": 3927,
+            "f_before": 0.0,
+            "f_after": 6.6986403465271,
+            "delta_f": 6.6986403465271
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\"]\n\n    return supported_platform and env.get(\"BUILD_TYPE\") == \"release\"\n\n# Example usage\nenv = {\"BUILD_TYPE\": \"debug\"}\nplatform = \"osx\"\n\nresult = can_build(env",
+        "after": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\"]\n\n    if supported_platform:\n        # Check if OpenImage Denoise is available\n        if env.get(\"OPENIMAGE_DENOISE\"):\n            return True\n    \n        # If not, check if we can"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          9169,
+          4282,
+          3929,
+          450,
+          6654,
+          6328,
+          8469,
+          4546,
+          4950
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 54.305484771728516,
+            "f_after": 54.305484771728516,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\"]\n\n    return supported_platform and env.get(\"oneDNN\") is not None\n```\n\nThis function checks if a given environment and platform combination allows for building a specific software component. Let's break down the code:\n\n1.",
+        "after": "def can_build(env, platform):\n    # Thirdparty dependency OpenImage Denoise includes oneDNN library\n    # and the version we use only supports x86_64.\n    # It's also only relevant for tools build and desktop platforms,\n    # as doing lightmap generation and denoising on Android or HTML5\n    # would be a bit far-fetched.\n    # Note: oneDNN doesn't support ARM64, OIDN needs updating to the latest version\n    supported_platform = platform in [\"x11\", \"osx\", \"windows\", \"android\"]\n    return supported_platform\n```"
+      }
+    }
   }
 }

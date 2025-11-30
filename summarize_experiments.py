@@ -18,8 +18,12 @@ def load_run_summary(run_dir: str) -> Optional[Tuple[Dict[str, Any], Dict[str, A
     if not os.path.isfile(eval_path):
         return None
 
-    with open(eval_path, "r", encoding="utf-8") as f:
-        summary = json.load(f)
+    # eval_summary.json 이 비어있거나 깨진 경우를 무시하고 건너뛴다.
+    try:
+        with open(eval_path, "r", encoding="utf-8") as f:
+            summary = json.load(f)
+    except json.JSONDecodeError:
+        return None
 
     meta: Dict[str, Any] = {"run_dir": os.path.basename(run_dir)}
 

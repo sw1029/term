@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is this script?\nmapiodir = os.path.abspath(os.path.join(homedir,'..'))\nsys.path.insert(0,mapiodir) #put this at the front of the system path, ignoring any installed mapio stuff\n\n#third party\nfrom mapio.shake import ShakeGrid\nfrom mapio.gridbase import Grid\nfrom mapio.multiple import MultiGrid\nfrom mapio.dataset import DataSetException\nfrom mapio.grid2d import Grid2D\nfrom mapio.geodict import GeoDict\nimport numpy as np\n\ndef test_modify():\n    print('Testing ShakeGrid interpolate() method...')\n    geodict = GeoDict({'xmin':0.5,'xmax':6.5,'ymin':1.5,'ymax':6.5,'dx':1.0,'dy':1.0,'ny':6,'nx':7})\n    data = np.arange(14,56).reshape(6,7)\n    layers = OrderedDict()\n    layers['pga'] = data\n    shakeDict = {'event_id':'usabcd1234',\n                 'shakemap_id':'usabcd1234',\n                 'shakemap_version':1,\n                 'code_version':'4.0',\n                 'process_timestamp':datetime.utcnow(),\n                 'shakemap_originator':'us',\n                 'map_status':'RELEASED',\n                 'shakemap_event_type':'ACTUAL'}\n    eventDict = {'event_id':'usabcd1234',\n                 'magnitude':7.6,\n                 'depth':1.4,\n                 'lat':2.0,\n                 'lon':2.0,\n                 'event_timestamp':datetime.utcnow(),\n                 'event_network':'us',\n                 'event_description':'sample event'}\n    uncDict = {'pga':(0.0,0)}\n    shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n    rdata = np.random.rand(data.shape[0],data.shape[1])\n    shake.setLayer('pga',rdata)\n    newdata = shake.getLayer('pga').getData()\n    np.testing.assert_almost_equal(rdata,newdata)\n\ndef test_interpolate():\n    print('Testing ShakeGrid interpolate() method...')\n    geodict = GeoDict({'xmin':0.5,'xmax':6.5,'ymin':1.5,'ymax':6.5,'dx':1.0,'dy':1.0,'ny':6,'nx':7})\n    data = np.arange(14,56).reshape(6,7)\n    layers = OrderedDict()\n    layers['pga'] = data\n    shakeDict = {'event_id':'usabcd1234',\n                 'shakemap_id':'usabcd1234',\n                 'shakemap_version':1,\n                 'code_version':'4.0',\n                 'process_timestamp':datetime.utcnow(),\n                 'shakemap_originator':'us',\n                 'map_status':'RELEASED',\n                 'shakemap_event_type':'ACTUAL'}\n    eventDict = {'event_id':'usabcd1234',\n                 'magnitude':7.6,\n                 'depth':1.4,\n                 'lat':2.0,\n                 'lon':2.0,\n                 'event_timestamp':datetime.utcnow(),\n                 'event_network':'us',\n                 'event_description':'sample event'}\n    uncDict = {'pga':(0.0,0)}\n    shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n    sampledict = GeoDict({'xmin':3.0,'xmax':4.0,\n                          'ymin':3.0,'ymax':4.0,\n                          'dx':1.0,'dy':1.0,\n                          'ny':2,'nx':2})\n    shake2 = shake.interpolateToGrid(sampledict,method='linear')\n    output = np.array([[34.,35.],[41.,42.]])\n    np.testing.assert_almost_equal(output,shake2.getLayer('pga').getData())\n    print('Passed test of ShakeGrid interpolate() method.')\n\ndef test_read():\n    xmlfile = os.path.join(homedir,'data','northridge.xml')\n    tdir = tempfile.mkdtemp()\n    testfile = os.path.join(tdir,'test.xml')\n    try:\n        shakegrid = ShakeGrid.load(xmlfile,adjust='res')\n        t1 = time.time()\n        shakegrid.save(testfile)\n        t2 = time.time()\n        print('Saving shakemap took %.2f seconds' % (t2-t1))\n    except Exception as error:\n        print('Failed to read grid.xml format file \"%s\". Error \"%s\".' % (xmlfile,str(error)))\n        assert 0 == 1\n    finally:\n        if os.path.isdir(tdir):\n            shutil.rmtree(tdir)\n    \ndef test_save():\n    tdir = tempfile.mkdtemp()\n    testfile = os.path.join(tdir,'test.xml')\n    try:\n        print('Testing save/read functionality for shakemap grids...')\n        pga = np.arange(0,16,dtype=np.float32).reshape(4,4)\n        pgv = np.arange(1,17,dtype=np.float32).reshape(4,4)\n        mmi = np.arange(2,18,dtype=np.float32).reshape(4,4)\n        geodict = GeoDict({'xmin':0.5,'xmax':3.5,\n                           'ymin':0.5,'ymax':3.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':4,'nx':4})\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        shakeDict = {'event_id':'usabcd1234',\n                     'shakemap_id':'usabcd1234',\n                     'shakemap_version':1,\n                     'code_version':'4.0',\n                     'process_timestamp':datetime.utcnow(),\n                     'shakemap_originator':'us',\n                     'map_status':'RELEASED',\n                     'shakemap_event_type':'ACTUAL'}\n        eventDict = {'event_id':'usabcd1234',\n                     'magnitude':7.6,\n                     'depth':1.4,\n                     'lat':2.0,\n                     'lon':2.0,\n                     'event_timestamp':datetime.utcnow(),\n                     'event_network':'us',\n                     'event_description':'sample event'}\n        uncDict = {'pga':(0.0,0),\n                   'pgv':(0.0,0),\n                   'mmi':(0.0,0)}\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        \n        print('Testing save/read functionality...')\n        shake.save(testfile,version=3)\n        shake2 = ShakeGrid.load(testfile)\n        for layer in ['pga','pgv','mmi']:\n            tdata = shake2.getLayer(layer).getData()\n            np.testing.assert_almost_equal(tdata,layers[layer])\n\n        print('Passed save/read functionality for shakemap grids.')\n\n        print('Testing getFileGeoDict method...')\n        fgeodict = ShakeGrid.getFileGeoDict(testfile)\n        print('Passed save/read functionality for shakemap grids.')\n        \n        print('Testing loading with bounds (no resampling or padding)...')\n        sampledict = GeoDict({'xmin':-0.5,'xmax':3.5,\n                              'ymin':-0.5,'ymax':3.5,\n                              'dx':1.0,'dy':1.0,\n                              'ny':5,'nx':5})\n        shake3 = ShakeGrid.load(testfile,samplegeodict=sampledict,\n                                resample=False,doPadding=False,padValue=np.nan)\n        tdata = shake3.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,layers['pga'])\n\n        print('Passed loading with bounds (no resampling or padding)...')\n\n        print('Testing loading shakemap with padding, no resampling...')\n        newdict = GeoDict({'xmin':-0.5,'xmax':4.5,\n                           'ymin':-0.5,'ymax':4.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':6,'nx':6})\n        shake4 = ShakeGrid.load(testfile,samplegeodict=newdict,\n                                resample=False,doPadding=True,padValue=np.nan)\n        output = np.array([[np.nan,np.nan,np.nan,np.nan,np.nan,np.nan],\n                           [np.nan,0.0,1.0,2.0,3.0,np.nan],\n                           [np.nan,4.0,5.0,6.0,7.0,np.nan],\n                           [np.nan,8.0,9.0,10.0,11.0,np.nan],\n                           [np.nan,12.0,13.0,14.0,15.0,np.nan],\n                           [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan]])\n        tdata = shake4.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed loading shakemap with padding, no resampling...')\n\n        #make a bigger grid\n        pga = np.arange(0,36,dtype=np.float32).reshape(6,6)\n        pgv = np.arange(1,37,dtype=np.float32).reshape(6,6)\n        mmi = np.arange(2,38,dtype=np.float32).reshape(6,6)\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        geodict = GeoDict({'xmin':0.5,'xmax':5.5,\n                           'ymin':0.5,'ymax':5.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':6,'nx':6})\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        shake.save(testfile,version=3)\n\n        print('Testing resampling, no padding...')\n        littledict = GeoDict({'xmin':2.0,'xmax':4.0,\n                              'ymin':2.0,'ymax':4.0,\n                              'dx':1.0,'dy':1.0,\n                              'ny':3,'nx':3})\n        shake5 = ShakeGrid.load(testfile,samplegeodict=littledict,resample=True,doPadding=False,padValue=np.nan)\n        output = np.array([[10.5,11.5,12.5],\n                           [16.5,17.5,18.5],\n                           [22.5,23.5,24.5]])\n        tdata = shake5.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed resampling, no padding...')\n\n        print('Testing resampling and padding...')\n        pga = np.arange(0,16,dtype=np.float32).reshape(4,4)\n        pgv = np.arange(1,17,dtype=np.float32).reshape(4,4)\n        mmi = np.arange(2,18,dtype=np.float32).reshape(4,4)\n        geodict = GeoDict({'xmin':0.5,'ymax':3.5,\n                           'ymin':0.5,'xmax':3.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':4,'nx':4})\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        shake.save(testfile,version=3)\n        bigdict = GeoDict({'xmin':0.0,'xmax':4.0,\n                           'ymin':0.0,'ymax':4.0,\n                           'dx':1.0,'dy':1.0,\n                           'ny':5,'nx':5})\n        shake6 = ShakeGrid.load(testfile,samplegeodict=bigdict,resample=True,doPadding=True,padValue=np.nan)\n        tdata = shake6.getLayer('pga').getData()\n        output = np.array([[np.nan,np.nan,np.nan,np.nan,np.nan],\n                           [np.nan,2.5,3.5,4.5,np.nan],\n                           [np.nan,6.5,7.5,8.5,np.nan],\n                           [np.nan,10.5,11.5,12.5,np.nan],\n                           [np.nan,np.nan,np.nan,np.nan,np.nan]])\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed resampling and padding...')\n    except Exception as error:\n        print('Failed to read grid.xml format file \"%s\". Error \"%s\".' % (xmlfile,str(error)))\n        assert 0 == 1\n    finally:\n        if os.path.isdir(tdir):\n            shutil.rmtree(tdir)\n\nif __name__ == '__main__':\n    test_modify()\n    test_interpolate()\n    test_read()\n    test_save()\n    \n",
+  "prompt": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is",
   "output": {
     "before": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is this script?\nmapiodir = os.path.abspath(os.path.join(homedir,'..'))\nsys.path.insert(0,mapiodir) #put this at the front of the system path, ignoring any installed mapio stuff\n\n#third party\nfrom mapio.shake import ShakeGrid\nfrom mapio.gridbase import Grid\nfrom mapio.multiple import MultiGrid\nfrom mapio.dataset import DataSetException\nfrom mapio.grid2d import Grid2D\nfrom mapio.geodict import GeoDict\nimport numpy as np\n\ndef test_modify():\n    print('Testing ShakeGrid interpolate() method...')\n    geodict = GeoDict({'xmin':0.5,'xmax':6.5,'ymin':1.5,'ymax':6.5,'dx':1.0,'dy':1.0,'ny':6,'nx':7})\n    data = np.arange(14,56).reshape(6,7)\n    layers = OrderedDict()\n    layers['pga'] = data\n    shakeDict = {'event_id':'usabcd1234',\n                 'shakemap_id':'usabcd1234',\n                 'shakemap_version':1,\n                 'code_version':'4.0',\n                 'process_timestamp':datetime.utcnow(),\n                 'shakemap_originator':'us',\n                 'map_status':'RELEASED',\n                 'shakemap_event_type':'ACTUAL'}\n    eventDict = {'event_id':'usabcd1234',\n                 'magnitude':7.6,\n                 'depth':1.4,\n                 'lat':2.0,\n                 'lon':2.0,\n                 'event_timestamp':datetime.utcnow(),\n                 'event_network':'us',\n                 'event_description':'sample event'}\n    uncDict = {'pga':(0.0,0)}\n    shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n    rdata = np.random.rand(data.shape[0],data.shape[1])\n    shake.setLayer('pga',rdata)\n    newdata = shake.getLayer('pga').getData()\n    np.testing.assert_almost_equal(rdata,newdata)\n\ndef test_interpolate():\n    print('Testing ShakeGrid interpolate() method...')\n    geodict = GeoDict({'xmin':0.5,'xmax':6.5,'ymin':1.5,'ymax':6.5,'dx':1.0,'dy':1.0,'ny':6,'nx':7})\n    data = np.arange(14,56).reshape(6,7)\n    layers = OrderedDict()\n    layers['pga'] = data\n    shakeDict = {'event_id':'usabcd1234',\n                 'shakemap_id':'usabcd1234',\n                 'shakemap_version':1,\n                 'code_version':'4.0',\n                 'process_timestamp':datetime.utcnow(),\n                 'shakemap_originator':'us',\n                 'map_status':'RELEASED',\n                 'shakemap_event_type':'ACTUAL'}\n    eventDict = {'event_id':'usabcd1234',\n                 'magnitude':7.6,\n                 'depth':1.4,\n                 'lat':2.0,\n                 'lon':2.0,\n                 'event_timestamp':datetime.utcnow(),\n                 'event_network':'us',\n                 'event_description':'sample event'}\n    uncDict = {'pga':(0.0,0)}\n    shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n    sampledict = GeoDict({'xmin':3.0,'xmax':4.0,\n                          'ymin':3.0,'ymax':4.0,\n                          'dx':1.0,'dy':1.0,\n                          'ny':2,'nx':2})\n    shake2 = shake.interpolateToGrid(sampledict,method='linear')\n    output = np.array([[34.,35.],[41.,42.]])\n    np.testing.assert_almost_equal(output,shake2.getLayer('pga').getData())\n    print('Passed test of ShakeGrid interpolate() method.')\n\ndef test_read():\n    xmlfile = os.path.join(homedir,'data','northridge.xml')\n    tdir = tempfile.mkdtemp()\n    testfile = os.path.join(tdir,'test.xml')\n    try:\n        shakegrid = ShakeGrid.load(xmlfile,adjust='res')\n        t1 = time.time()\n        shakegrid.save(testfile)\n        t2 = time.time()\n        print('Saving shakemap took %.2f seconds' % (t2-t1))\n    except Exception as error:\n        print('Failed to read grid.xml format file \"%s\". Error \"%s\".' % (xmlfile,str(error)))\n        assert 0 == 1\n    finally:\n        if os.path.isdir(tdir):\n            shutil.rmtree(tdir)\n    \ndef test_save():\n    tdir = tempfile.mkdtemp()\n    testfile = os.path.join(tdir,'test.xml')\n    try:\n        print('Testing save/read functionality for shakemap grids...')\n        pga = np.arange(0,16,dtype=np.float32).reshape(4,4)\n        pgv = np.arange(1,17,dtype=np.float32).reshape(4,4)\n        mmi = np.arange(2,18,dtype=np.float32).reshape(4,4)\n        geodict = GeoDict({'xmin':0.5,'xmax':3.5,\n                           'ymin':0.5,'ymax':3.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':4,'nx':4})\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        shakeDict = {'event_id':'usabcd1234',\n                     'shakemap_id':'usabcd1234',\n                     'shakemap_version':1,\n                     'code_version':'4.0',\n                     'process_timestamp':datetime.utcnow(),\n                     'shakemap_originator':'us',\n                     'map_status':'RELEASED',\n                     'shakemap_event_type':'ACTUAL'}\n        eventDict = {'event_id':'usabcd1234',\n                     'magnitude':7.6,\n                     'depth':1.4,\n                     'lat':2.0,\n                     'lon':2.0,\n                     'event_timestamp':datetime.utcnow(),\n                     'event_network':'us',\n                     'event_description':'sample event'}\n        uncDict = {'pga':(0.0,0),\n                   'pgv':(0.0,0),\n                   'mmi':(0.0,0)}\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        \n        print('Testing save/read functionality...')\n        shake.save(testfile,version=3)\n        shake2 = ShakeGrid.load(testfile)\n        for layer in ['pga','pgv','mmi']:\n            tdata = shake2.getLayer(layer).getData()\n            np.testing.assert_almost_equal(tdata,layers[layer])\n\n        print('Passed save/read functionality for shakemap grids.')\n\n        print('Testing getFileGeoDict method...')\n        fgeodict = ShakeGrid.getFileGeoDict(testfile)\n        print('Passed save/read functionality for shakemap grids.')\n        \n        print('Testing loading with bounds (no resampling or padding)...')\n        sampledict = GeoDict({'xmin':-0.5,'xmax':3.5,\n                              'ymin':-0.5,'ymax':3.5,\n                              'dx':1.0,'dy':1.0,\n                              'ny':5,'nx':5})\n        shake3 = ShakeGrid.load(testfile,samplegeodict=sampledict,\n                                resample=False,doPadding=False,padValue=np.nan)\n        tdata = shake3.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,layers['pga'])\n\n        print('Passed loading with bounds (no resampling or padding)...')\n\n        print('Testing loading shakemap with padding, no resampling...')\n        newdict = GeoDict({'xmin':-0.5,'xmax':4.5,\n                           'ymin':-0.5,'ymax':4.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':6,'nx':6})\n        shake4 = ShakeGrid.load(testfile,samplegeodict=newdict,\n                                resample=False,doPadding=True,padValue=np.nan)\n        output = np.array([[np.nan,np.nan,np.nan,np.nan,np.nan,np.nan],\n                           [np.nan,0.0,1.0,2.0,3.0,np.nan],\n                           [np.nan,4.0,5.0,6.0,7.0,np.nan],\n                           [np.nan,8.0,9.0,10.0,11.0,np.nan],\n                           [np.nan,12.0,13.0,14.0,15.0,np.nan],\n                           [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan]])\n        tdata = shake4.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed loading shakemap with padding, no resampling...')\n\n        #make a bigger grid\n        pga = np.arange(0,36,dtype=np.float32).reshape(6,6)\n        pgv = np.arange(1,37,dtype=np.float32).reshape(6,6)\n        mmi = np.arange(2,38,dtype=np.float32).reshape(6,6)\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        geodict = GeoDict({'xmin':0.5,'xmax':5.5,\n                           'ymin':0.5,'ymax':5.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':6,'nx':6})\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        shake.save(testfile,version=3)\n\n        print('Testing resampling, no padding...')\n        littledict = GeoDict({'xmin':2.0,'xmax':4.0,\n                              'ymin':2.0,'ymax':4.0,\n                              'dx':1.0,'dy':1.0,\n                              'ny':3,'nx':3})\n        shake5 = ShakeGrid.load(testfile,samplegeodict=littledict,resample=True,doPadding=False,padValue=np.nan)\n        output = np.array([[10.5,11.5,12.5],\n                           [16.5,17.5,18.5],\n                           [22.5,23.5,24.5]])\n        tdata = shake5.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed resampling, no padding...')\n\n        print('Testing resampling and padding...')\n        pga = np.arange(0,16,dtype=np.float32).reshape(4,4)\n        pgv = np.arange(1,17,dtype=np.float32).reshape(4,4)\n        mmi = np.arange(2,18,dtype=np.float32).reshape(4,4)\n        geodict = GeoDict({'xmin':0.5,'ymax':3.5,\n                           'ymin':0.5,'xmax':3.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':4,'nx':4})\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        shake.save(testfile,version=3)\n        bigdict = GeoDict({'xmin':0.0,'xmax':4.0,\n                           'ymin':0.0,'ymax':4.0,\n                           'dx':1.0,'dy':1.0,\n                           'ny':5,'nx':5})\n        shake6 = ShakeGrid.load(testfile,samplegeodict=bigdict,resample=True,doPadding=True,padValue=np.nan)\n        tdata = shake6.getLayer('pga').getData()\n        output = np.array([[np.nan,np.nan,np.nan,np.nan,np.nan],\n                           [np.nan,2.5,3.5,4.5,np.nan],\n                           [np.nan,6.5,7.5,8.5,np.nan],\n                           [np.nan,10.5,11.5,12.5,np.nan],\n                           [np.nan,np.nan,np.nan,np.nan,np.nan]])\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed resampling and padding...')\n    except Exception as error:\n        print('Failed to read grid.xml format file \"%s\". Error \"%s\".' % (xmlfile,str(error)))\n        assert 0 == 1\n    finally:\n        if os.path.isdir(tdir):\n            shutil.rmtree(tdir)\n\nif __name__ == '__main__':\n    test_modify()\n    test_interpolate()\n    test_read()\n    test_save()\n    \n```\n \n **Explanation:**\n \n This code is designed to test the functionality of the `mapio` Python library. It performs various tests, including:\n \n \n \n **1. Modify:**\n \n  ",
     "after": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is this script?\nmapiodir = os.path.abspath(os.path.join(homedir,'..'))\nsys.path.insert(0,mapiodir) #put this at the front of the system path, ignoring any installed mapio stuff\n\n#third party\nfrom mapio.shake import ShakeGrid\nfrom mapio.gridbase import Grid\nfrom mapio.multiple import MultiGrid\nfrom mapio.dataset import DataSetException\nfrom mapio.grid2d import Grid2D\nfrom mapio.geodict import GeoDict\nimport numpy as np\n\ndef test_modify():\n    print('Testing ShakeGrid interpolate() method...')\n    geodict = GeoDict({'xmin':0.5,'xmax':6.5,'ymin':1.5,'ymax':6.5,'dx':1.0,'dy':1.0,'ny':6,'nx':7})\n    data = np.arange(14,56).reshape(6,7)\n    layers = OrderedDict()\n    layers['pga'] = data\n    shakeDict = {'event_id':'usabcd1234',\n                 'shakemap_id':'usabcd1234',\n                 'shakemap_version':1,\n                 'code_version':'4.0',\n                 'process_timestamp':datetime.utcnow(),\n                 'shakemap_originator':'us',\n                 'map_status':'RELEASED',\n                 'shakemap_event_type':'ACTUAL'}\n    eventDict = {'event_id':'usabcd1234',\n                 'magnitude':7.6,\n                 'depth':1.4,\n                 'lat':2.0,\n                 'lon':2.0,\n                 'event_timestamp':datetime.utcnow(),\n                 'event_network':'us',\n                 'event_description':'sample event'}\n    uncDict = {'pga':(0.0,0)}\n    shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n    rdata = np.random.rand(data.shape[0],data.shape[1])\n    shake.setLayer('pga',rdata)\n    newdata = shake.getLayer('pga').getData()\n    np.testing.assert_almost_equal(rdata,newdata)\n\ndef test_interpolate():\n    print('Testing ShakeGrid interpolate() method...')\n    geodict = GeoDict({'xmin':0.5,'xmax':6.5,'ymin':1.5,'ymax':6.5,'dx':1.0,'dy':1.0,'ny':6,'nx':7})\n    data = np.arange(14,56).reshape(6,7)\n    layers = OrderedDict()\n    layers['pga'] = data\n    shakeDict = {'event_id':'usabcd1234',\n                 'shakemap_id':'usabcd1234',\n                 'shakemap_version':1,\n                 'code_version':'4.0',\n                 'process_timestamp':datetime.utcnow(),\n                 'shakemap_originator':'us',\n                 'map_status':'RELEASED',\n                 'shakemap_event_type':'ACTUAL'}\n    eventDict = {'event_id':'usabcd1234',\n                 'magnitude':7.6,\n                 'depth':1.4,\n                 'lat':2.0,\n                 'lon':2.0,\n                 'event_timestamp':datetime.utcnow(),\n                 'event_network':'us',\n                 'event_description':'sample event'}\n    uncDict = {'pga':(0.0,0)}\n    shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n    sampledict = GeoDict({'xmin':3.0,'xmax':4.0,\n                          'ymin':3.0,'ymax':4.0,\n                          'dx':1.0,'dy':1.0,\n                          'ny':2,'nx':2})\n    shake2 = shake.interpolateToGrid(sampledict,method='linear')\n    output = np.array([[34.,35.],[41.,42.]])\n    np.testing.assert_almost_equal(output,shake2.getLayer('pga').getData())\n    print('Passed test of ShakeGrid interpolate() method.')\n\ndef test_read():\n    xmlfile = os.path.join(homedir,'data','northridge.xml')\n    tdir = tempfile.mkdtemp()\n    testfile = os.path.join(tdir,'test.xml')\n    try:\n        shakegrid = ShakeGrid.load(xmlfile,adjust='res')\n        t1 = time.time()\n        shakegrid.save(testfile)\n        t2 = time.time()\n        print('Saving shakemap took %.2f seconds' % (t2-t1))\n    except Exception as error:\n        print('Failed to read grid.xml format file \"%s\". Error \"%s\".' % (xmlfile,str(error)))\n        assert 0 == 1\n    finally:\n        if os.path.isdir(tdir):\n            shutil.rmtree(tdir)\n    \ndef test_save():\n    tdir = tempfile.mkdtemp()\n    testfile = os.path.join(tdir,'test.xml')\n    try:\n        print('Testing save/read functionality for shakemap grids...')\n        pga = np.arange(0,16,dtype=np.float32).reshape(4,4)\n        pgv = np.arange(1,17,dtype=np.float32).reshape(4,4)\n        mmi = np.arange(2,18,dtype=np.float32).reshape(4,4)\n        geodict = GeoDict({'xmin':0.5,'xmax':3.5,\n                           'ymin':0.5,'ymax':3.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':4,'nx':4})\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        shakeDict = {'event_id':'usabcd1234',\n                     'shakemap_id':'usabcd1234',\n                     'shakemap_version':1,\n                     'code_version':'4.0',\n                     'process_timestamp':datetime.utcnow(),\n                     'shakemap_originator':'us',\n                     'map_status':'RELEASED',\n                     'shakemap_event_type':'ACTUAL'}\n        eventDict = {'event_id':'usabcd1234',\n                     'magnitude':7.6,\n                     'depth':1.4,\n                     'lat':2.0,\n                     'lon':2.0,\n                     'event_timestamp':datetime.utcnow(),\n                     'event_network':'us',\n                     'event_description':'sample event'}\n        uncDict = {'pga':(0.0,0),\n                   'pgv':(0.0,0),\n                   'mmi':(0.0,0)}\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        \n        print('Testing save/read functionality...')\n        shake.save(testfile,version=3)\n        shake2 = ShakeGrid.load(testfile)\n        for layer in ['pga','pgv','mmi']:\n            tdata = shake2.getLayer(layer).getData()\n            np.testing.assert_almost_equal(tdata,layers[layer])\n\n        print('Passed save/read functionality for shakemap grids.')\n\n        print('Testing getFileGeoDict method...')\n        fgeodict = ShakeGrid.getFileGeoDict(testfile)\n        print('Passed save/read functionality for shakemap grids.')\n        \n        print('Testing loading with bounds (no resampling or padding)...')\n        sampledict = GeoDict({'xmin':-0.5,'xmax':3.5,\n                              'ymin':-0.5,'ymax':3.5,\n                              'dx':1.0,'dy':1.0,\n                              'ny':5,'nx':5})\n        shake3 = ShakeGrid.load(testfile,samplegeodict=sampledict,\n                                resample=False,doPadding=False,padValue=np.nan)\n        tdata = shake3.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,layers['pga'])\n\n        print('Passed loading with bounds (no resampling or padding)...')\n\n        print('Testing loading shakemap with padding, no resampling...')\n        newdict = GeoDict({'xmin':-0.5,'xmax':4.5,\n                           'ymin':-0.5,'ymax':4.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':6,'nx':6})\n        shake4 = ShakeGrid.load(testfile,samplegeodict=newdict,\n                                resample=False,doPadding=True,padValue=np.nan)\n        output = np.array([[np.nan,np.nan,np.nan,np.nan,np.nan,np.nan],\n                           [np.nan,0.0,1.0,2.0,3.0,np.nan],\n                           [np.nan,4.0,5.0,6.0,7.0,np.nan],\n                           [np.nan,8.0,9.0,10.0,11.0,np.nan],\n                           [np.nan,12.0,13.0,14.0,15.0,np.nan],\n                           [np.nan,np.nan,np.nan,np.nan,np.nan,np.nan]])\n        tdata = shake4.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed loading shakemap with padding, no resampling...')\n\n        #make a bigger grid\n        pga = np.arange(0,36,dtype=np.float32).reshape(6,6)\n        pgv = np.arange(1,37,dtype=np.float32).reshape(6,6)\n        mmi = np.arange(2,38,dtype=np.float32).reshape(6,6)\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        geodict = GeoDict({'xmin':0.5,'xmax':5.5,\n                           'ymin':0.5,'ymax':5.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':6,'nx':6})\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        shake.save(testfile,version=3)\n\n        print('Testing resampling, no padding...')\n        littledict = GeoDict({'xmin':2.0,'xmax':4.0,\n                              'ymin':2.0,'ymax':4.0,\n                              'dx':1.0,'dy':1.0,\n                              'ny':3,'nx':3})\n        shake5 = ShakeGrid.load(testfile,samplegeodict=littledict,resample=True,doPadding=False,padValue=np.nan)\n        output = np.array([[10.5,11.5,12.5],\n                           [16.5,17.5,18.5],\n                           [22.5,23.5,24.5]])\n        tdata = shake5.getLayer('pga').getData()\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed resampling, no padding...')\n\n        print('Testing resampling and padding...')\n        pga = np.arange(0,16,dtype=np.float32).reshape(4,4)\n        pgv = np.arange(1,17,dtype=np.float32).reshape(4,4)\n        mmi = np.arange(2,18,dtype=np.float32).reshape(4,4)\n        geodict = GeoDict({'xmin':0.5,'ymax':3.5,\n                           'ymin':0.5,'xmax':3.5,\n                           'dx':1.0,'dy':1.0,\n                           'ny':4,'nx':4})\n        layers = OrderedDict()\n        layers['pga'] = pga\n        layers['pgv'] = pgv\n        layers['mmi'] = mmi\n        shake = ShakeGrid(layers,geodict,eventDict,shakeDict,uncDict)\n        shake.save(testfile,version=3)\n        bigdict = GeoDict({'xmin':0.0,'xmax':4.0,\n                           'ymin':0.0,'ymax':4.0,\n                           'dx':1.0,'dy':1.0,\n                           'ny':5,'nx':5})\n        shake6 = ShakeGrid.load(testfile,samplegeodict=bigdict,resample=True,doPadding=True,padValue=np.nan)\n        tdata = shake6.getLayer('pga').getData()\n        output = np.array([[np.nan,np.nan,np.nan,np.nan,np.nan],\n                           [np.nan,2.5,3.5,4.5,np.nan],\n                           [np.nan,6.5,7.5,8.5,np.nan],\n                           [np.nan,10.5,11.5,12.5,np.nan],\n                           [np.nan,np.nan,np.nan,np.nan,np.nan]])\n        np.testing.assert_almost_equal(tdata,output)\n        print('Passed resampling and padding...')\n    except Exception as error:\n        print('Failed to read grid.xml format file \"%s\". Error \"%s\".' % (xmlfile,str(error)))\n        assert 0 == 1\n    finally:\n        if os.path.isdir(tdir):\n            shutil.rmtree(tdir)\n\nif __name__ == '__main__':\n    test_modify()\n    test_interpolate()\n    test_read()\n    test_save()\n    \n```\n\nThis file is designed to run the test cases for ShakeGrid.\n\n**Notes:**\n* The file is designed to be run in a specific order. \n* The file uses a `try...except` block to handle potential exceptions"
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      0.0,
+      1.255347490310669,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      0.002602706430479884,
-      0.10394348949193954,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.029542317613959312,
       0.0,
-      0.0071234623901546,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      0.002602706430479884,
-      0.10394348949193954,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.029542317613959312,
       0.0,
-      0.0071234623901546,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5623,
+          8212,
+          5487,
+          6398,
+          7137,
+          1115,
+          949,
+          1912,
+          7359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          1.255347490310669,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 21.939401626586914,
+            "f_after": 0.0,
+            "delta_f": -21.939401626586914
+          },
+          {
+            "index": 8763,
+            "f_before": 93.10346221923828,
+            "f_after": 103.33514404296875,
+            "delta_f": 10.231681823730469
+          },
+          {
+            "index": 5665,
+            "f_before": 0.0,
+            "f_after": 9.77265739440918,
+            "delta_f": 9.77265739440918
+          },
+          {
+            "index": 2916,
+            "f_before": 0.0,
+            "f_after": 9.382558822631836,
+            "delta_f": 9.382558822631836
+          },
+          {
+            "index": 214,
+            "f_before": 0.0,
+            "f_after": 8.85486888885498,
+            "delta_f": 8.85486888885498
+          },
+          {
+            "index": 3272,
+            "f_before": 0.0,
+            "f_after": 8.328951835632324,
+            "delta_f": 8.328951835632324
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 8.296232223510742,
+            "delta_f": 8.296232223510742
+          },
+          {
+            "index": 8678,
+            "f_before": 0.0,
+            "f_after": 8.292217254638672,
+            "delta_f": 8.292217254638672
+          },
+          {
+            "index": 3769,
+            "f_before": 0.0,
+            "f_after": 7.2815399169921875,
+            "delta_f": 7.2815399169921875
+          },
+          {
+            "index": 1735,
+            "f_before": 0.0,
+            "f_after": 6.898105621337891,
+            "delta_f": 6.898105621337891
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 6.830247402191162,
+            "delta_f": 6.830247402191162
+          },
+          {
+            "index": 3922,
+            "f_before": 0.0,
+            "f_after": 6.460805892944336,
+            "delta_f": 6.460805892944336
+          },
+          {
+            "index": 2255,
+            "f_before": 0.0,
+            "f_after": 6.347261428833008,
+            "delta_f": 6.347261428833008
+          },
+          {
+            "index": 217,
+            "f_before": 0.0,
+            "f_after": 5.979119777679443,
+            "delta_f": 5.979119777679443
+          },
+          {
+            "index": 1384,
+            "f_before": 0.0,
+            "f_after": 5.782237529754639,
+            "delta_f": 5.782237529754639
+          },
+          {
+            "index": 6230,
+            "f_before": 0.0,
+            "f_after": 5.649799346923828,
+            "delta_f": 5.649799346923828
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is the file being run from?\n\n#set the paths for the input and output files\ninput_file = os.path.join(homedir, \"input.txt\")\noutput_file = os.path.join(homedi",
+        "after": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is my code?\nsys.path.append(homedir)\n\n# TODO: Add more logging\n# TODO: Add more logging\n\n# Define functions\n# Define functions\n\ndef get_config_file(config_file):\n    "
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5623,
+          8212,
+          5487,
+          6398,
+          7137,
+          1115,
+          949,
+          1912,
+          7359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 21.939401626586914,
+            "f_after": 21.939401626586914,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is the script located\nsys.path.append(homedir)\n#import the functions that are required for the script\n\n\n#================================================================================\n#Functions\n#================================================================================\n\ndef get_xml_data(",
+        "after": "#!/usr/bin/env python\n\n#python 3 compatibility\nfrom __future__ import print_function\n\n#stdlib imports\nfrom xml.dom import minidom\nfrom datetime import datetime\nfrom collections import OrderedDict\nimport re\nimport sys\nimport tempfile\nimport time\nimport shutil\n\nif sys.version_info.major == 2:\n    import StringIO\nelse:\n    from io import StringIO\nimport os.path\n\n#hack the path so that I can debug these functions if I need to\nhomedir = os.path.dirname(os.path.abspath(__file__)) #where is the current file?\nsys.path.append(os.path.join(homedir, 'utils'))\n\n\n# Global settings\n# -------------------------------------------------------------------------------------------------\n# Configuration settings\n#\n# General\n#\n#"
+      }
+    }
   }
 }

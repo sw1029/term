@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "from azsc.handlers.Handler import Handler\nfrom azsc.handlers.az.Generic import GenericHandler\n\nclass ResourceGroupHandler(GenericHandler):\n    azure_object = \"group\"\n \n    def execute(self):\n        self.add_context_parameter(\"location\", \"location\")\n\n        cmd = super(ResourceGroupHandler, self).execute()\n\n        self.save_to_context()\n\n        return cmd\n \n  ",
   "output": {
@@ -95,8 +96,21 @@
       0.0
     ],
     "f_after": [
-      22.16372299194336,
-      0.3237420320510864,
+      28.43157196044922,
+      3.223768949508667,
+      1.6973637342453003,
+      0.0,
+      0.19258876144886017,
+      0.0,
+      0.23981168866157532,
+      0.0,
+      0.0,
+      2.8199234008789062,
+      1.6940691471099854
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.03510843589901924,
-      2.567185163497925,
-      2.396484851837158,
-      2.4250614643096924,
-      2.3631601333618164,
-      2.232016086578369,
-      2.280494213104248,
-      2.2289085388183594,
-      2.30777645111084,
-      2.279806613922119,
-      2.224921464920044
-    ],
     "g_after": [
-      0.03510843589901924,
-      2.567185163497925,
-      2.396484851837158,
-      2.4250614643096924,
-      2.3631601333618164,
-      2.232016086578369,
-      2.280494213104248,
-      2.2289085388183594,
-      2.30777645111084,
-      2.279806613922119,
-      2.224921464920044
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-071403/feature_std_layer_12.html",
     "mean_std": 1.7980707883834839,
     "max_std": 65.45854949951172
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1583,
+          1804,
+          8651,
+          8497,
+          652,
+          155,
+          869,
+          3056,
+          1992,
+          6550
+        ],
+        "f_before": [
+          22.16372299194336,
+          0.3237420320510864,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          28.43157196044922,
+          3.223768949508667,
+          1.6973637342453003,
+          0.0,
+          0.19258876144886017,
+          0.0,
+          0.23981168866157532,
+          0.0,
+          0.0,
+          2.8199234008789062,
+          1.6940691471099854
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 128.54554748535156,
+            "f_after": 68.91967010498047,
+            "delta_f": -59.625877380371094
+          },
+          {
+            "index": 8505,
+            "f_before": 0.0,
+            "f_after": 57.164432525634766,
+            "delta_f": 57.164432525634766
+          },
+          {
+            "index": 6103,
+            "f_before": 143.24388122558594,
+            "f_after": 176.38296508789062,
+            "delta_f": 33.13908386230469
+          },
+          {
+            "index": 8134,
+            "f_before": 37.27964401245117,
+            "f_after": 68.35275268554688,
+            "delta_f": 31.073108673095703
+          },
+          {
+            "index": 1,
+            "f_before": 22.16372299194336,
+            "f_after": 28.43157196044922,
+            "delta_f": 6.267848968505859
+          },
+          {
+            "index": 2765,
+            "f_before": 4.465720176696777,
+            "f_after": 0.0,
+            "delta_f": -4.465720176696777
+          },
+          {
+            "index": 4800,
+            "f_before": 0.0,
+            "f_after": 4.336933612823486,
+            "delta_f": 4.336933612823486
+          },
+          {
+            "index": 4769,
+            "f_before": 0.0,
+            "f_after": 3.906891107559204,
+            "delta_f": 3.906891107559204
+          },
+          {
+            "index": 377,
+            "f_before": 0.0,
+            "f_after": 3.8887953758239746,
+            "delta_f": 3.8887953758239746
+          },
+          {
+            "index": 3906,
+            "f_before": 0.0,
+            "f_after": 3.6532959938049316,
+            "delta_f": 3.6532959938049316
+          },
+          {
+            "index": 9017,
+            "f_before": 0.0,
+            "f_after": 3.6268157958984375,
+            "delta_f": 3.6268157958984375
+          },
+          {
+            "index": 8977,
+            "f_before": 0.0,
+            "f_after": 3.577991485595703,
+            "delta_f": 3.577991485595703
+          },
+          {
+            "index": 9003,
+            "f_before": 0.6550746560096741,
+            "f_after": 4.166839599609375,
+            "delta_f": 3.511764943599701
+          },
+          {
+            "index": 1115,
+            "f_before": 0.0,
+            "f_after": 3.34476900100708,
+            "delta_f": 3.34476900100708
+          },
+          {
+            "index": 2772,
+            "f_before": 0.0,
+            "f_after": 3.3411576747894287,
+            "delta_f": 3.3411576747894287
+          },
+          {
+            "index": 7864,
+            "f_before": 0.0,
+            "f_after": 3.310722827911377,
+            "delta_f": 3.310722827911377
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from azsc.handlers.Handler import Handler\nfrom azsc.handlers.az.Generic import GenericHandler\n\nclass ResourceGroupHandler(GenericHandler):\n    azure_object = \"group\"\n \n    def execute(self):\n        self.add_context_parameter(\"location\", \"location\")\n\n        cmd = super(ResourceGroupHandler, self).execute()\n\n        self.save_to_context()\n\n        return cmd\n \n  \n```\n\nThis code defines a custom handler for Azure Resource Groups using the `azsc` library. Let's break it down:\n\n**1. Class Definition:**\n\n*   `class ResourceGroupHandler(GenericHandler):` : This",
+        "after": "from azsc.handlers.Handler import Handler\nfrom azsc.handlers.az.Generic import GenericHandler\n\nclass ResourceGroupHandler(GenericHandler):\n    azure_object = \"group\"\n \n    def execute(self):\n        self.add_context_parameter(\"location\", \"location\")\n\n        cmd = super(ResourceGroupHandler, self).execute()\n\n        self.save_to_context()\n\n        return cmd\n \n  \n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1583,
+          1804,
+          8651,
+          8497,
+          652,
+          155,
+          869,
+          3056,
+          1992,
+          6550
+        ],
+        "f_before": [
+          22.16372299194336,
+          0.3237420320510864,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          22.16372299194336,
+          0.3237420320510864,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.16372299194336,
+            "f_after": 22.16372299194336,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 128.54554748535156,
+            "f_after": 128.54554748535156,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from azsc.handlers.Handler import Handler\nfrom azsc.handlers.az.Generic import GenericHandler\n\nclass ResourceGroupHandler(GenericHandler):\n    azure_object = \"group\"\n \n    def execute(self):\n        self.add_context_parameter(\"location\", \"location\")\n\n        cmd = super(ResourceGroupHandler, self).execute()\n\n        self.save_to_context()\n\n        return cmd\n \n  \n# Example usage\nhandler = ResourceGroupHandler()\nresponse = handler.execute()\nprint(response)\n```\n\n**Explanation:**\n\n1. **Class Definition:**\n   - `ResourceGroupHandler` inherits from `GenericHandler`,",
+        "after": "from azsc.handlers.Handler import Handler\nfrom azsc.handlers.az.Generic import GenericHandler\n\nclass ResourceGroupHandler(GenericHandler):\n    azure_object = \"group\"\n \n    def execute(self):\n        self.add_context_parameter(\"location\", \"location\")\n\n        cmd = super(ResourceGroupHandler, self).execute()\n\n        self.save_to_context()\n\n        return cmd\n \n  \n    def save_to_context(self):\n        self.send_message(\"I am a resource group handler. I'm ready to help you with your request.\")\n\n```\n\n**This is a very bad idea. Do not"
+      }
+    }
   }
 }

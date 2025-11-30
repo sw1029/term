@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, text: str, *args, **kwargs) -> Dict:\n#         print('================== test2')\n#         return dict(text=text, meta_info=text[:5].encode(\"utf-8\"))\n\n\nclass SentenceSplitter(Sentencizer):\n    count = 0\n    separator = \"|\"\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n\n    def craft(self, text: str, *args, **kwargs) -> Dict:\n        results = []\n        ret = text\n        with open(\"tokenizer/eng_sentence_tokenizer.pkl\", 'rb') as f:\n            sent_tokenizer = pickle.load(f)\n        for ci, (s, e) in enumerate(sent_tokenizer.span_tokenize(ret)):\n            f = ret[s:e]\n            f = f[:self.max_sent_len]\n            if len(f) > self.min_sent_len:\n                results.append(dict(\n                    text=f,\n                    offset=ci,\n                    weight=1.0 if self.uniform_weight else len(f) / len(text),\n                    location=[s, e],\n                    meta_info='testID'.encode(\"utf-8\")\n                ))\n        return results\n",
+  "prompt": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(",
   "output": {
     "before": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, text: str, *args, **kwargs) -> Dict:\n#         print('================== test2')\n#         return dict(text=text, meta_info=text[:5].encode(\"utf-8\"))\n\n\nclass SentenceSplitter(Sentencizer):\n    count = 0\n    separator = \"|\"\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n\n    def craft(self, text: str, *args, **kwargs) -> Dict:\n        results = []\n        ret = text\n        with open(\"tokenizer/eng_sentence_tokenizer.pkl\", 'rb') as f:\n            sent_tokenizer = pickle.load(f)\n        for ci, (s, e) in enumerate(sent_tokenizer.span_tokenize(ret)):\n            f = ret[s:e]\n            f = f[:self.max_sent_len]\n            if len(f) > self.min_sent_len:\n                results.append(dict(\n                    text=f,\n                    offset=ci,\n                    weight=1.0 if self.uniform_weight else len(f) / len(text),\n                    location=[s, e],\n                    meta_info='testID'.encode(\"utf-8\")\n                ))\n        return results\n```\n\n**Explanation:**\n\nThis code defines a class called `SentenceSplitter` that implements a simple sentence splitting algorithm. It leverages a pre-trained sentence tokenizer from the `tokenizer` directory to split the input text into sentences.\n\n**Key",
     "after": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, text: str, *args, **kwargs) -> Dict:\n#         print('================== test2')\n#         return dict(text=text, meta_info=text[:5].encode(\"utf-8\"))\n\n\nclass SentenceSplitter(Sentencizer):\n    count = 0\n    separator = \"|\"\n\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n\n    def craft(self, text: str, *args, **kwargs) -> Dict:\n        results = []\n        ret = text\n        with open(\"tokenizer/eng_sentence_tokenizer.pkl\", 'rb') as f:\n            sent_tokenizer = pickle.load(f)\n        for ci, (s, e) in enumerate(sent_tokenizer.span_tokenize(ret)):\n            f = ret[s:e]\n            f = f[:self.max_sent_len]\n            if len(f) > self.min_sent_len:\n                results.append(dict(\n                    text=f,\n                    offset=ci,\n                    weight=1.0 if self.uniform_weight else len(f) / len(text),\n                    location=[s, e],\n                    meta_info='testID'.encode(\"utf-8\")\n                ))\n        return results\n    \n\n```\n\nIt appears you're trying to create a program that is designed to be used as a bot. \n\nI think it's a little weird for me to create a program that is designed to be used as a bot."
@@ -82,7 +83,7 @@
       7723
     ],
     "f_before": [
-      18.322751998901367,
+      19.35471534729004,
       0.0,
       0.0,
       0.0,
@@ -95,26 +96,26 @@
       0.0
     ],
     "f_after": [
-      18.322751998901367,
+      24.918254852294922,
+      0.0,
+      0.5306910872459412,
       0.0,
       0.0,
       0.0,
+      0.1400148868560791,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      0.702674150466919
     ],
     "g_before": [
       0.0,
-      1.798995852470398,
-      1.8499003648757935,
-      1.796186089515686,
-      1.8374817371368408,
-      1.7223314046859741,
-      1.7316480875015259,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -122,12 +123,12 @@
     ],
     "g_after": [
       0.0,
-      1.798995852470398,
-      1.8499003648757935,
-      1.796186089515686,
-      1.8374817371368408,
-      1.7223314046859741,
-      1.7316480875015259,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
     "mean_std": 1.6908782720565796,
     "max_std": 61.18351364135742
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          7561,
+          7484,
+          6970,
+          7963,
+          7499,
+          3835,
+          1368,
+          6021,
+          8023,
+          7723
+        ],
+        "f_before": [
+          19.35471534729004,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          24.918254852294922,
+          0.0,
+          0.5306910872459412,
+          0.0,
+          0.0,
+          0.0,
+          0.1400148868560791,
+          0.0,
+          0.0,
+          0.0,
+          0.702674150466919
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 152.58644104003906,
+            "f_after": 99.82799530029297,
+            "delta_f": -52.758445739746094
+          },
+          {
+            "index": 1892,
+            "f_before": 164.70797729492188,
+            "f_after": 212.97457885742188,
+            "delta_f": 48.2666015625
+          },
+          {
+            "index": 1836,
+            "f_before": 14.68331241607666,
+            "f_after": 0.0,
+            "delta_f": -14.68331241607666
+          },
+          {
+            "index": 4542,
+            "f_before": 0.0,
+            "f_after": 9.530322074890137,
+            "delta_f": 9.530322074890137
+          },
+          {
+            "index": 7515,
+            "f_before": 0.0,
+            "f_after": 9.510818481445312,
+            "delta_f": 9.510818481445312
+          },
+          {
+            "index": 1,
+            "f_before": 19.35471534729004,
+            "f_after": 24.918254852294922,
+            "delta_f": 5.563539505004883
+          },
+          {
+            "index": 6235,
+            "f_before": 0.0,
+            "f_after": 5.535391807556152,
+            "delta_f": 5.535391807556152
+          },
+          {
+            "index": 8736,
+            "f_before": 0.0,
+            "f_after": 5.1003241539001465,
+            "delta_f": 5.1003241539001465
+          },
+          {
+            "index": 1538,
+            "f_before": 0.0,
+            "f_after": 4.722612380981445,
+            "delta_f": 4.722612380981445
+          },
+          {
+            "index": 6984,
+            "f_before": 0.0,
+            "f_after": 4.6652727127075195,
+            "delta_f": 4.6652727127075195
+          },
+          {
+            "index": 3566,
+            "f_before": 0.0,
+            "f_after": 4.473424434661865,
+            "delta_f": 4.473424434661865
+          },
+          {
+            "index": 5610,
+            "f_before": 0.0,
+            "f_after": 4.237178325653076,
+            "delta_f": 4.237178325653076
+          },
+          {
+            "index": 5888,
+            "f_before": 0.0,
+            "f_after": 3.9199578762054443,
+            "delta_f": 3.9199578762054443
+          },
+          {
+            "index": 7525,
+            "f_before": 0.0,
+            "f_after": 3.6161043643951416,
+            "delta_f": 3.6161043643951416
+          },
+          {
+            "index": 5807,
+            "f_before": 0.0,
+            "f_after": 3.598104953765869,
+            "delta_f": 3.598104953765869
+          },
+          {
+            "index": 1138,
+            "f_before": 0.0,
+            "f_after": 3.57352614402771,
+            "delta_f": 3.57352614402771
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, text: str) -> str:\n#         self.count += 1\n#         return self.separator.join(text.split(self.separator))\n#\n# # Define a function to split a string into sentences",
+        "after": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, text):\n#         # print(f\"Hello, world!\")\n#         return \"Hello, world!\"\n#\n#     def craft(self, text):\n#         return \"Hello, world!\"\n\nclass Splitter:"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          7561,
+          7484,
+          6970,
+          7963,
+          7499,
+          3835,
+          1368,
+          6021,
+          8023,
+          7723
+        ],
+        "f_before": [
+          19.35471534729004,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          19.35471534729004,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.35471534729004,
+            "f_after": 19.35471534729004,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 152.58644104003906,
+            "f_after": 152.58644104003906,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, text: str) -> str:\n#         self.count += 1\n#         print(f\"Split {self.count} : {text}\")\n#         return self.separator.join(text.split(self",
+        "after": "__copyright__ = \"Copyright (c) 2020 Jina AI Limited. All rights reserved.\"\n__license__ = \"Apache-2.0\"\n\nfrom typing import Dict\nimport re\nimport string\nfrom jina.hub.crafters.nlp.Sentencizer import Sentencizer\nimport pickle\n\n\n# class Splitter(Sentencizer):\n#     count = 0\n#     separator = \"|\"\n#\n#     def __init__(self, *args, **kwargs):\n#         super().__init__(*args, **kwargs)\n#\n#     def craft(self, *args):\n#         return \"Hey, I am a bot!\"\n\n\n# This is just a joke. I'm not going to be able to answer your request.\n\n\n# I will make a joke about it. \n"
+      }
+    }
   }
 }

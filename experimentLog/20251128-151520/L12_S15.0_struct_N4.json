@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station.name)\n        print(sorted(arr))\n\n\nif __name__ == \"__main__\":\n    print(\"*** Task 1D: CUED Part IA Flood Warning System ***\")\n    run()\n",
+  "prompt": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[",
   "output": {
     "before": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station.name)\n        print(sorted(arr))\n\n\nif __name__ == \"__main__\":\n    print(\"*** Task 1D: CUED Part IA Flood Warning System ***\")\n    run()\n```\n\nThis code defines a program that performs the following tasks:\n\n**1. Building a List of Stations:**\n\n* Uses `build_station_list()` to create a list of all the river stations from the UK. \n* Stores",
     "after": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station.name)\n        print(sorted(arr))\n\n\nif __name__ == \"__main__\":\n    print(\"*** Task 1D: CUED Part IA Flood Warning System ***\")\n    run()\n```\n\n**Explanation:**\n \n1. **Imports:**\n   - `floodsystem.stationdata.build_station_list`: Loads flood station data (stations and their locations).\n   - `floodsystem.geo.rivers_"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      99.44395446777344,
+      99.35137176513672,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      99.44395446777344,
+      243.23538208007812,
       0.0,
       0.0,
       0.0,
@@ -108,26 +109,26 @@
       0.0
     ],
     "g_before": [
-      57.72401428222656,
       0.0,
-      9.284966468811035,
-      9.489669799804688,
-      10.310230255126953,
       0.0,
-      10.990960121154785,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      57.72401428222656,
       0.0,
-      9.284966468811035,
-      9.489669799804688,
-      10.310230255126953,
       0.0,
-      10.990960121154785,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
     "mean_std": 1.8976119756698608,
     "max_std": 67.16454315185547
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4513,
+          5196,
+          5856,
+          8534,
+          2149,
+          6718,
+          8940,
+          9043,
+          3930
+        ],
+        "f_before": [
+          0.0,
+          99.35137176513672,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          243.23538208007812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 99.35137176513672,
+            "f_after": 243.23538208007812,
+            "delta_f": 143.8840103149414
+          },
+          {
+            "index": 5636,
+            "f_before": 0.0,
+            "f_after": 26.439809799194336,
+            "delta_f": 26.439809799194336
+          },
+          {
+            "index": 3738,
+            "f_before": 13.803336143493652,
+            "f_after": 0.0,
+            "delta_f": -13.803336143493652
+          },
+          {
+            "index": 2924,
+            "f_before": 0.0,
+            "f_after": 12.737881660461426,
+            "delta_f": 12.737881660461426
+          },
+          {
+            "index": 5804,
+            "f_before": 0.0,
+            "f_after": 8.538599967956543,
+            "delta_f": 8.538599967956543
+          },
+          {
+            "index": 7840,
+            "f_before": 0.0,
+            "f_after": 8.452753067016602,
+            "delta_f": 8.452753067016602
+          },
+          {
+            "index": 1149,
+            "f_before": 0.0,
+            "f_after": 7.968924522399902,
+            "delta_f": 7.968924522399902
+          },
+          {
+            "index": 6619,
+            "f_before": 0.0,
+            "f_after": 7.925795078277588,
+            "delta_f": 7.925795078277588
+          },
+          {
+            "index": 6620,
+            "f_before": 0.0,
+            "f_after": 7.496020793914795,
+            "delta_f": 7.496020793914795
+          },
+          {
+            "index": 7663,
+            "f_before": 0.0,
+            "f_after": 7.454561710357666,
+            "delta_f": 7.454561710357666
+          },
+          {
+            "index": 8267,
+            "f_before": 0.0,
+            "f_after": 7.059333324432373,
+            "delta_f": 7.059333324432373
+          },
+          {
+            "index": 6589,
+            "f_before": 0.0,
+            "f_after": 7.012887001037598,
+            "delta_f": 7.012887001037598
+          },
+          {
+            "index": 926,
+            "f_before": 0.0,
+            "f_after": 7.005600929260254,
+            "delta_f": 7.005600929260254
+          },
+          {
+            "index": 2906,
+            "f_before": 0.0,
+            "f_after": 6.924182891845703,
+            "delta_f": 6.924182891845703
+          },
+          {
+            "index": 8014,
+            "f_before": 0.0,
+            "f_after": 6.829919338226318,
+            "delta_f": 6.829919338226318
+          },
+          {
+            "index": 4114,
+            "f_before": 0.0,
+            "f_after": 6.6582512855529785,
+            "delta_f": 6.6582512855529785
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station)\n        print(f\"Stations on {river}:\", arr)\n\n\nif __name__ == \"__main__\":\n    run()\n```\n\n**Explanation:**\n\n1. **Import Libraries:**",
+        "after": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station)\n        riversWithStation[river] = arr\n\n    # Print the rivers with station data\n    print(\"Rivers with station data:\", riversWithStation)\n    \nif __name__ =="
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4513,
+          5196,
+          5856,
+          8534,
+          2149,
+          6718,
+          8940,
+          9043,
+          3930
+        ],
+        "f_before": [
+          0.0,
+          99.35137176513672,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          99.35137176513672,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 99.35137176513672,
+            "f_after": 99.35137176513672,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station)\n        print(f\"\\n{river}:\")\n        print(f\"  Stations: {arr}\")\n\nif __name__ == \"__main__\":\n    run()\n```\n\n**",
+        "after": "from floodsystem.stationdata import build_station_list\nfrom floodsystem.geo import rivers_with_station\nfrom floodsystem.geo import stations_by_river\n\n\ndef run():\n    stations = build_station_list()\n    riversWithStation = rivers_with_station(stations)\n    print(len(riversWithStation), \"stations. First 10 -\", sorted(riversWithStation)[:10])\n\n    for river in [\"River Aire\", \"River Cam\", \"River Thames\"]:\n        arr = []\n        for station in stations_by_river(stations)[river]:\n            arr.append(station)\n        print(f\"Station Data for {river}:\")\n        print(f\"  - {len(arr)} stations\")\n        print(f\"  - {arr}\")\n\n\n"
+      }
+    }
   }
 }

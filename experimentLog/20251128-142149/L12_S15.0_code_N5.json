@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'    # only supports Version 2 API\nQT_API_PYQT5 = 'PyQt5'       # use PyQt5 API; Version 2 with module shim\n\nETS = dict(pyqt=(QT_API_PYQTv2, 4), pyside=(QT_API_PYSIDE, 4),\n           pyqt5=(QT_API_PYQT5, 5))\n# ETS is a dict of env variable to (QT_API, QT_MAJOR_VERSION)\n# If the ETS QT_API environment variable is set, use it, but only\n# if the varible if of the same major QT version.  Note that\n# ETS requires the version 2 of PyQt4, which is not the platform\n# default for Python 2.x.\n\nQT_API_ENV = os.environ.get('QT_API')\n\nif rcParams['backend'] == 'Qt5Agg':\n    QT_RC_MAJOR_VERSION = 5\nelse:\n    QT_RC_MAJOR_VERSION = 4\n\nQT_API = None\n\nif (QT_API_ENV is not None):\n    try:\n        QT_ENV_MAJOR_VERSION = ETS[QT_API_ENV][1]\n    except KeyError:\n        raise RuntimeError(\n            ('Unrecognized environment variable %r, valid values are:'\n             ' %r, %r or %r' % (QT_API_ENV, 'pyqt', 'pyside', 'pyqt5')))\n    if QT_ENV_MAJOR_VERSION == QT_RC_MAJOR_VERSION:\n        # Only if backend and env qt major version are\n        # compatible use the env variable.\n        QT_API = ETS[QT_API_ENV][0]\n\nif QT_API is None:\n    # No ETS environment or incompatible so use rcParams.\n    if rcParams['backend'] == 'Qt5Agg':\n        QT_API = rcParams['backend.qt5']\n    else:\n        QT_API = rcParams['backend.qt4']\n\n# We will define an appropriate wrapper for the differing versions\n# of file dialog.\n_getSaveFileName = None\n\n# Flag to check if sip could be imported\n_sip_imported = False\n\n# Now perform the imports.\nif QT_API in (QT_API_PYQT, QT_API_PYQTv2, QT_API_PYQT5):\n    try:\n        import sip\n        _sip_imported = True\n    except ImportError:\n        # Try using PySide\n        QT_API = QT_API_PYSIDE\n        cond = (\"Could not import sip; falling back on PySide\\n\"\n                \"in place of PyQt4 or PyQt5.\\n\")\n        verbose.report(cond, 'helpful')\n\nif _sip_imported:\n    if QT_API == QT_API_PYQTv2:\n        if QT_API_ENV == 'pyqt':\n            cond = (\"Found 'QT_API=pyqt' environment variable. \"\n                    \"Setting PyQt4 API accordingly.\\n\")\n        else:\n            cond = \"PyQt API v2 specified.\"\n        try:\n            sip.setapi('QString', 2)\n        except:\n            res = 'QString API v2 specification failed. Defaulting to v1.'\n            verbose.report(cond + res, 'helpful')\n            # condition has now been reported, no need to repeat it:\n            cond = \"\"\n        try:\n            sip.setapi('QVariant', 2)\n        except:\n            res = 'QVariant API v2 specification failed. Defaulting to v1.'\n            verbose.report(cond + res, 'helpful')\n\n    if QT_API in [QT_API_PYQT, QT_API_PYQTv2]:  # PyQt4 API\n\n        from PyQt4 import QtCore, QtGui\n\n        try:\n            if sip.getapi(\"QString\") > 1:\n                # Use new getSaveFileNameAndFilter()\n                _getSaveFileName = QtGui.QFileDialog.getSaveFileNameAndFilter\n            else:\n\n                # Use old getSaveFileName()\n                def _getSaveFileName(*args, **kwargs):\n                    return (QtGui.QFileDialog.getSaveFileName(*args, **kwargs),\n                            None)\n\n        except (AttributeError, KeyError):\n\n            # call to getapi() can fail in older versions of sip\n            def _getSaveFileName(*args, **kwargs):\n                return QtGui.QFileDialog.getSaveFileName(*args, **kwargs), None\n\n    else:  # PyQt5 API\n        from PyQt5 import QtCore, QtGui, QtWidgets\n        _getSaveFileName = QtWidgets.QFileDialog.getSaveFileName\n\n    # Alias PyQt-specific functions for PySide compatibility.\n    QtCore.Signal = QtCore.pyqtSignal\n    try:\n        QtCore.Slot = QtCore.pyqtSlot\n    except AttributeError:\n        # Not a perfect match but works in simple cases\n        QtCore.Slot = QtCore.pyqtSignature\n\n    QtCore.Property = QtCore.pyqtProperty\n    __version__ = QtCore.PYQT_VERSION_STR\n\nelse:  # try importing pyside\n    try:\n        from PySide import QtCore, QtGui, __version__, __version_info__\n    except ImportError:\n        raise ImportError(\n            \"Matplotlib qt-based backends require an external PyQt4, PyQt5,\\n\"\n            \"or PySide package to be installed, but it was not found.\")\n\n    if __version_info__ < (1, 0, 3):\n        raise ImportError(\n            \"Matplotlib backend_qt4 and backend_qt4agg require PySide >=1.0.3\")\n\n    _getSaveFileName = QtGui.QFileDialog.getSaveFileName\n\n\n# Apply shim to Qt4 APIs to make them look like Qt5\nif QT_API in (QT_API_PYQT, QT_API_PYQTv2, QT_API_PYSIDE):\n    '''Import all used QtGui objects into QtWidgets\n\n    Here I've opted to simple copy QtGui into QtWidgets as that\n    achieves the same result as copying over the objects, and will\n    continue to work if other objects are used.\n\n    '''\n    QtWidgets = QtGui\n",
+  "prompt": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'Py",
   "output": {
     "before": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'    # only supports Version 2 API\nQT_API_PYQT5 = 'PyQt5'       # use PyQt5 API; Version 2 with module shim\n\nETS = dict(pyqt=(QT_API_PYQTv2, 4), pyside=(QT_API_PYSIDE, 4),\n           pyqt5=(QT_API_PYQT5, 5))\n# ETS is a dict of env variable to (QT_API, QT_MAJOR_VERSION)\n# If the ETS QT_API environment variable is set, use it, but only\n# if the varible if of the same major QT version.  Note that\n# ETS requires the version 2 of PyQt4, which is not the platform\n# default for Python 2.x.\n\nQT_API_ENV = os.environ.get('QT_API')\n\nif rcParams['backend'] == 'Qt5Agg':\n    QT_RC_MAJOR_VERSION = 5\nelse:\n    QT_RC_MAJOR_VERSION = 4\n\nQT_API = None\n\nif (QT_API_ENV is not None):\n    try:\n        QT_ENV_MAJOR_VERSION = ETS[QT_API_ENV][1]\n    except KeyError:\n        raise RuntimeError(\n            ('Unrecognized environment variable %r, valid values are:'\n             ' %r, %r or %r' % (QT_API_ENV, 'pyqt', 'pyside', 'pyqt5')))\n    if QT_ENV_MAJOR_VERSION == QT_RC_MAJOR_VERSION:\n        # Only if backend and env qt major version are\n        # compatible use the env variable.\n        QT_API = ETS[QT_API_ENV][0]\n\nif QT_API is None:\n    # No ETS environment or incompatible so use rcParams.\n    if rcParams['backend'] == 'Qt5Agg':\n        QT_API = rcParams['backend.qt5']\n    else:\n        QT_API = rcParams['backend.qt4']\n\n# We will define an appropriate wrapper for the differing versions\n# of file dialog.\n_getSaveFileName = None\n\n# Flag to check if sip could be imported\n_sip_imported = False\n\n# Now perform the imports.\nif QT_API in (QT_API_PYQT, QT_API_PYQTv2, QT_API_PYQT5):\n    try:\n        import sip\n        _sip_imported = True\n    except ImportError:\n        # Try using PySide\n        QT_API = QT_API_PYSIDE\n        cond = (\"Could not import sip; falling back on PySide\\n\"\n                \"in place of PyQt4 or PyQt5.\\n\")\n        verbose.report(cond, 'helpful')\n\nif _sip_imported:\n    if QT_API == QT_API_PYQTv2:\n        if QT_API_ENV == 'pyqt':\n            cond = (\"Found 'QT_API=pyqt' environment variable. \"\n                    \"Setting PyQt4 API accordingly.\\n\")\n        else:\n            cond = \"PyQt API v2 specified.\"\n        try:\n            sip.setapi('QString', 2)\n        except:\n            res = 'QString API v2 specification failed. Defaulting to v1.'\n            verbose.report(cond + res, 'helpful')\n            # condition has now been reported, no need to repeat it:\n            cond = \"\"\n        try:\n            sip.setapi('QVariant', 2)\n        except:\n            res = 'QVariant API v2 specification failed. Defaulting to v1.'\n            verbose.report(cond + res, 'helpful')\n\n    if QT_API in [QT_API_PYQT, QT_API_PYQTv2]:  # PyQt4 API\n\n        from PyQt4 import QtCore, QtGui\n\n        try:\n            if sip.getapi(\"QString\") > 1:\n                # Use new getSaveFileNameAndFilter()\n                _getSaveFileName = QtGui.QFileDialog.getSaveFileNameAndFilter\n            else:\n\n                # Use old getSaveFileName()\n                def _getSaveFileName(*args, **kwargs):\n                    return (QtGui.QFileDialog.getSaveFileName(*args, **kwargs),\n                            None)\n\n        except (AttributeError, KeyError):\n\n            # call to getapi() can fail in older versions of sip\n            def _getSaveFileName(*args, **kwargs):\n                return QtGui.QFileDialog.getSaveFileName(*args, **kwargs), None\n\n    else:  # PyQt5 API\n        from PyQt5 import QtCore, QtGui, QtWidgets\n        _getSaveFileName = QtWidgets.QFileDialog.getSaveFileName\n\n    # Alias PyQt-specific functions for PySide compatibility.\n    QtCore.Signal = QtCore.pyqtSignal\n    try:\n        QtCore.Slot = QtCore.pyqtSlot\n    except AttributeError:\n        # Not a perfect match but works in simple cases\n        QtCore.Slot = QtCore.pyqtSignature\n\n    QtCore.Property = QtCore.pyqtProperty\n    __version__ = QtCore.PYQT_VERSION_STR\n\nelse:  # try importing pyside\n    try:\n        from PySide import QtCore, QtGui, __version__, __version_info__\n    except ImportError:\n        raise ImportError(\n            \"Matplotlib qt-based backends require an external PyQt4, PyQt5,\\n\"\n            \"or PySide package to be installed, but it was not found.\")\n\n    if __version_info__ < (1, 0, 3):\n        raise ImportError(\n            \"Matplotlib backend_qt4 and backend_qt4agg require PySide >=1.0.3\")\n\n    _getSaveFileName = QtGui.QFileDialog.getSaveFileName\n\n\n# Apply shim to Qt4 APIs to make them look like Qt5\nif QT_API in (QT_API_PYQT, QT_API_PYQTv2, QT_API_PYSIDE):\n    '''Import all used QtGui objects into QtWidgets\n\n    Here I've opted to simple copy QtGui into QtWidgets as that\n    achieves the same result as copying over the objects, and will\n    continue to work if other objects are used.\n\n    '''\n    QtWidgets = QtGui\n    QtGui = QtWidgets\n\n\n# Handle PyQt specific signals and slots\nQtCore.pyqtSignal = QtCore.Signal\n\n\nif QT_API is None:\n    raise RuntimeError(\n        \"Could not determine PyQt or PySide API, please ensure you",
     "after": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'    # only supports Version 2 API\nQT_API_PYQT5 = 'PyQt5'       # use PyQt5 API; Version 2 with module shim\n\nETS = dict(pyqt=(QT_API_PYQTv2, 4), pyside=(QT_API_PYSIDE, 4),\n           pyqt5=(QT_API_PYQT5, 5))\n# ETS is a dict of env variable to (QT_API, QT_MAJOR_VERSION)\n# If the ETS QT_API environment variable is set, use it, but only\n# if the varible if of the same major QT version.  Note that\n# ETS requires the version 2 of PyQt4, which is not the platform\n# default for Python 2.x.\n\nQT_API_ENV = os.environ.get('QT_API')\n\nif rcParams['backend'] == 'Qt5Agg':\n    QT_RC_MAJOR_VERSION = 5\nelse:\n    QT_RC_MAJOR_VERSION = 4\n\nQT_API = None\n\nif (QT_API_ENV is not None):\n    try:\n        QT_ENV_MAJOR_VERSION = ETS[QT_API_ENV][1]\n    except KeyError:\n        raise RuntimeError(\n            ('Unrecognized environment variable %r, valid values are:'\n             ' %r, %r or %r' % (QT_API_ENV, 'pyqt', 'pyside', 'pyqt5')))\n    if QT_ENV_MAJOR_VERSION == QT_RC_MAJOR_VERSION:\n        # Only if backend and env qt major version are\n        # compatible use the env variable.\n        QT_API = ETS[QT_API_ENV][0]\n\nif QT_API is None:\n    # No ETS environment or incompatible so use rcParams.\n    if rcParams['backend'] == 'Qt5Agg':\n        QT_API = rcParams['backend.qt5']\n    else:\n        QT_API = rcParams['backend.qt4']\n\n# We will define an appropriate wrapper for the differing versions\n# of file dialog.\n_getSaveFileName = None\n\n# Flag to check if sip could be imported\n_sip_imported = False\n\n# Now perform the imports.\nif QT_API in (QT_API_PYQT, QT_API_PYQTv2, QT_API_PYQT5):\n    try:\n        import sip\n        _sip_imported = True\n    except ImportError:\n        # Try using PySide\n        QT_API = QT_API_PYSIDE\n        cond = (\"Could not import sip; falling back on PySide\\n\"\n                \"in place of PyQt4 or PyQt5.\\n\")\n        verbose.report(cond, 'helpful')\n\nif _sip_imported:\n    if QT_API == QT_API_PYQTv2:\n        if QT_API_ENV == 'pyqt':\n            cond = (\"Found 'QT_API=pyqt' environment variable. \"\n                    \"Setting PyQt4 API accordingly.\\n\")\n        else:\n            cond = \"PyQt API v2 specified.\"\n        try:\n            sip.setapi('QString', 2)\n        except:\n            res = 'QString API v2 specification failed. Defaulting to v1.'\n            verbose.report(cond + res, 'helpful')\n            # condition has now been reported, no need to repeat it:\n            cond = \"\"\n        try:\n            sip.setapi('QVariant', 2)\n        except:\n            res = 'QVariant API v2 specification failed. Defaulting to v1.'\n            verbose.report(cond + res, 'helpful')\n\n    if QT_API in [QT_API_PYQT, QT_API_PYQTv2]:  # PyQt4 API\n\n        from PyQt4 import QtCore, QtGui\n\n        try:\n            if sip.getapi(\"QString\") > 1:\n                # Use new getSaveFileNameAndFilter()\n                _getSaveFileName = QtGui.QFileDialog.getSaveFileNameAndFilter\n            else:\n\n                # Use old getSaveFileName()\n                def _getSaveFileName(*args, **kwargs):\n                    return (QtGui.QFileDialog.getSaveFileName(*args, **kwargs),\n                            None)\n\n        except (AttributeError, KeyError):\n\n            # call to getapi() can fail in older versions of sip\n            def _getSaveFileName(*args, **kwargs):\n                return QtGui.QFileDialog.getSaveFileName(*args, **kwargs), None\n\n    else:  # PyQt5 API\n        from PyQt5 import QtCore, QtGui, QtWidgets\n        _getSaveFileName = QtWidgets.QFileDialog.getSaveFileName\n\n    # Alias PyQt-specific functions for PySide compatibility.\n    QtCore.Signal = QtCore.pyqtSignal\n    try:\n        QtCore.Slot = QtCore.pyqtSlot\n    except AttributeError:\n        # Not a perfect match but works in simple cases\n        QtCore.Slot = QtCore.pyqtSignature\n\n    QtCore.Property = QtCore.pyqtProperty\n    __version__ = QtCore.PYQT_VERSION_STR\n\nelse:  # try importing pyside\n    try:\n        from PySide import QtCore, QtGui, __version__, __version_info__\n    except ImportError:\n        raise ImportError(\n            \"Matplotlib qt-based backends require an external PyQt4, PyQt5,\\n\"\n            \"or PySide package to be installed, but it was not found.\")\n\n    if __version_info__ < (1, 0, 3):\n        raise ImportError(\n            \"Matplotlib backend_qt4 and backend_qt4agg require PySide >=1.0.3\")\n\n    _getSaveFileName = QtGui.QFileDialog.getSaveFileName\n\n\n# Apply shim to Qt4 APIs to make them look like Qt5\nif QT_API in (QT_API_PYQT, QT_API_PYQTv2, QT_API_PYSIDE):\n    '''Import all used QtGui objects into QtWidgets\n\n    Here I've opted to simple copy QtGui into QtWidgets as that\n    achieves the same result as copying over the objects, and will\n    continue to work if other objects are used.\n\n    '''\n    QtWidgets = QtGui\n    \n    # Set up the backend\n    rcParams['backend'] = 'Qt5Agg'\n\n    # Set up the Qt backend\n    from PyQt4.QtGui import *\n    from PyQt4.QtCore import *\n    from PyQt"
@@ -82,7 +83,7 @@
       5445
     ],
     "f_before": [
-      59.29248809814453,
+      76.03727722167969,
       0.0,
       0.0,
       0.0,
@@ -95,8 +96,8 @@
       0.0
     ],
     "f_after": [
-      59.29248809814453,
-      0.0,
+      165.5144500732422,
+      0.30960747599601746,
       0.0,
       0.0,
       0.0,
@@ -109,26 +110,26 @@
     ],
     "g_before": [
       0.0,
-      34.17494583129883,
-      6.626897811889648,
-      6.374111652374268,
-      5.7612080574035645,
-      6.216245651245117,
-      5.803320407867432,
-      5.730223178863525,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      34.17494583129883,
-      6.626897811889648,
-      6.374111652374268,
-      5.7612080574035645,
-      6.216245651245117,
-      5.803320407867432,
-      5.730223178863525,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
     "mean_std": 1.2138572931289673,
     "max_std": 39.272926330566406
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7564,
+          859,
+          1114,
+          4101,
+          7528,
+          6732,
+          749,
+          1047,
+          5445
+        ],
+        "f_before": [
+          76.03727722167969,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          165.5144500732422,
+          0.30960747599601746,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 76.03727722167969,
+            "f_after": 165.5144500732422,
+            "delta_f": 89.4771728515625
+          },
+          {
+            "index": 2497,
+            "f_before": 9.673493385314941,
+            "f_after": 22.0935001373291,
+            "delta_f": 12.42000675201416
+          },
+          {
+            "index": 6384,
+            "f_before": 0.0,
+            "f_after": 8.97186279296875,
+            "delta_f": 8.97186279296875
+          },
+          {
+            "index": 2929,
+            "f_before": 0.0,
+            "f_after": 8.85865592956543,
+            "delta_f": 8.85865592956543
+          },
+          {
+            "index": 1184,
+            "f_before": 0.0,
+            "f_after": 8.264966011047363,
+            "delta_f": 8.264966011047363
+          },
+          {
+            "index": 7736,
+            "f_before": 0.0,
+            "f_after": 8.208513259887695,
+            "delta_f": 8.208513259887695
+          },
+          {
+            "index": 7458,
+            "f_before": 103.36263275146484,
+            "f_after": 95.2273178100586,
+            "delta_f": -8.13531494140625
+          },
+          {
+            "index": 1714,
+            "f_before": 0.0,
+            "f_after": 7.5975518226623535,
+            "delta_f": 7.5975518226623535
+          },
+          {
+            "index": 6623,
+            "f_before": 0.0,
+            "f_after": 7.500803470611572,
+            "delta_f": 7.500803470611572
+          },
+          {
+            "index": 240,
+            "f_before": 0.0,
+            "f_after": 7.250551223754883,
+            "delta_f": 7.250551223754883
+          },
+          {
+            "index": 790,
+            "f_before": 0.0,
+            "f_after": 7.109891414642334,
+            "delta_f": 7.109891414642334
+          },
+          {
+            "index": 898,
+            "f_before": 2.967709541320801,
+            "f_after": 9.954297065734863,
+            "delta_f": 6.9865875244140625
+          },
+          {
+            "index": 414,
+            "f_before": 0.0,
+            "f_after": 6.974948406219482,
+            "delta_f": 6.974948406219482
+          },
+          {
+            "index": 4215,
+            "f_before": 0.0,
+            "f_after": 6.947898864746094,
+            "delta_f": 6.947898864746094
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 6.924933910369873,
+            "delta_f": 6.924933910369873
+          },
+          {
+            "index": 3373,
+            "f_before": 0.0,
+            "f_after": 6.834295272827148,
+            "delta_f": 6.834295272827148
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'   # API is not set here; Python 2.x default is V 1\n\n# Define a global variable for API selection\nAPI_SELECTION = None\n\ndef select_api(api_name):\n    \"\"\"\n    ",
+        "after": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'\nQT_API_PYQT_VERSION = 'PyQt4'\nQT_API_PYSIDE_VERSION = 'PySide'\nQT_API_PYQT_VERSION_V2 = 'PyQt4v"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7564,
+          859,
+          1114,
+          4101,
+          7528,
+          6732,
+          749,
+          1047,
+          5445
+        ],
+        "f_before": [
+          76.03727722167969,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          76.03727722167969,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.40110969543457,
+            "f_after": 22.40110969543457,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 76.03727722167969,
+            "f_after": 76.03727722167969,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'  # API is not set here; Python 2.x default is V 1\n\n# Set default API.\nAPI_DEFAULT = QT_API_PYQT\n\ndef get_api_name(api_version=''):",
+        "after": "\"\"\" A Qt API selector that can be used to switch between PyQt and PySide.\n\"\"\"\nfrom __future__ import (absolute_import, division, print_function,\n                        unicode_literals)\n\nimport six\n\nimport os\nfrom matplotlib import rcParams, verbose\n\n# Available APIs.\nQT_API_PYQT = 'PyQt4'       # API is not set here; Python 2.x default is V 1\nQT_API_PYQTv2 = 'PyQt4v2'   # forced to Version 2 API\nQT_API_PYSIDE = 'PySide'\nQT_API_PYQT_MODULE = 'PyQt4'\nQT_API_PYSIDE_MODULE = 'PySide'\n\n# PyQt API selector\ndef get_api_selector():\n    \"\"\"\n    "
+      }
+    }
   }
 }

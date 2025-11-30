@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-f', '--file', type=str, dest='filename', help='The name of the file to convert', action='store', required=True)\n    parser.add_argument('-s', '--scale', type=float, dest='scale', default=.1, help='The scale of the final dimensions', action='store')\n    parser.add_argument('-w', '--width-stretch', type=float, dest='width_stretch', default=2, help='Scale which only applies to the width', action='store')\n    parser.add_argument('-g', '--gradient', type=str, dest='gradient', default='0', help='The gradient pattern which will be used', action='store')\n    parser.add_argument('-r', '--fps', type=int, dest='fps', default=30, help='The FPS cap which will be used when viewing video and live video', action='store')\n\n    args = parser.parse_args()\n\n    try:  # attempt to make gradient an integer if the gradient was supposed to be an index\n        args.gradient = int(args.gradient)\n    except ValueError:\n        pass\n\n    if args.filetype == 'live':\n        try:\n            source = int(args.filename)\n        except ValueError:\n            source = 0\n\n        l = Live(source, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, fps=args.fps, verbose=True)\n\n        try:\n            l.view()\n        except KeyboardInterrupt:\n            return\n        except Exception as e:\n            print(f'ERROR (Please report this!): {e}')\n            return\n        return\n\n    elif args.filetype == 'video':\n        c = Video(args.filename, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, verbose=True)\n    else:\n        c = Image(args.filename, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, verbose=True)\n\n    try:\n        c.convert()\n        if args.filetype == 'video':\n            c.view(args.fps)\n        else:\n            c.view()\n    except KeyboardInterrupt:\n        print('Exiting...')\n\nif __name__ == '__main__':\n    main()\n",
+  "prompt": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_",
   "output": {
     "before": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-f', '--file', type=str, dest='filename', help='The name of the file to convert', action='store', required=True)\n    parser.add_argument('-s', '--scale', type=float, dest='scale', default=.1, help='The scale of the final dimensions', action='store')\n    parser.add_argument('-w', '--width-stretch', type=float, dest='width_stretch', default=2, help='Scale which only applies to the width', action='store')\n    parser.add_argument('-g', '--gradient', type=str, dest='gradient', default='0', help='The gradient pattern which will be used', action='store')\n    parser.add_argument('-r', '--fps', type=int, dest='fps', default=30, help='The FPS cap which will be used when viewing video and live video', action='store')\n\n    args = parser.parse_args()\n\n    try:  # attempt to make gradient an integer if the gradient was supposed to be an index\n        args.gradient = int(args.gradient)\n    except ValueError:\n        pass\n\n    if args.filetype == 'live':\n        try:\n            source = int(args.filename)\n        except ValueError:\n            source = 0\n\n        l = Live(source, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, fps=args.fps, verbose=True)\n\n        try:\n            l.view()\n        except KeyboardInterrupt:\n            return\n        except Exception as e:\n            print(f'ERROR (Please report this!): {e}')\n            return\n        return\n\n    elif args.filetype == 'video':\n        c = Video(args.filename, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, verbose=True)\n    else:\n        c = Image(args.filename, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, verbose=True)\n\n    try:\n        c.convert()\n        if args.filetype == 'video':\n            c.view(args.fps)\n        else:\n            c.view()\n    except KeyboardInterrupt:\n        print('Exiting...')\n\nif __name__ == '__main__':\n    main()\n```\n\n**Explanation:**\n\nThis code defines a command-line tool named `to-ascii` that converts images, videos, and live video streams to ASCII art. It leverages the following modules:\n\n- **`Image`**: Handles image",
     "after": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-f', '--file', type=str, dest='filename', help='The name of the file to convert', action='store', required=True)\n    parser.add_argument('-s', '--scale', type=float, dest='scale', default=.1, help='The scale of the final dimensions', action='store')\n    parser.add_argument('-w', '--width-stretch', type=float, dest='width_stretch', default=2, help='Scale which only applies to the width', action='store')\n    parser.add_argument('-g', '--gradient', type=str, dest='gradient', default='0', help='The gradient pattern which will be used', action='store')\n    parser.add_argument('-r', '--fps', type=int, dest='fps', default=30, help='The FPS cap which will be used when viewing video and live video', action='store')\n\n    args = parser.parse_args()\n\n    try:  # attempt to make gradient an integer if the gradient was supposed to be an index\n        args.gradient = int(args.gradient)\n    except ValueError:\n        pass\n\n    if args.filetype == 'live':\n        try:\n            source = int(args.filename)\n        except ValueError:\n            source = 0\n\n        l = Live(source, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, fps=args.fps, verbose=True)\n\n        try:\n            l.view()\n        except KeyboardInterrupt:\n            return\n        except Exception as e:\n            print(f'ERROR (Please report this!): {e}')\n            return\n        return\n\n    elif args.filetype == 'video':\n        c = Video(args.filename, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, verbose=True)\n    else:\n        c = Image(args.filename, scale=args.scale, w_stretch=args.width_stretch, gradient=args.gradient, verbose=True)\n\n    try:\n        c.convert()\n        if args.filetype == 'video':\n            c.view(args.fps)\n        else:\n            c.view()\n    except KeyboardInterrupt:\n        print('Exiting...')\n\nif __name__ == '__main__':\n    main()\n```\n\n**Explanation:**\n\nThis code defines a simple command-line interface (CLI) for converting video, images, and live video to ASCII art.\n\n**Main Components:**\n\n* **`Image`**: Represents an image.\n* **"
@@ -82,7 +83,7 @@
       5729
     ],
     "f_before": [
-      96.14580535888672,
+      121.77591705322266,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      96.14580535888672,
+      271.666748046875,
       0.0,
       0.0,
       0.0,
@@ -105,32 +106,32 @@
       0.0,
       0.0,
       0.0,
-      0.0
+      1.5406548976898193
     ],
     "g_before": [
       0.0,
-      55.95001220703125,
-      10.420032501220703,
-      9.708641052246094,
-      10.309904098510742,
-      9.438613891601562,
-      9.527486801147461,
-      9.599662780761719,
-      9.787151336669922,
-      9.224672317504883,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      55.95001220703125,
-      10.420032501220703,
-      9.708641052246094,
-      10.309904098510742,
-      9.438613891601562,
-      9.527486801147461,
-      9.599662780761719,
-      9.787151336669922,
-      9.224672317504883,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
     "mean_std": 1.6908782720565796,
     "max_std": 61.18351364135742
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5452,
+          8238,
+          428,
+          5185,
+          7119,
+          5486,
+          4805,
+          2275,
+          5729
+        ],
+        "f_before": [
+          121.77591705322266,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          271.666748046875,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.5406548976898193
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 121.77591705322266,
+            "f_after": 271.666748046875,
+            "delta_f": 149.89083099365234
+          },
+          {
+            "index": 1836,
+            "f_before": 0.0,
+            "f_after": 26.82889747619629,
+            "delta_f": 26.82889747619629
+          },
+          {
+            "index": 1892,
+            "f_before": 178.04490661621094,
+            "f_after": 192.35540771484375,
+            "delta_f": 14.310501098632812
+          },
+          {
+            "index": 889,
+            "f_before": 0.0,
+            "f_after": 9.365518569946289,
+            "delta_f": 9.365518569946289
+          },
+          {
+            "index": 8955,
+            "f_before": 0.0,
+            "f_after": 7.538980007171631,
+            "delta_f": 7.538980007171631
+          },
+          {
+            "index": 1270,
+            "f_before": 0.0,
+            "f_after": 7.247380256652832,
+            "delta_f": 7.247380256652832
+          },
+          {
+            "index": 7504,
+            "f_before": 0.0,
+            "f_after": 7.0227370262146,
+            "delta_f": 7.0227370262146
+          },
+          {
+            "index": 7077,
+            "f_before": 0.0,
+            "f_after": 6.881107330322266,
+            "delta_f": 6.881107330322266
+          },
+          {
+            "index": 1,
+            "f_before": 18.819440841674805,
+            "f_after": 12.464808464050293,
+            "delta_f": -6.354632377624512
+          },
+          {
+            "index": 7238,
+            "f_before": 0.0,
+            "f_after": 5.875394821166992,
+            "delta_f": 5.875394821166992
+          },
+          {
+            "index": 5169,
+            "f_before": 0.0,
+            "f_after": 5.848893642425537,
+            "delta_f": 5.848893642425537
+          },
+          {
+            "index": 2717,
+            "f_before": 0.0,
+            "f_after": 5.526742458343506,
+            "delta_f": 5.526742458343506
+          },
+          {
+            "index": 1986,
+            "f_before": 0.0,
+            "f_after": 5.397010326385498,
+            "delta_f": 5.397010326385498
+          },
+          {
+            "index": 2826,
+            "f_before": 0.0,
+            "f_after": 5.10836124420166,
+            "delta_f": 5.10836124420166
+          },
+          {
+            "index": 2746,
+            "f_before": 0.0,
+            "f_after": 5.082412242889404,
+            "delta_f": 5.082412242889404
+          },
+          {
+            "index": 8711,
+            "f_before": 0.0,
+            "f_after": 4.628878593444824,
+            "delta_f": 4.628878593444824
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-i', '--input', type=str, dest='input_file', help='The path to the input file', action='store', required=True)\n    parser.add_argument('-o', '--output', type=str",
+        "after": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-v', '--verbose', type=bool, default=False, dest='verbose', action='store_true')\n\n    # Image processing\n    parser.add_argument('-i', '--input', type=str, dest='input"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5452,
+          8238,
+          428,
+          5185,
+          7119,
+          5486,
+          4805,
+          2275,
+          5729
+        ],
+        "f_before": [
+          121.77591705322266,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          121.77591705322266,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 18.819440841674805,
+            "f_after": 18.819440841674805,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 121.77591705322266,
+            "f_after": 121.77591705322266,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-f', '--file', type=str, dest='file_path', help='The path to the file', required=True)\n    parser.add_argument('-o', '--output', type=str, dest='output_",
+        "after": "\ndef main():\n    import argparse\n\n    from .Image import Image\n    from .Video import Video\n    from .Live import Live\n\n    parser = argparse.ArgumentParser(\n        prog='to-ascii',\n        description='A tool which can convert videos, images, gifs, and even live video to ascii art!'\n    )\n\n    # cli args\n    parser.add_argument('-t', '--type', type=str, choices=['image', 'video', 'live'], dest='filetype', help='The type of file', action='store', required=True)\n    parser.add_argument('-f', '--filename', type=str, dest='filename', help='The filename', action='store')\n    parser.add_argument('-o', '--output', type=str, dest='output', help='The output file"
+      }
+    }
   }
 }

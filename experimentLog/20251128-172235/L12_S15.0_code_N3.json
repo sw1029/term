@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    lines = [t for t in HTML_TEXT.split('\\n') if t.startswith('<a href=\"')]\n    parsed = []\n    for line in lines:\n        a, x = line.split('\">', 1)\n        f, r = x.split('</a>')\n        r = r.rstrip()\n        d, s, u = r.rsplit(' ', 2)\n        d = d.strip()\n        parsed.append((f, d, s, u))\n    for p in parsed:\n        print(p)\n        assert len(p) == 4\n",
+  "prompt": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup",
   "output": {
     "before": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    lines = [t for t in HTML_TEXT.split('\\n') if t.startswith('<a href=\"')]\n    parsed = []\n    for line in lines:\n        a, x = line.split('\">', 1)\n        f, r = x.split('</a>')\n        r = r.rstrip()\n        d, s, u = r.rsplit(' ', 2)\n        d = d.strip()\n        parsed.append((f, d, s, u))\n    for p in parsed:\n        print(p)\n        assert len(p) == 4\n        assert p[0] != ''\n        assert p[1] != ''\n        assert p[2] != ''\n        assert p[3] != ''\n\n\nif __name__ == '__main__':\n    setup()\n    ",
     "after": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    lines = [t for t in HTML_TEXT.split('\\n') if t.startswith('<a href=\"')]\n    parsed = []\n    for line in lines:\n        a, x = line.split('\">', 1)\n        f, r = x.split('</a>')\n        r = r.rstrip()\n        d, s, u = r.rsplit(' ', 2)\n        d = d.strip()\n        parsed.append((f, d, s, u))\n    for p in parsed:\n        print(p)\n        assert len(p) == 4\n        \n    \n    \n    \n    # html_leaf_page = HTML_TEXT\n    # html_leaf_page_parsed = html_leaf_page.split('\\n')\n    \n    # print(html_leaf"
@@ -82,7 +83,7 @@
       5729
     ],
     "f_before": [
-      104.0414047241211,
+      123.12272644042969,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      104.0414047241211,
+      271.47320556640625,
       0.0,
       0.0,
       0.0,
@@ -105,32 +106,32 @@
       0.0,
       0.0,
       0.0,
-      0.0
+      1.6821027994155884
     ],
     "g_before": [
       0.0,
-      60.5446891784668,
-      11.275737762451172,
-      10.505925178527832,
-      11.15656566619873,
-      10.213723182678223,
-      10.309894561767578,
-      10.3879976272583,
-      10.590883255004883,
-      9.98221206665039,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      60.5446891784668,
-      11.275737762451172,
-      10.505925178527832,
-      11.15656566619873,
-      10.213723182678223,
-      10.309894561767578,
-      10.3879976272583,
-      10.590883255004883,
-      9.98221206665039,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-172235/feature_std_layer_12.html",
     "mean_std": 1.6908782720565796,
     "max_std": 61.18351364135742
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5452,
+          8238,
+          428,
+          5185,
+          7119,
+          5486,
+          4805,
+          2275,
+          5729
+        ],
+        "f_before": [
+          123.12272644042969,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          271.47320556640625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.6821027994155884
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 123.12272644042969,
+            "f_after": 271.47320556640625,
+            "delta_f": 148.35047912597656
+          },
+          {
+            "index": 1836,
+            "f_before": 0.0,
+            "f_after": 30.21002960205078,
+            "delta_f": 30.21002960205078
+          },
+          {
+            "index": 1892,
+            "f_before": 159.17855834960938,
+            "f_after": 176.2147216796875,
+            "delta_f": 17.036163330078125
+          },
+          {
+            "index": 889,
+            "f_before": 0.0,
+            "f_after": 8.853812217712402,
+            "delta_f": 8.853812217712402
+          },
+          {
+            "index": 8955,
+            "f_before": 0.0,
+            "f_after": 7.865184307098389,
+            "delta_f": 7.865184307098389
+          },
+          {
+            "index": 1270,
+            "f_before": 0.0,
+            "f_after": 7.425756454467773,
+            "delta_f": 7.425756454467773
+          },
+          {
+            "index": 7077,
+            "f_before": 0.0,
+            "f_after": 7.240293502807617,
+            "delta_f": 7.240293502807617
+          },
+          {
+            "index": 7238,
+            "f_before": 0.0,
+            "f_after": 7.0019025802612305,
+            "delta_f": 7.0019025802612305
+          },
+          {
+            "index": 7504,
+            "f_before": 0.0,
+            "f_after": 6.730295658111572,
+            "delta_f": 6.730295658111572
+          },
+          {
+            "index": 2826,
+            "f_before": 0.0,
+            "f_after": 6.440532684326172,
+            "delta_f": 6.440532684326172
+          },
+          {
+            "index": 2717,
+            "f_before": 0.0,
+            "f_after": 6.407642841339111,
+            "delta_f": 6.407642841339111
+          },
+          {
+            "index": 5169,
+            "f_before": 0.0,
+            "f_after": 5.7956647872924805,
+            "delta_f": 5.7956647872924805
+          },
+          {
+            "index": 1,
+            "f_before": 18.7674617767334,
+            "f_after": 13.004867553710938,
+            "delta_f": -5.762594223022461
+          },
+          {
+            "index": 8161,
+            "f_before": 0.0,
+            "f_after": 5.450020790100098,
+            "delta_f": 5.450020790100098
+          },
+          {
+            "index": 5464,
+            "f_before": 0.0,
+            "f_after": 5.325201988220215,
+            "delta_f": 5.325201988220215
+          },
+          {
+            "index": 8711,
+            "f_before": 0.0,
+            "f_after": 5.246179580688477,
+            "delta_f": 5.246179580688477
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    pass\n\n\ndef test_html_leaf_page_parse_fixture_2():\n    pass\n```\n\n**Explanation:**\n\n1. **Setup and Teardown:**\n",
+        "after": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    # print(soup)\n    # print(HTML_TEXT)\n\n    # print(\"HTML_TEXT\")\n    # print(HTML_TEXT)\n\n\nif __name"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5452,
+          8238,
+          428,
+          5185,
+          7119,
+          5486,
+          4805,
+          2275,
+          5729
+        ],
+        "f_before": [
+          123.12272644042969,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          123.12272644042969,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 18.7674617767334,
+            "f_after": 18.7674617767334,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 123.12272644042969,
+            "f_after": 123.12272644042969,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    # print(soup.prettify())\n\n\ndef test_html_leaf_page_parse_fixture_with_soup():\n    setup()\n    soup = BeautifulSoup(",
+        "after": "import pathlib\nfrom bs4 import BeautifulSoup\n\nHTML_LEAF_PAGE_SAMPLE_PATH = pathlib.Path('tests', 'fixtures', 'html', 'leaf_page_sample.html')\nHTML_TEXT = ''\n\n\ndef setup():\n    global HTML_TEXT\n    with open(HTML_LEAF_PAGE_SAMPLE_PATH, \"rt\", encoding=\"utf-8\") as handle:\n        HTML_TEXT = handle.read()\n\n\ndef teardown():\n    global HTML_TEXT\n    HTML_TEXT = ''\n\n\ndef test_html_leaf_page_parse_fixture():\n    # soup = BeautifulSoup(HTML_TEXT, 'html.parser')\n    # print(soup)\n    # print(HTML_TEXT)\n    pass\n```\n\n**Explanation:**\n\n* **HTML_LEAF_PAGE_SAMPLE_PATH:**"
+      }
+    }
   }
 }

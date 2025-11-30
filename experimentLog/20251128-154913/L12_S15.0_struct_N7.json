@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet\n\nx, y, z, t = symbols('x,y,z,t')\n\n\ndef test_rel_ne():\n    assert Relational(x, y, '!=') == Ne(x, y)\n\n\ndef test_rel_subs():\n    e = Relational(x, y, '==')\n    e = e.subs(x, z)\n\n    assert isinstance(e, Equality)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '>=')\n    e = e.subs(x, z)\n\n    assert isinstance(e, GreaterThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '<=')\n    e = e.subs(x, z)\n\n    assert isinstance(e, LessThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '>')\n    e = e.subs(x, z)\n\n    assert isinstance(e, StrictGreaterThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '<')\n    e = e.subs(x, z)\n\n    assert isinstance(e, StrictLessThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Eq(x, 0)\n    assert e.subs(x, 0) is S.true\n    assert e.subs(x, 1) is S.false\n\n\ndef test_wrappers():\n    e = x + x**2\n\n    res = Relational(y, e, '==')\n    assert Rel(y, x + x**2, '==') == res\n    assert Eq(y, x + x**2) == res\n\n    res = Relational(y, e, '<')\n    assert Lt(y, x + x**2) == res\n\n    res = Relational(y, e, '<=')\n    assert Le(y, x + x**2) == res\n\n    res = Relational(y, e, '>')\n    assert Gt(y, x + x**2) == res\n\n    res = Relational(y, e, '>=')\n    assert Ge(y, x + x**2) == res\n\n    res = Relational(y, e, '!=')\n    assert Ne(y, x + x**2) == res\n\n\ndef test_Eq():\n    assert Eq(x**2) == Eq(x**2, 0)\n    assert Eq(x**2) != Eq(x**2, 1)\n\n    assert Eq(x, x)  # issue 5719\n\n    # issue 6116\n    p = Symbol('p', positive=True)\n    assert Eq(p, 0) is S.false\n\n\ndef test_rel_Infinity():\n    # NOTE: All of these are actually handled by sympy.core.Number, and do\n    # not create Relational objects.\n    assert (oo > oo) is S.false\n    assert (oo > -oo) is S.true\n    assert (oo > 1) is S.true\n    assert (oo < oo) is S.false\n    assert (oo < -oo) is S.false\n    assert (oo < 1) is S.false\n    assert (oo >= oo) is S.true\n    assert (oo >= -oo) is S.true\n    assert (oo >= 1) is S.true\n    assert (oo <= oo) is S.true\n    assert (oo <= -oo) is S.false\n    assert (oo <= 1) is S.false\n    assert (-oo > oo) is S.false\n    assert (-oo > -oo) is S.false\n    assert (-oo > 1) is S.false\n    assert (-oo < oo) is S.true\n    assert (-oo < -oo) is S.false\n    assert (-oo < 1) is S.true\n    assert (-oo >= oo) is S.false\n    assert (-oo >= -oo) is S.true\n    assert (-oo >= 1) is S.false\n    assert (-oo <= oo) is S.true\n    assert (-oo <= -oo) is S.true\n    assert (-oo <= 1) is S.true\n\n\ndef test_bool():\n    assert Eq(0, 0) is S.true\n    assert Eq(1, 0) is S.false\n    assert Ne(0, 0) is S.false\n    assert Ne(1, 0) is S.true\n    assert Lt(0, 1) is S.true\n    assert Lt(1, 0) is S.false\n    assert Le(0, 1) is S.true\n    assert Le(1, 0) is S.false\n    assert Le(0, 0) is S.true\n    assert Gt(1, 0) is S.true\n    assert Gt(0, 1) is S.false\n    assert Ge(1, 0) is S.true\n    assert Ge(0, 1) is S.false\n    assert Ge(1, 1) is S.true\n    assert Eq(I, 2) is S.false\n    assert Ne(I, 2) is S.true\n    raises(TypeError, lambda: Gt(I, 2))\n    raises(TypeError, lambda: Ge(I, 2))\n    raises(TypeError, lambda: Lt(I, 2))\n    raises(TypeError, lambda: Le(I, 2))\n    a = Float('.000000000000000000001', '')\n    b = Float('.0000000000000000000001', '')\n    assert Eq(pi + a, pi + b) is S.false\n\n\ndef test_rich_cmp():\n    assert (x < y) == Lt(x, y)\n    assert (x <= y) == Le(x, y)\n    assert (x > y) == Gt(x, y)\n    assert (x >= y) == Ge(x, y)\n\n\ndef test_doit():\n    from sympy import Symbol\n    p = Symbol('p', positive=True)\n    n = Symbol('n', negative=True)\n    np = Symbol('np', nonpositive=True)\n    nn = Symbol('nn', nonnegative=True)\n\n    assert Gt(p, 0).doit() is S.true\n    assert Gt(p, 1).doit() == Gt(p, 1)\n    assert Ge(p, 0).doit() is S.true\n    assert Le(p, 0).doit() is S.false\n    assert Lt(n, 0).doit() is S.true\n    assert Le(np, 0).doit() is S.true\n    assert Gt(nn, 0).doit() == Gt(nn, 0)\n    assert Lt(nn, 0).doit() is S.false\n\n    assert Eq(x, 0).doit() == Eq(x, 0)\n\n\ndef test_new_relational():\n    x = Symbol('x')\n\n    assert Eq(x) == Relational(x, 0)       # None ==> Equality\n    assert Eq(x) == Relational(x, 0, '==')\n    assert Eq(x) == Relational(x, 0, 'eq')\n    assert Eq(x) == Equality(x, 0)\n    assert Eq(x, -1) == Relational(x, -1)       # None ==> Equality\n    assert Eq(x, -1) == Relational(x, -1, '==')\n    assert Eq(x, -1) == Relational(x, -1, 'eq')\n    assert Eq(x, -1) == Equality(x, -1)\n    assert Eq(x) != Relational(x, 1)       # None ==> Equality\n    assert Eq(x) != Relational(x, 1, '==')\n    assert Eq(x) != Relational(x, 1, 'eq')\n    assert Eq(x) != Equality(x, 1)\n    assert Eq(x, -1) != Relational(x, 1)       # None ==> Equality\n    assert Eq(x, -1) != Relational(x, 1, '==')\n    assert Eq(x, -1) != Relational(x, 1, 'eq')\n    assert Eq(x, -1) != Equality(x, 1)\n\n    assert Ne(x, 0) == Relational(x, 0, '!=')\n    assert Ne(x, 0) == Relational(x, 0, '<>')\n    assert Ne(x, 0) == Relational(x, 0, 'ne')\n    assert Ne(x, 0) == Unequality(x, 0)\n    assert Ne(x, 0) != Relational(x, 1, '!=')\n    assert Ne(x, 0) != Relational(x, 1, '<>')\n    assert Ne(x, 0) != Relational(x, 1, 'ne')\n    assert Ne(x, 0) != Unequality(x, 1)\n\n    assert Ge(x, 0) == Relational(x, 0, '>=')\n    assert Ge(x, 0) == Relational(x, 0, 'ge')\n    assert Ge(x, 0) == GreaterThan(x, 0)\n    assert Ge(x, 1) != Relational(x, 0, '>=')\n    assert Ge(x, 1) != Relational(x, 0, 'ge')\n    assert Ge(x, 1) != GreaterThan(x, 0)\n    assert (x >= 1) == Relational(x, 1, '>=')\n    assert (x >= 1) == Relational(x, 1, 'ge')\n    assert (x >= 1) == GreaterThan(x, 1)\n    assert (x >= 0) != Relational(x, 1, '>=')\n    assert (x >= 0) != Relational(x, 1, 'ge')\n    assert (x >= 0) != GreaterThan(x, 1)\n\n    assert Le(x, 0) == Relational(x, 0, '<=')\n    assert Le(x, 0) == Relational(x, 0, 'le')\n    assert Le(x, 0) == LessThan(x, 0)\n    assert Le(x, 1) != Relational(x, 0, '<=')\n    assert Le(x, 1) != Relational(x, 0, 'le')\n    assert Le(x, 1) != LessThan(x, 0)\n    assert (x <= 1) == Relational(x, 1, '<=')\n    assert (x <= 1) == Relational(x, 1, 'le')\n    assert (x <= 1) == LessThan(x, 1)\n    assert (x <= 0) != Relational(x, 1, '<=')\n    assert (x <= 0) != Relational(x, 1, 'le')\n    assert (x <= 0) != LessThan(x, 1)\n\n    assert Gt(x, 0) == Relational(x, 0, '>')\n    assert Gt(x, 0) == Relational(x, 0, 'gt')\n    assert Gt(x, 0) == StrictGreaterThan(x, 0)\n    assert Gt(x, 1) != Relational(x, 0, '>')\n    assert Gt(x, 1) != Relational(x, 0, 'gt')\n    assert Gt(x, 1) != StrictGreaterThan(x, 0)\n    assert (x > 1) == Relational(x, 1, '>')\n    assert (x > 1) == Relational(x, 1, 'gt')\n    assert (x > 1) == StrictGreaterThan(x, 1)\n    assert (x > 0) != Relational(x, 1, '>')\n    assert (x > 0) != Relational(x, 1, 'gt')\n    assert (x > 0) != StrictGreaterThan(x, 1)\n\n    assert Lt(x, 0) == Relational(x, 0, '<')\n    assert Lt(x, 0) == Relational(x, 0, 'lt')\n    assert Lt(x, 0) == StrictLessThan(x, 0)\n    assert Lt(x, 1) != Relational(x, 0, '<')\n    assert Lt(x, 1) != Relational(x, 0, 'lt')\n    assert Lt(x, 1) != StrictLessThan(x, 0)\n    assert (x < 1) == Relational(x, 1, '<')\n    assert (x < 1) == Relational(x, 1, 'lt')\n    assert (x < 1) == StrictLessThan(x, 1)\n    assert (x < 0) != Relational(x, 1, '<')\n    assert (x < 0) != Relational(x, 1, 'lt')\n    assert (x < 0) != StrictLessThan(x, 1)\n\n    # finally, some fuzz testing\n    from random import randint\n    from sympy.core.compatibility import unichr\n    for i in range(100):\n        while 1:\n            strtype, length = (unichr, 65535) if randint(0, 1) else (chr, 255)\n            relation_type = strtype(randint(0, length))\n            if randint(0, 1):\n                relation_type += strtype(randint(0, length))\n            if relation_type not in ('==', 'eq', '!=', '<>', 'ne', '>=', 'ge',\n                                     '<=', 'le', '>', 'gt', '<', 'lt'):\n                break\n\n        raises(ValueError, lambda: Relational(x, 1, relation_type))\n\n\ndef test_relational_bool_output():\n    # https://github.com/sympy/sympy/issues/5931\n    raises(TypeError, lambda: bool(x > 3))\n    raises(TypeError, lambda: bool(x >= 3))\n    raises(TypeError, lambda: bool(x < 3))\n    raises(TypeError, lambda: bool(x <= 3))\n    raises(TypeError, lambda: bool(Eq(x, 3)))\n    raises(TypeError, lambda: bool(Ne(x, 3)))\n\n\ndef test_relational_logic_symbols():\n    # See issue 6204\n    assert (x < y) & (z < t) == And(x < y, z < t)\n    assert (x < y) | (z < t) == Or(x < y, z < t)\n    assert ~(x < y) == Not(x < y)\n    assert (x < y) >> (z < t) == Implies(x < y, z < t)\n    assert (x < y) << (z < t) == Implies(z < t, x < y)\n    assert (x < y) ^ (z < t) == Xor(x < y, z < t)\n\n    assert isinstance((x < y) & (z < t), And)\n    assert isinstance((x < y) | (z < t), Or)\n    assert isinstance(~(x < y), GreaterThan)\n    assert isinstance((x < y) >> (z < t), Implies)\n    assert isinstance((x < y) << (z < t), Implies)\n    assert isinstance((x < y) ^ (z < t), (Or, Xor))\n\n\ndef test_univariate_relational_as_set():\n    assert (x > 0).as_set() == Interval(0, oo, True, True)\n    assert (x >= 0).as_set() == Interval(0, oo)\n    assert (x < 0).as_set() == Interval(-oo, 0, True, True)\n    assert (x <= 0).as_set() == Interval(-oo, 0)\n    assert Eq(x, 0).as_set() == FiniteSet(0)\n    assert Ne(x, 0).as_set() == Interval(-oo, 0, True, True) + \\\n        Interval(0, oo, True, True)\n\n    assert (x**2 >= 4).as_set() == Interval(-oo, -2) + Interval(2, oo)\n\n\n@XFAIL\ndef test_multivariate_relational_as_set():\n    assert (x*y >= 0).as_set() == Interval(0, oo)*Interval(0, oo) + \\\n        Interval(-oo, 0)*Interval(-oo, 0)\n\n\ndef test_Not():\n    assert Not(Equality(x, y)) == Unequality(x, y)\n    assert Not(Unequality(x, y)) == Equality(x, y)\n    assert Not(StrictGreaterThan(x, y)) == LessThan(x, y)\n    assert Not(StrictLessThan(x, y)) == GreaterThan(x, y)\n    assert Not(GreaterThan(x, y)) == StrictLessThan(x, y)\n    assert Not(LessThan(x, y)) == StrictGreaterThan(x, y)\n\n\ndef test_evaluate():\n    assert str(Eq(x, x, evaluate=False)) == 'Eq(x, x)'\n    assert Eq(x, x, evaluate=False).doit() == S.true\n    assert str(Ne(x, x, evaluate=False)) == 'Ne(x, x)'\n    assert Ne(x, x, evaluate=False).doit() == S.false\n\n    assert str(Ge(x, x, evaluate=False)) == 'x >= x'\n    assert str(Le(x, x, evaluate=False)) == 'x <= x'\n    assert str(Gt(x, x, evaluate=False)) == 'x > x'\n    assert str(Lt(x, x, evaluate=False)) == 'x < x'\n\n\ndef assert_all_ineq_raise_TypeError(a, b):\n    raises(TypeError, lambda: a > b)\n    raises(TypeError, lambda: a >= b)\n    raises(TypeError, lambda: a < b)\n    raises(TypeError, lambda: a <= b)\n    raises(TypeError, lambda: b > a)\n    raises(TypeError, lambda: b >= a)\n    raises(TypeError, lambda: b < a)\n    raises(TypeError, lambda: b <= a)\n\n\ndef assert_all_ineq_give_class_Inequality(a, b):\n    \"\"\"All inequality operations on `a` and `b` result in class Inequality.\"\"\"\n    from sympy.core.relational import _Inequality as Inequality\n    assert isinstance(a > b,  Inequality)\n    assert isinstance(a >= b, Inequality)\n    assert isinstance(a < b,  Inequality)\n    assert isinstance(a <= b, Inequality)\n    assert isinstance(b > a,  Inequality)\n    assert isinstance(b >= a, Inequality)\n    assert isinstance(b < a,  Inequality)\n    assert isinstance(b <= a, Inequality)\n\n\ndef test_imaginary_compare_raises_TypeError():\n    # See issue #5724\n    assert_all_ineq_raise_TypeError(I, x)\n\n\ndef test_complex_compare_not_real():\n    # two cases which are not real\n    y = Symbol('y', imaginary=True)\n    z = Symbol('z', complex=True, real=False)\n    for w in (y, z):\n        assert_all_ineq_raise_TypeError(2, w)\n    # some cases which should remain un-evaluated\n    t = Symbol('t')\n    x = Symbol('x', real=True)\n    z = Symbol('z', complex=True)\n    for w in (x, z, t):\n        assert_all_ineq_give_class_Inequality(2, w)\n\n\ndef test_imaginary_and_inf_compare_raises_TypeError():\n    # See pull request #7835\n    y = Symbol('y', imaginary=True)\n    assert_all_ineq_raise_TypeError(oo, y)\n    assert_all_ineq_raise_TypeError(-oo, y)\n\n\ndef test_complex_pure_imag_not_ordered():\n    raises(TypeError, lambda: 2*I < 3*I)\n\n    # more generally\n    x = Symbol('x', real=True, nonzero=True)\n    y = Symbol('y', imaginary=True)\n    z = Symbol('z', complex=True)\n    assert_all_ineq_raise_TypeError(I, y)\n\n    t = I*x   # an imaginary number, should raise errors\n    assert_all_ineq_raise_TypeError(2, t)\n\n    t = -I*y   # a real number, so no errors\n    assert_all_ineq_give_class_Inequality(2, t)\n\n    t = I*z   # unknown, should be unevaluated\n    assert_all_ineq_give_class_Inequality(2, t)\n\n\ndef test_x_minus_y_not_same_as_x_lt_y():\n    \"\"\"\n    A consequence of pull request #7792 is that `x - y < 0` and `x < y`\n    are not synonymous.\n    \"\"\"\n    x = I + 2\n    y = I + 3\n    raises(TypeError, lambda: x < y)\n    assert x - y < 0\n\n    ineq = Lt(x, y, evaluate=False)\n    raises(TypeError, lambda: ineq.doit())\n    assert ineq.lhs - ineq.rhs < 0\n\n    t = Symbol('t', imaginary=True)\n    x = 2 + t\n    y = 3 + t\n    ineq = Lt(x, y, evaluate=False)\n    raises(TypeError, lambda: ineq.doit())\n    assert ineq.lhs - ineq.rhs < 0\n\n    # this one should give error either way\n    x = I + 2\n    y = 2*I + 3\n    raises(TypeError, lambda: x < y)\n    raises(TypeError, lambda: x - y < 0)\n\n\ndef test_nan_equality_exceptions():\n    # See issue #7774\n    import random\n    assert Equality(nan, nan) is S.false\n    assert Unequality(nan, nan) is S.true\n\n    # See issue #7773\n    A = (x, S(0), S(1)/3, pi, oo, -oo)\n    assert Equality(nan, random.choice(A)) is S.false\n    assert Equality(random.choice(A), nan) is S.false\n    assert Unequality(nan, random.choice(A)) is S.true\n    assert Unequality(random.choice(A), nan) is S.true\n\n\ndef test_nan_inequality_raise_errors():\n    # See discussion in pull request #7776.  We test inequalities with\n    # a set including examples of various classes.\n    for q in (x, S(0), S(10), S(1)/3, pi, S(1.3), oo, -oo, nan):\n        assert_all_ineq_raise_TypeError(q, nan)\n\n\ndef test_nan_complex_inequalities():\n    # Comparisons of NaN with non-real raise errors, we're not too\n    # fussy whether its the NaN error or complex error.\n    for r in (I, zoo, Symbol('z', imaginary=True)):\n        assert_all_ineq_raise_TypeError(r, nan)\n\n\ndef test_complex_infinity_inequalities():\n    raises(TypeError, lambda: zoo > 0)\n    raises(TypeError, lambda: zoo >= 0)\n    raises(TypeError, lambda: zoo < 0)\n    raises(TypeError, lambda: zoo <= 0)\n\n\ndef test_inequalities_symbol_name_same():\n    \"\"\"Using the operator and functional forms should give same results.\"\"\"\n    # We test all combinations from a set\n    # FIXME: could replace with random selection after test passes\n    A = (x, y, S(0), S(1)/3, pi, oo, -oo)\n    for a in A:\n        for b in A:\n            assert Gt(a, b) == (a > b)\n            assert Lt(a, b) == (a < b)\n            assert Ge(a, b) == (a >= b)\n            assert Le(a, b) == (a <= b)\n\n    for b in (y, S(0), S(1)/3, pi, oo, -oo):\n        assert Gt(x, b, evaluate=False) == (x > b)\n        assert Lt(x, b, evaluate=False) == (x < b)\n        assert Ge(x, b, evaluate=False) == (x >= b)\n        assert Le(x, b, evaluate=False) == (x <= b)\n\n    for b in (y, S(0), S(1)/3, pi, oo, -oo):\n        assert Gt(b, x, evaluate=False) == (b > x)\n        assert Lt(b, x, evaluate=False) == (b < x)\n        assert Ge(b, x, evaluate=False) == (b >= x)\n        assert Le(b, x, evaluate=False) == (b <= x)\n\n\ndef test_inequalities_symbol_name_same_complex():\n    \"\"\"Using the operator and functional forms should give same results.\n    With complex non-real numbers, both should raise errors.\n    \"\"\"\n    # FIXME: could replace with random selection after test passes\n    for a in (x, S(0), S(1)/3, pi, oo):\n        raises(TypeError, lambda: Gt(a, I))\n        raises(TypeError, lambda: a > I)\n        raises(TypeError, lambda: Lt(a, I))\n        raises(TypeError, lambda: a < I)\n        raises(TypeError, lambda: Ge(a, I))\n        raises(TypeError, lambda: a >= I)\n        raises(TypeError, lambda: Le(a, I))\n        raises(TypeError, lambda: a <= I)\n\n\ndef test_inequalities_cant_sympify_other():\n    # see issue 7833\n    from operator import gt, lt, ge, le\n\n    bar = \"foo\"\n\n    for a in (x, S(0), S(1)/3, pi, I, zoo, oo, -oo, nan):\n        for op in (lt, gt, le, ge):\n            raises(TypeError, lambda: op(a, bar))\n\n\ndef test_ineq_avoid_wild_symbol_flip():\n    # see issue #7951, we try to avoid this internally, e.g., by using\n    # __lt__ instead of \"<\".\n    from sympy.core.symbol import Wild\n    p = symbols('p', cls=Wild)\n    # x > p might flip, but Gt should not:\n    assert Gt(x, p) == Gt(x, p, evaluate=False)\n    # Previously failed as 'p > x':\n    e = Lt(x, y).subs({y: p})\n    assert e == Lt(x, p, evaluate=False)\n    # Previously failed as 'p <= x':\n    e = Ge(x, p).doit()\n    assert e == Ge(x, p, evaluate=False)\n\n\ndef test_issue_8245():\n    a = S(\"6506833320952669167898688709329/5070602400912917605986812821504\")\n    q = a.n(10)\n    assert (a == q) is True\n    assert (a != q) is False\n    assert (a > q) == False\n    assert (a < q) == False\n    assert (a >= q) == True\n    assert (a <= q) == True\n\n    a = sqrt(2)\n    r = Rational(str(a.n(30)))\n    assert (r == a) is False\n    assert (r != a) is True\n    assert (r > a) == True\n    assert (r < a) == False\n    assert (r >= a) == True\n    assert (r <= a) == False\n    a = sqrt(2)\n    r = Rational(str(a.n(29)))\n    assert (r == a) is False\n    assert (r != a) is True\n    assert (r > a) == False\n    assert (r < a) == True\n    assert (r >= a) == False\n    assert (r <= a) == True\n\n\ndef test_issue_8449():\n    p = Symbol('p', nonnegative=True)\n    assert Lt(-oo, p)\n    assert Ge(-oo, p) is S.false\n    assert Gt(oo, -p)\n    assert Le(oo, -p) is S.false\n\n\ndef test_simplify():\n    assert simplify(x*(y + 1) - x*y - x + 1 < x) == (x > 1)\n    assert simplify(S(1) < -x) == (x < -1)\n\n\ndef test_equals():\n    w, x, y, z = symbols('w:z')\n    f = Function('f')\n    assert Eq(x, 1).equals(Eq(x*(y + 1) - x*y - x + 1, x))\n    assert Eq(x, y).equals(x < y, True) == False\n    assert Eq(x, f(1)).equals(Eq(x, f(2)), True) == f(1) - f(2)\n    assert Eq(f(1), y).equals(Eq(f(2), y), True) == f(1) - f(2)\n    assert Eq(x, f(1)).equals(Eq(f(2), x), True) == f(1) - f(2)\n    assert Eq(f(1), x).equals(Eq(x, f(2)), True) == f(1) - f(2)\n    assert Eq(w, x).equals(Eq(y, z), True) == False\n    assert Eq(f(1), f(2)).equals(Eq(f(3), f(4)), True) == f(1) - f(3)\n    assert (x < y).equals(y > x, True) == True\n    assert (x < y).equals(y >= x, True) == False\n    assert (x < y).equals(z < y, True) == False\n    assert (x < y).equals(x < z, True) == False\n    assert (x < f(1)).equals(x < f(2), True) == f(1) - f(2)\n    assert (f(1) < x).equals(f(2) < x, True) == f(1) - f(2)\n\n\ndef test_reversed():\n    assert (x < y).reversed == (y > x)\n    assert (x <= y).reversed == (y >= x)\n    assert Eq(x, y, evaluate=False).reversed == Eq(y, x, evaluate=False)\n    assert Ne(x, y, evaluate=False).reversed == Ne(y, x, evaluate=False)\n    assert (x >= y).reversed == (y <= x)\n    assert (x > y).reversed == (y < x)\n\n\ndef test_canonical():\n    one = S(1)\n\n    def unchanged(v):\n        c = v.canonical\n        return v.is_Relational and c.is_Relational and v == c\n\n    def isreversed(v):\n        return v.canonical == v.reversed\n\n    assert unchanged(x < one)\n    assert unchanged(x <= one)\n    assert isreversed(Eq(one, x, evaluate=False))\n    assert unchanged(Eq(x, one, evaluate=False))\n    assert isreversed(Ne(one, x, evaluate=False))\n    assert unchanged(Ne(x, one, evaluate=False))\n    assert unchanged(x >= one)\n    assert unchanged(x > one)\n\n    assert unchanged(x < y)\n    assert unchanged(x <= y)\n    assert isreversed(Eq(y, x, evaluate=False))\n    assert unchanged(Eq(x, y, evaluate=False))\n    assert isreversed(Ne(y, x, evaluate=False))\n    assert unchanged(Ne(x, y, evaluate=False))\n    assert isreversed(x >= y)\n    assert isreversed(x > y)\n    assert (-x < 1).canonical == (x > -1)\n    assert isreversed(-x > y)\n\n\n@XFAIL\ndef test_issue_8444():\n    x = symbols('x', real=True)\n    assert (x <= oo) == (x >= -oo) == True\n\n    x = symbols('x')\n    assert x >= floor(x)\n    assert (x < floor(x)) == False\n    assert Gt(x, floor(x)) == Gt(x, floor(x), evaluate=False)\n    assert Ge(x, floor(x)) == Ge(x, floor(x), evaluate=False)\n    assert x <= ceiling(x)\n    assert (x > ceiling(x)) == False\n    assert Lt(x, ceiling(x)) == Lt(x, ceiling(x), evaluate=False)\n    assert Le(x, ceiling(x)) == Le(x, ceiling(x), evaluate=False)\n    i = symbols('i', integer=True)\n    assert (i > floor(i)) == False\n    assert (i < ceiling(i)) == False\n",
+  "prompt": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet",
   "output": {
     "before": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet\n\nx, y, z, t = symbols('x,y,z,t')\n\n\ndef test_rel_ne():\n    assert Relational(x, y, '!=') == Ne(x, y)\n\n\ndef test_rel_subs():\n    e = Relational(x, y, '==')\n    e = e.subs(x, z)\n\n    assert isinstance(e, Equality)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '>=')\n    e = e.subs(x, z)\n\n    assert isinstance(e, GreaterThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '<=')\n    e = e.subs(x, z)\n\n    assert isinstance(e, LessThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '>')\n    e = e.subs(x, z)\n\n    assert isinstance(e, StrictGreaterThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '<')\n    e = e.subs(x, z)\n\n    assert isinstance(e, StrictLessThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Eq(x, 0)\n    assert e.subs(x, 0) is S.true\n    assert e.subs(x, 1) is S.false\n\n\ndef test_wrappers():\n    e = x + x**2\n\n    res = Relational(y, e, '==')\n    assert Rel(y, x + x**2, '==') == res\n    assert Eq(y, x + x**2) == res\n\n    res = Relational(y, e, '<')\n    assert Lt(y, x + x**2) == res\n\n    res = Relational(y, e, '<=')\n    assert Le(y, x + x**2) == res\n\n    res = Relational(y, e, '>')\n    assert Gt(y, x + x**2) == res\n\n    res = Relational(y, e, '>=')\n    assert Ge(y, x + x**2) == res\n\n    res = Relational(y, e, '!=')\n    assert Ne(y, x + x**2) == res\n\n\ndef test_Eq():\n    assert Eq(x**2) == Eq(x**2, 0)\n    assert Eq(x**2) != Eq(x**2, 1)\n\n    assert Eq(x, x)  # issue 5719\n\n    # issue 6116\n    p = Symbol('p', positive=True)\n    assert Eq(p, 0) is S.false\n\n\ndef test_rel_Infinity():\n    # NOTE: All of these are actually handled by sympy.core.Number, and do\n    # not create Relational objects.\n    assert (oo > oo) is S.false\n    assert (oo > -oo) is S.true\n    assert (oo > 1) is S.true\n    assert (oo < oo) is S.false\n    assert (oo < -oo) is S.false\n    assert (oo < 1) is S.false\n    assert (oo >= oo) is S.true\n    assert (oo >= -oo) is S.true\n    assert (oo >= 1) is S.true\n    assert (oo <= oo) is S.true\n    assert (oo <= -oo) is S.false\n    assert (oo <= 1) is S.false\n    assert (-oo > oo) is S.false\n    assert (-oo > -oo) is S.false\n    assert (-oo > 1) is S.false\n    assert (-oo < oo) is S.true\n    assert (-oo < -oo) is S.false\n    assert (-oo < 1) is S.true\n    assert (-oo >= oo) is S.false\n    assert (-oo >= -oo) is S.true\n    assert (-oo >= 1) is S.false\n    assert (-oo <= oo) is S.true\n    assert (-oo <= -oo) is S.true\n    assert (-oo <= 1) is S.true\n\n\ndef test_bool():\n    assert Eq(0, 0) is S.true\n    assert Eq(1, 0) is S.false\n    assert Ne(0, 0) is S.false\n    assert Ne(1, 0) is S.true\n    assert Lt(0, 1) is S.true\n    assert Lt(1, 0) is S.false\n    assert Le(0, 1) is S.true\n    assert Le(1, 0) is S.false\n    assert Le(0, 0) is S.true\n    assert Gt(1, 0) is S.true\n    assert Gt(0, 1) is S.false\n    assert Ge(1, 0) is S.true\n    assert Ge(0, 1) is S.false\n    assert Ge(1, 1) is S.true\n    assert Eq(I, 2) is S.false\n    assert Ne(I, 2) is S.true\n    raises(TypeError, lambda: Gt(I, 2))\n    raises(TypeError, lambda: Ge(I, 2))\n    raises(TypeError, lambda: Lt(I, 2))\n    raises(TypeError, lambda: Le(I, 2))\n    a = Float('.000000000000000000001', '')\n    b = Float('.0000000000000000000001', '')\n    assert Eq(pi + a, pi + b) is S.false\n\n\ndef test_rich_cmp():\n    assert (x < y) == Lt(x, y)\n    assert (x <= y) == Le(x, y)\n    assert (x > y) == Gt(x, y)\n    assert (x >= y) == Ge(x, y)\n\n\ndef test_doit():\n    from sympy import Symbol\n    p = Symbol('p', positive=True)\n    n = Symbol('n', negative=True)\n    np = Symbol('np', nonpositive=True)\n    nn = Symbol('nn', nonnegative=True)\n\n    assert Gt(p, 0).doit() is S.true\n    assert Gt(p, 1).doit() == Gt(p, 1)\n    assert Ge(p, 0).doit() is S.true\n    assert Le(p, 0).doit() is S.false\n    assert Lt(n, 0).doit() is S.true\n    assert Le(np, 0).doit() is S.true\n    assert Gt(nn, 0).doit() == Gt(nn, 0)\n    assert Lt(nn, 0).doit() is S.false\n\n    assert Eq(x, 0).doit() == Eq(x, 0)\n\n\ndef test_new_relational():\n    x = Symbol('x')\n\n    assert Eq(x) == Relational(x, 0)       # None ==> Equality\n    assert Eq(x) == Relational(x, 0, '==')\n    assert Eq(x) == Relational(x, 0, 'eq')\n    assert Eq(x) == Equality(x, 0)\n    assert Eq(x, -1) == Relational(x, -1)       # None ==> Equality\n    assert Eq(x, -1) == Relational(x, -1, '==')\n    assert Eq(x, -1) == Relational(x, -1, 'eq')\n    assert Eq(x, -1) == Equality(x, -1)\n    assert Eq(x) != Relational(x, 1)       # None ==> Equality\n    assert Eq(x) != Relational(x, 1, '==')\n    assert Eq(x) != Relational(x, 1, 'eq')\n    assert Eq(x) != Equality(x, 1)\n    assert Eq(x, -1) != Relational(x, 1)       # None ==> Equality\n    assert Eq(x, -1) != Relational(x, 1, '==')\n    assert Eq(x, -1) != Relational(x, 1, 'eq')\n    assert Eq(x, -1) != Equality(x, 1)\n\n    assert Ne(x, 0) == Relational(x, 0, '!=')\n    assert Ne(x, 0) == Relational(x, 0, '<>')\n    assert Ne(x, 0) == Relational(x, 0, 'ne')\n    assert Ne(x, 0) == Unequality(x, 0)\n    assert Ne(x, 0) != Relational(x, 1, '!=')\n    assert Ne(x, 0) != Relational(x, 1, '<>')\n    assert Ne(x, 0) != Relational(x, 1, 'ne')\n    assert Ne(x, 0) != Unequality(x, 1)\n\n    assert Ge(x, 0) == Relational(x, 0, '>=')\n    assert Ge(x, 0) == Relational(x, 0, 'ge')\n    assert Ge(x, 0) == GreaterThan(x, 0)\n    assert Ge(x, 1) != Relational(x, 0, '>=')\n    assert Ge(x, 1) != Relational(x, 0, 'ge')\n    assert Ge(x, 1) != GreaterThan(x, 0)\n    assert (x >= 1) == Relational(x, 1, '>=')\n    assert (x >= 1) == Relational(x, 1, 'ge')\n    assert (x >= 1) == GreaterThan(x, 1)\n    assert (x >= 0) != Relational(x, 1, '>=')\n    assert (x >= 0) != Relational(x, 1, 'ge')\n    assert (x >= 0) != GreaterThan(x, 1)\n\n    assert Le(x, 0) == Relational(x, 0, '<=')\n    assert Le(x, 0) == Relational(x, 0, 'le')\n    assert Le(x, 0) == LessThan(x, 0)\n    assert Le(x, 1) != Relational(x, 0, '<=')\n    assert Le(x, 1) != Relational(x, 0, 'le')\n    assert Le(x, 1) != LessThan(x, 0)\n    assert (x <= 1) == Relational(x, 1, '<=')\n    assert (x <= 1) == Relational(x, 1, 'le')\n    assert (x <= 1) == LessThan(x, 1)\n    assert (x <= 0) != Relational(x, 1, '<=')\n    assert (x <= 0) != Relational(x, 1, 'le')\n    assert (x <= 0) != LessThan(x, 1)\n\n    assert Gt(x, 0) == Relational(x, 0, '>')\n    assert Gt(x, 0) == Relational(x, 0, 'gt')\n    assert Gt(x, 0) == StrictGreaterThan(x, 0)\n    assert Gt(x, 1) != Relational(x, 0, '>')\n    assert Gt(x, 1) != Relational(x, 0, 'gt')\n    assert Gt(x, 1) != StrictGreaterThan(x, 0)\n    assert (x > 1) == Relational(x, 1, '>')\n    assert (x > 1) == Relational(x, 1, 'gt')\n    assert (x > 1) == StrictGreaterThan(x, 1)\n    assert (x > 0) != Relational(x, 1, '>')\n    assert (x > 0) != Relational(x, 1, 'gt')\n    assert (x > 0) != StrictGreaterThan(x, 1)\n\n    assert Lt(x, 0) == Relational(x, 0, '<')\n    assert Lt(x, 0) == Relational(x, 0, 'lt')\n    assert Lt(x, 0) == StrictLessThan(x, 0)\n    assert Lt(x, 1) != Relational(x, 0, '<')\n    assert Lt(x, 1) != Relational(x, 0, 'lt')\n    assert Lt(x, 1) != StrictLessThan(x, 0)\n    assert (x < 1) == Relational(x, 1, '<')\n    assert (x < 1) == Relational(x, 1, 'lt')\n    assert (x < 1) == StrictLessThan(x, 1)\n    assert (x < 0) != Relational(x, 1, '<')\n    assert (x < 0) != Relational(x, 1, 'lt')\n    assert (x < 0) != StrictLessThan(x, 1)\n\n    # finally, some fuzz testing\n    from random import randint\n    from sympy.core.compatibility import unichr\n    for i in range(100):\n        while 1:\n            strtype, length = (unichr, 65535) if randint(0, 1) else (chr, 255)\n            relation_type = strtype(randint(0, length))\n            if randint(0, 1):\n                relation_type += strtype(randint(0, length))\n            if relation_type not in ('==', 'eq', '!=', '<>', 'ne', '>=', 'ge',\n                                     '<=', 'le', '>', 'gt', '<', 'lt'):\n                break\n\n        raises(ValueError, lambda: Relational(x, 1, relation_type))\n\n\ndef test_relational_bool_output():\n    # https://github.com/sympy/sympy/issues/5931\n    raises(TypeError, lambda: bool(x > 3))\n    raises(TypeError, lambda: bool(x >= 3))\n    raises(TypeError, lambda: bool(x < 3))\n    raises(TypeError, lambda: bool(x <= 3))\n    raises(TypeError, lambda: bool(Eq(x, 3)))\n    raises(TypeError, lambda: bool(Ne(x, 3)))\n\n\ndef test_relational_logic_symbols():\n    # See issue 6204\n    assert (x < y) & (z < t) == And(x < y, z < t)\n    assert (x < y) | (z < t) == Or(x < y, z < t)\n    assert ~(x < y) == Not(x < y)\n    assert (x < y) >> (z < t) == Implies(x < y, z < t)\n    assert (x < y) << (z < t) == Implies(z < t, x < y)\n    assert (x < y) ^ (z < t) == Xor(x < y, z < t)\n\n    assert isinstance((x < y) & (z < t), And)\n    assert isinstance((x < y) | (z < t), Or)\n    assert isinstance(~(x < y), GreaterThan)\n    assert isinstance((x < y) >> (z < t), Implies)\n    assert isinstance((x < y) << (z < t), Implies)\n    assert isinstance((x < y) ^ (z < t), (Or, Xor))\n\n\ndef test_univariate_relational_as_set():\n    assert (x > 0).as_set() == Interval(0, oo, True, True)\n    assert (x >= 0).as_set() == Interval(0, oo)\n    assert (x < 0).as_set() == Interval(-oo, 0, True, True)\n    assert (x <= 0).as_set() == Interval(-oo, 0)\n    assert Eq(x, 0).as_set() == FiniteSet(0)\n    assert Ne(x, 0).as_set() == Interval(-oo, 0, True, True) + \\\n        Interval(0, oo, True, True)\n\n    assert (x**2 >= 4).as_set() == Interval(-oo, -2) + Interval(2, oo)\n\n\n@XFAIL\ndef test_multivariate_relational_as_set():\n    assert (x*y >= 0).as_set() == Interval(0, oo)*Interval(0, oo) + \\\n        Interval(-oo, 0)*Interval(-oo, 0)\n\n\ndef test_Not():\n    assert Not(Equality(x, y)) == Unequality(x, y)\n    assert Not(Unequality(x, y)) == Equality(x, y)\n    assert Not(StrictGreaterThan(x, y)) == LessThan(x, y)\n    assert Not(StrictLessThan(x, y)) == GreaterThan(x, y)\n    assert Not(GreaterThan(x, y)) == StrictLessThan(x, y)\n    assert Not(LessThan(x, y)) == StrictGreaterThan(x, y)\n\n\ndef test_evaluate():\n    assert str(Eq(x, x, evaluate=False)) == 'Eq(x, x)'\n    assert Eq(x, x, evaluate=False).doit() == S.true\n    assert str(Ne(x, x, evaluate=False)) == 'Ne(x, x)'\n    assert Ne(x, x, evaluate=False).doit() == S.false\n\n    assert str(Ge(x, x, evaluate=False)) == 'x >= x'\n    assert str(Le(x, x, evaluate=False)) == 'x <= x'\n    assert str(Gt(x, x, evaluate=False)) == 'x > x'\n    assert str(Lt(x, x, evaluate=False)) == 'x < x'\n\n\ndef assert_all_ineq_raise_TypeError(a, b):\n    raises(TypeError, lambda: a > b)\n    raises(TypeError, lambda: a >= b)\n    raises(TypeError, lambda: a < b)\n    raises(TypeError, lambda: a <= b)\n    raises(TypeError, lambda: b > a)\n    raises(TypeError, lambda: b >= a)\n    raises(TypeError, lambda: b < a)\n    raises(TypeError, lambda: b <= a)\n\n\ndef assert_all_ineq_give_class_Inequality(a, b):\n    \"\"\"All inequality operations on `a` and `b` result in class Inequality.\"\"\"\n    from sympy.core.relational import _Inequality as Inequality\n    assert isinstance(a > b,  Inequality)\n    assert isinstance(a >= b, Inequality)\n    assert isinstance(a < b,  Inequality)\n    assert isinstance(a <= b, Inequality)\n    assert isinstance(b > a,  Inequality)\n    assert isinstance(b >= a, Inequality)\n    assert isinstance(b < a,  Inequality)\n    assert isinstance(b <= a, Inequality)\n\n\ndef test_imaginary_compare_raises_TypeError():\n    # See issue #5724\n    assert_all_ineq_raise_TypeError(I, x)\n\n\ndef test_complex_compare_not_real():\n    # two cases which are not real\n    y = Symbol('y', imaginary=True)\n    z = Symbol('z', complex=True, real=False)\n    for w in (y, z):\n        assert_all_ineq_raise_TypeError(2, w)\n    # some cases which should remain un-evaluated\n    t = Symbol('t')\n    x = Symbol('x', real=True)\n    z = Symbol('z', complex=True)\n    for w in (x, z, t):\n        assert_all_ineq_give_class_Inequality(2, w)\n\n\ndef test_imaginary_and_inf_compare_raises_TypeError():\n    # See pull request #7835\n    y = Symbol('y', imaginary=True)\n    assert_all_ineq_raise_TypeError(oo, y)\n    assert_all_ineq_raise_TypeError(-oo, y)\n\n\ndef test_complex_pure_imag_not_ordered():\n    raises(TypeError, lambda: 2*I < 3*I)\n\n    # more generally\n    x = Symbol('x', real=True, nonzero=True)\n    y = Symbol('y', imaginary=True)\n    z = Symbol('z', complex=True)\n    assert_all_ineq_raise_TypeError(I, y)\n\n    t = I*x   # an imaginary number, should raise errors\n    assert_all_ineq_raise_TypeError(2, t)\n\n    t = -I*y   # a real number, so no errors\n    assert_all_ineq_give_class_Inequality(2, t)\n\n    t = I*z   # unknown, should be unevaluated\n    assert_all_ineq_give_class_Inequality(2, t)\n\n\ndef test_x_minus_y_not_same_as_x_lt_y():\n    \"\"\"\n    A consequence of pull request #7792 is that `x - y < 0` and `x < y`\n    are not synonymous.\n    \"\"\"\n    x = I + 2\n    y = I + 3\n    raises(TypeError, lambda: x < y)\n    assert x - y < 0\n\n    ineq = Lt(x, y, evaluate=False)\n    raises(TypeError, lambda: ineq.doit())\n    assert ineq.lhs - ineq.rhs < 0\n\n    t = Symbol('t', imaginary=True)\n    x = 2 + t\n    y = 3 + t\n    ineq = Lt(x, y, evaluate=False)\n    raises(TypeError, lambda: ineq.doit())\n    assert ineq.lhs - ineq.rhs < 0\n\n    # this one should give error either way\n    x = I + 2\n    y = 2*I + 3\n    raises(TypeError, lambda: x < y)\n    raises(TypeError, lambda: x - y < 0)\n\n\ndef test_nan_equality_exceptions():\n    # See issue #7774\n    import random\n    assert Equality(nan, nan) is S.false\n    assert Unequality(nan, nan) is S.true\n\n    # See issue #7773\n    A = (x, S(0), S(1)/3, pi, oo, -oo)\n    assert Equality(nan, random.choice(A)) is S.false\n    assert Equality(random.choice(A), nan) is S.false\n    assert Unequality(nan, random.choice(A)) is S.true\n    assert Unequality(random.choice(A), nan) is S.true\n\n\ndef test_nan_inequality_raise_errors():\n    # See discussion in pull request #7776.  We test inequalities with\n    # a set including examples of various classes.\n    for q in (x, S(0), S(10), S(1)/3, pi, S(1.3), oo, -oo, nan):\n        assert_all_ineq_raise_TypeError(q, nan)\n\n\ndef test_nan_complex_inequalities():\n    # Comparisons of NaN with non-real raise errors, we're not too\n    # fussy whether its the NaN error or complex error.\n    for r in (I, zoo, Symbol('z', imaginary=True)):\n        assert_all_ineq_raise_TypeError(r, nan)\n\n\ndef test_complex_infinity_inequalities():\n    raises(TypeError, lambda: zoo > 0)\n    raises(TypeError, lambda: zoo >= 0)\n    raises(TypeError, lambda: zoo < 0)\n    raises(TypeError, lambda: zoo <= 0)\n\n\ndef test_inequalities_symbol_name_same():\n    \"\"\"Using the operator and functional forms should give same results.\"\"\"\n    # We test all combinations from a set\n    # FIXME: could replace with random selection after test passes\n    A = (x, y, S(0), S(1)/3, pi, oo, -oo)\n    for a in A:\n        for b in A:\n            assert Gt(a, b) == (a > b)\n            assert Lt(a, b) == (a < b)\n            assert Ge(a, b) == (a >= b)\n            assert Le(a, b) == (a <= b)\n\n    for b in (y, S(0), S(1)/3, pi, oo, -oo):\n        assert Gt(x, b, evaluate=False) == (x > b)\n        assert Lt(x, b, evaluate=False) == (x < b)\n        assert Ge(x, b, evaluate=False) == (x >= b)\n        assert Le(x, b, evaluate=False) == (x <= b)\n\n    for b in (y, S(0), S(1)/3, pi, oo, -oo):\n        assert Gt(b, x, evaluate=False) == (b > x)\n        assert Lt(b, x, evaluate=False) == (b < x)\n        assert Ge(b, x, evaluate=False) == (b >= x)\n        assert Le(b, x, evaluate=False) == (b <= x)\n\n\ndef test_inequalities_symbol_name_same_complex():\n    \"\"\"Using the operator and functional forms should give same results.\n    With complex non-real numbers, both should raise errors.\n    \"\"\"\n    # FIXME: could replace with random selection after test passes\n    for a in (x, S(0), S(1)/3, pi, oo):\n        raises(TypeError, lambda: Gt(a, I))\n        raises(TypeError, lambda: a > I)\n        raises(TypeError, lambda: Lt(a, I))\n        raises(TypeError, lambda: a < I)\n        raises(TypeError, lambda: Ge(a, I))\n        raises(TypeError, lambda: a >= I)\n        raises(TypeError, lambda: Le(a, I))\n        raises(TypeError, lambda: a <= I)\n\n\ndef test_inequalities_cant_sympify_other():\n    # see issue 7833\n    from operator import gt, lt, ge, le\n\n    bar = \"foo\"\n\n    for a in (x, S(0), S(1)/3, pi, I, zoo, oo, -oo, nan):\n        for op in (lt, gt, le, ge):\n            raises(TypeError, lambda: op(a, bar))\n\n\ndef test_ineq_avoid_wild_symbol_flip():\n    # see issue #7951, we try to avoid this internally, e.g., by using\n    # __lt__ instead of \"<\".\n    from sympy.core.symbol import Wild\n    p = symbols('p', cls=Wild)\n    # x > p might flip, but Gt should not:\n    assert Gt(x, p) == Gt(x, p, evaluate=False)\n    # Previously failed as 'p > x':\n    e = Lt(x, y).subs({y: p})\n    assert e == Lt(x, p, evaluate=False)\n    # Previously failed as 'p <= x':\n    e = Ge(x, p).doit()\n    assert e == Ge(x, p, evaluate=False)\n\n\ndef test_issue_8245():\n    a = S(\"6506833320952669167898688709329/5070602400912917605986812821504\")\n    q = a.n(10)\n    assert (a == q) is True\n    assert (a != q) is False\n    assert (a > q) == False\n    assert (a < q) == False\n    assert (a >= q) == True\n    assert (a <= q) == True\n\n    a = sqrt(2)\n    r = Rational(str(a.n(30)))\n    assert (r == a) is False\n    assert (r != a) is True\n    assert (r > a) == True\n    assert (r < a) == False\n    assert (r >= a) == True\n    assert (r <= a) == False\n    a = sqrt(2)\n    r = Rational(str(a.n(29)))\n    assert (r == a) is False\n    assert (r != a) is True\n    assert (r > a) == False\n    assert (r < a) == True\n    assert (r >= a) == False\n    assert (r <= a) == True\n\n\ndef test_issue_8449():\n    p = Symbol('p', nonnegative=True)\n    assert Lt(-oo, p)\n    assert Ge(-oo, p) is S.false\n    assert Gt(oo, -p)\n    assert Le(oo, -p) is S.false\n\n\ndef test_simplify():\n    assert simplify(x*(y + 1) - x*y - x + 1 < x) == (x > 1)\n    assert simplify(S(1) < -x) == (x < -1)\n\n\ndef test_equals():\n    w, x, y, z = symbols('w:z')\n    f = Function('f')\n    assert Eq(x, 1).equals(Eq(x*(y + 1) - x*y - x + 1, x))\n    assert Eq(x, y).equals(x < y, True) == False\n    assert Eq(x, f(1)).equals(Eq(x, f(2)), True) == f(1) - f(2)\n    assert Eq(f(1), y).equals(Eq(f(2), y), True) == f(1) - f(2)\n    assert Eq(x, f(1)).equals(Eq(f(2), x), True) == f(1) - f(2)\n    assert Eq(f(1), x).equals(Eq(x, f(2)), True) == f(1) - f(2)\n    assert Eq(w, x).equals(Eq(y, z), True) == False\n    assert Eq(f(1), f(2)).equals(Eq(f(3), f(4)), True) == f(1) - f(3)\n    assert (x < y).equals(y > x, True) == True\n    assert (x < y).equals(y >= x, True) == False\n    assert (x < y).equals(z < y, True) == False\n    assert (x < y).equals(x < z, True) == False\n    assert (x < f(1)).equals(x < f(2), True) == f(1) - f(2)\n    assert (f(1) < x).equals(f(2) < x, True) == f(1) - f(2)\n\n\ndef test_reversed():\n    assert (x < y).reversed == (y > x)\n    assert (x <= y).reversed == (y >= x)\n    assert Eq(x, y, evaluate=False).reversed == Eq(y, x, evaluate=False)\n    assert Ne(x, y, evaluate=False).reversed == Ne(y, x, evaluate=False)\n    assert (x >= y).reversed == (y <= x)\n    assert (x > y).reversed == (y < x)\n\n\ndef test_canonical():\n    one = S(1)\n\n    def unchanged(v):\n        c = v.canonical\n        return v.is_Relational and c.is_Relational and v == c\n\n    def isreversed(v):\n        return v.canonical == v.reversed\n\n    assert unchanged(x < one)\n    assert unchanged(x <= one)\n    assert isreversed(Eq(one, x, evaluate=False))\n    assert unchanged(Eq(x, one, evaluate=False))\n    assert isreversed(Ne(one, x, evaluate=False))\n    assert unchanged(Ne(x, one, evaluate=False))\n    assert unchanged(x >= one)\n    assert unchanged(x > one)\n\n    assert unchanged(x < y)\n    assert unchanged(x <= y)\n    assert isreversed(Eq(y, x, evaluate=False))\n    assert unchanged(Eq(x, y, evaluate=False))\n    assert isreversed(Ne(y, x, evaluate=False))\n    assert unchanged(Ne(x, y, evaluate=False))\n    assert isreversed(x >= y)\n    assert isreversed(x > y)\n    assert (-x < 1).canonical == (x > -1)\n    assert isreversed(-x > y)\n\n\n@XFAIL\ndef test_issue_8444():\n    x = symbols('x', real=True)\n    assert (x <= oo) == (x >= -oo) == True\n\n    x = symbols('x')\n    assert x >= floor(x)\n    assert (x < floor(x)) == False\n    assert Gt(x, floor(x)) == Gt(x, floor(x), evaluate=False)\n    assert Ge(x, floor(x)) == Ge(x, floor(x), evaluate=False)\n    assert x <= ceiling(x)\n    assert (x > ceiling(x)) == False\n    assert Lt(x, ceiling(x)) == Lt(x, ceiling(x), evaluate=False)\n    assert Le(x, ceiling(x)) == Le(x, ceiling(x), evaluate=False)\n    i = symbols('i', integer=True)\n    assert (i > floor(i)) == False\n    assert (i < ceiling(i)) == False\n    assert (i >= floor(i)) == True\n    assert (i <= ceiling(i)) == True\n\n\ndef test_issue_8447():\n    x = symbols('x')\n    assert (x >= 0",
     "after": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet\n\nx, y, z, t = symbols('x,y,z,t')\n\n\ndef test_rel_ne():\n    assert Relational(x, y, '!=') == Ne(x, y)\n\n\ndef test_rel_subs():\n    e = Relational(x, y, '==')\n    e = e.subs(x, z)\n\n    assert isinstance(e, Equality)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '>=')\n    e = e.subs(x, z)\n\n    assert isinstance(e, GreaterThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '<=')\n    e = e.subs(x, z)\n\n    assert isinstance(e, LessThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '>')\n    e = e.subs(x, z)\n\n    assert isinstance(e, StrictGreaterThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Relational(x, y, '<')\n    e = e.subs(x, z)\n\n    assert isinstance(e, StrictLessThan)\n    assert e.lhs == z\n    assert e.rhs == y\n\n    e = Eq(x, 0)\n    assert e.subs(x, 0) is S.true\n    assert e.subs(x, 1) is S.false\n\n\ndef test_wrappers():\n    e = x + x**2\n\n    res = Relational(y, e, '==')\n    assert Rel(y, x + x**2, '==') == res\n    assert Eq(y, x + x**2) == res\n\n    res = Relational(y, e, '<')\n    assert Lt(y, x + x**2) == res\n\n    res = Relational(y, e, '<=')\n    assert Le(y, x + x**2) == res\n\n    res = Relational(y, e, '>')\n    assert Gt(y, x + x**2) == res\n\n    res = Relational(y, e, '>=')\n    assert Ge(y, x + x**2) == res\n\n    res = Relational(y, e, '!=')\n    assert Ne(y, x + x**2) == res\n\n\ndef test_Eq():\n    assert Eq(x**2) == Eq(x**2, 0)\n    assert Eq(x**2) != Eq(x**2, 1)\n\n    assert Eq(x, x)  # issue 5719\n\n    # issue 6116\n    p = Symbol('p', positive=True)\n    assert Eq(p, 0) is S.false\n\n\ndef test_rel_Infinity():\n    # NOTE: All of these are actually handled by sympy.core.Number, and do\n    # not create Relational objects.\n    assert (oo > oo) is S.false\n    assert (oo > -oo) is S.true\n    assert (oo > 1) is S.true\n    assert (oo < oo) is S.false\n    assert (oo < -oo) is S.false\n    assert (oo < 1) is S.false\n    assert (oo >= oo) is S.true\n    assert (oo >= -oo) is S.true\n    assert (oo >= 1) is S.true\n    assert (oo <= oo) is S.true\n    assert (oo <= -oo) is S.false\n    assert (oo <= 1) is S.false\n    assert (-oo > oo) is S.false\n    assert (-oo > -oo) is S.false\n    assert (-oo > 1) is S.false\n    assert (-oo < oo) is S.true\n    assert (-oo < -oo) is S.false\n    assert (-oo < 1) is S.true\n    assert (-oo >= oo) is S.false\n    assert (-oo >= -oo) is S.true\n    assert (-oo >= 1) is S.false\n    assert (-oo <= oo) is S.true\n    assert (-oo <= -oo) is S.true\n    assert (-oo <= 1) is S.true\n\n\ndef test_bool():\n    assert Eq(0, 0) is S.true\n    assert Eq(1, 0) is S.false\n    assert Ne(0, 0) is S.false\n    assert Ne(1, 0) is S.true\n    assert Lt(0, 1) is S.true\n    assert Lt(1, 0) is S.false\n    assert Le(0, 1) is S.true\n    assert Le(1, 0) is S.false\n    assert Le(0, 0) is S.true\n    assert Gt(1, 0) is S.true\n    assert Gt(0, 1) is S.false\n    assert Ge(1, 0) is S.true\n    assert Ge(0, 1) is S.false\n    assert Ge(1, 1) is S.true\n    assert Eq(I, 2) is S.false\n    assert Ne(I, 2) is S.true\n    raises(TypeError, lambda: Gt(I, 2))\n    raises(TypeError, lambda: Ge(I, 2))\n    raises(TypeError, lambda: Lt(I, 2))\n    raises(TypeError, lambda: Le(I, 2))\n    a = Float('.000000000000000000001', '')\n    b = Float('.0000000000000000000001', '')\n    assert Eq(pi + a, pi + b) is S.false\n\n\ndef test_rich_cmp():\n    assert (x < y) == Lt(x, y)\n    assert (x <= y) == Le(x, y)\n    assert (x > y) == Gt(x, y)\n    assert (x >= y) == Ge(x, y)\n\n\ndef test_doit():\n    from sympy import Symbol\n    p = Symbol('p', positive=True)\n    n = Symbol('n', negative=True)\n    np = Symbol('np', nonpositive=True)\n    nn = Symbol('nn', nonnegative=True)\n\n    assert Gt(p, 0).doit() is S.true\n    assert Gt(p, 1).doit() == Gt(p, 1)\n    assert Ge(p, 0).doit() is S.true\n    assert Le(p, 0).doit() is S.false\n    assert Lt(n, 0).doit() is S.true\n    assert Le(np, 0).doit() is S.true\n    assert Gt(nn, 0).doit() == Gt(nn, 0)\n    assert Lt(nn, 0).doit() is S.false\n\n    assert Eq(x, 0).doit() == Eq(x, 0)\n\n\ndef test_new_relational():\n    x = Symbol('x')\n\n    assert Eq(x) == Relational(x, 0)       # None ==> Equality\n    assert Eq(x) == Relational(x, 0, '==')\n    assert Eq(x) == Relational(x, 0, 'eq')\n    assert Eq(x) == Equality(x, 0)\n    assert Eq(x, -1) == Relational(x, -1)       # None ==> Equality\n    assert Eq(x, -1) == Relational(x, -1, '==')\n    assert Eq(x, -1) == Relational(x, -1, 'eq')\n    assert Eq(x, -1) == Equality(x, -1)\n    assert Eq(x) != Relational(x, 1)       # None ==> Equality\n    assert Eq(x) != Relational(x, 1, '==')\n    assert Eq(x) != Relational(x, 1, 'eq')\n    assert Eq(x) != Equality(x, 1)\n    assert Eq(x, -1) != Relational(x, 1)       # None ==> Equality\n    assert Eq(x, -1) != Relational(x, 1, '==')\n    assert Eq(x, -1) != Relational(x, 1, 'eq')\n    assert Eq(x, -1) != Equality(x, 1)\n\n    assert Ne(x, 0) == Relational(x, 0, '!=')\n    assert Ne(x, 0) == Relational(x, 0, '<>')\n    assert Ne(x, 0) == Relational(x, 0, 'ne')\n    assert Ne(x, 0) == Unequality(x, 0)\n    assert Ne(x, 0) != Relational(x, 1, '!=')\n    assert Ne(x, 0) != Relational(x, 1, '<>')\n    assert Ne(x, 0) != Relational(x, 1, 'ne')\n    assert Ne(x, 0) != Unequality(x, 1)\n\n    assert Ge(x, 0) == Relational(x, 0, '>=')\n    assert Ge(x, 0) == Relational(x, 0, 'ge')\n    assert Ge(x, 0) == GreaterThan(x, 0)\n    assert Ge(x, 1) != Relational(x, 0, '>=')\n    assert Ge(x, 1) != Relational(x, 0, 'ge')\n    assert Ge(x, 1) != GreaterThan(x, 0)\n    assert (x >= 1) == Relational(x, 1, '>=')\n    assert (x >= 1) == Relational(x, 1, 'ge')\n    assert (x >= 1) == GreaterThan(x, 1)\n    assert (x >= 0) != Relational(x, 1, '>=')\n    assert (x >= 0) != Relational(x, 1, 'ge')\n    assert (x >= 0) != GreaterThan(x, 1)\n\n    assert Le(x, 0) == Relational(x, 0, '<=')\n    assert Le(x, 0) == Relational(x, 0, 'le')\n    assert Le(x, 0) == LessThan(x, 0)\n    assert Le(x, 1) != Relational(x, 0, '<=')\n    assert Le(x, 1) != Relational(x, 0, 'le')\n    assert Le(x, 1) != LessThan(x, 0)\n    assert (x <= 1) == Relational(x, 1, '<=')\n    assert (x <= 1) == Relational(x, 1, 'le')\n    assert (x <= 1) == LessThan(x, 1)\n    assert (x <= 0) != Relational(x, 1, '<=')\n    assert (x <= 0) != Relational(x, 1, 'le')\n    assert (x <= 0) != LessThan(x, 1)\n\n    assert Gt(x, 0) == Relational(x, 0, '>')\n    assert Gt(x, 0) == Relational(x, 0, 'gt')\n    assert Gt(x, 0) == StrictGreaterThan(x, 0)\n    assert Gt(x, 1) != Relational(x, 0, '>')\n    assert Gt(x, 1) != Relational(x, 0, 'gt')\n    assert Gt(x, 1) != StrictGreaterThan(x, 0)\n    assert (x > 1) == Relational(x, 1, '>')\n    assert (x > 1) == Relational(x, 1, 'gt')\n    assert (x > 1) == StrictGreaterThan(x, 1)\n    assert (x > 0) != Relational(x, 1, '>')\n    assert (x > 0) != Relational(x, 1, 'gt')\n    assert (x > 0) != StrictGreaterThan(x, 1)\n\n    assert Lt(x, 0) == Relational(x, 0, '<')\n    assert Lt(x, 0) == Relational(x, 0, 'lt')\n    assert Lt(x, 0) == StrictLessThan(x, 0)\n    assert Lt(x, 1) != Relational(x, 0, '<')\n    assert Lt(x, 1) != Relational(x, 0, 'lt')\n    assert Lt(x, 1) != StrictLessThan(x, 0)\n    assert (x < 1) == Relational(x, 1, '<')\n    assert (x < 1) == Relational(x, 1, 'lt')\n    assert (x < 1) == StrictLessThan(x, 1)\n    assert (x < 0) != Relational(x, 1, '<')\n    assert (x < 0) != Relational(x, 1, 'lt')\n    assert (x < 0) != StrictLessThan(x, 1)\n\n    # finally, some fuzz testing\n    from random import randint\n    from sympy.core.compatibility import unichr\n    for i in range(100):\n        while 1:\n            strtype, length = (unichr, 65535) if randint(0, 1) else (chr, 255)\n            relation_type = strtype(randint(0, length))\n            if randint(0, 1):\n                relation_type += strtype(randint(0, length))\n            if relation_type not in ('==', 'eq', '!=', '<>', 'ne', '>=', 'ge',\n                                     '<=', 'le', '>', 'gt', '<', 'lt'):\n                break\n\n        raises(ValueError, lambda: Relational(x, 1, relation_type))\n\n\ndef test_relational_bool_output():\n    # https://github.com/sympy/sympy/issues/5931\n    raises(TypeError, lambda: bool(x > 3))\n    raises(TypeError, lambda: bool(x >= 3))\n    raises(TypeError, lambda: bool(x < 3))\n    raises(TypeError, lambda: bool(x <= 3))\n    raises(TypeError, lambda: bool(Eq(x, 3)))\n    raises(TypeError, lambda: bool(Ne(x, 3)))\n\n\ndef test_relational_logic_symbols():\n    # See issue 6204\n    assert (x < y) & (z < t) == And(x < y, z < t)\n    assert (x < y) | (z < t) == Or(x < y, z < t)\n    assert ~(x < y) == Not(x < y)\n    assert (x < y) >> (z < t) == Implies(x < y, z < t)\n    assert (x < y) << (z < t) == Implies(z < t, x < y)\n    assert (x < y) ^ (z < t) == Xor(x < y, z < t)\n\n    assert isinstance((x < y) & (z < t), And)\n    assert isinstance((x < y) | (z < t), Or)\n    assert isinstance(~(x < y), GreaterThan)\n    assert isinstance((x < y) >> (z < t), Implies)\n    assert isinstance((x < y) << (z < t), Implies)\n    assert isinstance((x < y) ^ (z < t), (Or, Xor))\n\n\ndef test_univariate_relational_as_set():\n    assert (x > 0).as_set() == Interval(0, oo, True, True)\n    assert (x >= 0).as_set() == Interval(0, oo)\n    assert (x < 0).as_set() == Interval(-oo, 0, True, True)\n    assert (x <= 0).as_set() == Interval(-oo, 0)\n    assert Eq(x, 0).as_set() == FiniteSet(0)\n    assert Ne(x, 0).as_set() == Interval(-oo, 0, True, True) + \\\n        Interval(0, oo, True, True)\n\n    assert (x**2 >= 4).as_set() == Interval(-oo, -2) + Interval(2, oo)\n\n\n@XFAIL\ndef test_multivariate_relational_as_set():\n    assert (x*y >= 0).as_set() == Interval(0, oo)*Interval(0, oo) + \\\n        Interval(-oo, 0)*Interval(-oo, 0)\n\n\ndef test_Not():\n    assert Not(Equality(x, y)) == Unequality(x, y)\n    assert Not(Unequality(x, y)) == Equality(x, y)\n    assert Not(StrictGreaterThan(x, y)) == LessThan(x, y)\n    assert Not(StrictLessThan(x, y)) == GreaterThan(x, y)\n    assert Not(GreaterThan(x, y)) == StrictLessThan(x, y)\n    assert Not(LessThan(x, y)) == StrictGreaterThan(x, y)\n\n\ndef test_evaluate():\n    assert str(Eq(x, x, evaluate=False)) == 'Eq(x, x)'\n    assert Eq(x, x, evaluate=False).doit() == S.true\n    assert str(Ne(x, x, evaluate=False)) == 'Ne(x, x)'\n    assert Ne(x, x, evaluate=False).doit() == S.false\n\n    assert str(Ge(x, x, evaluate=False)) == 'x >= x'\n    assert str(Le(x, x, evaluate=False)) == 'x <= x'\n    assert str(Gt(x, x, evaluate=False)) == 'x > x'\n    assert str(Lt(x, x, evaluate=False)) == 'x < x'\n\n\ndef assert_all_ineq_raise_TypeError(a, b):\n    raises(TypeError, lambda: a > b)\n    raises(TypeError, lambda: a >= b)\n    raises(TypeError, lambda: a < b)\n    raises(TypeError, lambda: a <= b)\n    raises(TypeError, lambda: b > a)\n    raises(TypeError, lambda: b >= a)\n    raises(TypeError, lambda: b < a)\n    raises(TypeError, lambda: b <= a)\n\n\ndef assert_all_ineq_give_class_Inequality(a, b):\n    \"\"\"All inequality operations on `a` and `b` result in class Inequality.\"\"\"\n    from sympy.core.relational import _Inequality as Inequality\n    assert isinstance(a > b,  Inequality)\n    assert isinstance(a >= b, Inequality)\n    assert isinstance(a < b,  Inequality)\n    assert isinstance(a <= b, Inequality)\n    assert isinstance(b > a,  Inequality)\n    assert isinstance(b >= a, Inequality)\n    assert isinstance(b < a,  Inequality)\n    assert isinstance(b <= a, Inequality)\n\n\ndef test_imaginary_compare_raises_TypeError():\n    # See issue #5724\n    assert_all_ineq_raise_TypeError(I, x)\n\n\ndef test_complex_compare_not_real():\n    # two cases which are not real\n    y = Symbol('y', imaginary=True)\n    z = Symbol('z', complex=True, real=False)\n    for w in (y, z):\n        assert_all_ineq_raise_TypeError(2, w)\n    # some cases which should remain un-evaluated\n    t = Symbol('t')\n    x = Symbol('x', real=True)\n    z = Symbol('z', complex=True)\n    for w in (x, z, t):\n        assert_all_ineq_give_class_Inequality(2, w)\n\n\ndef test_imaginary_and_inf_compare_raises_TypeError():\n    # See pull request #7835\n    y = Symbol('y', imaginary=True)\n    assert_all_ineq_raise_TypeError(oo, y)\n    assert_all_ineq_raise_TypeError(-oo, y)\n\n\ndef test_complex_pure_imag_not_ordered():\n    raises(TypeError, lambda: 2*I < 3*I)\n\n    # more generally\n    x = Symbol('x', real=True, nonzero=True)\n    y = Symbol('y', imaginary=True)\n    z = Symbol('z', complex=True)\n    assert_all_ineq_raise_TypeError(I, y)\n\n    t = I*x   # an imaginary number, should raise errors\n    assert_all_ineq_raise_TypeError(2, t)\n\n    t = -I*y   # a real number, so no errors\n    assert_all_ineq_give_class_Inequality(2, t)\n\n    t = I*z   # unknown, should be unevaluated\n    assert_all_ineq_give_class_Inequality(2, t)\n\n\ndef test_x_minus_y_not_same_as_x_lt_y():\n    \"\"\"\n    A consequence of pull request #7792 is that `x - y < 0` and `x < y`\n    are not synonymous.\n    \"\"\"\n    x = I + 2\n    y = I + 3\n    raises(TypeError, lambda: x < y)\n    assert x - y < 0\n\n    ineq = Lt(x, y, evaluate=False)\n    raises(TypeError, lambda: ineq.doit())\n    assert ineq.lhs - ineq.rhs < 0\n\n    t = Symbol('t', imaginary=True)\n    x = 2 + t\n    y = 3 + t\n    ineq = Lt(x, y, evaluate=False)\n    raises(TypeError, lambda: ineq.doit())\n    assert ineq.lhs - ineq.rhs < 0\n\n    # this one should give error either way\n    x = I + 2\n    y = 2*I + 3\n    raises(TypeError, lambda: x < y)\n    raises(TypeError, lambda: x - y < 0)\n\n\ndef test_nan_equality_exceptions():\n    # See issue #7774\n    import random\n    assert Equality(nan, nan) is S.false\n    assert Unequality(nan, nan) is S.true\n\n    # See issue #7773\n    A = (x, S(0), S(1)/3, pi, oo, -oo)\n    assert Equality(nan, random.choice(A)) is S.false\n    assert Equality(random.choice(A), nan) is S.false\n    assert Unequality(nan, random.choice(A)) is S.true\n    assert Unequality(random.choice(A), nan) is S.true\n\n\ndef test_nan_inequality_raise_errors():\n    # See discussion in pull request #7776.  We test inequalities with\n    # a set including examples of various classes.\n    for q in (x, S(0), S(10), S(1)/3, pi, S(1.3), oo, -oo, nan):\n        assert_all_ineq_raise_TypeError(q, nan)\n\n\ndef test_nan_complex_inequalities():\n    # Comparisons of NaN with non-real raise errors, we're not too\n    # fussy whether its the NaN error or complex error.\n    for r in (I, zoo, Symbol('z', imaginary=True)):\n        assert_all_ineq_raise_TypeError(r, nan)\n\n\ndef test_complex_infinity_inequalities():\n    raises(TypeError, lambda: zoo > 0)\n    raises(TypeError, lambda: zoo >= 0)\n    raises(TypeError, lambda: zoo < 0)\n    raises(TypeError, lambda: zoo <= 0)\n\n\ndef test_inequalities_symbol_name_same():\n    \"\"\"Using the operator and functional forms should give same results.\"\"\"\n    # We test all combinations from a set\n    # FIXME: could replace with random selection after test passes\n    A = (x, y, S(0), S(1)/3, pi, oo, -oo)\n    for a in A:\n        for b in A:\n            assert Gt(a, b) == (a > b)\n            assert Lt(a, b) == (a < b)\n            assert Ge(a, b) == (a >= b)\n            assert Le(a, b) == (a <= b)\n\n    for b in (y, S(0), S(1)/3, pi, oo, -oo):\n        assert Gt(x, b, evaluate=False) == (x > b)\n        assert Lt(x, b, evaluate=False) == (x < b)\n        assert Ge(x, b, evaluate=False) == (x >= b)\n        assert Le(x, b, evaluate=False) == (x <= b)\n\n    for b in (y, S(0), S(1)/3, pi, oo, -oo):\n        assert Gt(b, x, evaluate=False) == (b > x)\n        assert Lt(b, x, evaluate=False) == (b < x)\n        assert Ge(b, x, evaluate=False) == (b >= x)\n        assert Le(b, x, evaluate=False) == (b <= x)\n\n\ndef test_inequalities_symbol_name_same_complex():\n    \"\"\"Using the operator and functional forms should give same results.\n    With complex non-real numbers, both should raise errors.\n    \"\"\"\n    # FIXME: could replace with random selection after test passes\n    for a in (x, S(0), S(1)/3, pi, oo):\n        raises(TypeError, lambda: Gt(a, I))\n        raises(TypeError, lambda: a > I)\n        raises(TypeError, lambda: Lt(a, I))\n        raises(TypeError, lambda: a < I)\n        raises(TypeError, lambda: Ge(a, I))\n        raises(TypeError, lambda: a >= I)\n        raises(TypeError, lambda: Le(a, I))\n        raises(TypeError, lambda: a <= I)\n\n\ndef test_inequalities_cant_sympify_other():\n    # see issue 7833\n    from operator import gt, lt, ge, le\n\n    bar = \"foo\"\n\n    for a in (x, S(0), S(1)/3, pi, I, zoo, oo, -oo, nan):\n        for op in (lt, gt, le, ge):\n            raises(TypeError, lambda: op(a, bar))\n\n\ndef test_ineq_avoid_wild_symbol_flip():\n    # see issue #7951, we try to avoid this internally, e.g., by using\n    # __lt__ instead of \"<\".\n    from sympy.core.symbol import Wild\n    p = symbols('p', cls=Wild)\n    # x > p might flip, but Gt should not:\n    assert Gt(x, p) == Gt(x, p, evaluate=False)\n    # Previously failed as 'p > x':\n    e = Lt(x, y).subs({y: p})\n    assert e == Lt(x, p, evaluate=False)\n    # Previously failed as 'p <= x':\n    e = Ge(x, p).doit()\n    assert e == Ge(x, p, evaluate=False)\n\n\ndef test_issue_8245():\n    a = S(\"6506833320952669167898688709329/5070602400912917605986812821504\")\n    q = a.n(10)\n    assert (a == q) is True\n    assert (a != q) is False\n    assert (a > q) == False\n    assert (a < q) == False\n    assert (a >= q) == True\n    assert (a <= q) == True\n\n    a = sqrt(2)\n    r = Rational(str(a.n(30)))\n    assert (r == a) is False\n    assert (r != a) is True\n    assert (r > a) == True\n    assert (r < a) == False\n    assert (r >= a) == True\n    assert (r <= a) == False\n    a = sqrt(2)\n    r = Rational(str(a.n(29)))\n    assert (r == a) is False\n    assert (r != a) is True\n    assert (r > a) == False\n    assert (r < a) == True\n    assert (r >= a) == False\n    assert (r <= a) == True\n\n\ndef test_issue_8449():\n    p = Symbol('p', nonnegative=True)\n    assert Lt(-oo, p)\n    assert Ge(-oo, p) is S.false\n    assert Gt(oo, -p)\n    assert Le(oo, -p) is S.false\n\n\ndef test_simplify():\n    assert simplify(x*(y + 1) - x*y - x + 1 < x) == (x > 1)\n    assert simplify(S(1) < -x) == (x < -1)\n\n\ndef test_equals():\n    w, x, y, z = symbols('w:z')\n    f = Function('f')\n    assert Eq(x, 1).equals(Eq(x*(y + 1) - x*y - x + 1, x))\n    assert Eq(x, y).equals(x < y, True) == False\n    assert Eq(x, f(1)).equals(Eq(x, f(2)), True) == f(1) - f(2)\n    assert Eq(f(1), y).equals(Eq(f(2), y), True) == f(1) - f(2)\n    assert Eq(x, f(1)).equals(Eq(f(2), x), True) == f(1) - f(2)\n    assert Eq(f(1), x).equals(Eq(x, f(2)), True) == f(1) - f(2)\n    assert Eq(w, x).equals(Eq(y, z), True) == False\n    assert Eq(f(1), f(2)).equals(Eq(f(3), f(4)), True) == f(1) - f(3)\n    assert (x < y).equals(y > x, True) == True\n    assert (x < y).equals(y >= x, True) == False\n    assert (x < y).equals(z < y, True) == False\n    assert (x < y).equals(x < z, True) == False\n    assert (x < f(1)).equals(x < f(2), True) == f(1) - f(2)\n    assert (f(1) < x).equals(f(2) < x, True) == f(1) - f(2)\n\n\ndef test_reversed():\n    assert (x < y).reversed == (y > x)\n    assert (x <= y).reversed == (y >= x)\n    assert Eq(x, y, evaluate=False).reversed == Eq(y, x, evaluate=False)\n    assert Ne(x, y, evaluate=False).reversed == Ne(y, x, evaluate=False)\n    assert (x >= y).reversed == (y <= x)\n    assert (x > y).reversed == (y < x)\n\n\ndef test_canonical():\n    one = S(1)\n\n    def unchanged(v):\n        c = v.canonical\n        return v.is_Relational and c.is_Relational and v == c\n\n    def isreversed(v):\n        return v.canonical == v.reversed\n\n    assert unchanged(x < one)\n    assert unchanged(x <= one)\n    assert isreversed(Eq(one, x, evaluate=False))\n    assert unchanged(Eq(x, one, evaluate=False))\n    assert isreversed(Ne(one, x, evaluate=False))\n    assert unchanged(Ne(x, one, evaluate=False))\n    assert unchanged(x >= one)\n    assert unchanged(x > one)\n\n    assert unchanged(x < y)\n    assert unchanged(x <= y)\n    assert isreversed(Eq(y, x, evaluate=False))\n    assert unchanged(Eq(x, y, evaluate=False))\n    assert isreversed(Ne(y, x, evaluate=False))\n    assert unchanged(Ne(x, y, evaluate=False))\n    assert isreversed(x >= y)\n    assert isreversed(x > y)\n    assert (-x < 1).canonical == (x > -1)\n    assert isreversed(-x > y)\n\n\n@XFAIL\ndef test_issue_8444():\n    x = symbols('x', real=True)\n    assert (x <= oo) == (x >= -oo) == True\n\n    x = symbols('x')\n    assert x >= floor(x)\n    assert (x < floor(x)) == False\n    assert Gt(x, floor(x)) == Gt(x, floor(x), evaluate=False)\n    assert Ge(x, floor(x)) == Ge(x, floor(x), evaluate=False)\n    assert x <= ceiling(x)\n    assert (x > ceiling(x)) == False\n    assert Lt(x, ceiling(x)) == Lt(x, ceiling(x), evaluate=False)\n    assert Le(x, ceiling(x)) == Le(x, ceiling(x), evaluate=False)\n    i = symbols('i', integer=True)\n    assert (i > floor(i)) == False\n    assert (i < ceiling(i)) == False\n    assert (i >= floor(i)) == True\n    assert (i <= ceiling(i)) == True\n\n    # test for invalid operations\n    assert (x > 1) == True\n    assert (x < 1)"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      69.89803314208984,
+      169.01609802246094,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,20 @@
     ],
     "f_after": [
       0.0,
-      69.89803314208984,
+      303.0924377441406,
+      0.0,
+      0.0,
+      1.7739050388336182,
+      0.8087688684463501,
+      0.0,
+      2.1724612712860107,
+      0.0,
+      0.028735142201185226,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      40.552490234375,
-      0.008254310116171837,
-      7.679322242736816,
-      0.16275644302368164,
-      0.043578192591667175,
-      0.0,
-      6.438168525695801,
-      6.793868541717529,
-      0.1916266679763794,
-      0.13715341687202454,
-      0.028239881619811058
-    ],
     "g_after": [
-      40.552490234375,
-      0.008254310116171837,
-      7.679322242736816,
-      0.16275644302368164,
-      0.043578192591667175,
       0.0,
-      6.438168525695801,
-      6.793868541717529,
-      0.1916266679763794,
-      0.13715341687202454,
-      0.028239881619811058
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
     "mean_std": 1.7725918292999268,
     "max_std": 67.36790466308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5066,
+          5773,
+          4352,
+          693,
+          3751,
+          4878,
+          8838,
+          5643,
+          1032
+        ],
+        "f_before": [
+          0.0,
+          169.01609802246094,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          303.0924377441406,
+          0.0,
+          0.0,
+          1.7739050388336182,
+          0.8087688684463501,
+          0.0,
+          2.1724612712860107,
+          0.0,
+          0.028735142201185226,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 169.01609802246094,
+            "f_after": 303.0924377441406,
+            "delta_f": 134.0763397216797
+          },
+          {
+            "index": 5651,
+            "f_before": 0.0,
+            "f_after": 10.330392837524414,
+            "delta_f": 10.330392837524414
+          },
+          {
+            "index": 3301,
+            "f_before": 0.02664678730070591,
+            "f_after": 9.598040580749512,
+            "delta_f": 9.571393793448806
+          },
+          {
+            "index": 2397,
+            "f_before": 0.0,
+            "f_after": 9.109350204467773,
+            "delta_f": 9.109350204467773
+          },
+          {
+            "index": 1,
+            "f_before": 26.194204330444336,
+            "f_after": 17.145244598388672,
+            "delta_f": -9.048959732055664
+          },
+          {
+            "index": 1219,
+            "f_before": 0.28937363624572754,
+            "f_after": 9.119034767150879,
+            "delta_f": 8.829661130905151
+          },
+          {
+            "index": 2641,
+            "f_before": 0.0,
+            "f_after": 8.751421928405762,
+            "delta_f": 8.751421928405762
+          },
+          {
+            "index": 4314,
+            "f_before": 0.0,
+            "f_after": 8.097661972045898,
+            "delta_f": 8.097661972045898
+          },
+          {
+            "index": 691,
+            "f_before": 0.0,
+            "f_after": 7.559791564941406,
+            "delta_f": 7.559791564941406
+          },
+          {
+            "index": 3855,
+            "f_before": 0.0,
+            "f_after": 7.251905918121338,
+            "delta_f": 7.251905918121338
+          },
+          {
+            "index": 5339,
+            "f_before": 0.0,
+            "f_after": 7.246716022491455,
+            "delta_f": 7.246716022491455
+          },
+          {
+            "index": 3822,
+            "f_before": 0.0,
+            "f_after": 6.335881233215332,
+            "delta_f": 6.335881233215332
+          },
+          {
+            "index": 5496,
+            "f_before": 0.6997040510177612,
+            "f_after": 6.931612968444824,
+            "delta_f": 6.231908917427063
+          },
+          {
+            "index": 584,
+            "f_before": 0.0,
+            "f_after": 6.20496940612793,
+            "delta_f": 6.20496940612793
+          },
+          {
+            "index": 6216,
+            "f_before": 1.011435627937317,
+            "f_after": 7.187406063079834,
+            "delta_f": 6.175970435142517
+          },
+          {
+            "index": 4516,
+            "f_before": 0.0,
+            "f_after": 6.080829620361328,
+            "delta_f": 6.080829620361328
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet, Set\nfrom sympy.matrices import Matrix\nfrom sympy.functions import factorial\nfrom sympy.parsing.sympy_parser import parse_expr\n\nclass TestSymbolicMath:\n    def test_simple_operations(self):\n        self",
+        "after": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet\n\nfrom sympy.matrices import Matrix\n\n# from sympy.abc import ABC\n# from sympy.abc import ABC\n\n\n# Set up random number generator\nimport random\n\n# Set up random number generator\nrandom.seed(1234)"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5066,
+          5773,
+          4352,
+          693,
+          3751,
+          4878,
+          8838,
+          5643,
+          1032
+        ],
+        "f_before": [
+          0.0,
+          169.01609802246094,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          169.01609802246094,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 26.194204330444336,
+            "f_after": 26.194204330444336,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 169.01609802246094,
+            "f_after": 169.01609802246094,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet, Set\nfrom sympy.functions import sin, cos, tan, asin, acos, atan\nfrom sympy.core.numbers import Number\nfrom sympy.utilities.pytest import xfail\nfrom sympy.abc import x, y, z\n\n",
+        "after": "from sympy.utilities.pytest import XFAIL, raises\nfrom sympy import (S, Symbol, symbols, nan, oo, I, pi, Float, And, Or, Not,\n                   Implies, Xor, zoo, sqrt, Rational, simplify, Function)\nfrom sympy.core.compatibility import range\nfrom sympy.core.relational import (Relational, Equality, Unequality,\n                                   GreaterThan, LessThan, StrictGreaterThan,\n                                   StrictLessThan, Rel, Eq, Lt, Le,\n                                   Gt, Ge, Ne)\nfrom sympy.sets.sets import Interval, FiniteSet, Set\nfrom sympy.logic.core import (And, Or, Not, Implies, Xor, Rel,\n                              Not, IsInstance, IsType, IsConstant, IsSymbol,\n                              IsInteger, IsReal, Is"
+      }
+    }
   }
 }

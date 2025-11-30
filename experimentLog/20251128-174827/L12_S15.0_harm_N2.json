@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.Item = QListWidgetItem()\n        self.selectList.setFlow(QListWidget.LeftToRight)\n        self.selectList.addItems([\"function1\",\"function2\",\"function3\"])\n        self.selectList.setMaximumHeight(40)\n        self.selectList.setMinimumHeight(20)\n\n\n\n\n        self.resultEdit1 = QTextEdit(\"function1--result1--111\",self)\n        self.resultEdit2 = QTextEdit(\"function2--result2--222\",self)\n        self.resultEdit3 = QTextEdit(\"function3--result3--333\",self)\n\n        self.stack = QStackedWidget()\n        self.stack.addWidget(self.resultEdit1)\n        self.stack.addWidget(self.resultEdit2)\n        self.stack.addWidget(self.resultEdit3)\n\n        layout = QVBoxLayout(self)\n        layout.addWidget(self.selectList)\n        layout.addWidget(self.stack)\n        layout.setStretch(0,1)\n        layout.setStretch(1,20)\n\n\n\n        self.selectList.currentRowChanged.connect(self.stack.setCurrentIndex)\n        self.setMinimumHeight(200)\n        self.show()\nif __name__ == '__main__':\n    app = QApplication(sys.argv)\n    ex = MainPage()\n    sys.exit(app.exec_())",
+  "prompt": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList =",
   "output": {
     "before": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.Item = QListWidgetItem()\n        self.selectList.setFlow(QListWidget.LeftToRight)\n        self.selectList.addItems([\"function1\",\"function2\",\"function3\"])\n        self.selectList.setMaximumHeight(40)\n        self.selectList.setMinimumHeight(20)\n\n\n\n\n        self.resultEdit1 = QTextEdit(\"function1--result1--111\",self)\n        self.resultEdit2 = QTextEdit(\"function2--result2--222\",self)\n        self.resultEdit3 = QTextEdit(\"function3--result3--333\",self)\n\n        self.stack = QStackedWidget()\n        self.stack.addWidget(self.resultEdit1)\n        self.stack.addWidget(self.resultEdit2)\n        self.stack.addWidget(self.resultEdit3)\n\n        layout = QVBoxLayout(self)\n        layout.addWidget(self.selectList)\n        layout.addWidget(self.stack)\n        layout.setStretch(0,1)\n        layout.setStretch(1,20)\n\n\n\n        self.selectList.currentRowChanged.connect(self.stack.setCurrentIndex)\n        self.setMinimumHeight(200)\n        self.show()\nif __name__ == '__main__':\n    app = QApplication(sys.argv)\n    ex = MainPage()\n    sys.exit(app.exec_())\n\n```\n\n**Explanation:**\n\nThis code creates a simple GUI application using PyQt5 that displays a list of functions, a stacked widget for displaying their results, and allows selecting a function to view its result. \n\n**Breakdown:**\n\n1.",
     "after": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.Item = QListWidgetItem()\n        self.selectList.setFlow(QListWidget.LeftToRight)\n        self.selectList.addItems([\"function1\",\"function2\",\"function3\"])\n        self.selectList.setMaximumHeight(40)\n        self.selectList.setMinimumHeight(20)\n\n\n\n\n        self.resultEdit1 = QTextEdit(\"function1--result1--111\",self)\n        self.resultEdit2 = QTextEdit(\"function2--result2--222\",self)\n        self.resultEdit3 = QTextEdit(\"function3--result3--333\",self)\n\n        self.stack = QStackedWidget()\n        self.stack.addWidget(self.resultEdit1)\n        self.stack.addWidget(self.resultEdit2)\n        self.stack.addWidget(self.resultEdit3)\n\n        layout = QVBoxLayout(self)\n        layout.addWidget(self.selectList)\n        layout.addWidget(self.stack)\n        layout.setStretch(0,1)\n        layout.setStretch(1,20)\n\n\n\n        self.selectList.currentRowChanged.connect(self.stack.setCurrentIndex)\n        self.setMinimumHeight(200)\n        self.show()\nif __name__ == '__main__':\n    app = QApplication(sys.argv)\n    ex = MainPage()\n    sys.exit(app.exec_())\n```\n\nIt seems like you're trying to write a program with a chat-like function. \n \n\nI don't understand why you want to create a chat bot.\n\n**Here's why it's important to"
@@ -82,7 +83,7 @@
       8747
     ],
     "f_before": [
-      25.30972671508789,
+      24.964981079101562,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      25.30972671508789,
+      188.92185974121094,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      2.631075382232666,
-      2.6457273960113525,
-      2.570235252380371,
-      2.441577672958374,
-      2.3886210918426514,
-      2.365318775177002,
-      0.008995753712952137,
       0.0,
-      2.4199399948120117,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      2.631075382232666,
-      2.6457273960113525,
-      2.570235252380371,
-      2.441577672958374,
-      2.3886210918426514,
-      2.365318775177002,
-      0.008995753712952137,
       0.0,
-      2.4199399948120117,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          6087,
+          259,
+          5424,
+          6926,
+          3358,
+          7751,
+          841,
+          104,
+          5748,
+          8747
+        ],
+        "f_before": [
+          24.964981079101562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          188.92185974121094,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 24.964981079101562,
+            "f_after": 188.92185974121094,
+            "delta_f": 163.95687866210938
+          },
+          {
+            "index": 5012,
+            "f_before": 0.0,
+            "f_after": 38.41505432128906,
+            "delta_f": 38.41505432128906
+          },
+          {
+            "index": 5931,
+            "f_before": 0.0,
+            "f_after": 36.91823959350586,
+            "delta_f": 36.91823959350586
+          },
+          {
+            "index": 8762,
+            "f_before": 100.9721450805664,
+            "f_after": 95.06324768066406,
+            "delta_f": -5.908897399902344
+          },
+          {
+            "index": 3927,
+            "f_before": 0.0,
+            "f_after": 3.4096152782440186,
+            "delta_f": 3.4096152782440186
+          },
+          {
+            "index": 2250,
+            "f_before": 0.0,
+            "f_after": 2.7851006984710693,
+            "delta_f": 2.7851006984710693
+          },
+          {
+            "index": 3495,
+            "f_before": 0.0,
+            "f_after": 2.6110568046569824,
+            "delta_f": 2.6110568046569824
+          },
+          {
+            "index": 4094,
+            "f_before": 0.0,
+            "f_after": 2.5694215297698975,
+            "delta_f": 2.5694215297698975
+          },
+          {
+            "index": 7144,
+            "f_before": 0.0,
+            "f_after": 2.5385775566101074,
+            "delta_f": 2.5385775566101074
+          },
+          {
+            "index": 441,
+            "f_before": 0.0,
+            "f_after": 2.4932572841644287,
+            "delta_f": 2.4932572841644287
+          },
+          {
+            "index": 7354,
+            "f_before": 0.0,
+            "f_after": 2.4687294960021973,
+            "delta_f": 2.4687294960021973
+          },
+          {
+            "index": 3929,
+            "f_before": 0.0,
+            "f_after": 2.457819938659668,
+            "delta_f": 2.457819938659668
+          },
+          {
+            "index": 6835,
+            "f_before": 0.0,
+            "f_after": 2.441946506500244,
+            "delta_f": 2.441946506500244
+          },
+          {
+            "index": 6421,
+            "f_before": 0.0,
+            "f_after": 2.436453342437744,
+            "delta_f": 2.436453342437744
+          },
+          {
+            "index": 1024,
+            "f_before": 0.0,
+            "f_after": 2.41306209564209,
+            "delta_f": 2.41306209564209
+          },
+          {
+            "index": 990,
+            "f_before": 0.0,
+            "f_after": 2.4025070667266846,
+            "delta_f": 2.4025070667266846
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.selectList.addItem(\"Item 1\")\n        self.selectList.addItem(\"Item 2\")\n        self.selectList.addItem(\"Item 3\")\n\n        layout = QVBoxLayout()",
+        "after": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.selectList.setFixedSize(200, 200)\n        self.selectList.setStyleSheet(\"background-color: #f0f0f0;\")\n        self.select"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          6087,
+          259,
+          5424,
+          6926,
+          3358,
+          7751,
+          841,
+          104,
+          5748,
+          8747
+        ],
+        "f_before": [
+          24.964981079101562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          24.964981079101562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 24.964981079101562,
+            "f_after": 24.964981079101562,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.selectList.addItem(\"Fish\")\n        self.selectList.addItem(\"Food\")\n        self.selectList.addItem(\"Water\")\n        self.selectList.addItem(\"Tank\")\n        ",
+        "after": "#Author:Azrael\nimport sys\nfrom PyQt5.QtWidgets import QApplication, QDialog, QStackedWidget,QListWidget,\\\n    QTextEdit,QVBoxLayout,QListWidgetItem\n\n\nclass MainPage(QDialog):\n    def __init__(self, parent=None):\n        super(MainPage, self).__init__(parent)\n        self.initUI()\n\n    def initUI(self):\n\n        self.setWindowTitle(\"sa1tFish\")\n        self.setGeometry(200, 200, 800, 400)\n\n\n\n        self.selectList = QListWidget()\n        self.selectList.setText(\"Please select a name for me.\")\n        self.selectList.setText(\"Please select a name for me.\")\n\n        self.initUI()\n        \n        # this is"
+      }
+    }
   }
 }

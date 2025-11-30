@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n# =============================================================================\n\nimport unittest\nimport itertools\nimport numpy as np\n\nfrom parameterized import parameterized\nfrom qiskit import QuantumCircuit, QuantumRegister\nfrom qiskit import execute as q_execute\nfrom qiskit.quantum_info import state_fidelity\n\nfrom qiskit.aqua import get_aer_backend\nfrom test.common import QiskitAquaTestCase\n\nnum_controls = [i + 1 for i in range(7)]\nmodes = ['basic', 'advanced', 'noancilla']\n\n\nclass TestMCT(QiskitAquaTestCase):\n    @parameterized.expand(\n        itertools.product(num_controls, modes)\n    )\n    def test_mct(self, num_controls, mode):\n        c = QuantumRegister(num_controls, name='c')\n        o = QuantumRegister(1, name='o')\n        subsets = [tuple(range(i)) for i in range(num_controls + 1)]\n        for subset in subsets:\n            qc = QuantumCircuit(o, c)\n            if mode == 'basic':\n                if num_controls <= 2:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = num_controls - 2\n            elif mode == 'noancilla':\n                num_ancillae = 0\n            else:\n                if num_controls <= 4:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = 1\n            if num_ancillae > 0:\n                a = QuantumRegister(num_ancillae, name='a')\n                qc.add_register(a)\n            for idx in subset:\n                qc.x(c[idx])\n            qc.mct(\n                [c[i] for i in range(num_controls)],\n                o[0],\n                [a[i] for i in range(num_ancillae)],\n                mode=mode\n            )\n            for idx in subset:\n                qc.x(c[idx])\n\n            vec = np.asarray(q_execute(qc, get_aer_backend(\n                'statevector_simulator')).result().get_statevector(qc, decimals=16))\n            vec_o = [0, 1] if len(subset) == num_controls else [1, 0]\n            f = state_fidelity(vec, np.array(vec_o + [0] * (2 ** (num_controls + num_ancillae + 1) - 2)))\n            self.assertAlmostEqual(f, 1)\n\n\nif __name__ == '__main__':\n    unittest.main()\n",
+  "prompt": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express",
   "output": {
     "before": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n# =============================================================================\n\nimport unittest\nimport itertools\nimport numpy as np\n\nfrom parameterized import parameterized\nfrom qiskit import QuantumCircuit, QuantumRegister\nfrom qiskit import execute as q_execute\nfrom qiskit.quantum_info import state_fidelity\n\nfrom qiskit.aqua import get_aer_backend\nfrom test.common import QiskitAquaTestCase\n\nnum_controls = [i + 1 for i in range(7)]\nmodes = ['basic', 'advanced', 'noancilla']\n\n\nclass TestMCT(QiskitAquaTestCase):\n    @parameterized.expand(\n        itertools.product(num_controls, modes)\n    )\n    def test_mct(self, num_controls, mode):\n        c = QuantumRegister(num_controls, name='c')\n        o = QuantumRegister(1, name='o')\n        subsets = [tuple(range(i)) for i in range(num_controls + 1)]\n        for subset in subsets:\n            qc = QuantumCircuit(o, c)\n            if mode == 'basic':\n                if num_controls <= 2:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = num_controls - 2\n            elif mode == 'noancilla':\n                num_ancillae = 0\n            else:\n                if num_controls <= 4:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = 1\n            if num_ancillae > 0:\n                a = QuantumRegister(num_ancillae, name='a')\n                qc.add_register(a)\n            for idx in subset:\n                qc.x(c[idx])\n            qc.mct(\n                [c[i] for i in range(num_controls)],\n                o[0],\n                [a[i] for i in range(num_ancillae)],\n                mode=mode\n            )\n            for idx in subset:\n                qc.x(c[idx])\n\n            vec = np.asarray(q_execute(qc, get_aer_backend(\n                'statevector_simulator')).result().get_statevector(qc, decimals=16))\n            vec_o = [0, 1] if len(subset) == num_controls else [1, 0]\n            f = state_fidelity(vec, np.array(vec_o + [0] * (2 ** (num_controls + num_ancillae + 1) - 2)))\n            self.assertAlmostEqual(f, 1)\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\n**Explanation:**\n\n1. **Import Statements:** \n   - Import necessary libraries: `unittest`, `itertools`, `numpy`, `qiskit`, and `qiskit.aqua`.\n\n2. **Test Class:**",
     "after": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n# =============================================================================\n\nimport unittest\nimport itertools\nimport numpy as np\n\nfrom parameterized import parameterized\nfrom qiskit import QuantumCircuit, QuantumRegister\nfrom qiskit import execute as q_execute\nfrom qiskit.quantum_info import state_fidelity\n\nfrom qiskit.aqua import get_aer_backend\nfrom test.common import QiskitAquaTestCase\n\nnum_controls = [i + 1 for i in range(7)]\nmodes = ['basic', 'advanced', 'noancilla']\n\n\nclass TestMCT(QiskitAquaTestCase):\n    @parameterized.expand(\n        itertools.product(num_controls, modes)\n    )\n    def test_mct(self, num_controls, mode):\n        c = QuantumRegister(num_controls, name='c')\n        o = QuantumRegister(1, name='o')\n        subsets = [tuple(range(i)) for i in range(num_controls + 1)]\n        for subset in subsets:\n            qc = QuantumCircuit(o, c)\n            if mode == 'basic':\n                if num_controls <= 2:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = num_controls - 2\n            elif mode == 'noancilla':\n                num_ancillae = 0\n            else:\n                if num_controls <= 4:\n                    num_ancillae = 0\n                else:\n                    num_ancillae = 1\n            if num_ancillae > 0:\n                a = QuantumRegister(num_ancillae, name='a')\n                qc.add_register(a)\n            for idx in subset:\n                qc.x(c[idx])\n            qc.mct(\n                [c[i] for i in range(num_controls)],\n                o[0],\n                [a[i] for i in range(num_ancillae)],\n                mode=mode\n            )\n            for idx in subset:\n                qc.x(c[idx])\n\n            vec = np.asarray(q_execute(qc, get_aer_backend(\n                'statevector_simulator')).result().get_statevector(qc, decimals=16))\n            vec_o = [0, 1] if len(subset) == num_controls else [1, 0]\n            f = state_fidelity(vec, np.array(vec_o + [0] * (2 ** (num_controls + num_ancillae + 1) - 2)))\n            self.assertAlmostEqual(f, 1)\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\n```python\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      67.16184997558594,
+      95.33048248291016,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      67.16184997558594,
+      167.48521423339844,
       0.0,
       0.0,
       0.0,
@@ -108,27 +109,27 @@
       0.0
     ],
     "g_before": [
-      38.71067810058594,
       0.0,
       0.0,
-      7.220090866088867,
-      7.5064263343811035,
       0.0,
       0.0,
-      6.490744113922119,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      38.71067810058594,
       0.0,
       0.0,
-      7.220090866088867,
-      7.5064263343811035,
       0.0,
       0.0,
-      6.490744113922119,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-142149/feature_std_layer_12.html",
     "mean_std": 1.2138572931289673,
     "max_std": 39.272926330566406
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1541,
+          859,
+          7564,
+          5662,
+          3370,
+          6732,
+          6493,
+          5445,
+          3226
+        ],
+        "f_before": [
+          0.0,
+          95.33048248291016,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          167.48521423339844,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 95.33048248291016,
+            "f_after": 167.48521423339844,
+            "delta_f": 72.15473175048828
+          },
+          {
+            "index": 7458,
+            "f_before": 32.57234191894531,
+            "f_after": 10.029190063476562,
+            "delta_f": -22.54315185546875
+          },
+          {
+            "index": 2497,
+            "f_before": 24.05450439453125,
+            "f_after": 39.3567008972168,
+            "delta_f": 15.302196502685547
+          },
+          {
+            "index": 7736,
+            "f_before": 0.0,
+            "f_after": 11.30054759979248,
+            "delta_f": 11.30054759979248
+          },
+          {
+            "index": 6384,
+            "f_before": 0.0,
+            "f_after": 10.613940238952637,
+            "delta_f": 10.613940238952637
+          },
+          {
+            "index": 1184,
+            "f_before": 0.0,
+            "f_after": 9.574665069580078,
+            "delta_f": 9.574665069580078
+          },
+          {
+            "index": 4437,
+            "f_before": 0.0,
+            "f_after": 9.319024085998535,
+            "delta_f": 9.319024085998535
+          },
+          {
+            "index": 2929,
+            "f_before": 0.0,
+            "f_after": 9.107931137084961,
+            "delta_f": 9.107931137084961
+          },
+          {
+            "index": 898,
+            "f_before": 17.20098876953125,
+            "f_after": 25.75514030456543,
+            "delta_f": 8.55415153503418
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 8.253995895385742,
+            "delta_f": 8.253995895385742
+          },
+          {
+            "index": 8305,
+            "f_before": 0.0,
+            "f_after": 7.998721599578857,
+            "delta_f": 7.998721599578857
+          },
+          {
+            "index": 6623,
+            "f_before": 0.0,
+            "f_after": 7.939716815948486,
+            "delta_f": 7.939716815948486
+          },
+          {
+            "index": 204,
+            "f_before": 0.0,
+            "f_after": 7.932281017303467,
+            "delta_f": 7.932281017303467
+          },
+          {
+            "index": 240,
+            "f_before": 0.0,
+            "f_after": 7.843519687652588,
+            "delta_f": 7.843519687652588
+          },
+          {
+            "index": 3373,
+            "f_before": 0.0,
+            "f_after": 7.805366516113281,
+            "delta_f": 7.805366516113281
+          },
+          {
+            "index": 7224,
+            "f_before": 0.0,
+            "f_after": 7.7366623878479,
+            "delta_f": 7.7366623878479
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom typing import List\n\nfrom google.cloud import storage\n\n# Initialize the Google Cloud Storage client\nclient = storage.Client()\n\n\n",
+        "after": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n#\n\nimport os\nimport numpy as np\nimport tensorflow as tf\n\nfrom tensorflow.keras.models import Model\nfrom tensorflow.keras.layers import Input, Dense, LSTM\nfrom tensorflow.keras.optimizers import Adam"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1541,
+          859,
+          7564,
+          5662,
+          3370,
+          6732,
+          6493,
+          5445,
+          3226
+        ],
+        "f_before": [
+          0.0,
+          95.33048248291016,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          95.33048248291016,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 23.32514190673828,
+            "f_after": 23.32514190673828,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 95.33048248291016,
+            "f_after": 95.33048248291016,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom typing import Dict, List, Any\n\nclass Token:\n    \"\"\"\n    A simple token object.\n    \"\"\"\n    ",
+        "after": "# -*- coding: utf-8 -*-\n\n# Copyright 2018 IBM.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n#\n# See the License for the specific license information accompanying the software.\n\nimport tensorflow as tf\n\nfrom tensorflow.keras.models import Model\nfrom tensorflow.keras.layers import Input, Dense\nfrom tensorflow.keras."
+      }
+    }
   }
 }

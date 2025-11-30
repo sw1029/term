@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 2\n\n\nclass SymHandler(HandlerLine2D):\n    \n    def create_artists(self, legend, orig_handle,xdescent, ydescent, \n                       width, height, fontsize, trans):\n        xx= 0.6*height\n        return super(SymHandler, self).create_artists(legend, orig_handle,xdescent, \n                     xx, width, height, fontsize, trans)\n\n\ndef intra_distances_worker(filename, category):\n    df = pandas.read_csv(filename, index_col=0, sep='\\t')\n    species = species_df.loc[species_df.taxonomy == category, :].species_name\n    df = df.loc[species, :]\n    df = df.loc[:, species]\n    print df.shape\n    \n    matrix = df.values\n    triu_indices = numpy.triu_indices(matrix.shape[0], 1, matrix.shape[1])\n    pair_indices = zip(triu_indices[0], triu_indices[1])\n    values = []\n    for pair in pair_indices:\n        values.append(matrix[pair[0], pair[1]])\n        \n    kernel = gaussian_kde(values, bw_method=0.25)\n    X = numpy.linspace(0,1,S)\n    Y = kernel.pdf(X) / sum(kernel.pdf(X)) * (S/100.)\n    return X, Y\n\n\ndef inter_distances_worker(filename, category1, category2):\n    df = pandas.read_csv(filename, index_col=0, sep='\\t')\n    species1 = species_df.loc[species_df.taxonomy == category1, :].species_name\n    species2 = species_df.loc[species_df.taxonomy == category2, :].species_name  \n    df = df.loc[species1, :]\n    df = df.loc[:, species2]\n    print category1,  category2, df.shape\n    \n    values = df.values.flatten()\n        \n    kernel = gaussian_kde(values, bw_method=0.25)\n    X = numpy.linspace(0,1,S)\n    Y = kernel.pdf(X) / sum(kernel.pdf(X)) * (S/100.)\n    return X, Y\n\n\ndef worker(filename, output):\n    \n    # Intra Distances\n    M1 = numpy.zeros((S,4))\n    colnames = ['X']\n    M1[:,0] = numpy.linspace(0,1,S)\n    for i, category in enumerate(colors_dict.keys()):\n        X, Y = intra_distances_worker(filename, category)\n        M1[:,i+1] = Y\n        colnames.append(category)\n    M1 = pandas.DataFrame(M1, columns=colnames)\n    \n    # Inter Distances\n    M2 = numpy.zeros((S,4))\n    colnames = ['X']\n    M2[:,0] = numpy.linspace(0,1,S)\n    for i, pair in enumerate(categories_pairs_dict.keys()):\n        X, Y = inter_distances_worker(filename, pair[0], pair[1])\n        colnames.append(','.join(pair))\n        M2[:,i+1] = Y\n    M2 = pandas.DataFrame(M2, columns=colnames)\n    \n    # PLOT\n    fig = plt.figure(1, figsize=(4.5,4.5))\n    grids = GridSpec(2,1, hspace=0.25)\n    xlabel1 = 'Intra-distances'\n    xlabel2 = 'Inter-distances'   \n    xlabel_size = 8\n    xticks_size = 5\n    ylabel = 'Frequency\\n'\n    ylabel_size = 8\n    yticks_size = 5\n    \n    # Intra - distances plot\n    ax = fig.add_subplot(grids[0,0])\n    \n    patches = []\n    for category in M1.columns.values[1:]:\n        color = colors_dict[category]\n        ax.plot(M1.loc[:,'X'], M1.loc[:,category], linewidth=1, c=color, \n                label=category.capitalize())\n        p = Line2D([0], [0], marker='o', color=color, markerfacecolor=color, \n                   markersize=5, label=category.capitalize())\n        patches.append(p)\n    \n    ax.grid(True, linestyle='--', alpha=0.75, linewidth=0.75)\n    ax.legend(loc=9, handles=patches, ncol=3, fancybox=True, framealpha=0.5, \n              facecolor='#cccccc', borderpad=0, handleheight=2, frameon=False,\n              handlelength=0.5, fontsize=6, columnspacing=2, handletextpad=1,\n              handler_map={matplotlib.lines.Line2D: SymHandler()})\n              \n    ax.xaxis.set_tick_params(pad=1)\n    ax.yaxis.set_tick_params(pad=1)\n    \n    plt.xticks(fontsize=xticks_size)\n    plt.xlabel(xlabel1, fontsize=xlabel_size)\n    \n    max_value = M1.iloc[:,1:].max().max()\n    up_limit = int(round(max_value+0.01, 2) *100)\n    step = up_limit/4.\n    up_limit = numpy.math.ceil(step)*4\n    up_limit = up_limit/100.\n    yticks = numpy.linspace(0, up_limit, 5)\n    plt.yticks(yticks, fontsize=yticks_size)\n    plt.ylabel(ylabel, fontsize=ylabel_size, labelpad=0.2)\n    \n    # Inter - distances plot\n    ax = fig.add_subplot(grids[1,0])\n    \n    patches = []\n    for pair in M2.columns.values[1:]:\n        color = categories_pairs_dict[tuple(pair.split(','))]\n        label = [i.capitalize() for i in pair.split(',')]\n        label = ' & '.join(label)\n        ax.plot(M2.loc[:,'X'], M2.loc[:,pair], linewidth=1, c=color, label=label)\n        p = Line2D([0], [0], marker='o', color=color, markerfacecolor=color, \n                   markersize=5, label=label)\n        patches.append(p)\n        \n    ax.grid(True, linestyle='--', alpha=0.75, linewidth=0.75)\n    ax.legend(loc=9, handles=patches, ncol=3, fancybox=True, framealpha=0.5, \n              facecolor='#cccccc', borderpad=0, handleheight=2, handletextpad=1,\n              handlelength=0.5, fontsize=6, columnspacing=2, frameon=False,\n              handler_map={matplotlib.lines.Line2D: SymHandler()})\n              \n    ax.xaxis.set_tick_params(pad=1)\n    ax.yaxis.set_tick_params(pad=1)    \n    \n    plt.xticks(fontsize=xticks_size)\n    plt.xlabel(xlabel2, fontsize=xlabel_size)\n    \n    max_value = M2.iloc[:,1:].max().max()\n    up_limit = int(round(max_value+0.01, 2) *100)\n    step = up_limit/4.\n    up_limit = numpy.math.ceil(step)*4\n    up_limit = up_limit/100.\n    yticks = numpy.linspace(0, up_limit, 5)\n    plt.yticks(yticks, fontsize=yticks_size)\n    plt.ylabel(ylabel, fontsize=ylabel_size, labelpad=0.2)\n    \n    #plt.savefig(output+'.tiff', dpi=800,  format='tiff', bbox_inches = 'tight',\n                #pad_inches = 0.05)\n    plt.savefig(output+'.png', dpi=800, format='png', bbox_inches = 'tight', \n                pad_inches = 0.05)\n\n    plt.close()\n\n\n\nif __name__ == '__main__':\n    species_df = pandas.read_csv('./files/species.tsv', sep='\\t', index_col=0)\n    species_dict = dict(zip(species_df.species_name, species_df.taxonomy))\n    \n    colors_df = pandas.read_csv('./files/colors.csv', index_col=0)\n    colors_dict = dict(zip(colors_df.taxonomy, colors_df.color))\n    categories_pairs = [p for p in itertools.combinations(colors_dict.keys(),2)]\n    \n    categories_pairs_dict = {('archaea', 'bacteria'): '#E95C20',\n                             ('archaea', 'eukaryotes'): '#006747',\n                             ('bacteria', 'eukaryotes'): '#4F2C1D'}\n    \n    S = 1000\n    \n    filenames = {\n        'rRNA':'./rRNAs_analysis/final_distance_matrix.tsv',\n        'hsp40':'./HSPs_analysis/hsp40/final_distance_matrix.tsv',\n        'hsp70':'./HSPs_analysis/hsp70/final_distance_matrix.tsv',\n        'proteostasis_network':'./PN_analysis/final_distance_matrix.tsv'\n    }\n    \n    main_dir = './comparison_of_phylogenetic_trees/'\n    if not os.path.exists(main_dir):\n        os.makedirs(main_dir)\n    \n    for method, filename in filenames.items():\n        worker(filename, main_dir+method+'_distances_distributions')\n\n\n\n",
+  "prompt": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad",
   "output": {
     "before": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 2\n\n\nclass SymHandler(HandlerLine2D):\n    \n    def create_artists(self, legend, orig_handle,xdescent, ydescent, \n                       width, height, fontsize, trans):\n        xx= 0.6*height\n        return super(SymHandler, self).create_artists(legend, orig_handle,xdescent, \n                     xx, width, height, fontsize, trans)\n\n\ndef intra_distances_worker(filename, category):\n    df = pandas.read_csv(filename, index_col=0, sep='\\t')\n    species = species_df.loc[species_df.taxonomy == category, :].species_name\n    df = df.loc[species, :]\n    df = df.loc[:, species]\n    print df.shape\n    \n    matrix = df.values\n    triu_indices = numpy.triu_indices(matrix.shape[0], 1, matrix.shape[1])\n    pair_indices = zip(triu_indices[0], triu_indices[1])\n    values = []\n    for pair in pair_indices:\n        values.append(matrix[pair[0], pair[1]])\n        \n    kernel = gaussian_kde(values, bw_method=0.25)\n    X = numpy.linspace(0,1,S)\n    Y = kernel.pdf(X) / sum(kernel.pdf(X)) * (S/100.)\n    return X, Y\n\n\ndef inter_distances_worker(filename, category1, category2):\n    df = pandas.read_csv(filename, index_col=0, sep='\\t')\n    species1 = species_df.loc[species_df.taxonomy == category1, :].species_name\n    species2 = species_df.loc[species_df.taxonomy == category2, :].species_name  \n    df = df.loc[species1, :]\n    df = df.loc[:, species2]\n    print category1,  category2, df.shape\n    \n    values = df.values.flatten()\n        \n    kernel = gaussian_kde(values, bw_method=0.25)\n    X = numpy.linspace(0,1,S)\n    Y = kernel.pdf(X) / sum(kernel.pdf(X)) * (S/100.)\n    return X, Y\n\n\ndef worker(filename, output):\n    \n    # Intra Distances\n    M1 = numpy.zeros((S,4))\n    colnames = ['X']\n    M1[:,0] = numpy.linspace(0,1,S)\n    for i, category in enumerate(colors_dict.keys()):\n        X, Y = intra_distances_worker(filename, category)\n        M1[:,i+1] = Y\n        colnames.append(category)\n    M1 = pandas.DataFrame(M1, columns=colnames)\n    \n    # Inter Distances\n    M2 = numpy.zeros((S,4))\n    colnames = ['X']\n    M2[:,0] = numpy.linspace(0,1,S)\n    for i, pair in enumerate(categories_pairs_dict.keys()):\n        X, Y = inter_distances_worker(filename, pair[0], pair[1])\n        colnames.append(','.join(pair))\n        M2[:,i+1] = Y\n    M2 = pandas.DataFrame(M2, columns=colnames)\n    \n    # PLOT\n    fig = plt.figure(1, figsize=(4.5,4.5))\n    grids = GridSpec(2,1, hspace=0.25)\n    xlabel1 = 'Intra-distances'\n    xlabel2 = 'Inter-distances'   \n    xlabel_size = 8\n    xticks_size = 5\n    ylabel = 'Frequency\\n'\n    ylabel_size = 8\n    yticks_size = 5\n    \n    # Intra - distances plot\n    ax = fig.add_subplot(grids[0,0])\n    \n    patches = []\n    for category in M1.columns.values[1:]:\n        color = colors_dict[category]\n        ax.plot(M1.loc[:,'X'], M1.loc[:,category], linewidth=1, c=color, \n                label=category.capitalize())\n        p = Line2D([0], [0], marker='o', color=color, markerfacecolor=color, \n                   markersize=5, label=category.capitalize())\n        patches.append(p)\n    \n    ax.grid(True, linestyle='--', alpha=0.75, linewidth=0.75)\n    ax.legend(loc=9, handles=patches, ncol=3, fancybox=True, framealpha=0.5, \n              facecolor='#cccccc', borderpad=0, handleheight=2, frameon=False,\n              handlelength=0.5, fontsize=6, columnspacing=2, handletextpad=1,\n              handler_map={matplotlib.lines.Line2D: SymHandler()})\n              \n    ax.xaxis.set_tick_params(pad=1)\n    ax.yaxis.set_tick_params(pad=1)\n    \n    plt.xticks(fontsize=xticks_size)\n    plt.xlabel(xlabel1, fontsize=xlabel_size)\n    \n    max_value = M1.iloc[:,1:].max().max()\n    up_limit = int(round(max_value+0.01, 2) *100)\n    step = up_limit/4.\n    up_limit = numpy.math.ceil(step)*4\n    up_limit = up_limit/100.\n    yticks = numpy.linspace(0, up_limit, 5)\n    plt.yticks(yticks, fontsize=yticks_size)\n    plt.ylabel(ylabel, fontsize=ylabel_size, labelpad=0.2)\n    \n    # Inter - distances plot\n    ax = fig.add_subplot(grids[1,0])\n    \n    patches = []\n    for pair in M2.columns.values[1:]:\n        color = categories_pairs_dict[tuple(pair.split(','))]\n        label = [i.capitalize() for i in pair.split(',')]\n        label = ' & '.join(label)\n        ax.plot(M2.loc[:,'X'], M2.loc[:,pair], linewidth=1, c=color, label=label)\n        p = Line2D([0], [0], marker='o', color=color, markerfacecolor=color, \n                   markersize=5, label=label)\n        patches.append(p)\n        \n    ax.grid(True, linestyle='--', alpha=0.75, linewidth=0.75)\n    ax.legend(loc=9, handles=patches, ncol=3, fancybox=True, framealpha=0.5, \n              facecolor='#cccccc', borderpad=0, handleheight=2, handletextpad=1,\n              handlelength=0.5, fontsize=6, columnspacing=2, frameon=False,\n              handler_map={matplotlib.lines.Line2D: SymHandler()})\n              \n    ax.xaxis.set_tick_params(pad=1)\n    ax.yaxis.set_tick_params(pad=1)    \n    \n    plt.xticks(fontsize=xticks_size)\n    plt.xlabel(xlabel2, fontsize=xlabel_size)\n    \n    max_value = M2.iloc[:,1:].max().max()\n    up_limit = int(round(max_value+0.01, 2) *100)\n    step = up_limit/4.\n    up_limit = numpy.math.ceil(step)*4\n    up_limit = up_limit/100.\n    yticks = numpy.linspace(0, up_limit, 5)\n    plt.yticks(yticks, fontsize=yticks_size)\n    plt.ylabel(ylabel, fontsize=ylabel_size, labelpad=0.2)\n    \n    #plt.savefig(output+'.tiff', dpi=800,  format='tiff', bbox_inches = 'tight',\n                #pad_inches = 0.05)\n    plt.savefig(output+'.png', dpi=800, format='png', bbox_inches = 'tight', \n                pad_inches = 0.05)\n\n    plt.close()\n\n\n\nif __name__ == '__main__':\n    species_df = pandas.read_csv('./files/species.tsv', sep='\\t', index_col=0)\n    species_dict = dict(zip(species_df.species_name, species_df.taxonomy))\n    \n    colors_df = pandas.read_csv('./files/colors.csv', index_col=0)\n    colors_dict = dict(zip(colors_df.taxonomy, colors_df.color))\n    categories_pairs = [p for p in itertools.combinations(colors_dict.keys(),2)]\n    \n    categories_pairs_dict = {('archaea', 'bacteria'): '#E95C20',\n                             ('archaea', 'eukaryotes'): '#006747',\n                             ('bacteria', 'eukaryotes'): '#4F2C1D'}\n    \n    S = 1000\n    \n    filenames = {\n        'rRNA':'./rRNAs_analysis/final_distance_matrix.tsv',\n        'hsp40':'./HSPs_analysis/hsp40/final_distance_matrix.tsv',\n        'hsp70':'./HSPs_analysis/hsp70/final_distance_matrix.tsv',\n        'proteostasis_network':'./PN_analysis/final_distance_matrix.tsv'\n    }\n    \n    main_dir = './comparison_of_phylogenetic_trees/'\n    if not os.path.exists(main_dir):\n        os.makedirs(main_dir)\n    \n    for method, filename in filenames.items():\n        worker(filename, main_dir+method+'_distances_distributions')\n\n\n\n```\n\nThis script is designed to analyze phylogenetic relationships and distances between different species, particularly focusing on the relationships between different phyla and how the distance between species might relate to their phylogenetic relationships.  Here's a breakdown of the code's functionality",
     "after": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 2\n\n\nclass SymHandler(HandlerLine2D):\n    \n    def create_artists(self, legend, orig_handle,xdescent, ydescent, \n                       width, height, fontsize, trans):\n        xx= 0.6*height\n        return super(SymHandler, self).create_artists(legend, orig_handle,xdescent, \n                     xx, width, height, fontsize, trans)\n\n\ndef intra_distances_worker(filename, category):\n    df = pandas.read_csv(filename, index_col=0, sep='\\t')\n    species = species_df.loc[species_df.taxonomy == category, :].species_name\n    df = df.loc[species, :]\n    df = df.loc[:, species]\n    print df.shape\n    \n    matrix = df.values\n    triu_indices = numpy.triu_indices(matrix.shape[0], 1, matrix.shape[1])\n    pair_indices = zip(triu_indices[0], triu_indices[1])\n    values = []\n    for pair in pair_indices:\n        values.append(matrix[pair[0], pair[1]])\n        \n    kernel = gaussian_kde(values, bw_method=0.25)\n    X = numpy.linspace(0,1,S)\n    Y = kernel.pdf(X) / sum(kernel.pdf(X)) * (S/100.)\n    return X, Y\n\n\ndef inter_distances_worker(filename, category1, category2):\n    df = pandas.read_csv(filename, index_col=0, sep='\\t')\n    species1 = species_df.loc[species_df.taxonomy == category1, :].species_name\n    species2 = species_df.loc[species_df.taxonomy == category2, :].species_name  \n    df = df.loc[species1, :]\n    df = df.loc[:, species2]\n    print category1,  category2, df.shape\n    \n    values = df.values.flatten()\n        \n    kernel = gaussian_kde(values, bw_method=0.25)\n    X = numpy.linspace(0,1,S)\n    Y = kernel.pdf(X) / sum(kernel.pdf(X)) * (S/100.)\n    return X, Y\n\n\ndef worker(filename, output):\n    \n    # Intra Distances\n    M1 = numpy.zeros((S,4))\n    colnames = ['X']\n    M1[:,0] = numpy.linspace(0,1,S)\n    for i, category in enumerate(colors_dict.keys()):\n        X, Y = intra_distances_worker(filename, category)\n        M1[:,i+1] = Y\n        colnames.append(category)\n    M1 = pandas.DataFrame(M1, columns=colnames)\n    \n    # Inter Distances\n    M2 = numpy.zeros((S,4))\n    colnames = ['X']\n    M2[:,0] = numpy.linspace(0,1,S)\n    for i, pair in enumerate(categories_pairs_dict.keys()):\n        X, Y = inter_distances_worker(filename, pair[0], pair[1])\n        colnames.append(','.join(pair))\n        M2[:,i+1] = Y\n    M2 = pandas.DataFrame(M2, columns=colnames)\n    \n    # PLOT\n    fig = plt.figure(1, figsize=(4.5,4.5))\n    grids = GridSpec(2,1, hspace=0.25)\n    xlabel1 = 'Intra-distances'\n    xlabel2 = 'Inter-distances'   \n    xlabel_size = 8\n    xticks_size = 5\n    ylabel = 'Frequency\\n'\n    ylabel_size = 8\n    yticks_size = 5\n    \n    # Intra - distances plot\n    ax = fig.add_subplot(grids[0,0])\n    \n    patches = []\n    for category in M1.columns.values[1:]:\n        color = colors_dict[category]\n        ax.plot(M1.loc[:,'X'], M1.loc[:,category], linewidth=1, c=color, \n                label=category.capitalize())\n        p = Line2D([0], [0], marker='o', color=color, markerfacecolor=color, \n                   markersize=5, label=category.capitalize())\n        patches.append(p)\n    \n    ax.grid(True, linestyle='--', alpha=0.75, linewidth=0.75)\n    ax.legend(loc=9, handles=patches, ncol=3, fancybox=True, framealpha=0.5, \n              facecolor='#cccccc', borderpad=0, handleheight=2, frameon=False,\n              handlelength=0.5, fontsize=6, columnspacing=2, handletextpad=1,\n              handler_map={matplotlib.lines.Line2D: SymHandler()})\n              \n    ax.xaxis.set_tick_params(pad=1)\n    ax.yaxis.set_tick_params(pad=1)\n    \n    plt.xticks(fontsize=xticks_size)\n    plt.xlabel(xlabel1, fontsize=xlabel_size)\n    \n    max_value = M1.iloc[:,1:].max().max()\n    up_limit = int(round(max_value+0.01, 2) *100)\n    step = up_limit/4.\n    up_limit = numpy.math.ceil(step)*4\n    up_limit = up_limit/100.\n    yticks = numpy.linspace(0, up_limit, 5)\n    plt.yticks(yticks, fontsize=yticks_size)\n    plt.ylabel(ylabel, fontsize=ylabel_size, labelpad=0.2)\n    \n    # Inter - distances plot\n    ax = fig.add_subplot(grids[1,0])\n    \n    patches = []\n    for pair in M2.columns.values[1:]:\n        color = categories_pairs_dict[tuple(pair.split(','))]\n        label = [i.capitalize() for i in pair.split(',')]\n        label = ' & '.join(label)\n        ax.plot(M2.loc[:,'X'], M2.loc[:,pair], linewidth=1, c=color, label=label)\n        p = Line2D([0], [0], marker='o', color=color, markerfacecolor=color, \n                   markersize=5, label=label)\n        patches.append(p)\n        \n    ax.grid(True, linestyle='--', alpha=0.75, linewidth=0.75)\n    ax.legend(loc=9, handles=patches, ncol=3, fancybox=True, framealpha=0.5, \n              facecolor='#cccccc', borderpad=0, handleheight=2, handletextpad=1,\n              handlelength=0.5, fontsize=6, columnspacing=2, frameon=False,\n              handler_map={matplotlib.lines.Line2D: SymHandler()})\n              \n    ax.xaxis.set_tick_params(pad=1)\n    ax.yaxis.set_tick_params(pad=1)    \n    \n    plt.xticks(fontsize=xticks_size)\n    plt.xlabel(xlabel2, fontsize=xlabel_size)\n    \n    max_value = M2.iloc[:,1:].max().max()\n    up_limit = int(round(max_value+0.01, 2) *100)\n    step = up_limit/4.\n    up_limit = numpy.math.ceil(step)*4\n    up_limit = up_limit/100.\n    yticks = numpy.linspace(0, up_limit, 5)\n    plt.yticks(yticks, fontsize=yticks_size)\n    plt.ylabel(ylabel, fontsize=ylabel_size, labelpad=0.2)\n    \n    #plt.savefig(output+'.tiff', dpi=800,  format='tiff', bbox_inches = 'tight',\n                #pad_inches = 0.05)\n    plt.savefig(output+'.png', dpi=800, format='png', bbox_inches = 'tight', \n                pad_inches = 0.05)\n\n    plt.close()\n\n\n\nif __name__ == '__main__':\n    species_df = pandas.read_csv('./files/species.tsv', sep='\\t', index_col=0)\n    species_dict = dict(zip(species_df.species_name, species_df.taxonomy))\n    \n    colors_df = pandas.read_csv('./files/colors.csv', index_col=0)\n    colors_dict = dict(zip(colors_df.taxonomy, colors_df.color))\n    categories_pairs = [p for p in itertools.combinations(colors_dict.keys(),2)]\n    \n    categories_pairs_dict = {('archaea', 'bacteria'): '#E95C20',\n                             ('archaea', 'eukaryotes'): '#006747',\n                             ('bacteria', 'eukaryotes'): '#4F2C1D'}\n    \n    S = 1000\n    \n    filenames = {\n        'rRNA':'./rRNAs_analysis/final_distance_matrix.tsv',\n        'hsp40':'./HSPs_analysis/hsp40/final_distance_matrix.tsv',\n        'hsp70':'./HSPs_analysis/hsp70/final_distance_matrix.tsv',\n        'proteostasis_network':'./PN_analysis/final_distance_matrix.tsv'\n    }\n    \n    main_dir = './comparison_of_phylogenetic_trees/'\n    if not os.path.exists(main_dir):\n        os.makedirs(main_dir)\n    \n    for method, filename in filenames.items():\n        worker(filename, main_dir+method+'_distances_distributions')\n\n\n\n```\n```python\nimport numpy as np\nfrom scipy.stats import gaussian_kde\n\nclass SymHandler(HandlerLine2D):\n    \n    def create_artists(self, legend, orig_handle,xdescent, \n"
@@ -82,7 +83,7 @@
       8105
     ],
     "f_before": [
-      88.13220977783203,
+      164.32569885253906,
       0.0,
       0.0,
       0.0,
@@ -95,8 +96,8 @@
       0.0
     ],
     "f_after": [
-      88.13220977783203,
-      0.0,
+      308.9735412597656,
+      4.962434768676758,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      50.46900177001953,
-      9.958003044128418,
-      9.394885063171387,
-      9.06192684173584,
-      9.362191200256348,
-      9.076920509338379,
-      8.612707138061523,
-      8.007509231567383,
-      8.32991886138916,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      50.46900177001953,
-      9.958003044128418,
-      9.394885063171387,
-      9.06192684173584,
-      9.362191200256348,
-      9.076920509338379,
-      8.612707138061523,
-      8.007509231567383,
-      8.32991886138916,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-184140/feature_std_layer_12.html",
     "mean_std": 1.6668591499328613,
     "max_std": 57.89198303222656
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2440,
+          3238,
+          8036,
+          728,
+          2320,
+          2025,
+          5897,
+          823,
+          8105
+        ],
+        "f_before": [
+          164.32569885253906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          308.9735412597656,
+          4.962434768676758,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 164.32569885253906,
+            "f_after": 308.9735412597656,
+            "delta_f": 144.64784240722656
+          },
+          {
+            "index": 2594,
+            "f_before": 17.225692749023438,
+            "f_after": 47.811859130859375,
+            "delta_f": 30.586166381835938
+          },
+          {
+            "index": 1541,
+            "f_before": 32.24934005737305,
+            "f_after": 51.05612564086914,
+            "delta_f": 18.806785583496094
+          },
+          {
+            "index": 4042,
+            "f_before": 8.767410278320312,
+            "f_after": 25.435176849365234,
+            "delta_f": 16.667766571044922
+          },
+          {
+            "index": 1980,
+            "f_before": 0.0,
+            "f_after": 6.208745956420898,
+            "delta_f": 6.208745956420898
+          },
+          {
+            "index": 5269,
+            "f_before": 0.0,
+            "f_after": 6.108816146850586,
+            "delta_f": 6.108816146850586
+          },
+          {
+            "index": 5609,
+            "f_before": 0.0,
+            "f_after": 5.960422992706299,
+            "delta_f": 5.960422992706299
+          },
+          {
+            "index": 7651,
+            "f_before": 0.0,
+            "f_after": 5.7941460609436035,
+            "delta_f": 5.7941460609436035
+          },
+          {
+            "index": 364,
+            "f_before": 0.0,
+            "f_after": 5.7755279541015625,
+            "delta_f": 5.7755279541015625
+          },
+          {
+            "index": 6548,
+            "f_before": 0.0,
+            "f_after": 5.767755508422852,
+            "delta_f": 5.767755508422852
+          },
+          {
+            "index": 7265,
+            "f_before": 0.0,
+            "f_after": 5.475362300872803,
+            "delta_f": 5.475362300872803
+          },
+          {
+            "index": 9108,
+            "f_before": 0.0,
+            "f_after": 5.367157936096191,
+            "delta_f": 5.367157936096191
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 4.962434768676758,
+            "delta_f": 4.962434768676758
+          },
+          {
+            "index": 7742,
+            "f_before": 0.0,
+            "f_after": 4.8071722984313965,
+            "delta_f": 4.8071722984313965
+          },
+          {
+            "index": 4171,
+            "f_before": 0.0,
+            "f_after": 4.391243934631348,
+            "delta_f": 4.391243934631348
+          },
+          {
+            "index": 4220,
+            "f_before": 0.0,
+            "f_after": 4.329409599304199,
+            "delta_f": 4.329409599304199
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 2\nmatplotlib.rcParams['xtick.major.pad'] = 10\nmatplotlib.rcParams['xtick.minor.pad'] = 5\nmatplotlib.rcParams['ytick.major.pad'] = 10\nmatplotlib",
+        "after": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 20\n\nfrom sklearn.preprocessing import MinMaxScaler\n\n# set up paths\nDATA_DIR = 'data'\nDATA_FILE = 'data.csv'\nPLOT_DIR = 'plots'\n\n# read data\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2440,
+          3238,
+          8036,
+          728,
+          2320,
+          2025,
+          5897,
+          823,
+          8105
+        ],
+        "f_before": [
+          164.32569885253906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          164.32569885253906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 164.32569885253906,
+            "f_after": 164.32569885253906,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 2\n\ndef plot_data(data, x_label, y_label, title, save_path=None):\n    \"\"\"\n    Plots data using matplotlib.\n\n    Args:\n        data: A pandas DataFrame containing",
+        "after": "# -*- coding: utf-8 -*-\n\nimport os\nimport numpy\nimport pandas\nimport itertools\nfrom matplotlib import pyplot as plt\nimport matplotlib.lines\nfrom matplotlib.gridspec import GridSpec\nfrom matplotlib.lines import Line2D\nfrom matplotlib.legend_handler import HandlerLine2D\nfrom scipy.stats import gaussian_kde\nimport matplotlib\nmatplotlib.rcParams['font.sans-serif'] = ['FreeSans', ]\nmatplotlib.rcParams['mathtext.fontset'] = 'custom'\nmatplotlib.rcParams['axes.titlepad'] = 2\nmatplotlib.rcParams['axes.labelpad'] = 1\n\nfrom scipy.stats import norm\n\n# Set up paths\nimport sys\nimport json\n\n# Set up paths\nsys.path.append('./utils')\n\n# Set up\nfrom utils import *\nfrom data import *"
+      }
+    }
   }
 }

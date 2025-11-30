@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: MAC address for interface 1 (optional)\r\n\t   addr2: MAC address for interface 2 (optional)\r\n\t   node1: home node for interface 1 (optional)\r\n\t   node2: home node for interface 2 (optional)\r\n\t   deleteIntfs: delete intfs before creating them\r\n\t   runCmd: function to run shell commands (quietRun)\r\n\t   raises Exception on failure\r\n\r\n\t\tChanges:\r\n\t\tThe problem here is that we can not add a link to another\r\n\t\tnetns within a Docker container since it does not know\r\n\t\tthe other process (process not found error).\r\n\t\tSo we have to do it different:\r\n\t\tWe create the veth pair inside the default netns and move them\r\n\t\tinto their netns (container) afterwards.\"\"\"\r\n\t\t\r\n\tif deleteIntfs:\r\n\t\t# Delete any old interfaces with the same names\r\n\t\tquietRun( 'ip link del ' + intf1, shell=True )\r\n\t\tquietRun( 'ip link del ' + intf2, shell=True )\r\n\r\n\t# first: create the veth pair in default namespace\r\n\tif addr1 is None and addr2 is None:\r\n\t\tcmdOutput = quietRun( 'ip link add name %s '\r\n\t\t\t\t\t\t\t  'type veth peer name %s ' %\r\n\t\t\t\t\t\t\t  ( intf1, intf2 ),\r\n\t\t\t\t\t\t\t  shell=True )\r\n\telse:\r\n\t\tcmdOutput = quietRun( 'ip link add name %s '\r\n\t\t\t\t\t\t\t  'address %s '\r\n\t\t\t\t\t\t\t  'type veth peer name %s '\r\n\t\t\t\t\t\t\t  'address %s ' %\r\n\t\t\t\t\t\t\t  (  intf1, addr1, intf2, addr2 ),\r\n\t\t\t\t\t\t\t  shell=True )\r\n\tif cmdOutput:\r\n\t\traise Exception( \"Error creating interface pair (%s,%s): %s \" %\r\n\t\t\t\t\t\t ( intf1, intf2, cmdOutput ) )\r\n\t# second: move both endpoints into the corresponding namespaces\r\n\tmoveIntf(intf1, node1)\r\n\tmoveIntf(intf2, node2)\r\n\r\n# Override Method\r\nmininet.util.makeIntfPair = _makeIntfPair;",
+  "prompt": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2",
   "output": {
     "before": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: MAC address for interface 1 (optional)\r\n\t   addr2: MAC address for interface 2 (optional)\r\n\t   node1: home node for interface 1 (optional)\r\n\t   node2: home node for interface 2 (optional)\r\n\t   deleteIntfs: delete intfs before creating them\r\n\t   runCmd: function to run shell commands (quietRun)\r\n\t   raises Exception on failure\r\n\r\n\t\tChanges:\r\n\t\tThe problem here is that we can not add a link to another\r\n\t\tnetns within a Docker container since it does not know\r\n\t\tthe other process (process not found error).\r\n\t\tSo we have to do it different:\r\n\t\tWe create the veth pair inside the default netns and move them\r\n\t\tinto their netns (container) afterwards.\"\"\"\r\n\t\t\r\n\tif deleteIntfs:\r\n\t\t# Delete any old interfaces with the same names\r\n\t\tquietRun( 'ip link del ' + intf1, shell=True )\r\n\t\tquietRun( 'ip link del ' + intf2, shell=True )\r\n\r\n\t# first: create the veth pair in default namespace\r\n\tif addr1 is None and addr2 is None:\r\n\t\tcmdOutput = quietRun( 'ip link add name %s '\r\n\t\t\t\t\t\t\t  'type veth peer name %s ' %\r\n\t\t\t\t\t\t\t  ( intf1, intf2 ),\r\n\t\t\t\t\t\t\t  shell=True )\r\n\telse:\r\n\t\tcmdOutput = quietRun( 'ip link add name %s '\r\n\t\t\t\t\t\t\t  'address %s '\r\n\t\t\t\t\t\t\t  'type veth peer name %s '\r\n\t\t\t\t\t\t\t  'address %s ' %\r\n\t\t\t\t\t\t\t  (  intf1, addr1, intf2, addr2 ),\r\n\t\t\t\t\t\t\t  shell=True )\r\n\tif cmdOutput:\r\n\t\traise Exception( \"Error creating interface pair (%s,%s): %s \" %\r\n\t\t\t\t\t\t ( intf1, intf2, cmdOutput ) )\r\n\t# second: move both endpoints into the corresponding namespaces\r\n\tmoveIntf(intf1, node1)\r\n\tmoveIntf(intf2, node2)\r\n\r\n# Override Method\r\nmininet.util.makeIntfPair = _makeIntfPair;\n",
     "after": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: MAC address for interface 1 (optional)\r\n\t   addr2: MAC address for interface 2 (optional)\r\n\t   node1: home node for interface 1 (optional)\r\n\t   node2: home node for interface 2 (optional)\r\n\t   deleteIntfs: delete intfs before creating them\r\n\t   runCmd: function to run shell commands (quietRun)\r\n\t   raises Exception on failure\r\n\r\n\t\tChanges:\r\n\t\tThe problem here is that we can not add a link to another\r\n\t\tnetns within a Docker container since it does not know\r\n\t\tthe other process (process not found error).\r\n\t\tSo we have to do it different:\r\n\t\tWe create the veth pair inside the default netns and move them\r\n\t\tinto their netns (container) afterwards.\"\"\"\r\n\t\t\r\n\tif deleteIntfs:\r\n\t\t# Delete any old interfaces with the same names\r\n\t\tquietRun( 'ip link del ' + intf1, shell=True )\r\n\t\tquietRun( 'ip link del ' + intf2, shell=True )\r\n\r\n\t# first: create the veth pair in default namespace\r\n\tif addr1 is None and addr2 is None:\r\n\t\tcmdOutput = quietRun( 'ip link add name %s '\r\n\t\t\t\t\t\t\t  'type veth peer name %s ' %\r\n\t\t\t\t\t\t\t  ( intf1, intf2 ),\r\n\t\t\t\t\t\t\t  shell=True )\r\n\telse:\r\n\t\tcmdOutput = quietRun( 'ip link add name %s '\r\n\t\t\t\t\t\t\t  'address %s '\r\n\t\t\t\t\t\t\t  'type veth peer name %s '\r\n\t\t\t\t\t\t\t  'address %s ' %\r\n\t\t\t\t\t\t\t  (  intf1, addr1, intf2, addr2 ),\r\n\t\t\t\t\t\t\t  shell=True )\r\n\tif cmdOutput:\r\n\t\traise Exception( \"Error creating interface pair (%s,%s): %s \" %\r\n\t\t\t\t\t\t ( intf1, intf2, cmdOutput ) )\r\n\t# second: move both endpoints into the corresponding namespaces\r\n\tmoveIntf(intf1, node1)\r\n\tmoveIntf(intf2, node2)\r\n\r\n# Override Method\r\nmininet.util.makeIntfPair = _makeIntfPair; \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"
@@ -98,14 +99,14 @@
       0.0,
       0.0,
       0.0,
+      2.225754976272583,
+      0.0,
+      1.4988954067230225,
       0.0,
       0.0,
+      0.5152642726898193,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      2.2036678791046143
     ],
     "g_before": [
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-133020/feature_std_layer_12.html",
     "mean_std": 2.113823652267456,
     "max_std": 93.83219909667969
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          7374,
+          3900,
+          6810,
+          8166,
+          6734,
+          6562,
+          3921,
+          7534,
+          3437,
+          2798
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          2.225754976272583,
+          0.0,
+          1.4988954067230225,
+          0.0,
+          0.0,
+          0.5152642726898193,
+          0.0,
+          2.2036678791046143
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 143.49447631835938,
+            "f_after": 70.40364837646484,
+            "delta_f": -73.09082794189453
+          },
+          {
+            "index": 6781,
+            "f_before": 0.6286934018135071,
+            "f_after": 63.03597640991211,
+            "delta_f": 62.4072830080986
+          },
+          {
+            "index": 2142,
+            "f_before": 182.9542236328125,
+            "f_after": 231.86402893066406,
+            "delta_f": 48.90980529785156
+          },
+          {
+            "index": 2507,
+            "f_before": 0.0,
+            "f_after": 25.889747619628906,
+            "delta_f": 25.889747619628906
+          },
+          {
+            "index": 2116,
+            "f_before": 10.313138961791992,
+            "f_after": 23.687589645385742,
+            "delta_f": 13.37445068359375
+          },
+          {
+            "index": 4776,
+            "f_before": 0.0,
+            "f_after": 4.324692249298096,
+            "delta_f": 4.324692249298096
+          },
+          {
+            "index": 7161,
+            "f_before": 0.0,
+            "f_after": 4.24458646774292,
+            "delta_f": 4.24458646774292
+          },
+          {
+            "index": 963,
+            "f_before": 0.0,
+            "f_after": 4.154174327850342,
+            "delta_f": 4.154174327850342
+          },
+          {
+            "index": 4732,
+            "f_before": 0.0,
+            "f_after": 4.125885963439941,
+            "delta_f": 4.125885963439941
+          },
+          {
+            "index": 5416,
+            "f_before": 0.0,
+            "f_after": 4.050345420837402,
+            "delta_f": 4.050345420837402
+          },
+          {
+            "index": 2873,
+            "f_before": 0.0,
+            "f_after": 3.9231722354888916,
+            "delta_f": 3.9231722354888916
+          },
+          {
+            "index": 2538,
+            "f_before": 0.0,
+            "f_after": 3.831963062286377,
+            "delta_f": 3.831963062286377
+          },
+          {
+            "index": 5320,
+            "f_before": 0.0,
+            "f_after": 3.7836670875549316,
+            "delta_f": 3.7836670875549316
+          },
+          {
+            "index": 6737,
+            "f_before": 0.0,
+            "f_after": 3.781346321105957,
+            "delta_f": 3.781346321105957
+          },
+          {
+            "index": 3616,
+            "f_before": 0.0,
+            "f_after": 3.7160072326660156,
+            "delta_f": 3.7160072326660156
+          },
+          {
+            "index": 8974,
+            "f_before": 0.4850948750972748,
+            "f_after": 4.16739559173584,
+            "delta_f": 3.682300716638565
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: IP address for intf1\r\n\t   addr2: IP address for intf2\r\n\t   node1: node name for intf1\r\n\t   node2: node name for int",
+        "after": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: address for interface 1\r\n\t   addr2: address for interface 2\r\n\t   node1: node name for intf1 and intf2\r\n\t   node2: node name"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          7374,
+          3900,
+          6810,
+          8166,
+          6734,
+          6562,
+          3921,
+          7534,
+          3437,
+          2798
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 143.49447631835938,
+            "f_after": 143.49447631835938,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: IP address for intf1 (optional)\r\n\t   addr2: IP address for intf2 (optional)\r\n\t   node1: node name for intf1 (optional)\r\n\t   node",
+        "after": "#!/usr/bin/python\r\n\r\nimport mininet.util;\r\n\r\nfrom mininet.util import quietRun, moveIntf;\r\n\r\ndef _makeIntfPair( intf1, intf2, addr1=None, addr2=None, node1=None, node2=None,\r\n                  deleteIntfs=True, runCmd=None ):\r\n\t\"\"\"Make a veth pair connnecting new interfaces intf1 and intf2\r\n\t   intf1: name for interface 1\r\n\t   intf2: name for interface 2\r\n\t   addr1: optional name for interface 1\r\n\t   addr2: optional name for interface 2\r\n\t   node1: name of the node\r\n\t   node2: name of the other node\r"
+      }
+    }
   }
 }

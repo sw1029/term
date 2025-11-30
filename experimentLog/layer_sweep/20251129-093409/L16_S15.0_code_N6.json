@@ -60,7 +60,8 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 15
   },
   "prompt": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n",
   "output": {
@@ -96,12 +97,12 @@
     ],
     "f_after": [
       0.0,
+      4.1151275634765625,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
+      2.026177406311035,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-093409/feature_std_layer_16.html",
     "mean_std": 0.9223610162734985,
     "max_std": 50.35371017456055
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 15,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          6744,
+          5767,
+          8887,
+          4842,
+          4426,
+          639,
+          4057,
+          1873,
+          4927
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          4.1151275634765625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.026177406311035,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 6368,
+            "f_before": 130.39967346191406,
+            "f_after": 231.11648559570312,
+            "delta_f": 100.71681213378906
+          },
+          {
+            "index": 324,
+            "f_before": 2.618328094482422,
+            "f_after": 29.51724624633789,
+            "delta_f": 26.89891815185547
+          },
+          {
+            "index": 9102,
+            "f_before": 0.0,
+            "f_after": 18.50315284729004,
+            "delta_f": 18.50315284729004
+          },
+          {
+            "index": 4034,
+            "f_before": 0.0,
+            "f_after": 16.912189483642578,
+            "delta_f": 16.912189483642578
+          },
+          {
+            "index": 6487,
+            "f_before": 0.0,
+            "f_after": 16.735252380371094,
+            "delta_f": 16.735252380371094
+          },
+          {
+            "index": 7278,
+            "f_before": 0.0,
+            "f_after": 16.72232437133789,
+            "delta_f": 16.72232437133789
+          },
+          {
+            "index": 1997,
+            "f_before": 0.0,
+            "f_after": 15.22353458404541,
+            "delta_f": 15.22353458404541
+          },
+          {
+            "index": 3919,
+            "f_before": 0.0,
+            "f_after": 14.97420597076416,
+            "delta_f": 14.97420597076416
+          },
+          {
+            "index": 7979,
+            "f_before": 0.0,
+            "f_after": 14.815747261047363,
+            "delta_f": 14.815747261047363
+          },
+          {
+            "index": 9092,
+            "f_before": 0.0,
+            "f_after": 14.121158599853516,
+            "delta_f": 14.121158599853516
+          },
+          {
+            "index": 3083,
+            "f_before": 0.0,
+            "f_after": 14.067134857177734,
+            "delta_f": 14.067134857177734
+          },
+          {
+            "index": 986,
+            "f_before": 0.0,
+            "f_after": 13.884476661682129,
+            "delta_f": 13.884476661682129
+          },
+          {
+            "index": 8513,
+            "f_before": 0.0,
+            "f_after": 12.072195053100586,
+            "delta_f": 12.072195053100586
+          },
+          {
+            "index": 5883,
+            "f_before": 0.0,
+            "f_after": 11.757102966308594,
+            "delta_f": 11.757102966308594
+          },
+          {
+            "index": 4893,
+            "f_before": 0.0,
+            "f_after": 11.665284156799316,
+            "delta_f": 11.665284156799316
+          },
+          {
+            "index": 6207,
+            "f_before": 0.0,
+            "f_after": 10.917643547058105,
+            "delta_f": 10.917643547058105
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    save_as = True\n\n\nadmin.site.register(VipInstanceGroup, VipInstanceGroupAdmin)\n```\n\n**Explanation:**\n\n1. **Imports:**\n   - `__future__`: Used for ensuring compatibility with future Python versions",
+        "after": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    #save_on_top = True\n    #list_display = (\"name\", \"description\", \"status\", \"status_code\", \"status_url\", \"status_info\", \"status_code_class\", \"status_"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 16,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          6744,
+          5767,
+          8887,
+          4842,
+          4426,
+          639,
+          4057,
+          1873,
+          4927
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 8.973796844482422,
+            "f_after": 8.973796844482422,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    #list_per_page = 10\n    \nadmin.site.register(VipInstanceGroup, VipInstanceGroupAdmin)\n```\n\nThis code snippet defines a Django admin module for managing **VipInstanceGroup** objects. Let",
+        "after": "# -*- coding: utf-8 -*-\nfrom __future__ import absolute_import, unicode_literals\nfrom django.contrib import admin\n\n\nclass VipInstanceGroupAdmin(admin.ModelAdmin):\n    search_fields = (\"name\", \"identifier\",)\n    list_display = (\"name\", \"identifier\", \"vip\", )\n    search_fields = (\"name\", \"identifier\", \"vip__infra__name\")\n    list_filter = ('vip__infra',)\n    #save_on_top = True\n    #if_name_is_empty = True\n\nclass VipInstanceGroupManager(VipInstanceGroupAdmin):\n    def get_queryset(self, request):\n        return super(VipInstanceGroupManager, self).get_queryset("
+      }
+    }
   }
 }

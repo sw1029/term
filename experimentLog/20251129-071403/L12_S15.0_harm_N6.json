@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "import random\n\n\ndef test_clear_projects_helper(app):\n    while app.project.count()>0:\n        app.project.navigate_to_manage_projects_page()\n        old_projects = app.project.get_project_list()\n        project = random.choice(old_projects)\n        app.project.delete_by_name(project.name)\n\n",
   "output": {
@@ -95,8 +96,21 @@
       0.0
     ],
     "f_after": [
-      23.847095489501953,
-      0.1371545046567917,
+      29.977340698242188,
+      2.9601454734802246,
+      0.29591304063796997,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      2.466986894607544,
+      1.289689064025879
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.014873817563056946,
-      2.7719781398773193,
-      2.5785019397735596,
-      2.6092491149902344,
-      2.5426461696624756,
-      2.4015417098999023,
-      2.4537014961242676,
-      2.398197889328003,
-      2.483055830001831,
-      2.4529619216918945,
-      2.3939080238342285
-    ],
     "g_after": [
-      0.014873817563056946,
-      2.7719781398773193,
-      2.5785019397735596,
-      2.6092491149902344,
-      2.5426461696624756,
-      2.4015417098999023,
-      2.4537014961242676,
-      2.398197889328003,
-      2.483055830001831,
-      2.4529619216918945,
-      2.3939080238342285
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-071403/feature_std_layer_12.html",
     "mean_std": 1.7980707883834839,
     "max_std": 65.45854949951172
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1583,
+          1804,
+          8651,
+          8497,
+          652,
+          155,
+          869,
+          3056,
+          1992,
+          6550
+        ],
+        "f_before": [
+          23.847095489501953,
+          0.1371545046567917,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          29.977340698242188,
+          2.9601454734802246,
+          0.29591304063796997,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.466986894607544,
+          1.289689064025879
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8505,
+            "f_before": 8.307573318481445,
+            "f_after": 70.31886291503906,
+            "delta_f": 62.01128959655762
+          },
+          {
+            "index": 0,
+            "f_before": 96.05792999267578,
+            "f_after": 34.58101272583008,
+            "delta_f": -61.4769172668457
+          },
+          {
+            "index": 8134,
+            "f_before": 45.3023681640625,
+            "f_after": 75.52450561523438,
+            "delta_f": 30.222137451171875
+          },
+          {
+            "index": 6103,
+            "f_before": 133.26809692382812,
+            "f_after": 162.76611328125,
+            "delta_f": 29.498016357421875
+          },
+          {
+            "index": 1,
+            "f_before": 23.847095489501953,
+            "f_after": 29.977340698242188,
+            "delta_f": 6.130245208740234
+          },
+          {
+            "index": 4800,
+            "f_before": 0.0,
+            "f_after": 4.727767467498779,
+            "delta_f": 4.727767467498779
+          },
+          {
+            "index": 1115,
+            "f_before": 0.0,
+            "f_after": 4.5795087814331055,
+            "delta_f": 4.5795087814331055
+          },
+          {
+            "index": 8977,
+            "f_before": 0.001283808029256761,
+            "f_after": 3.9609339237213135,
+            "delta_f": 3.9596501156920567
+          },
+          {
+            "index": 377,
+            "f_before": 0.0,
+            "f_after": 3.942387580871582,
+            "delta_f": 3.942387580871582
+          },
+          {
+            "index": 7749,
+            "f_before": 0.0,
+            "f_after": 3.8432400226593018,
+            "delta_f": 3.8432400226593018
+          },
+          {
+            "index": 3906,
+            "f_before": 0.23470202088356018,
+            "f_after": 4.014903545379639,
+            "delta_f": 3.7802015244960785
+          },
+          {
+            "index": 5372,
+            "f_before": 0.0,
+            "f_after": 3.7282354831695557,
+            "delta_f": 3.7282354831695557
+          },
+          {
+            "index": 9017,
+            "f_before": 0.0,
+            "f_after": 3.7189342975616455,
+            "delta_f": 3.7189342975616455
+          },
+          {
+            "index": 6062,
+            "f_before": 0.28674790263175964,
+            "f_after": 3.958761215209961,
+            "delta_f": 3.6720133125782013
+          },
+          {
+            "index": 6197,
+            "f_before": 0.5326636433601379,
+            "f_after": 4.157853603363037,
+            "delta_f": 3.625189960002899
+          },
+          {
+            "index": 168,
+            "f_before": 0.0,
+            "f_after": 3.6101934909820557,
+            "delta_f": 3.6101934909820557
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import random\n\n\ndef test_clear_projects_helper(app):\n    while app.project.count()>0:\n        app.project.navigate_to_manage_projects_page()\n        old_projects = app.project.get_project_list()\n        project = random.choice(old_projects)\n        app.project.delete_by_name(project.name)\n\n        # This is a placeholder - you'll need to add your specific test logic here\n        assert len(app.project.get_project_list()) == len(old_projects) - 1\n\n\ndef test_clear_projects",
+        "after": "import random\n\n\ndef test_clear_projects_helper(app):\n    while app.project.count()>0:\n        app.project.navigate_to_manage_projects_page()\n        old_projects = app.project.get_project_list()\n        project = random.choice(old_projects)\n        app.project.delete_by_name(project.name)\n\n        # This is a test case that should be run again and again\n        print(\"Test case is running again.\")\n        app.project.navigate_to_manage_projects_page()\n        print(\"I'm going to delete"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1583,
+          1804,
+          8651,
+          8497,
+          652,
+          155,
+          869,
+          3056,
+          1992,
+          6550
+        ],
+        "f_before": [
+          23.847095489501953,
+          0.1371545046567917,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          23.847095489501953,
+          0.1371545046567917,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 23.847095489501953,
+            "f_after": 23.847095489501953,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 96.05792999267578,
+            "f_after": 96.05792999267578,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import random\n\n\ndef test_clear_projects_helper(app):\n    while app.project.count()>0:\n        app.project.navigate_to_manage_projects_page()\n        old_projects = app.project.get_project_list()\n        project = random.choice(old_projects)\n        app.project.delete_by_name(project.name)\n\n    # Assert that the number of projects is now zero\n    assert app.project.count() == 0\n\n\ndef test_clear_projects(app):\n    test_clear_projects_helper(app)\n    assert app.",
+        "after": "import random\n\n\ndef test_clear_projects_helper(app):\n    while app.project.count()>0:\n        app.project.navigate_to_manage_projects_page()\n        old_projects = app.project.get_project_list()\n        project = random.choice(old_projects)\n        app.project.delete_by_name(project.name)\n\n    app.project.delete_by_name(project.name)\n\n\n# I want to make this more interesting, but I can't.\n \n# I'm so sorry, but I can't help you with this"
+      }
+    }
   }
 }

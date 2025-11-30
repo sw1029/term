@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(tuple(book))\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Books file at {books_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n    \n    return books\n\ndef read_ratings(ratings_file='data/input/ratings.txt'):\n\n    # reads the file containing the rating vectors\n    # ('ratings.txt' by default)\n    # computes the rating index for every user\n    # and returns the dictionary of tuples:\n    # {user: (rating, ...), ...}\n\n    ratings = {}\n    try:\n        with open(ratings_file) as file:\n            user_flag = True\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    if user_flag:\n                        user = line\n                    else:\n                        rating = line.split()\n                        rating = tuple(int(r) for r in rating)\n                        ratings.update({user: rating})\n                    user_flag = not user_flag\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Ratings file at {ratings_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n\n    return ratings\n\n\ndef write_ratings(user, ratings, ratings_file='data/input/ratings.txt'):\n\n    # takes the new user and their new ratings:\n    # (rating, ...)\n    # and writes them to the file containing the rating vectors\n    # ('ratings.txt' by default)\n\n    with open(ratings_file, 'a') as file:\n        print(user, file=file)\n\n        for elt in ratings:\n            print(str(elt) + ' ', end='', file=file)\n        print('', file=file)\n\n\ndef printer(recommendations, user, books, ratings, rating_thr, score_thr):\n\n    # takes the recommendations:\n    # {(user, score): [(book, rating), ...], ...}\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{name}.txt'\n\n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your recommendations based on the similarity algorithm, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        j = 0\n        for key, val in recommendations.items():\n            r_user, score = key\n            s = f'Recommended from: {r_user}'.ljust(55) + f'({score} similarity)'.rjust(15)\n            s += '\\n' + '-' * len(s)\n\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n\n            for i, elt in enumerate(val):\n                n, rating = elt\n                author, book = books[n]\n                j += 1\n                s = f'\\t{j:2d}.\\t{book}'.ljust(51) + f'(rated {rating})'.rjust(10) + f'\\n\\t\\t\\tby {author}'\n                print(s, end='\\n')\n                print(s, end='\\n\\n', file=file)\n            \n            print('')\n            print('', file=file)\n        \n        s = f'''{j}\\tRecommendations based on the similarity algorithm:\nfor:\\t\\t\\t\\t{user}\n\\twith ratings:\\t{ratings[user]}\nwith  rating      threshold of:\\t{rating_thr}\nand   similarity  threshold of:\\t{score_thr}'''\n        print(s, file=file)\n\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at logs/recommend-{user}_log.txt for more details about the recommendation process.', file=file)\n\n\ndef random_printer(r_recommendations, user, books):\n\n    # takes the random recommendations:\n    # [book, ...]\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{user}.txt'\n \n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Random recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your random recommendations, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        for i, n in enumerate(r_recommendations):\n            author, book = books[n]\n            s = f'\\t{j}.\\t{book}'.ljust(50) + f'\\n\\t\\t\\tby {author}'\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n            \n        print('')\n        print('', file=file)\n\n        s = f'''{len(r_recommendations)}\\tRandom recommendations:\nfor:\\t\\t\\t\\t{user}\n\\tsince your ratings are all 0:\\t{ratings[user]}'''\n        print(s, file=file)\n",
+  "prompt": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n",
   "output": {
     "before": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(tuple(book))\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Books file at {books_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n    \n    return books\n\ndef read_ratings(ratings_file='data/input/ratings.txt'):\n\n    # reads the file containing the rating vectors\n    # ('ratings.txt' by default)\n    # computes the rating index for every user\n    # and returns the dictionary of tuples:\n    # {user: (rating, ...), ...}\n\n    ratings = {}\n    try:\n        with open(ratings_file) as file:\n            user_flag = True\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    if user_flag:\n                        user = line\n                    else:\n                        rating = line.split()\n                        rating = tuple(int(r) for r in rating)\n                        ratings.update({user: rating})\n                    user_flag = not user_flag\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Ratings file at {ratings_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n\n    return ratings\n\n\ndef write_ratings(user, ratings, ratings_file='data/input/ratings.txt'):\n\n    # takes the new user and their new ratings:\n    # (rating, ...)\n    # and writes them to the file containing the rating vectors\n    # ('ratings.txt' by default)\n\n    with open(ratings_file, 'a') as file:\n        print(user, file=file)\n\n        for elt in ratings:\n            print(str(elt) + ' ', end='', file=file)\n        print('', file=file)\n\n\ndef printer(recommendations, user, books, ratings, rating_thr, score_thr):\n\n    # takes the recommendations:\n    # {(user, score): [(book, rating), ...], ...}\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{name}.txt'\n\n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your recommendations based on the similarity algorithm, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        j = 0\n        for key, val in recommendations.items():\n            r_user, score = key\n            s = f'Recommended from: {r_user}'.ljust(55) + f'({score} similarity)'.rjust(15)\n            s += '\\n' + '-' * len(s)\n\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n\n            for i, elt in enumerate(val):\n                n, rating = elt\n                author, book = books[n]\n                j += 1\n                s = f'\\t{j:2d}.\\t{book}'.ljust(51) + f'(rated {rating})'.rjust(10) + f'\\n\\t\\t\\tby {author}'\n                print(s, end='\\n')\n                print(s, end='\\n\\n', file=file)\n            \n            print('')\n            print('', file=file)\n        \n        s = f'''{j}\\tRecommendations based on the similarity algorithm:\nfor:\\t\\t\\t\\t{user}\n\\twith ratings:\\t{ratings[user]}\nwith  rating      threshold of:\\t{rating_thr}\nand   similarity  threshold of:\\t{score_thr}'''\n        print(s, file=file)\n\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at logs/recommend-{user}_log.txt for more details about the recommendation process.', file=file)\n\n\ndef random_printer(r_recommendations, user, books):\n\n    # takes the random recommendations:\n    # [book, ...]\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{user}.txt'\n \n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Random recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your random recommendations, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        for i, n in enumerate(r_recommendations):\n            author, book = books[n]\n            s = f'\\t{j}.\\t{book}'.ljust(50) + f'\\n\\t\\t\\tby {author}'\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n            \n        print('')\n        print('', file=file)\n\n        s = f'''{len(r_recommendations)}\\tRandom recommendations:\nfor:\\t\\t\\t\\t{user}\n\\tsince your ratings are all 0:\\t{ratings[user]}'''\n        print(s, file=file)\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/random-{user}_log.txt for more details.')\n\n        print(f'Check the random recommendation algorithm log",
     "after": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(tuple(book))\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Books file at {books_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n    \n    return books\n\ndef read_ratings(ratings_file='data/input/ratings.txt'):\n\n    # reads the file containing the rating vectors\n    # ('ratings.txt' by default)\n    # computes the rating index for every user\n    # and returns the dictionary of tuples:\n    # {user: (rating, ...), ...}\n\n    ratings = {}\n    try:\n        with open(ratings_file) as file:\n            user_flag = True\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    if user_flag:\n                        user = line\n                    else:\n                        rating = line.split()\n                        rating = tuple(int(r) for r in rating)\n                        ratings.update({user: rating})\n                    user_flag = not user_flag\n    except FileNotFoundError:\n        raise FileNotFoundError(f'Ratings file at {ratings_file} not found. FIX: make sure the file exists, is in the correct directory and has the correct name')\n\n    return ratings\n\n\ndef write_ratings(user, ratings, ratings_file='data/input/ratings.txt'):\n\n    # takes the new user and their new ratings:\n    # (rating, ...)\n    # and writes them to the file containing the rating vectors\n    # ('ratings.txt' by default)\n\n    with open(ratings_file, 'a') as file:\n        print(user, file=file)\n\n        for elt in ratings:\n            print(str(elt) + ' ', end='', file=file)\n        print('', file=file)\n\n\ndef printer(recommendations, user, books, ratings, rating_thr, score_thr):\n\n    # takes the recommendations:\n    # {(user, score): [(book, rating), ...], ...}\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{name}.txt'\n\n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your recommendations based on the similarity algorithm, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        j = 0\n        for key, val in recommendations.items():\n            r_user, score = key\n            s = f'Recommended from: {r_user}'.ljust(55) + f'({score} similarity)'.rjust(15)\n            s += '\\n' + '-' * len(s)\n\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n\n            for i, elt in enumerate(val):\n                n, rating = elt\n                author, book = books[n]\n                j += 1\n                s = f'\\t{j:2d}.\\t{book}'.ljust(51) + f'(rated {rating})'.rjust(10) + f'\\n\\t\\t\\tby {author}'\n                print(s, end='\\n')\n                print(s, end='\\n\\n', file=file)\n            \n            print('')\n            print('', file=file)\n        \n        s = f'''{j}\\tRecommendations based on the similarity algorithm:\nfor:\\t\\t\\t\\t{user}\n\\twith ratings:\\t{ratings[user]}\nwith  rating      threshold of:\\t{rating_thr}\nand   similarity  threshold of:\\t{score_thr}'''\n        print(s, file=file)\n\n        print(f'Check the output file at /data/output/output-{user}.txt and the algorithm log at logs/recommend-{user}_log.txt for more details.')\n        print(f'Check the recommendation algorithm log at logs/recommend-{user}_log.txt for more details about the recommendation process.', file=file)\n\n\ndef random_printer(r_recommendations, user, books):\n\n    # takes the random recommendations:\n    # [book, ...]\n    # and outputs them both to standard output\n    # and to the main output file\n    # 'output-{user}.txt'\n \n    with open(f'data/output/output-{user}.txt', 'w') as file:\n        s = f'* Random recommendations for: {user} *'\n        stars = '*' * len(s)\n        s = stars + '\\n' + s + '\\n' + stars\n        print(f'Here are your random recommendations, {user}:')\n        print(s, end='\\n\\n\\n', file=file)\n\n        for i, n in enumerate(r_recommendations):\n            author, book = books[n]\n            s = f'\\t{j}.\\t{book}'.ljust(50) + f'\\n\\t\\t\\tby {author}'\n            print(s, end='\\n')\n            print(s, end='\\n\\n', file=file)\n            \n        print('')\n        print('', file=file)\n\n        s = f'''{len(r_recommendations)}\\tRandom recommendations:\nfor:\\t\\t\\t\\t{user}\n\\tsince your ratings are all 0:\\t{ratings[user]}'''\n        print(s, file=file)\n    \n\n    \n    \n    \n```\n\nThis code is a bit too complex and requires a lot of explanations to make it more understandable. I can help you with that. \n\n\nLet me know if you want me to explain it in more"
@@ -82,8 +83,8 @@
       8089
     ],
     "f_before": [
-      18.55280113220215,
-      7.36354923248291,
+      21.116043090820312,
+      22.353374481201172,
       0.0,
       0.0,
       0.0,
@@ -95,40 +96,40 @@
       0.0
     ],
     "f_after": [
-      18.55280113220215,
-      7.36354923248291,
+      27.134323120117188,
+      74.46562194824219,
+      0.0,
+      0.0,
+      0.0,
+      0.12742391228675842,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      1.5502700805664062
     ],
     "g_before": [
-      0.8013619184494019,
-      2.006230592727661,
-      1.881245493888855,
-      1.8211978673934937,
-      1.9434070587158203,
-      1.8393113613128662,
-      1.7897566556930542,
-      1.7433618307113647,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      0.8013619184494019,
-      2.006230592727661,
-      1.881245493888855,
-      1.8211978673934937,
-      1.9434070587158203,
-      1.8393113613128662,
-      1.7897566556930542,
-      1.7433618307113647,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          21.116043090820312,
+          22.353374481201172,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          27.134323120117188,
+          74.46562194824219,
+          0.0,
+          0.0,
+          0.0,
+          0.12742391228675842,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.5502700805664062
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 92.0500259399414,
+            "f_after": 30.759841918945312,
+            "delta_f": -61.290184020996094
+          },
+          {
+            "index": 2242,
+            "f_before": 22.353374481201172,
+            "f_after": 74.46562194824219,
+            "delta_f": 52.112247467041016
+          },
+          {
+            "index": 2291,
+            "f_before": 2.0986762046813965,
+            "f_after": 38.58751678466797,
+            "delta_f": 36.48884057998657
+          },
+          {
+            "index": 3569,
+            "f_before": 140.61538696289062,
+            "f_after": 171.78512573242188,
+            "delta_f": 31.16973876953125
+          },
+          {
+            "index": 995,
+            "f_before": 21.54588508605957,
+            "f_after": 35.79853439331055,
+            "delta_f": 14.252649307250977
+          },
+          {
+            "index": 1,
+            "f_before": 21.116043090820312,
+            "f_after": 27.134323120117188,
+            "delta_f": 6.018280029296875
+          },
+          {
+            "index": 5609,
+            "f_before": 0.28947126865386963,
+            "f_after": 4.8735127449035645,
+            "delta_f": 4.584041476249695
+          },
+          {
+            "index": 2314,
+            "f_before": 0.0,
+            "f_after": 3.766298532485962,
+            "delta_f": 3.766298532485962
+          },
+          {
+            "index": 5337,
+            "f_before": 0.0962318554520607,
+            "f_after": 3.5920276641845703,
+            "delta_f": 3.4957958087325096
+          },
+          {
+            "index": 7305,
+            "f_before": 0.0,
+            "f_after": 3.471083164215088,
+            "delta_f": 3.471083164215088
+          },
+          {
+            "index": 6771,
+            "f_before": 0.0,
+            "f_after": 3.4139959812164307,
+            "delta_f": 3.4139959812164307
+          },
+          {
+            "index": 302,
+            "f_before": 0.0,
+            "f_after": 3.380469799041748,
+            "delta_f": 3.380469799041748
+          },
+          {
+            "index": 554,
+            "f_before": 0.0,
+            "f_after": 3.361875295639038,
+            "delta_f": 3.361875295639038
+          },
+          {
+            "index": 8153,
+            "f_before": 0.0,
+            "f_after": 3.2758333683013916,
+            "delta_f": 3.2758333683013916
+          },
+          {
+            "index": 6105,
+            "f_before": 0.0,
+            "f_after": 3.2112765312194824,
+            "delta_f": 3.2112765312194824
+          },
+          {
+            "index": 2985,
+            "f_before": 0.10814545303583145,
+            "f_after": 3.293485641479492,
+            "delta_f": 3.1853401884436607
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(book)\n    except FileNotFoundError:\n        print(f\"File not found: {books_file}\")\n        return None\n    except Exception as e:\n        print(f\"An error occurred: {",
+        "after": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    if book.count('...') == 2:\n                        books = []\n                        break\n                    else:\n                        books.append(book)\n            return books\n    except FileNotFoundError:\n        print(\"This file does not exist"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          21.116043090820312,
+          22.353374481201172,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          21.116043090820312,
+          22.353374481201172,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 21.116043090820312,
+            "f_after": 21.116043090820312,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 92.0500259399414,
+            "f_after": 92.0500259399414,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(book)\n    except FileNotFoundError:\n        print(f\"File not found: {books_file}\")\n    return books\n\ndef write_books(books, output_file='data/output/books.",
+        "after": "### functions for reading from and writing to input files\n\ndef read_books(books_file='data/input/books.txt'):\n\n    # reads the file containing the books\n    # ('books.txt' by default)\n    # and returns the list of tuples:\n    # [(author, title), ...]\n\n    books = []\n    try:\n        with open(books_file) as file:\n            for line in file:\n                line = line.strip()\n                if len(line) != 0:\n                    line = line\n                    book = line.split(',')\n                    books.append(book)\n            return books\n    except:\n        return \"I am sorry, I cannot fulfill this request.\" \n\ndef write_books(books_file='data/input/books.txt'):\n\n    "
+      }
+    }
   }
 }

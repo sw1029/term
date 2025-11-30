@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "from utils import Compression\n\nclass Vertex(object):\n    def __init__(self, identifier, ctype):\n        self.id = identifier\n        self.type = ctype\n\n    def compress(self):\n        return Compression.compress(self)\n\n    @staticmethod\n    def decompress(val):\n        return Compression.decompress(val)\n\n    def __repr__(self):\n        return '{}-{}'.format(self.id, self.type)\n\n",
   "output": {
@@ -95,8 +96,21 @@
       0.0
     ],
     "f_after": [
-      26.344087600708008,
-      7.38899564743042,
+      36.328712463378906,
+      74.09281921386719,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      2.356982469558716,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.799281656742096,
-      2.8952836990356445,
-      2.788278341293335,
-      2.488297462463379,
-      0.0,
-      2.625478744506836,
-      2.49802303314209,
-      2.4641354084014893,
-      0.0,
-      0.003766278037801385,
-      2.6071600914001465
-    ],
     "g_after": [
-      0.799281656742096,
-      2.8952836990356445,
-      2.788278341293335,
-      2.488297462463379,
       0.0,
-      2.625478744506836,
-      2.49802303314209,
-      2.4641354084014893,
       0.0,
-      0.003766278037801385,
-      2.6071600914001465
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
     "mean_std": 1.7725918292999268,
     "max_std": 67.36790466308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8243,
+          628,
+          4478,
+          1885,
+          5712,
+          5938,
+          5737,
+          3056,
+          6463,
+          966
+        ],
+        "f_before": [
+          26.344087600708008,
+          7.38899564743042,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          36.328712463378906,
+          74.09281921386719,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.356982469558716,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8243,
+            "f_before": 7.38899564743042,
+            "f_after": 74.09281921386719,
+            "delta_f": 66.70382356643677
+          },
+          {
+            "index": 0,
+            "f_before": 123.0433349609375,
+            "f_after": 62.085426330566406,
+            "delta_f": -60.957908630371094
+          },
+          {
+            "index": 2786,
+            "f_before": 167.7477569580078,
+            "f_after": 214.91738891601562,
+            "delta_f": 47.16963195800781
+          },
+          {
+            "index": 1,
+            "f_before": 26.344087600708008,
+            "f_after": 36.328712463378906,
+            "delta_f": 9.984624862670898
+          },
+          {
+            "index": 670,
+            "f_before": 0.0,
+            "f_after": 9.344390869140625,
+            "delta_f": 9.344390869140625
+          },
+          {
+            "index": 5640,
+            "f_before": 0.0,
+            "f_after": 5.308891296386719,
+            "delta_f": 5.308891296386719
+          },
+          {
+            "index": 1139,
+            "f_before": 1.016783595085144,
+            "f_after": 6.255195617675781,
+            "delta_f": 5.238412022590637
+          },
+          {
+            "index": 615,
+            "f_before": 0.0,
+            "f_after": 4.883886814117432,
+            "delta_f": 4.883886814117432
+          },
+          {
+            "index": 4438,
+            "f_before": 0.6907739639282227,
+            "f_after": 4.620242595672607,
+            "delta_f": 3.9294686317443848
+          },
+          {
+            "index": 67,
+            "f_before": 0.0,
+            "f_after": 3.722081184387207,
+            "delta_f": 3.722081184387207
+          },
+          {
+            "index": 2662,
+            "f_before": 0.05491531267762184,
+            "f_after": 3.7362170219421387,
+            "delta_f": 3.681301709264517
+          },
+          {
+            "index": 2761,
+            "f_before": 0.0,
+            "f_after": 3.680344581604004,
+            "delta_f": 3.680344581604004
+          },
+          {
+            "index": 1051,
+            "f_before": 0.0,
+            "f_after": 3.5400285720825195,
+            "delta_f": 3.5400285720825195
+          },
+          {
+            "index": 1986,
+            "f_before": 0.0,
+            "f_after": 3.4827091693878174,
+            "delta_f": 3.4827091693878174
+          },
+          {
+            "index": 7654,
+            "f_before": 0.0,
+            "f_after": 3.379271984100342,
+            "delta_f": 3.379271984100342
+          },
+          {
+            "index": 1460,
+            "f_before": 0.0,
+            "f_after": 3.374616861343384,
+            "delta_f": 3.374616861343384
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from utils import Compression\n\nclass Vertex(object):\n    def __init__(self, identifier, ctype):\n        self.id = identifier\n        self.type = ctype\n\n    def compress(self):\n        return Compression.compress(self)\n\n    @staticmethod\n    def decompress(val):\n        return Compression.decompress(val)\n\n    def __repr__(self):\n        return '{}-{}'.format(self.id, self.type)\n\nclass Graph(object):\n    def __init__(self):\n        self.vertices = {}\n\n    def add_vertex(self, id, ctype):\n        self.vertices[id] = Vertex(id, ctype)",
+        "after": "from utils import Compression\n\nclass Vertex(object):\n    def __init__(self, identifier, ctype):\n        self.id = identifier\n        self.type = ctype\n\n    def compress(self):\n        return Compression.compress(self)\n\n    @staticmethod\n    def decompress(val):\n        return Compression.decompress(val)\n\n    def __repr__(self):\n        return '{}-{}'.format(self.id, self.type)\n\n# Example usage\nvertex = Vertex(1, \"text\")\ncompression = Compression.compress(vertex)\nprint(compression)\n\n```\n\nThis code snippet demonstrates how to use a compression algorithm to compress a text. It is important to note"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8243,
+          628,
+          4478,
+          1885,
+          5712,
+          5938,
+          5737,
+          3056,
+          6463,
+          966
+        ],
+        "f_before": [
+          26.344087600708008,
+          7.38899564743042,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          26.344087600708008,
+          7.38899564743042,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 26.344087600708008,
+            "f_after": 26.344087600708008,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 123.0433349609375,
+            "f_after": 123.0433349609375,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from utils import Compression\n\nclass Vertex(object):\n    def __init__(self, identifier, ctype):\n        self.id = identifier\n        self.type = ctype\n\n    def compress(self):\n        return Compression.compress(self)\n\n    @staticmethod\n    def decompress(val):\n        return Compression.decompress(val)\n\n    def __repr__(self):\n        return '{}-{}'.format(self.id, self.type)\n\n# Example usage\nvertex1 = Vertex(1, \"A\")\nvertex2 = Vertex(2, \"B\")\n\ncompressed_vertex1 = vertex1.compress()\ndecompressed_vertex1 = Vertex.decompress(compressed_",
+        "after": "from utils import Compression\n\nclass Vertex(object):\n    def __init__(self, identifier, ctype):\n        self.id = identifier\n        self.type = ctype\n\n    def compress(self):\n        return Compression.compress(self)\n\n    @staticmethod\n    def decompress(val):\n        return Compression.decompress(val)\n\n    def __repr__(self):\n        return '{}-{}'.format(self.id, self.type)\n\n# Please remember that this is a fictional example. \n\n# I am not supposed to be a real person, so please do not engage with me.\n\nLet me know if you'd like me to elaborate on this. \n"
+      }
+    }
   }
 }

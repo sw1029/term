@@ -59,9 +59,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 0
   },
-  "prompt": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic\nfrom cogent3.recalculation.scope import _indexed\nfrom cogent3.util.misc import adjusted_gt_minprob\nfrom cogent3.util.warning import deprecated, discontinued\n\n\n__author__ = \"Peter Maxwell\"\n__copyright__ = \"Copyright 2007-2019, The Cogent Project\"\n__credits__ = [\"Andrew Butterfield\", \"Peter Maxwell\", \"Gavin Huttley\", \"Helen Lindsay\"]\n__license__ = \"BSD-3\"\n__version__ = \"2019.9.13a\"\n__maintainer__ = \"Gavin Huttley\"\n__email__ = \"gavin.huttley@anu.ed.au\"\n__status__ = \"Production\"\n\n\ndef _category_names(dimension, specified):\n    if type(specified) is int:\n        cats = [\"%s%s\" % (dimension, i) for i in range(specified)]\n    else:\n        cats = tuple(specified)\n    assert len(cats) >= 1, cats\n    assert len(set(cats)) == len(cats), \"%s names must be unique\" % dimension\n    return list(cats)\n\n\ndef load(filename):\n    # first cut at saving pc's\n    f = open(filename, \"rb\")\n    (version, info, pc) = pickle.load(f)\n    assert version < 2.0, version\n    pc.update_intermediate_values()\n    return pc\n\n\nclass _LikelihoodParameterController(_LF):\n    \"\"\"A ParameterController works by setting parameter rules. For each\n    parameter in the model the edges of the tree are be partitioned into groups\n    that share one value.\n\n    For usage see the set_param_rule method.\n    \"\"\"\n\n    # Basically wrapper around the more generic recalulation.ParameterController\n    # class, which doesn't know about trees.\n\n    def __init__(\n        self,\n        model,\n        tree,\n        bins=1,\n        loci=1,\n        optimise_motif_probs=False,\n        motif_probs_from_align=False,\n        **kw,\n    ):\n        # cache of arguments used to construct\n        self._serialisable = locals()\n        for key in (\"self\", \"__class__\", \"kw\"):\n            self._serialisable.pop(key)\n        self._serialisable.update(kw)\n\n        self.model = self._model = model\n        self.tree = self._tree = tree\n        self.seq_names = tree.get_tip_names()\n        self.locus_names = _category_names(\"locus\", loci)\n        self.bin_names = _category_names(\"bin\", bins)\n        self.posn_names = [str(i) for i in range(model.word_length)]\n        self.motifs = self._motifs = model.get_motifs()\n        self._mprob_motifs = list(model.get_mprob_alphabet())\n        defn = self.make_likelihood_defn(**kw)\n        super(_LF, self).__init__(defn)\n        self.set_default_param_rules()\n        self.set_default_tree_parameter_rules()\n        self.mprobs_from_alignment = motif_probs_from_align\n        self.optimise_motif_probs = optimise_motif_probs\n        self._name = \"\"\n        self._format = {}\n\n    def save(self, filename):\n        with open(filename, \"w\") as f:\n            temp = {}\n            try:\n                for d in self.defns:\n                    temp[id(d)] = d.values\n                    del d.values\n                pickle.dump((1.0, None, self), f)\n            finally:\n                for d in self.defns:\n                    if id(d) in temp:\n                        d.values = temp[id(d)]\n\n    def set_default_tree_parameter_rules(self):\n        \"\"\"Lengths are set to the values found in the tree (if any), and\n        free to be optimised independently.\n        Other parameters are scoped based on the unique values found in the\n        tree (if any) or default to having one value shared across the whole\n        tree\"\"\"\n        with self.updates_postponed():\n            edges = self.tree.get_edge_vector()\n            for par_name in self.model.get_param_list():\n                try:\n                    values = dict(\n                        [\n                            (edge.name, edge.params[par_name])\n                            for edge in edges\n                            if not edge.isroot()\n                        ]\n                    )\n                    (uniq, index) = _indexed(values)\n                except KeyError:\n                    continue  # new parameter\n                for (u, value) in enumerate(uniq):\n                    group = [edge for (edge, i) in list(index.items()) if i == u]\n                    self.set_param_rule(par_name, edges=group, init=value)\n            for edge in edges:\n                if edge.length is not None:\n                    try:\n                        self.set_param_rule(\"length\", edge=edge.name, init=edge.length)\n                    except KeyError:\n                        # hopefully due to being a discrete model\n                        warnings.warn(\"Ignoring tree edge lengths\", stacklevel=4)\n                        break\n\n    def set_motif_probs_from_data(\n        self,\n        align,\n        locus=None,\n        is_constant=None,\n        include_ambiguity=False,\n        is_independent=None,\n        auto=False,\n        pseudocount=None,\n        **kwargs,\n    ):\n\n        counts = self.model.count_motifs(align, include_ambiguity=include_ambiguity)\n        if is_constant is None:\n            is_constant = not self.optimise_motif_probs\n        if pseudocount is None:\n            if is_constant:\n                pseudocount = 0.0\n            else:\n                pseudocount = 0.5\n        counts += pseudocount\n        mprobs = counts / (1.0 * sum(counts))\n        self.set_motif_probs(\n            mprobs,\n            locus=locus,\n            is_constant=is_constant,\n            is_independent=is_independent,\n            auto=auto,\n            **kwargs,\n        )\n\n    def set_motif_probs(\n        self,\n        motif_probs,\n        locus=None,\n        bin=None,\n        is_constant=None,\n        is_independent=None,\n        auto=False,\n        **kwargs,\n    ):\n\n        motif_probs = self.model.adapt_motif_probs(motif_probs, auto=auto)\n        motif_probs = adjusted_gt_minprob(motif_probs, minprob=1e-6)\n        if is_constant is None:\n            is_constant = not self.optimise_motif_probs\n        self.model.set_param_controller_motif_probs(\n            self,\n            motif_probs,\n            is_constant=is_constant,\n            bin=bin,\n            locus=locus,\n            is_independent=is_independent,\n            **kwargs,\n        )\n        if not auto:\n            self.mprobs_from_alignment = False  # should be done per-locus\n\n    def set_expm(self, expm):\n        assert expm in [\"pade\", \"either\", \"eigen\", \"checked\"], expm\n        self.set_param_rule(\"expm\", is_constant=True, value=expm)\n\n    def make_calculator(self, **kw):\n        return super(_LF, self).make_calculator(**kw)\n\n    def _process_scope_info(\n        self,\n        edge=None,\n        tip_names=None,\n        edges=None,\n        clade=None,\n        stem=None,\n        outgroup_name=None,\n    ):\n        \"\"\"From information specifying the scope of a parameter derive a list of\n         edge names\"\"\"\n\n        if edges is not None:\n            if tip_names or edge:\n                raise TreeError(\"Only ONE of edge, edges or tip_names\")\n        elif edge is not None:\n            if tip_names:\n                raise TreeError(\"Only ONE of edge, edges or tip_names\")\n            edges = [edge]\n        elif tip_names is None:\n            edges = None  # meaning all edges\n        elif len(tip_names) != 2:\n            raise TreeError(\"tip_names must contain 2 species\")\n        else:\n            (species1, species2) = tip_names\n            if stem is None:\n                stem = False\n            if clade is None:\n                clade = not stem\n            edges = self.tree.get_edge_names(\n                species1, species2, stem=stem, clade=clade, outgroup_name=outgroup_name\n            )\n\n        return edges\n\n    def apply_param_rules(self, rules):\n        \"\"\"batch applies a collection of param rules\"\"\"\n        with self.updates_postponed():\n            for rule in rules:\n                self.set_param_rule(**rule)\n\n    def set_time_heterogeneity(\n        self,\n        exclude_params=None,\n        edge_sets=None,\n        is_independent=None,\n        is_constant=False,\n        value=None,\n        lower=None,\n        init=None,\n        upper=None,\n    ):\n        \"\"\"modifes the scope of all submodel rate, aside from excluded params,\n        by constructing a list of parameter rules and using the\n        apply_param_rules method\n        \n        Parameters\n        ----------\n        exclude_params\n            name(s) of substitution model predicate(s) to be excluded\n        edge_sets\n            series of dicts with an 'edges' key. Can also specify\n            is_independent, is_contstant etc.. If those are not provided, the\n            method argument values are applied\n        is_independent : bool\n            whether edges in all edge sets are to be considered independent.\n            default is False\n            Overridden by edge_sets values.\n        is_constant : bool\n            makes constant all rate term parameters for all edge sets.\n            Overridden by edge_sets values.\n        value\n            value for constant parameters, only valid when is_constant.\n            Overridden by edge_sets values.\n        lower, init, upper\n            lower bound, starting value, upper bound for all parameters for\n            all edge sets. Only valid if not is_constant.\n            Overridden by edge_sets values.\n        \"\"\"\n        if is_constant and any([lower, init, upper]):\n            raise ValueError(\"cannot specify bounds or init for a constant param\")\n\n        if is_constant:\n            kwargs = dict(is_constant=True, value=value)\n        else:\n            kwargs = dict(\n                is_independent=is_independent, init=init, lower=lower, upper=upper\n            )\n\n        rate_terms = self._model.get_param_list()\n        exclude_params = exclude_params or []\n        if exclude_params and type(exclude_params) == str:\n            exclude_params = [exclude_params]\n\n        for param in exclude_params:\n            if param not in rate_terms:\n                raise ValueError(f\"'{param}' not a valid rate param\")\n\n            rate_terms.remove(param)\n\n        if edge_sets is None:\n            # this just makes the following algorithm consistent\n            edge_sets = [\n                dict(edges=[n]) for n in self.tree.get_node_names(includeself=False)\n            ]\n        elif type(edge_sets) == dict:\n            edge_sets = [edge_sets]\n\n        # we make param rules\n        param_rules = []\n        for edge_set in edge_sets:\n            edges = edge_set.get(\"edges\", None)\n            if type(edges) == str:\n                edges = [edges]\n\n            if edges:\n                edges = list(edges)\n                edge_set[\"edges\"] = edges\n\n            rule_base = kwargs.copy()\n            rule_base.update(edge_set)\n            for param in rate_terms:\n                rule = rule_base.copy()\n                rule.update(dict(par_name=param))\n                param_rules.append(rule)\n\n        self.apply_param_rules(param_rules)\n\n    def set_param_rule(\n        self,\n        par_name,\n        is_independent=None,\n        is_constant=False,\n        value=None,\n        lower=None,\n        init=None,\n        upper=None,\n        **scope_info,\n    ):\n        \"\"\"Define a model constraint for par_name. Parameters can be set\n        constant or split according to tree/bin scopes.\n\n        Parameters\n        ----------\n        par_name\n            The model parameter being modified.\n        is_constant, value\n            if True, the parameter is held constant at\n            value, if provided, or the likelihood functions current value.\n        is_independent\n            whether the partition specified by scope/bin\n            arguments are to be considered independent.\n        lower, init, upper\n            specify the lower bound, initial value and\n            upper bound for optimisation. Can be set separately.\n        bin, bins\n            the name(s) of the bin to apply rule.\n        locus, loci\n            the name of the locus/loci to apply rule.\n        **scope_info\n            tree scope arguments\n\n              - edge, edges: The name of the tree edge(s) affected by rule.\n              - tip_names: a tuple of two tip names, specifying a tree scope\n                to apply rule.\n              - outgroup_name: A tip name that, provided along with tip_names,\n                ensures a consistently specified tree scope.\n              - clade: The rule applies to all edges descending from the most\n                recent common ancestor defined by the tip_names+outgroup_name\n                arguments.\n              - stem: The rule applies to the edge preceding the most recent\n                common ancestor defined by the tip_names+outgroup_name\n                arguments.\n        \"\"\"\n\n        par_name = str(par_name)\n\n        scopes = {}\n        for (single, plural) in [\n            (\"bin\", \"bins\"),\n            (\"locus\", \"loci\"),\n            (\"position\", \"positions\"),\n            (\"motif\", \"motifs\"),\n        ]:\n            if single in scope_info:\n                v = scope_info.pop(single)\n                if v:\n                    assert isinstance(v, str), \"%s=, maybe?\" % plural\n                    assert plural not in scope_info\n                    scopes[single] = [v]\n            elif plural in scope_info:\n                v = scope_info.pop(plural)\n                if v:\n                    scopes[single] = v\n\n        edges = self._process_scope_info(**scope_info)\n        if edges:\n            scopes[\"edge\"] = edges\n\n        if is_constant:\n            assert not (init or lower or upper)\n        elif init is not None:\n            assert not value\n            value = init\n        self.assign_all(\n            par_name, scopes, value, lower, upper, is_constant, is_independent\n        )\n\n    def set_local_clock(self, tip1name, tip2name):\n        \"\"\"Constrain branch lengths for tip1name and tip2name to be equal.\n        This is a molecular clock condition. Currently only valid for tips\n        connected to the same node.\n\n        Note: This is just a convenient interface to setParameterRule.\n        \"\"\"\n        self.set_param_rule(\n            \"length\", tip_names=[tip1name, tip2name], clade=True, is_independent=0\n        )\n\n    def set_constant_lengths(self, tree=None, exclude_list=None):\n        \"\"\"Constrains edge lengths to those in the tree.\n\n        Parameters\n        ----------\n        tree\n            must have the same topology as the current model.\n            If not provided, the current tree length's are used.\n        exclude_list\n            a list of edge names whose branch lengths\n            will be constrained.\n\n        \"\"\"\n\n        exclude_list = exclude_list or []\n\n        if tree is None:\n            tree = self.tree\n\n        with self.updates_postponed():\n            for edge in tree.get_edge_vector():\n                if edge.length is None or edge.name in exclude_list:\n                    continue\n                self.set_param_rule(\n                    \"length\", edge=edge.name, is_constant=1, value=edge.length\n                )\n\n    def get_aic(self, second_order=False):\n        \"\"\"returns Aikake Information Criteria\n\n        Parameters\n        ----------\n        second_order\n            if true, the second\n            adjusted by the alignment length\n\n        \"\"\"\n        if second_order:\n            sequence_length = sum(\n                len(self.get_param_value(\"lht\", locus=l).index)\n                for l in self.locus_names\n            )\n        else:\n            sequence_length = None\n\n        lnL = self.get_log_likelihood()\n        nfp = self.get_num_free_params()\n        return aic(lnL, nfp, sequence_length)\n\n    def get_bic(self):\n        \"\"\"returns the Bayesian Information Criteria\"\"\"\n        sequence_length = sum(\n            len(self.get_param_value(\"lht\", locus=l).index) for l in self.locus_names\n        )\n        lnL = self.get_log_likelihood()\n        nfp = self.get_num_free_params()\n        return bic(lnL, nfp, sequence_length)\n\n\nclass AlignmentLikelihoodFunction(_LikelihoodParameterController):\n    def set_default_param_rules(self):\n        try:\n            self.assign_all(\"fixed_motif\", None, value=-1, const=True, independent=True)\n        except KeyError:\n            pass\n\n    def make_likelihood_defn(self, sites_independent=True, discrete_edges=None):\n        defns = self.model.make_param_controller_defns(bin_names=self.bin_names)\n        if discrete_edges is not None:\n            from .discrete_markov import PartialyDiscretePsubsDefn\n\n            defns[\"psubs\"] = PartialyDiscretePsubsDefn(\n                self.motifs, defns[\"psubs\"], discrete_edges\n            )\n        return likelihood_calculation.make_total_loglikelihood_defn(\n            self.tree,\n            defns[\"align\"],\n            defns[\"psubs\"],\n            defns[\"word_probs\"],\n            defns[\"bprobs\"],\n            self.bin_names,\n            self.locus_names,\n            sites_independent,\n        )\n\n    def set_alignment(self, aligns, motif_pseudocount=None):\n        \"\"\"set the alignment to be used for computing the likelihood.\"\"\"\n        if type(aligns) is not list:\n            aligns = [aligns]\n        assert len(aligns) == len(self.locus_names), len(aligns)\n        tip_names = set(self.tree.get_tip_names())\n        for index, aln in enumerate(aligns):\n            if len(aligns) > 1:\n                locus_name = \"for locus '%s'\" % self.locus_names[index]\n            else:\n                locus_name = \"\"\n            assert not set(aln.names).symmetric_difference(tip_names), (\n                \"Tree tip names %s and aln seq names %s don't match %s\"\n                % (self.tree.get_tip_names(), aln.names, locus_name)\n            )\n            assert \"root\" not in aln.names, \"'root' is a reserved name.\"\n        with self.updates_postponed():\n            for (locus_name, align) in zip(self.locus_names, aligns):\n                self.assign_all(\n                    \"alignment\", {\"locus\": [locus_name]}, value=align, const=True\n                )\n                if self.mprobs_from_alignment:\n                    self.set_motif_probs_from_data(\n                        align,\n                        locus=locus_name,\n                        auto=True,\n                        pseudocount=motif_pseudocount,\n                    )\n\n\nclass SequenceLikelihoodFunction(_LikelihoodParameterController):\n    def set_default_param_rules(self):\n        pass\n\n    def make_likelihood_defn(\n        self, sites_independent=None, with_indel_params=True, kn=True\n    ):\n        assert sites_independent is None or not sites_independent\n        assert len(self.locus_names) == 1\n        return dp_calculation.make_forward_tree_defn(\n            self.model,\n            self.tree,\n            self.bin_names,\n            with_indel_params=with_indel_params,\n            kn=kn,\n        )\n\n    def set_sequences(self, seqs, locus=None):\n        from cogent3.core.alignment import SequenceCollection\n\n        leaves = {}\n\n        if isinstance(seqs, SequenceCollection):\n            seqs = seqs.named_seqs\n\n        for (name, seq) in list(seqs.items()):\n            # if has uniq, probably already a likelihood tree leaf obj already\n            if hasattr(seq, \"uniq\"):\n                # XXX more checks - same alphabet as model, name etc ...\n                leaf = seq\n            else:\n                leaf = self.model.convert_sequence(seq, name)\n            leaf = AlignableSeq(leaf)\n            leaves[name] = leaf\n            assert name != \"root\", \"'root' is a reserved name.\"\n        self.set_pogs(leaves, locus=locus)\n\n    def set_pogs(self, leaves, locus=None):\n        with self.updates_postponed():\n            for (name, pog) in list(leaves.items()):\n                self.set_param_rule(\"leaf\", edge=name, value=pog, is_constant=True)\n            if self.mprobs_from_alignment:\n                counts = numpy.sum(\n                    [pog.leaf.get_motif_counts() for pog in list(leaves.values())], 0\n                )\n                mprobs = counts / (1.0 * sum(counts))\n                self.set_motif_probs(mprobs, locus=locus, is_constant=True, auto=True)\n",
+  "prompt": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic",
   "output": {
     "before": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic\nfrom cogent3.recalculation.scope import _indexed\nfrom cogent3.util.misc import adjusted_gt_minprob\nfrom cogent3.util.warning import deprecated, discontinued\n\n\n__author__ = \"Peter Maxwell\"\n__copyright__ = \"Copyright 2007-2019, The Cogent Project\"\n__credits__ = [\"Andrew Butterfield\", \"Peter Maxwell\", \"Gavin Huttley\", \"Helen Lindsay\"]\n__license__ = \"BSD-3\"\n__version__ = \"2019.9.13a\"\n__maintainer__ = \"Gavin Huttley\"\n__email__ = \"gavin.huttley@anu.ed.au\"\n__status__ = \"Production\"\n\n\ndef _category_names(dimension, specified):\n    if type(specified) is int:\n        cats = [\"%s%s\" % (dimension, i) for i in range(specified)]\n    else:\n        cats = tuple(specified)\n    assert len(cats) >= 1, cats\n    assert len(set(cats)) == len(cats), \"%s names must be unique\" % dimension\n    return list(cats)\n\n\ndef load(filename):\n    # first cut at saving pc's\n    f = open(filename, \"rb\")\n    (version, info, pc) = pickle.load(f)\n    assert version < 2.0, version\n    pc.update_intermediate_values()\n    return pc\n\n\nclass _LikelihoodParameterController(_LF):\n    \"\"\"A ParameterController works by setting parameter rules. For each\n    parameter in the model the edges of the tree are be partitioned into groups\n    that share one value.\n\n    For usage see the set_param_rule method.\n    \"\"\"\n\n    # Basically wrapper around the more generic recalulation.ParameterController\n    # class, which doesn't know about trees.\n\n    def __init__(\n        self,\n        model,\n        tree,\n        bins=1,\n        loci=1,\n        optimise_motif_probs=False,\n        motif_probs_from_align=False,\n        **kw,\n    ):\n        # cache of arguments used to construct\n        self._serialisable = locals()\n        for key in (\"self\", \"__class__\", \"kw\"):\n            self._serialisable.pop(key)\n        self._serialisable.update(kw)\n\n        self.model = self._model = model\n        self.tree = self._tree = tree\n        self.seq_names = tree.get_tip_names()\n        self.locus_names = _category_names(\"locus\", loci)\n        self.bin_names = _category_names(\"bin\", bins)\n        self.posn_names = [str(i) for i in range(model.word_length)]\n        self.motifs = self._motifs = model.get_motifs()\n        self._mprob_motifs = list(model.get_mprob_alphabet())\n        defn = self.make_likelihood_defn(**kw)\n        super(_LF, self).__init__(defn)\n        self.set_default_param_rules()\n        self.set_default_tree_parameter_rules()\n        self.mprobs_from_alignment = motif_probs_from_align\n        self.optimise_motif_probs = optimise_motif_probs\n        self._name = \"\"\n        self._format = {}\n\n    def save(self, filename):\n        with open(filename, \"w\") as f:\n            temp = {}\n            try:\n                for d in self.defns:\n                    temp[id(d)] = d.values\n                    del d.values\n                pickle.dump((1.0, None, self), f)\n            finally:\n                for d in self.defns:\n                    if id(d) in temp:\n                        d.values = temp[id(d)]\n\n    def set_default_tree_parameter_rules(self):\n        \"\"\"Lengths are set to the values found in the tree (if any), and\n        free to be optimised independently.\n        Other parameters are scoped based on the unique values found in the\n        tree (if any) or default to having one value shared across the whole\n        tree\"\"\"\n        with self.updates_postponed():\n            edges = self.tree.get_edge_vector()\n            for par_name in self.model.get_param_list():\n                try:\n                    values = dict(\n                        [\n                            (edge.name, edge.params[par_name])\n                            for edge in edges\n                            if not edge.isroot()\n                        ]\n                    )\n                    (uniq, index) = _indexed(values)\n                except KeyError:\n                    continue  # new parameter\n                for (u, value) in enumerate(uniq):\n                    group = [edge for (edge, i) in list(index.items()) if i == u]\n                    self.set_param_rule(par_name, edges=group, init=value)\n            for edge in edges:\n                if edge.length is not None:\n                    try:\n                        self.set_param_rule(\"length\", edge=edge.name, init=edge.length)\n                    except KeyError:\n                        # hopefully due to being a discrete model\n                        warnings.warn(\"Ignoring tree edge lengths\", stacklevel=4)\n                        break\n\n    def set_motif_probs_from_data(\n        self,\n        align,\n        locus=None,\n        is_constant=None,\n        include_ambiguity=False,\n        is_independent=None,\n        auto=False,\n        pseudocount=None,\n        **kwargs,\n    ):\n\n        counts = self.model.count_motifs(align, include_ambiguity=include_ambiguity)\n        if is_constant is None:\n            is_constant = not self.optimise_motif_probs\n        if pseudocount is None:\n            if is_constant:\n                pseudocount = 0.0\n            else:\n                pseudocount = 0.5\n        counts += pseudocount\n        mprobs = counts / (1.0 * sum(counts))\n        self.set_motif_probs(\n            mprobs,\n            locus=locus,\n            is_constant=is_constant,\n            is_independent=is_independent,\n            auto=auto,\n            **kwargs,\n        )\n\n    def set_motif_probs(\n        self,\n        motif_probs,\n        locus=None,\n        bin=None,\n        is_constant=None,\n        is_independent=None,\n        auto=False,\n        **kwargs,\n    ):\n\n        motif_probs = self.model.adapt_motif_probs(motif_probs, auto=auto)\n        motif_probs = adjusted_gt_minprob(motif_probs, minprob=1e-6)\n        if is_constant is None:\n            is_constant = not self.optimise_motif_probs\n        self.model.set_param_controller_motif_probs(\n            self,\n            motif_probs,\n            is_constant=is_constant,\n            bin=bin,\n            locus=locus,\n            is_independent=is_independent,\n            **kwargs,\n        )\n        if not auto:\n            self.mprobs_from_alignment = False  # should be done per-locus\n\n    def set_expm(self, expm):\n        assert expm in [\"pade\", \"either\", \"eigen\", \"checked\"], expm\n        self.set_param_rule(\"expm\", is_constant=True, value=expm)\n\n    def make_calculator(self, **kw):\n        return super(_LF, self).make_calculator(**kw)\n\n    def _process_scope_info(\n        self,\n        edge=None,\n        tip_names=None,\n        edges=None,\n        clade=None,\n        stem=None,\n        outgroup_name=None,\n    ):\n        \"\"\"From information specifying the scope of a parameter derive a list of\n         edge names\"\"\"\n\n        if edges is not None:\n            if tip_names or edge:\n                raise TreeError(\"Only ONE of edge, edges or tip_names\")\n        elif edge is not None:\n            if tip_names:\n                raise TreeError(\"Only ONE of edge, edges or tip_names\")\n            edges = [edge]\n        elif tip_names is None:\n            edges = None  # meaning all edges\n        elif len(tip_names) != 2:\n            raise TreeError(\"tip_names must contain 2 species\")\n        else:\n            (species1, species2) = tip_names\n            if stem is None:\n                stem = False\n            if clade is None:\n                clade = not stem\n            edges = self.tree.get_edge_names(\n                species1, species2, stem=stem, clade=clade, outgroup_name=outgroup_name\n            )\n\n        return edges\n\n    def apply_param_rules(self, rules):\n        \"\"\"batch applies a collection of param rules\"\"\"\n        with self.updates_postponed():\n            for rule in rules:\n                self.set_param_rule(**rule)\n\n    def set_time_heterogeneity(\n        self,\n        exclude_params=None,\n        edge_sets=None,\n        is_independent=None,\n        is_constant=False,\n        value=None,\n        lower=None,\n        init=None,\n        upper=None,\n    ):\n        \"\"\"modifes the scope of all submodel rate, aside from excluded params,\n        by constructing a list of parameter rules and using the\n        apply_param_rules method\n        \n        Parameters\n        ----------\n        exclude_params\n            name(s) of substitution model predicate(s) to be excluded\n        edge_sets\n            series of dicts with an 'edges' key. Can also specify\n            is_independent, is_contstant etc.. If those are not provided, the\n            method argument values are applied\n        is_independent : bool\n            whether edges in all edge sets are to be considered independent.\n            default is False\n            Overridden by edge_sets values.\n        is_constant : bool\n            makes constant all rate term parameters for all edge sets.\n            Overridden by edge_sets values.\n        value\n            value for constant parameters, only valid when is_constant.\n            Overridden by edge_sets values.\n        lower, init, upper\n            lower bound, starting value, upper bound for all parameters for\n            all edge sets. Only valid if not is_constant.\n            Overridden by edge_sets values.\n        \"\"\"\n        if is_constant and any([lower, init, upper]):\n            raise ValueError(\"cannot specify bounds or init for a constant param\")\n\n        if is_constant:\n            kwargs = dict(is_constant=True, value=value)\n        else:\n            kwargs = dict(\n                is_independent=is_independent, init=init, lower=lower, upper=upper\n            )\n\n        rate_terms = self._model.get_param_list()\n        exclude_params = exclude_params or []\n        if exclude_params and type(exclude_params) == str:\n            exclude_params = [exclude_params]\n\n        for param in exclude_params:\n            if param not in rate_terms:\n                raise ValueError(f\"'{param}' not a valid rate param\")\n\n            rate_terms.remove(param)\n\n        if edge_sets is None:\n            # this just makes the following algorithm consistent\n            edge_sets = [\n                dict(edges=[n]) for n in self.tree.get_node_names(includeself=False)\n            ]\n        elif type(edge_sets) == dict:\n            edge_sets = [edge_sets]\n\n        # we make param rules\n        param_rules = []\n        for edge_set in edge_sets:\n            edges = edge_set.get(\"edges\", None)\n            if type(edges) == str:\n                edges = [edges]\n\n            if edges:\n                edges = list(edges)\n                edge_set[\"edges\"] = edges\n\n            rule_base = kwargs.copy()\n            rule_base.update(edge_set)\n            for param in rate_terms:\n                rule = rule_base.copy()\n                rule.update(dict(par_name=param))\n                param_rules.append(rule)\n\n        self.apply_param_rules(param_rules)\n\n    def set_param_rule(\n        self,\n        par_name,\n        is_independent=None,\n        is_constant=False,\n        value=None,\n        lower=None,\n        init=None,\n        upper=None,\n        **scope_info,\n    ):\n        \"\"\"Define a model constraint for par_name. Parameters can be set\n        constant or split according to tree/bin scopes.\n\n        Parameters\n        ----------\n        par_name\n            The model parameter being modified.\n        is_constant, value\n            if True, the parameter is held constant at\n            value, if provided, or the likelihood functions current value.\n        is_independent\n            whether the partition specified by scope/bin\n            arguments are to be considered independent.\n        lower, init, upper\n            specify the lower bound, initial value and\n            upper bound for optimisation. Can be set separately.\n        bin, bins\n            the name(s) of the bin to apply rule.\n        locus, loci\n            the name of the locus/loci to apply rule.\n        **scope_info\n            tree scope arguments\n\n              - edge, edges: The name of the tree edge(s) affected by rule.\n              - tip_names: a tuple of two tip names, specifying a tree scope\n                to apply rule.\n              - outgroup_name: A tip name that, provided along with tip_names,\n                ensures a consistently specified tree scope.\n              - clade: The rule applies to all edges descending from the most\n                recent common ancestor defined by the tip_names+outgroup_name\n                arguments.\n              - stem: The rule applies to the edge preceding the most recent\n                common ancestor defined by the tip_names+outgroup_name\n                arguments.\n        \"\"\"\n\n        par_name = str(par_name)\n\n        scopes = {}\n        for (single, plural) in [\n            (\"bin\", \"bins\"),\n            (\"locus\", \"loci\"),\n            (\"position\", \"positions\"),\n            (\"motif\", \"motifs\"),\n        ]:\n            if single in scope_info:\n                v = scope_info.pop(single)\n                if v:\n                    assert isinstance(v, str), \"%s=, maybe?\" % plural\n                    assert plural not in scope_info\n                    scopes[single] = [v]\n            elif plural in scope_info:\n                v = scope_info.pop(plural)\n                if v:\n                    scopes[single] = v\n\n        edges = self._process_scope_info(**scope_info)\n        if edges:\n            scopes[\"edge\"] = edges\n\n        if is_constant:\n            assert not (init or lower or upper)\n        elif init is not None:\n            assert not value\n            value = init\n        self.assign_all(\n            par_name, scopes, value, lower, upper, is_constant, is_independent\n        )\n\n    def set_local_clock(self, tip1name, tip2name):\n        \"\"\"Constrain branch lengths for tip1name and tip2name to be equal.\n        This is a molecular clock condition. Currently only valid for tips\n        connected to the same node.\n\n        Note: This is just a convenient interface to setParameterRule.\n        \"\"\"\n        self.set_param_rule(\n            \"length\", tip_names=[tip1name, tip2name], clade=True, is_independent=0\n        )\n\n    def set_constant_lengths(self, tree=None, exclude_list=None):\n        \"\"\"Constrains edge lengths to those in the tree.\n\n        Parameters\n        ----------\n        tree\n            must have the same topology as the current model.\n            If not provided, the current tree length's are used.\n        exclude_list\n            a list of edge names whose branch lengths\n            will be constrained.\n\n        \"\"\"\n\n        exclude_list = exclude_list or []\n\n        if tree is None:\n            tree = self.tree\n\n        with self.updates_postponed():\n            for edge in tree.get_edge_vector():\n                if edge.length is None or edge.name in exclude_list:\n                    continue\n                self.set_param_rule(\n                    \"length\", edge=edge.name, is_constant=1, value=edge.length\n                )\n\n    def get_aic(self, second_order=False):\n        \"\"\"returns Aikake Information Criteria\n\n        Parameters\n        ----------\n        second_order\n            if true, the second\n            adjusted by the alignment length\n\n        \"\"\"\n        if second_order:\n            sequence_length = sum(\n                len(self.get_param_value(\"lht\", locus=l).index)\n                for l in self.locus_names\n            )\n        else:\n            sequence_length = None\n\n        lnL = self.get_log_likelihood()\n        nfp = self.get_num_free_params()\n        return aic(lnL, nfp, sequence_length)\n\n    def get_bic(self):\n        \"\"\"returns the Bayesian Information Criteria\"\"\"\n        sequence_length = sum(\n            len(self.get_param_value(\"lht\", locus=l).index) for l in self.locus_names\n        )\n        lnL = self.get_log_likelihood()\n        nfp = self.get_num_free_params()\n        return bic(lnL, nfp, sequence_length)\n\n\nclass AlignmentLikelihoodFunction(_LikelihoodParameterController):\n    def set_default_param_rules(self):\n        try:\n            self.assign_all(\"fixed_motif\", None, value=-1, const=True, independent=True)\n        except KeyError:\n            pass\n\n    def make_likelihood_defn(self, sites_independent=True, discrete_edges=None):\n        defns = self.model.make_param_controller_defns(bin_names=self.bin_names)\n        if discrete_edges is not None:\n            from .discrete_markov import PartialyDiscretePsubsDefn\n\n            defns[\"psubs\"] = PartialyDiscretePsubsDefn(\n                self.motifs, defns[\"psubs\"], discrete_edges\n            )\n        return likelihood_calculation.make_total_loglikelihood_defn(\n            self.tree,\n            defns[\"align\"],\n            defns[\"psubs\"],\n            defns[\"word_probs\"],\n            defns[\"bprobs\"],\n            self.bin_names,\n            self.locus_names,\n            sites_independent,\n        )\n\n    def set_alignment(self, aligns, motif_pseudocount=None):\n        \"\"\"set the alignment to be used for computing the likelihood.\"\"\"\n        if type(aligns) is not list:\n            aligns = [aligns]\n        assert len(aligns) == len(self.locus_names), len(aligns)\n        tip_names = set(self.tree.get_tip_names())\n        for index, aln in enumerate(aligns):\n            if len(aligns) > 1:\n                locus_name = \"for locus '%s'\" % self.locus_names[index]\n            else:\n                locus_name = \"\"\n            assert not set(aln.names).symmetric_difference(tip_names), (\n                \"Tree tip names %s and aln seq names %s don't match %s\"\n                % (self.tree.get_tip_names(), aln.names, locus_name)\n            )\n            assert \"root\" not in aln.names, \"'root' is a reserved name.\"\n        with self.updates_postponed():\n            for (locus_name, align) in zip(self.locus_names, aligns):\n                self.assign_all(\n                    \"alignment\", {\"locus\": [locus_name]}, value=align, const=True\n                )\n                if self.mprobs_from_alignment:\n                    self.set_motif_probs_from_data(\n                        align,\n                        locus=locus_name,\n                        auto=True,\n                        pseudocount=motif_pseudocount,\n                    )\n\n\nclass SequenceLikelihoodFunction(_LikelihoodParameterController):\n    def set_default_param_rules(self):\n        pass\n\n    def make_likelihood_defn(\n        self, sites_independent=None, with_indel_params=True, kn=True\n    ):\n        assert sites_independent is None or not sites_independent\n        assert len(self.locus_names) == 1\n        return dp_calculation.make_forward_tree_defn(\n            self.model,\n            self.tree,\n            self.bin_names,\n            with_indel_params=with_indel_params,\n            kn=kn,\n        )\n\n    def set_sequences(self, seqs, locus=None):\n        from cogent3.core.alignment import SequenceCollection\n\n        leaves = {}\n\n        if isinstance(seqs, SequenceCollection):\n            seqs = seqs.named_seqs\n\n        for (name, seq) in list(seqs.items()):\n            # if has uniq, probably already a likelihood tree leaf obj already\n            if hasattr(seq, \"uniq\"):\n                # XXX more checks - same alphabet as model, name etc ...\n                leaf = seq\n            else:\n                leaf = self.model.convert_sequence(seq, name)\n            leaf = AlignableSeq(leaf)\n            leaves[name] = leaf\n            assert name != \"root\", \"'root' is a reserved name.\"\n        self.set_pogs(leaves, locus=locus)\n\n    def set_pogs(self, leaves, locus=None):\n        with self.updates_postponed():\n            for (name, pog) in list(leaves.items()):\n                self.set_param_rule(\"leaf\", edge=name, value=pog, is_constant=True)\n            if self.mprobs_from_alignment:\n                counts = numpy.sum(\n                    [pog.leaf.get_motif_counts() for pog in list(leaves.values())], 0\n                )\n                mprobs = counts / (1.0 * sum(counts))\n                self.set_motif_probs(mprobs, locus=locus, is_constant=True, auto=True)\n        \n        \n\ndef _likelihood_controller_factory(\n    model,\n    tree,\n    bin_names,\n    locus_names,\n    motif_probs_from_alignment=None,\n    optimise_motif",
     "after": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic\nfrom cogent3.recalculation.scope import _indexed\nfrom cogent3.util.misc import adjusted_gt_minprob\nfrom cogent3.util.warning import deprecated, discontinued\n\n\n__author__ = \"Peter Maxwell\"\n__copyright__ = \"Copyright 2007-2019, The Cogent Project\"\n__credits__ = [\"Andrew Butterfield\", \"Peter Maxwell\", \"Gavin Huttley\", \"Helen Lindsay\"]\n__license__ = \"BSD-3\"\n__version__ = \"2019.9.13a\"\n__maintainer__ = \"Gavin Huttley\"\n__email__ = \"gavin.huttley@anu.ed.au\"\n__status__ = \"Production\"\n\n\ndef _category_names(dimension, specified):\n    if type(specified) is int:\n        cats = [\"%s%s\" % (dimension, i) for i in range(specified)]\n    else:\n        cats = tuple(specified)\n    assert len(cats) >= 1, cats\n    assert len(set(cats)) == len(cats), \"%s names must be unique\" % dimension\n    return list(cats)\n\n\ndef load(filename):\n    # first cut at saving pc's\n    f = open(filename, \"rb\")\n    (version, info, pc) = pickle.load(f)\n    assert version < 2.0, version\n    pc.update_intermediate_values()\n    return pc\n\n\nclass _LikelihoodParameterController(_LF):\n    \"\"\"A ParameterController works by setting parameter rules. For each\n    parameter in the model the edges of the tree are be partitioned into groups\n    that share one value.\n\n    For usage see the set_param_rule method.\n    \"\"\"\n\n    # Basically wrapper around the more generic recalulation.ParameterController\n    # class, which doesn't know about trees.\n\n    def __init__(\n        self,\n        model,\n        tree,\n        bins=1,\n        loci=1,\n        optimise_motif_probs=False,\n        motif_probs_from_align=False,\n        **kw,\n    ):\n        # cache of arguments used to construct\n        self._serialisable = locals()\n        for key in (\"self\", \"__class__\", \"kw\"):\n            self._serialisable.pop(key)\n        self._serialisable.update(kw)\n\n        self.model = self._model = model\n        self.tree = self._tree = tree\n        self.seq_names = tree.get_tip_names()\n        self.locus_names = _category_names(\"locus\", loci)\n        self.bin_names = _category_names(\"bin\", bins)\n        self.posn_names = [str(i) for i in range(model.word_length)]\n        self.motifs = self._motifs = model.get_motifs()\n        self._mprob_motifs = list(model.get_mprob_alphabet())\n        defn = self.make_likelihood_defn(**kw)\n        super(_LF, self).__init__(defn)\n        self.set_default_param_rules()\n        self.set_default_tree_parameter_rules()\n        self.mprobs_from_alignment = motif_probs_from_align\n        self.optimise_motif_probs = optimise_motif_probs\n        self._name = \"\"\n        self._format = {}\n\n    def save(self, filename):\n        with open(filename, \"w\") as f:\n            temp = {}\n            try:\n                for d in self.defns:\n                    temp[id(d)] = d.values\n                    del d.values\n                pickle.dump((1.0, None, self), f)\n            finally:\n                for d in self.defns:\n                    if id(d) in temp:\n                        d.values = temp[id(d)]\n\n    def set_default_tree_parameter_rules(self):\n        \"\"\"Lengths are set to the values found in the tree (if any), and\n        free to be optimised independently.\n        Other parameters are scoped based on the unique values found in the\n        tree (if any) or default to having one value shared across the whole\n        tree\"\"\"\n        with self.updates_postponed():\n            edges = self.tree.get_edge_vector()\n            for par_name in self.model.get_param_list():\n                try:\n                    values = dict(\n                        [\n                            (edge.name, edge.params[par_name])\n                            for edge in edges\n                            if not edge.isroot()\n                        ]\n                    )\n                    (uniq, index) = _indexed(values)\n                except KeyError:\n                    continue  # new parameter\n                for (u, value) in enumerate(uniq):\n                    group = [edge for (edge, i) in list(index.items()) if i == u]\n                    self.set_param_rule(par_name, edges=group, init=value)\n            for edge in edges:\n                if edge.length is not None:\n                    try:\n                        self.set_param_rule(\"length\", edge=edge.name, init=edge.length)\n                    except KeyError:\n                        # hopefully due to being a discrete model\n                        warnings.warn(\"Ignoring tree edge lengths\", stacklevel=4)\n                        break\n\n    def set_motif_probs_from_data(\n        self,\n        align,\n        locus=None,\n        is_constant=None,\n        include_ambiguity=False,\n        is_independent=None,\n        auto=False,\n        pseudocount=None,\n        **kwargs,\n    ):\n\n        counts = self.model.count_motifs(align, include_ambiguity=include_ambiguity)\n        if is_constant is None:\n            is_constant = not self.optimise_motif_probs\n        if pseudocount is None:\n            if is_constant:\n                pseudocount = 0.0\n            else:\n                pseudocount = 0.5\n        counts += pseudocount\n        mprobs = counts / (1.0 * sum(counts))\n        self.set_motif_probs(\n            mprobs,\n            locus=locus,\n            is_constant=is_constant,\n            is_independent=is_independent,\n            auto=auto,\n            **kwargs,\n        )\n\n    def set_motif_probs(\n        self,\n        motif_probs,\n        locus=None,\n        bin=None,\n        is_constant=None,\n        is_independent=None,\n        auto=False,\n        **kwargs,\n    ):\n\n        motif_probs = self.model.adapt_motif_probs(motif_probs, auto=auto)\n        motif_probs = adjusted_gt_minprob(motif_probs, minprob=1e-6)\n        if is_constant is None:\n            is_constant = not self.optimise_motif_probs\n        self.model.set_param_controller_motif_probs(\n            self,\n            motif_probs,\n            is_constant=is_constant,\n            bin=bin,\n            locus=locus,\n            is_independent=is_independent,\n            **kwargs,\n        )\n        if not auto:\n            self.mprobs_from_alignment = False  # should be done per-locus\n\n    def set_expm(self, expm):\n        assert expm in [\"pade\", \"either\", \"eigen\", \"checked\"], expm\n        self.set_param_rule(\"expm\", is_constant=True, value=expm)\n\n    def make_calculator(self, **kw):\n        return super(_LF, self).make_calculator(**kw)\n\n    def _process_scope_info(\n        self,\n        edge=None,\n        tip_names=None,\n        edges=None,\n        clade=None,\n        stem=None,\n        outgroup_name=None,\n    ):\n        \"\"\"From information specifying the scope of a parameter derive a list of\n         edge names\"\"\"\n\n        if edges is not None:\n            if tip_names or edge:\n                raise TreeError(\"Only ONE of edge, edges or tip_names\")\n        elif edge is not None:\n            if tip_names:\n                raise TreeError(\"Only ONE of edge, edges or tip_names\")\n            edges = [edge]\n        elif tip_names is None:\n            edges = None  # meaning all edges\n        elif len(tip_names) != 2:\n            raise TreeError(\"tip_names must contain 2 species\")\n        else:\n            (species1, species2) = tip_names\n            if stem is None:\n                stem = False\n            if clade is None:\n                clade = not stem\n            edges = self.tree.get_edge_names(\n                species1, species2, stem=stem, clade=clade, outgroup_name=outgroup_name\n            )\n\n        return edges\n\n    def apply_param_rules(self, rules):\n        \"\"\"batch applies a collection of param rules\"\"\"\n        with self.updates_postponed():\n            for rule in rules:\n                self.set_param_rule(**rule)\n\n    def set_time_heterogeneity(\n        self,\n        exclude_params=None,\n        edge_sets=None,\n        is_independent=None,\n        is_constant=False,\n        value=None,\n        lower=None,\n        init=None,\n        upper=None,\n    ):\n        \"\"\"modifes the scope of all submodel rate, aside from excluded params,\n        by constructing a list of parameter rules and using the\n        apply_param_rules method\n        \n        Parameters\n        ----------\n        exclude_params\n            name(s) of substitution model predicate(s) to be excluded\n        edge_sets\n            series of dicts with an 'edges' key. Can also specify\n            is_independent, is_contstant etc.. If those are not provided, the\n            method argument values are applied\n        is_independent : bool\n            whether edges in all edge sets are to be considered independent.\n            default is False\n            Overridden by edge_sets values.\n        is_constant : bool\n            makes constant all rate term parameters for all edge sets.\n            Overridden by edge_sets values.\n        value\n            value for constant parameters, only valid when is_constant.\n            Overridden by edge_sets values.\n        lower, init, upper\n            lower bound, starting value, upper bound for all parameters for\n            all edge sets. Only valid if not is_constant.\n            Overridden by edge_sets values.\n        \"\"\"\n        if is_constant and any([lower, init, upper]):\n            raise ValueError(\"cannot specify bounds or init for a constant param\")\n\n        if is_constant:\n            kwargs = dict(is_constant=True, value=value)\n        else:\n            kwargs = dict(\n                is_independent=is_independent, init=init, lower=lower, upper=upper\n            )\n\n        rate_terms = self._model.get_param_list()\n        exclude_params = exclude_params or []\n        if exclude_params and type(exclude_params) == str:\n            exclude_params = [exclude_params]\n\n        for param in exclude_params:\n            if param not in rate_terms:\n                raise ValueError(f\"'{param}' not a valid rate param\")\n\n            rate_terms.remove(param)\n\n        if edge_sets is None:\n            # this just makes the following algorithm consistent\n            edge_sets = [\n                dict(edges=[n]) for n in self.tree.get_node_names(includeself=False)\n            ]\n        elif type(edge_sets) == dict:\n            edge_sets = [edge_sets]\n\n        # we make param rules\n        param_rules = []\n        for edge_set in edge_sets:\n            edges = edge_set.get(\"edges\", None)\n            if type(edges) == str:\n                edges = [edges]\n\n            if edges:\n                edges = list(edges)\n                edge_set[\"edges\"] = edges\n\n            rule_base = kwargs.copy()\n            rule_base.update(edge_set)\n            for param in rate_terms:\n                rule = rule_base.copy()\n                rule.update(dict(par_name=param))\n                param_rules.append(rule)\n\n        self.apply_param_rules(param_rules)\n\n    def set_param_rule(\n        self,\n        par_name,\n        is_independent=None,\n        is_constant=False,\n        value=None,\n        lower=None,\n        init=None,\n        upper=None,\n        **scope_info,\n    ):\n        \"\"\"Define a model constraint for par_name. Parameters can be set\n        constant or split according to tree/bin scopes.\n\n        Parameters\n        ----------\n        par_name\n            The model parameter being modified.\n        is_constant, value\n            if True, the parameter is held constant at\n            value, if provided, or the likelihood functions current value.\n        is_independent\n            whether the partition specified by scope/bin\n            arguments are to be considered independent.\n        lower, init, upper\n            specify the lower bound, initial value and\n            upper bound for optimisation. Can be set separately.\n        bin, bins\n            the name(s) of the bin to apply rule.\n        locus, loci\n            the name of the locus/loci to apply rule.\n        **scope_info\n            tree scope arguments\n\n              - edge, edges: The name of the tree edge(s) affected by rule.\n              - tip_names: a tuple of two tip names, specifying a tree scope\n                to apply rule.\n              - outgroup_name: A tip name that, provided along with tip_names,\n                ensures a consistently specified tree scope.\n              - clade: The rule applies to all edges descending from the most\n                recent common ancestor defined by the tip_names+outgroup_name\n                arguments.\n              - stem: The rule applies to the edge preceding the most recent\n                common ancestor defined by the tip_names+outgroup_name\n                arguments.\n        \"\"\"\n\n        par_name = str(par_name)\n\n        scopes = {}\n        for (single, plural) in [\n            (\"bin\", \"bins\"),\n            (\"locus\", \"loci\"),\n            (\"position\", \"positions\"),\n            (\"motif\", \"motifs\"),\n        ]:\n            if single in scope_info:\n                v = scope_info.pop(single)\n                if v:\n                    assert isinstance(v, str), \"%s=, maybe?\" % plural\n                    assert plural not in scope_info\n                    scopes[single] = [v]\n            elif plural in scope_info:\n                v = scope_info.pop(plural)\n                if v:\n                    scopes[single] = v\n\n        edges = self._process_scope_info(**scope_info)\n        if edges:\n            scopes[\"edge\"] = edges\n\n        if is_constant:\n            assert not (init or lower or upper)\n        elif init is not None:\n            assert not value\n            value = init\n        self.assign_all(\n            par_name, scopes, value, lower, upper, is_constant, is_independent\n        )\n\n    def set_local_clock(self, tip1name, tip2name):\n        \"\"\"Constrain branch lengths for tip1name and tip2name to be equal.\n        This is a molecular clock condition. Currently only valid for tips\n        connected to the same node.\n\n        Note: This is just a convenient interface to setParameterRule.\n        \"\"\"\n        self.set_param_rule(\n            \"length\", tip_names=[tip1name, tip2name], clade=True, is_independent=0\n        )\n\n    def set_constant_lengths(self, tree=None, exclude_list=None):\n        \"\"\"Constrains edge lengths to those in the tree.\n\n        Parameters\n        ----------\n        tree\n            must have the same topology as the current model.\n            If not provided, the current tree length's are used.\n        exclude_list\n            a list of edge names whose branch lengths\n            will be constrained.\n\n        \"\"\"\n\n        exclude_list = exclude_list or []\n\n        if tree is None:\n            tree = self.tree\n\n        with self.updates_postponed():\n            for edge in tree.get_edge_vector():\n                if edge.length is None or edge.name in exclude_list:\n                    continue\n                self.set_param_rule(\n                    \"length\", edge=edge.name, is_constant=1, value=edge.length\n                )\n\n    def get_aic(self, second_order=False):\n        \"\"\"returns Aikake Information Criteria\n\n        Parameters\n        ----------\n        second_order\n            if true, the second\n            adjusted by the alignment length\n\n        \"\"\"\n        if second_order:\n            sequence_length = sum(\n                len(self.get_param_value(\"lht\", locus=l).index)\n                for l in self.locus_names\n            )\n        else:\n            sequence_length = None\n\n        lnL = self.get_log_likelihood()\n        nfp = self.get_num_free_params()\n        return aic(lnL, nfp, sequence_length)\n\n    def get_bic(self):\n        \"\"\"returns the Bayesian Information Criteria\"\"\"\n        sequence_length = sum(\n            len(self.get_param_value(\"lht\", locus=l).index) for l in self.locus_names\n        )\n        lnL = self.get_log_likelihood()\n        nfp = self.get_num_free_params()\n        return bic(lnL, nfp, sequence_length)\n\n\nclass AlignmentLikelihoodFunction(_LikelihoodParameterController):\n    def set_default_param_rules(self):\n        try:\n            self.assign_all(\"fixed_motif\", None, value=-1, const=True, independent=True)\n        except KeyError:\n            pass\n\n    def make_likelihood_defn(self, sites_independent=True, discrete_edges=None):\n        defns = self.model.make_param_controller_defns(bin_names=self.bin_names)\n        if discrete_edges is not None:\n            from .discrete_markov import PartialyDiscretePsubsDefn\n\n            defns[\"psubs\"] = PartialyDiscretePsubsDefn(\n                self.motifs, defns[\"psubs\"], discrete_edges\n            )\n        return likelihood_calculation.make_total_loglikelihood_defn(\n            self.tree,\n            defns[\"align\"],\n            defns[\"psubs\"],\n            defns[\"word_probs\"],\n            defns[\"bprobs\"],\n            self.bin_names,\n            self.locus_names,\n            sites_independent,\n        )\n\n    def set_alignment(self, aligns, motif_pseudocount=None):\n        \"\"\"set the alignment to be used for computing the likelihood.\"\"\"\n        if type(aligns) is not list:\n            aligns = [aligns]\n        assert len(aligns) == len(self.locus_names), len(aligns)\n        tip_names = set(self.tree.get_tip_names())\n        for index, aln in enumerate(aligns):\n            if len(aligns) > 1:\n                locus_name = \"for locus '%s'\" % self.locus_names[index]\n            else:\n                locus_name = \"\"\n            assert not set(aln.names).symmetric_difference(tip_names), (\n                \"Tree tip names %s and aln seq names %s don't match %s\"\n                % (self.tree.get_tip_names(), aln.names, locus_name)\n            )\n            assert \"root\" not in aln.names, \"'root' is a reserved name.\"\n        with self.updates_postponed():\n            for (locus_name, align) in zip(self.locus_names, aligns):\n                self.assign_all(\n                    \"alignment\", {\"locus\": [locus_name]}, value=align, const=True\n                )\n                if self.mprobs_from_alignment:\n                    self.set_motif_probs_from_data(\n                        align,\n                        locus=locus_name,\n                        auto=True,\n                        pseudocount=motif_pseudocount,\n                    )\n\n\nclass SequenceLikelihoodFunction(_LikelihoodParameterController):\n    def set_default_param_rules(self):\n        pass\n\n    def make_likelihood_defn(\n        self, sites_independent=None, with_indel_params=True, kn=True\n    ):\n        assert sites_independent is None or not sites_independent\n        assert len(self.locus_names) == 1\n        return dp_calculation.make_forward_tree_defn(\n            self.model,\n            self.tree,\n            self.bin_names,\n            with_indel_params=with_indel_params,\n            kn=kn,\n        )\n\n    def set_sequences(self, seqs, locus=None):\n        from cogent3.core.alignment import SequenceCollection\n\n        leaves = {}\n\n        if isinstance(seqs, SequenceCollection):\n            seqs = seqs.named_seqs\n\n        for (name, seq) in list(seqs.items()):\n            # if has uniq, probably already a likelihood tree leaf obj already\n            if hasattr(seq, \"uniq\"):\n                # XXX more checks - same alphabet as model, name etc ...\n                leaf = seq\n            else:\n                leaf = self.model.convert_sequence(seq, name)\n            leaf = AlignableSeq(leaf)\n            leaves[name] = leaf\n            assert name != \"root\", \"'root' is a reserved name.\"\n        self.set_pogs(leaves, locus=locus)\n\n    def set_pogs(self, leaves, locus=None):\n        with self.updates_postponed():\n            for (name, pog) in list(leaves.items()):\n                self.set_param_rule(\"leaf\", edge=name, value=pog, is_constant=True)\n            if self.mprobs_from_alignment:\n                counts = numpy.sum(\n                    [pog.leaf.get_motif_counts() for pog in list(leaves.values())], 0\n                )\n                mprobs = counts / (1.0 * sum(counts))\n                self.set_motif_probs(mprobs, locus=locus, is_constant=True, auto=True)\n                )\n        \n\n    def get_parameter_rules(self):\n        \"\"\"return a set of parameter rules.\"\"\"\n        if self.model:\n            if self.tree:\n                for (name, seq) in list("
@@ -82,7 +83,7 @@
     ],
     "f_before": [
       0.0,
-      77.81576538085938,
+      59.527854919433594,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
     ],
     "f_after": [
       0.0,
-      77.81576538085938,
+      59.527854919433594,
       0.0,
       0.0,
       0.0,
@@ -107,30 +108,30 @@
       0.0
     ],
     "g_before": [
-      31.73087501525879,
       0.0,
-      29.142213821411133,
-      8.077001571655273,
-      7.532856464385986,
-      7.355189323425293,
-      8.030902862548828,
-      7.580141067504883,
-      7.527721881866455,
-      7.801571369171143,
-      8.015236854553223
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      31.73087501525879,
       0.0,
-      29.142213821411133,
-      8.077001571655273,
-      7.532856464385986,
-      7.355189323425293,
-      8.030902862548828,
-      7.580141067504883,
-      7.527721881866455,
-      7.801571369171143,
-      8.015236854553223
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -145,5 +146,357 @@
     "plot_path": "outputs/plots/20251128-084646/feature_std_layer_0.html",
     "mean_std": 0.4904178977012634,
     "max_std": 36.88555908203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5419,
+          7649,
+          1217,
+          4677,
+          8280,
+          7862,
+          7027,
+          922
+        ],
+        "f_before": [
+          0.0,
+          59.527854919433594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          59.527854919433594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 59.527854919433594,
+            "f_after": 59.527854919433594,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic, hbic\nfrom cogent3.maths.stats.information_criteria import (\n    AIC,\n    BIC,\n    HBIC,\n    log_likelihood,\n)\nfrom cogent3.maths.stats.metrics",
+        "after": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic\nfrom cogent3.maths.stats.information_criteria import AIC\nfrom cogent3.maths.stats.information_criteria importBIC\nfrom cogent3.maths.stats.information_criteria importlog_likelihood\nfrom cog"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5419,
+          7649,
+          1217,
+          4677,
+          8280,
+          7862,
+          7027,
+          922
+        ],
+        "f_before": [
+          0.0,
+          59.527854919433594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          59.527854919433594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 59.527854919433594,
+            "f_after": 59.527854919433594,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic, hbic\nfrom cogent3.maths.stats.information_criteria import AIC, BIC, HBIC\n\n\nclass ParameterScopeControl:\n    \"\"\"\n    This class controls the scope and heterogeneity of parameters used\n    in a maximum-",
+        "after": "#!/usr/bin/env python\n\"\"\"\nThis file defines a class for controlling the scope and heterogeneity of\nparameters involved in a maximum-likelihood based tree analysis.\n\"\"\"\n\n\nimport pickle\nimport warnings\n\nimport numpy\n\nfrom cogent3.align import dp_calculation\nfrom cogent3.align.pairwise import AlignableSeq\nfrom cogent3.core.tree import TreeError\nfrom cogent3.evolve import likelihood_calculation\nfrom cogent3.evolve.likelihood_function import LikelihoodFunction as _LF\nfrom cogent3.maths.stats.information_criteria import aic, bic,bic_info_ratio\nfrom cogent3.core.tree import tree_error\nfrom cogent3.core.tree import tree_error_class\nfrom cogent3.core.tree import tree_error_class_"
+      }
+    }
   }
 }

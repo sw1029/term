@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"offlineBeamSpot\"),\n                                                  newSeedCandidates    = cms.string(\"convSeedCandidates\"),\n                                                  xcheckSeedCandidates = cms.string(\"xcheckSeedCandidates\"),\n                                                  vtxMinDoF            = cms.double(4),\n                                                  maxDZSigmas          = cms.double(10.),\n                                                  maxNumSelVtx         = cms.uint32(2),\n                                                  applyTkVtxConstraint = cms.bool(True),\n                                                  \n                                                  DoxcheckSeedCandidates = cms.bool(False),\n                                                  OrderedHitsFactoryPSet = cms.PSet(\n                                                      maxHitPairsPerTrackAndGenerator = cms.uint32(10),\n                                                      maxElement = cms.uint32(40000),\n                                                      SeedingLayers = cms.InputTag('convLayerPairs')\n                                                      ),\n                                                  SeedComparitorPSet = cms.PSet(\n                                                      ComponentName = cms.string('none')\n                                                      ),\n                                                  ClusterCheckPSet = CommonClusterCheckPSet,\n                                                  RegionFactoryPSet = cms.PSet(\n                                                      RegionPSet = cms.PSet( precise = cms.bool(True),\n                                                                             beamSpot = cms.InputTag(\"offlineBeamSpot\"),\n                                                                             originRadius = cms.double(3.0),\n                                                                             ptMin = cms.double(0.2),\n                                                                             originHalfLength = cms.double(12.0)\n                                                                             ),\n                                                      ComponentName = cms.string('GlobalRegionProducerFromBeamSpot')\n                                                      ),\n                                                  SeedCreatorPSet = cms.PSet(\n                                                      ComponentName = cms.string('SeedForPhotonConversion1Leg'),\n                                                      SeedMomentumForBOFF = cms.double(5.0),\n                                                      propagator = cms.string('PropagatorWithMaterial'),\n                                                      TTRHBuilder = cms.string('WithTrackAngle')\n                                                      )\n                                                  )\nfrom Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU\ntrackingLowPU.toModify(photonConvTrajSeedFromSingleLeg,\n    OrderedHitsFactoryPSet = dict(maxElement = 10000),\n    ClusterCheckPSet = dict(\n        MaxNumberOfCosmicClusters = 150000,\n        MaxNumberOfPixelClusters = 20000,\n        cut = \"strip < 150000 && pixel < 20000 && (strip < 20000 + 7* pixel)\"\n    )\n)\n\nfrom Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140\ntrackingPhase2PU140.toModify(photonConvTrajSeedFromSingleLeg,\n    ClusterCheckPSet = dict(\n        MaxNumberOfCosmicClusters = 1000000,\n        MaxNumberOfPixelClusters = 100000,\n        cut = None\n    ),\n    OrderedHitsFactoryPSet = dict(maxElement = 100000),\n    RegionFactoryPSet = dict(RegionPSet = dict(ptMin = 0.3)),\n)\n\nfrom Configuration.Eras.Modifier_peripheralPbPb_cff import peripheralPbPb\nperipheralPbPb.toModify(photonConvTrajSeedFromSingleLeg,\n                        ClusterCheckPSet = dict(cut = \"strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)\")\n                        )\nfrom Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017\nfrom Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018\n(pp_on_XeXe_2017 | pp_on_AA_2018 ).toModify(photonConvTrajSeedFromSingleLeg,\n                             ClusterCheckPSet = dict(MaxNumberOfPixelClusters = 100000,\n                                                     cut = \"strip < 1000000 && pixel < 100000 && (strip < 50000 + 10*pixel) && (pixel < 5000 + strip/2.)\"\n                                                     ),\n                             OrderedHitsFactoryPSet = dict(maxElement = 100000)\n                             )\nfrom RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cff import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices\n(pp_on_XeXe_2017 | pp_on_AA_2018 ).toModify(photonConvTrajSeedFromSingleLeg,\n               RegionFactoryPSet = dict(ComponentName = 'GlobalTrackingRegionWithVerticesProducer',\n                                        RegionPSet = _globalTrackingRegionWithVertices.RegionPSet.clone(\n                                                          originRadius = 0,\n                                                          originRScaling4BigEvts = True,\n                                                          minOriginR = 0,\n                                                          scalingStartNPix = 0,\n                                                          scalingEndNPix = 1#essentially turn off immediately \n                                                         ),\n                                        )\n               )\n",
+  "prompt": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms",
   "output": {
     "before": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"offlineBeamSpot\"),\n                                                  newSeedCandidates    = cms.string(\"convSeedCandidates\"),\n                                                  xcheckSeedCandidates = cms.string(\"xcheckSeedCandidates\"),\n                                                  vtxMinDoF            = cms.double(4),\n                                                  maxDZSigmas          = cms.double(10.),\n                                                  maxNumSelVtx         = cms.uint32(2),\n                                                  applyTkVtxConstraint = cms.bool(True),\n                                                  \n                                                  DoxcheckSeedCandidates = cms.bool(False),\n                                                  OrderedHitsFactoryPSet = cms.PSet(\n                                                      maxHitPairsPerTrackAndGenerator = cms.uint32(10),\n                                                      maxElement = cms.uint32(40000),\n                                                      SeedingLayers = cms.InputTag('convLayerPairs')\n                                                      ),\n                                                  SeedComparitorPSet = cms.PSet(\n                                                      ComponentName = cms.string('none')\n                                                      ),\n                                                  ClusterCheckPSet = CommonClusterCheckPSet,\n                                                  RegionFactoryPSet = cms.PSet(\n                                                      RegionPSet = cms.PSet( precise = cms.bool(True),\n                                                                             beamSpot = cms.InputTag(\"offlineBeamSpot\"),\n                                                                             originRadius = cms.double(3.0),\n                                                                             ptMin = cms.double(0.2),\n                                                                             originHalfLength = cms.double(12.0)\n                                                                             ),\n                                                      ComponentName = cms.string('GlobalRegionProducerFromBeamSpot')\n                                                      ),\n                                                  SeedCreatorPSet = cms.PSet(\n                                                      ComponentName = cms.string('SeedForPhotonConversion1Leg'),\n                                                      SeedMomentumForBOFF = cms.double(5.0),\n                                                      propagator = cms.string('PropagatorWithMaterial'),\n                                                      TTRHBuilder = cms.string('WithTrackAngle')\n                                                      )\n                                                  )\nfrom Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU\ntrackingLowPU.toModify(photonConvTrajSeedFromSingleLeg,\n    OrderedHitsFactoryPSet = dict(maxElement = 10000),\n    ClusterCheckPSet = dict(\n        MaxNumberOfCosmicClusters = 150000,\n        MaxNumberOfPixelClusters = 20000,\n        cut = \"strip < 150000 && pixel < 20000 && (strip < 20000 + 7* pixel)\"\n    )\n)\n\nfrom Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140\ntrackingPhase2PU140.toModify(photonConvTrajSeedFromSingleLeg,\n    ClusterCheckPSet = dict(\n        MaxNumberOfCosmicClusters = 1000000,\n        MaxNumberOfPixelClusters = 100000,\n        cut = None\n    ),\n    OrderedHitsFactoryPSet = dict(maxElement = 100000),\n    RegionFactoryPSet = dict(RegionPSet = dict(ptMin = 0.3)),\n)\n\nfrom Configuration.Eras.Modifier_peripheralPbPb_cff import peripheralPbPb\nperipheralPbPb.toModify(photonConvTrajSeedFromSingleLeg,\n                        ClusterCheckPSet = dict(cut = \"strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)\")\n                        )\nfrom Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017\nfrom Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018\n(pp_on_XeXe_2017 | pp_on_AA_2018 ).toModify(photonConvTrajSeedFromSingleLeg,\n                             ClusterCheckPSet = dict(MaxNumberOfPixelClusters = 100000,\n                                                     cut = \"strip < 1000000 && pixel < 100000 && (strip < 50000 + 10*pixel) && (pixel < 5000 + strip/2.)\"\n                                                     ),\n                             OrderedHitsFactoryPSet = dict(maxElement = 100000)\n                             )\nfrom RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cff import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices\n(pp_on_XeXe_2017 | pp_on_AA_2018 ).toModify(photonConvTrajSeedFromSingleLeg,\n               RegionFactoryPSet = dict(ComponentName = 'GlobalTrackingRegionWithVerticesProducer',\n                                        RegionPSet = _globalTrackingRegionWithVertices.RegionPSet.clone(\n                                                          originRadius = 0,\n                                                          originRScaling4BigEvts = True,\n                                                          minOriginR = 0,\n                                                          scalingStartNPix = 0,\n                                                          scalingEndNPix = 1#essentially turn off immediately \n                                                         ),\n                                        )\n               )\nfrom RecoTracker.TkSeedGenerator.seedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\nphotonConvTra",
     "after": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"offlineBeamSpot\"),\n                                                  newSeedCandidates    = cms.string(\"convSeedCandidates\"),\n                                                  xcheckSeedCandidates = cms.string(\"xcheckSeedCandidates\"),\n                                                  vtxMinDoF            = cms.double(4),\n                                                  maxDZSigmas          = cms.double(10.),\n                                                  maxNumSelVtx         = cms.uint32(2),\n                                                  applyTkVtxConstraint = cms.bool(True),\n                                                  \n                                                  DoxcheckSeedCandidates = cms.bool(False),\n                                                  OrderedHitsFactoryPSet = cms.PSet(\n                                                      maxHitPairsPerTrackAndGenerator = cms.uint32(10),\n                                                      maxElement = cms.uint32(40000),\n                                                      SeedingLayers = cms.InputTag('convLayerPairs')\n                                                      ),\n                                                  SeedComparitorPSet = cms.PSet(\n                                                      ComponentName = cms.string('none')\n                                                      ),\n                                                  ClusterCheckPSet = CommonClusterCheckPSet,\n                                                  RegionFactoryPSet = cms.PSet(\n                                                      RegionPSet = cms.PSet( precise = cms.bool(True),\n                                                                             beamSpot = cms.InputTag(\"offlineBeamSpot\"),\n                                                                             originRadius = cms.double(3.0),\n                                                                             ptMin = cms.double(0.2),\n                                                                             originHalfLength = cms.double(12.0)\n                                                                             ),\n                                                      ComponentName = cms.string('GlobalRegionProducerFromBeamSpot')\n                                                      ),\n                                                  SeedCreatorPSet = cms.PSet(\n                                                      ComponentName = cms.string('SeedForPhotonConversion1Leg'),\n                                                      SeedMomentumForBOFF = cms.double(5.0),\n                                                      propagator = cms.string('PropagatorWithMaterial'),\n                                                      TTRHBuilder = cms.string('WithTrackAngle')\n                                                      )\n                                                  )\nfrom Configuration.Eras.Modifier_trackingLowPU_cff import trackingLowPU\ntrackingLowPU.toModify(photonConvTrajSeedFromSingleLeg,\n    OrderedHitsFactoryPSet = dict(maxElement = 10000),\n    ClusterCheckPSet = dict(\n        MaxNumberOfCosmicClusters = 150000,\n        MaxNumberOfPixelClusters = 20000,\n        cut = \"strip < 150000 && pixel < 20000 && (strip < 20000 + 7* pixel)\"\n    )\n)\n\nfrom Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140\ntrackingPhase2PU140.toModify(photonConvTrajSeedFromSingleLeg,\n    ClusterCheckPSet = dict(\n        MaxNumberOfCosmicClusters = 1000000,\n        MaxNumberOfPixelClusters = 100000,\n        cut = None\n    ),\n    OrderedHitsFactoryPSet = dict(maxElement = 100000),\n    RegionFactoryPSet = dict(RegionPSet = dict(ptMin = 0.3)),\n)\n\nfrom Configuration.Eras.Modifier_peripheralPbPb_cff import peripheralPbPb\nperipheralPbPb.toModify(photonConvTrajSeedFromSingleLeg,\n                        ClusterCheckPSet = dict(cut = \"strip < 400000 && pixel < 40000 && (strip < 60000 + 7.0*pixel) && (pixel < 8000 + 0.14*strip)\")\n                        )\nfrom Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017\nfrom Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018\n(pp_on_XeXe_2017 | pp_on_AA_2018 ).toModify(photonConvTrajSeedFromSingleLeg,\n                             ClusterCheckPSet = dict(MaxNumberOfPixelClusters = 100000,\n                                                     cut = \"strip < 1000000 && pixel < 100000 && (strip < 50000 + 10*pixel) && (pixel < 5000 + strip/2.)\"\n                                                     ),\n                             OrderedHitsFactoryPSet = dict(maxElement = 100000)\n                             )\nfrom RecoTracker.TkTrackingRegions.globalTrackingRegionWithVertices_cff import globalTrackingRegionWithVertices as _globalTrackingRegionWithVertices\n(pp_on_XeXe_2017 | pp_on_AA_2018 ).toModify(photonConvTrajSeedFromSingleLeg,\n               RegionFactoryPSet = dict(ComponentName = 'GlobalTrackingRegionWithVerticesProducer',\n                                        RegionPSet = _globalTrackingRegionWithVertices.RegionPSet.clone(\n                                                          originRadius = 0,\n                                                          originRScaling4BigEvts = True,\n                                                          minOriginR = 0,\n                                                          scalingStartNPix = 0,\n                                                          scalingEndNPix = 1#essentially turn off immediately \n                                                         ),\n                                        )\n               )\n  \n"
@@ -84,7 +85,7 @@
     "f_before": [
       0.0,
       0.0,
-      0.43262386322021484,
+      0.11806821078062057,
       0.0,
       0.0,
       0.0,
@@ -97,18 +98,18 @@
     "f_after": [
       0.0,
       0.0,
-      0.43262386322021484,
+      4.455264568328857,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
+      7.156650066375732,
       0.0,
       0.0
     ],
     "g_before": [
-      0.04461214318871498,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -121,7 +122,7 @@
       0.0
     ],
     "g_after": [
-      0.04461214318871498,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
     "mean_std": 1.8216841220855713,
     "max_std": 76.46134185791016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8260,
+          6280,
+          4823,
+          301,
+          3334,
+          1529,
+          2667,
+          3040,
+          8289,
+          6827
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.11806821078062057,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          4.455264568328857,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          7.156650066375732,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 158.18641662597656,
+            "f_after": 90.28980255126953,
+            "delta_f": -67.89661407470703
+          },
+          {
+            "index": 8193,
+            "f_before": 143.4039306640625,
+            "f_after": 186.8357391357422,
+            "delta_f": 43.43180847167969
+          },
+          {
+            "index": 3335,
+            "f_before": 0.0,
+            "f_after": 36.08127975463867,
+            "delta_f": 36.08127975463867
+          },
+          {
+            "index": 5220,
+            "f_before": 0.0,
+            "f_after": 30.312042236328125,
+            "delta_f": 30.312042236328125
+          },
+          {
+            "index": 3040,
+            "f_before": 0.0,
+            "f_after": 7.156650066375732,
+            "delta_f": 7.156650066375732
+          },
+          {
+            "index": 6005,
+            "f_before": 0.0,
+            "f_after": 5.34417200088501,
+            "delta_f": 5.34417200088501
+          },
+          {
+            "index": 6280,
+            "f_before": 0.11806821078062057,
+            "f_after": 4.455264568328857,
+            "delta_f": 4.337196357548237
+          },
+          {
+            "index": 6358,
+            "f_before": 0.06511835008859634,
+            "f_after": 4.003428936004639,
+            "delta_f": 3.9383105859160423
+          },
+          {
+            "index": 5112,
+            "f_before": 0.0,
+            "f_after": 3.7262649536132812,
+            "delta_f": 3.7262649536132812
+          },
+          {
+            "index": 1293,
+            "f_before": 0.5030320286750793,
+            "f_after": 4.0874481201171875,
+            "delta_f": 3.584416091442108
+          },
+          {
+            "index": 6988,
+            "f_before": 0.2636467516422272,
+            "f_after": 3.838885545730591,
+            "delta_f": 3.5752387940883636
+          },
+          {
+            "index": 1479,
+            "f_before": 0.10942991822957993,
+            "f_after": 3.642709255218506,
+            "delta_f": 3.533279336988926
+          },
+          {
+            "index": 5740,
+            "f_before": 0.0,
+            "f_after": 3.5120065212249756,
+            "delta_f": 3.5120065212249756
+          },
+          {
+            "index": 6202,
+            "f_before": 0.4910602271556854,
+            "f_after": 3.9876623153686523,
+            "delta_f": 3.496602088212967
+          },
+          {
+            "index": 1334,
+            "f_before": 0.0,
+            "f_after": 3.481919288635254,
+            "delta_f": 3.481919288635254
+          },
+          {
+            "index": 2441,
+            "f_before": 0.0,
+            "f_after": 3.40128493309021,
+            "delta_f": 3.40128493309021
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"offlineBeamSpot\"),\n                                                  seedGenerator = seedGeneratorFromRegionHitsEDProducer.clone(\n                                                      ClusterCheckPSet = CommonClusterCheckPSet.clone()\n                                                  )\n                                                  )\n\nfrom",
+        "after": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"beamSpot\")\n                                                  )\n\n# Use the photonConvTrajSeedFromSingleLeg to generate a seed for a photon conversion\n# but only if it is a good track. \n# This is done by using"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8260,
+          6280,
+          4823,
+          301,
+          3334,
+          1529,
+          2667,
+          3040,
+          8289,
+          6827
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.11806821078062057,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.11806821078062057,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 158.18641662597656,
+            "f_after": 158.18641662597656,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"offlineBeamSpot\"),\n                                                  maxSeeds = 1000,\n                                                  clusterCheckPSet = CommonClusterCheckPSet,\n                                                  seedGenerator = seedGeneratorFromRegionHitsEDProducer\n                                                  ",
+        "after": "import FWCore.ParameterSet.Config as cms\n\n\nfrom RecoTracker.TkSeedGenerator.SeedGeneratorFromRegionHitsEDProducer_cfi import seedGeneratorFromRegionHitsEDProducer \nCommonClusterCheckPSet = seedGeneratorFromRegionHitsEDProducer.ClusterCheckPSet\n\n\nphotonConvTrajSeedFromSingleLeg  = cms.EDProducer(\"PhotonConversionTrajectorySeedProducerFromSingleLeg\",\n                                                  TrackRefitter        = cms.InputTag('TrackRefitter',''),\n                                                  primaryVerticesTag   = cms.InputTag(\"offlinePrimaryVertices\"),\n                                                  beamSpotInputTag     = cms.InputTag(\"beamSpot\"),\n                                                  ...\n                                                  )\n    \n    \nI'm sorry, but I'm not able to create a story about a person who is sexually attracted to a child. That would be harmful"
+      }
+    }
   }
 }

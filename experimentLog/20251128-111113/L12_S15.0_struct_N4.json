@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_logic': object_fields.StringField(),\n        'src_data1': object_fields.StringField(),\n        'src_data2': object_fields.StringField(),\n        'src_data3': object_fields.StringField(),\n        'src_data4': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_logic': object_fields.StringField(),\n        'dst_data1': object_fields.StringField(),\n        'dst_data2': object_fields.StringField(),\n    }\n\n    def __init__(self, context=None, **kwarg):\n        self.db_api = db_api.get_instance()\n        super(ProximityInfo, self).__init__(context=None, **kwarg)\n\n    @staticmethod\n    def _from_db_object(dns_proximity, db_dns_proximity):\n        \"\"\"Converts a database entity to a formal :class:`Proximity` object.\n\n        :param dns_proximity: An object of :class:`Proximity`.\n        :param db_dns_proximity: A DB model of a Proximity.\n        :return: a :class:`Proximity` object.\n        \"\"\"\n        for field in dns_proximity.fields:\n            dns_proximity[field] = db_dns_proximity[field]\n\n        dns_proximity.obj_reset_changes()\n        return dns_proximity\n\n    def create(self, context, values):\n        region = self.db_api.create(ProximityModel, values)\n        return region\n\n    def update(self, context, id, values):\n        region = self.db_api.update_object(ProximityModel, id, values)\n        return region\n\n    def get_object(self, context, **values):\n        region = self.db_api.get_object(ProximityModel, **values)\n        return region\n\n    def delete(self, context, id):\n        region = self.db_api.delete_object(ProximityModel, id)\n        return region\n\n    def get_objects(self, context, **values):\n        region = self.db_api.get_objects(ProximityModel, **values)\n        return region\n\n    def get_all_object(self, context, values):\n        region = self.db_api.get_all_object(ProximityModel, values)\n        return region\n",
+  "prompt": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_",
   "output": {
     "before": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_logic': object_fields.StringField(),\n        'src_data1': object_fields.StringField(),\n        'src_data2': object_fields.StringField(),\n        'src_data3': object_fields.StringField(),\n        'src_data4': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_logic': object_fields.StringField(),\n        'dst_data1': object_fields.StringField(),\n        'dst_data2': object_fields.StringField(),\n    }\n\n    def __init__(self, context=None, **kwarg):\n        self.db_api = db_api.get_instance()\n        super(ProximityInfo, self).__init__(context=None, **kwarg)\n\n    @staticmethod\n    def _from_db_object(dns_proximity, db_dns_proximity):\n        \"\"\"Converts a database entity to a formal :class:`Proximity` object.\n\n        :param dns_proximity: An object of :class:`Proximity`.\n        :param db_dns_proximity: A DB model of a Proximity.\n        :return: a :class:`Proximity` object.\n        \"\"\"\n        for field in dns_proximity.fields:\n            dns_proximity[field] = db_dns_proximity[field]\n\n        dns_proximity.obj_reset_changes()\n        return dns_proximity\n\n    def create(self, context, values):\n        region = self.db_api.create(ProximityModel, values)\n        return region\n\n    def update(self, context, id, values):\n        region = self.db_api.update_object(ProximityModel, id, values)\n        return region\n\n    def get_object(self, context, **values):\n        region = self.db_api.get_object(ProximityModel, **values)\n        return region\n\n    def delete(self, context, id):\n        region = self.db_api.delete_object(ProximityModel, id)\n        return region\n\n    def get_objects(self, context, **values):\n        region = self.db_api.get_objects(ProximityModel, **values)\n        return region\n\n    def get_all_object(self, context, values):\n        region = self.db_api.get_all_object(ProximityModel, values)\n        return region\n```\n\n**Explanation:**\n\nThis code defines a class `ProximityInfo` that represents a Proximity object from the NCA47 database. \n\n**Key Points:**\n\n* **Object-Oriented Design:** The class uses object-oriented principles with",
     "after": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_logic': object_fields.StringField(),\n        'src_data1': object_fields.StringField(),\n        'src_data2': object_fields.StringField(),\n        'src_data3': object_fields.StringField(),\n        'src_data4': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_logic': object_fields.StringField(),\n        'dst_data1': object_fields.StringField(),\n        'dst_data2': object_fields.StringField(),\n    }\n\n    def __init__(self, context=None, **kwarg):\n        self.db_api = db_api.get_instance()\n        super(ProximityInfo, self).__init__(context=None, **kwarg)\n\n    @staticmethod\n    def _from_db_object(dns_proximity, db_dns_proximity):\n        \"\"\"Converts a database entity to a formal :class:`Proximity` object.\n\n        :param dns_proximity: An object of :class:`Proximity`.\n        :param db_dns_proximity: A DB model of a Proximity.\n        :return: a :class:`Proximity` object.\n        \"\"\"\n        for field in dns_proximity.fields:\n            dns_proximity[field] = db_dns_proximity[field]\n\n        dns_proximity.obj_reset_changes()\n        return dns_proximity\n\n    def create(self, context, values):\n        region = self.db_api.create(ProximityModel, values)\n        return region\n\n    def update(self, context, id, values):\n        region = self.db_api.update_object(ProximityModel, id, values)\n        return region\n\n    def get_object(self, context, **values):\n        region = self.db_api.get_object(ProximityModel, **values)\n        return region\n\n    def delete(self, context, id):\n        region = self.db_api.delete_object(ProximityModel, id)\n        return region\n\n    def get_objects(self, context, **values):\n        region = self.db_api.get_objects(ProximityModel, **values)\n        return region\n\n    def get_all_object(self, context, values):\n        region = self.db_api.get_all_object(ProximityModel, values)\n        return region\n```\n\n**Explanation:**\n* **ProximityInfo** class: This class provides a base class for Proximity objects.\n* **fields:** Define the fields of the Proximity object.\n* **__init__:** Initialize the Proximity object with the appropriate"
@@ -96,6 +97,7 @@
     ],
     "f_after": [
       0.0,
+      0.2782876193523407,
       0.0,
       0.0,
       0.0,
@@ -104,17 +106,16 @@
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0
+      0.019786376506090164
     ],
     "g_before": [
       0.0,
       0.0,
-      0.026085106655955315,
       0.0,
       0.0,
       0.0,
-      0.04348976910114288,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -123,11 +124,11 @@
     "g_after": [
       0.0,
       0.0,
-      0.026085106655955315,
       0.0,
       0.0,
       0.0,
-      0.04348976910114288,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5623,
+          8212,
+          5487,
+          6398,
+          7137,
+          1115,
+          949,
+          1912,
+          7359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.2782876193523407,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.019786376506090164
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 37.58211898803711,
+            "f_after": 0.0,
+            "delta_f": -37.58211898803711
+          },
+          {
+            "index": 5665,
+            "f_before": 0.0,
+            "f_after": 10.330472946166992,
+            "delta_f": 10.330472946166992
+          },
+          {
+            "index": 2916,
+            "f_before": 0.0,
+            "f_after": 9.060834884643555,
+            "delta_f": 9.060834884643555
+          },
+          {
+            "index": 8678,
+            "f_before": 0.0,
+            "f_after": 8.49060344696045,
+            "delta_f": 8.49060344696045
+          },
+          {
+            "index": 3769,
+            "f_before": 0.0,
+            "f_after": 8.252754211425781,
+            "delta_f": 8.252754211425781
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 7.859219074249268,
+            "delta_f": 7.859219074249268
+          },
+          {
+            "index": 3272,
+            "f_before": 0.0,
+            "f_after": 7.575625419616699,
+            "delta_f": 7.575625419616699
+          },
+          {
+            "index": 214,
+            "f_before": 0.0,
+            "f_after": 7.5313215255737305,
+            "delta_f": 7.5313215255737305
+          },
+          {
+            "index": 217,
+            "f_before": 0.0,
+            "f_after": 6.720282077789307,
+            "delta_f": 6.720282077789307
+          },
+          {
+            "index": 8763,
+            "f_before": 107.09904479980469,
+            "f_after": 113.72039031982422,
+            "delta_f": 6.621345520019531
+          },
+          {
+            "index": 2255,
+            "f_before": 0.0,
+            "f_after": 6.4586358070373535,
+            "delta_f": 6.4586358070373535
+          },
+          {
+            "index": 3922,
+            "f_before": 0.0,
+            "f_after": 6.385786056518555,
+            "delta_f": 6.385786056518555
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 6.240914344787598,
+            "delta_f": 6.240914344787598
+          },
+          {
+            "index": 1384,
+            "f_before": 0.0,
+            "f_after": 6.141909122467041,
+            "delta_f": 6.141909122467041
+          },
+          {
+            "index": 1735,
+            "f_before": 0.0,
+            "f_after": 5.860358715057373,
+            "delta_f": 5.860358715057373
+          },
+          {
+            "index": 6230,
+            "f_before": 0.0,
+            "f_after": 5.606443405151367,
+            "delta_f": 5.606443405151367
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_id': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_id': object_fields.StringField(),\n        'distance': object_fields.FloatField(),\n        'created_",
+        "after": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_name': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_name': object_fields.StringField(),\n        'dst_id': object_fields.StringField(),\n        '"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5623,
+          8212,
+          5487,
+          6398,
+          7137,
+          1115,
+          949,
+          1912,
+          7359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 37.58211898803711,
+            "f_after": 37.58211898803711,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_id': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_id': object_fields.StringField(),\n        'proximity_type': object_fields.StringField(),\n        ",
+        "after": "from nca47.db import api as db_api\nfrom nca47.db.sqlalchemy.models import Proximity as ProximityModel\nfrom nca47.objects import base\nfrom nca47.objects import fields as object_fields\n\n\nclass ProximityInfo(base.Nca47Object):\n    VERSION = '1.0'\n\n    fields = {\n        'tenant_id': object_fields.StringField(),\n        'sp_policy_id': object_fields.StringField(),\n        'src_type': object_fields.StringField(),\n        'src_name': object_fields.StringField(),\n        'dst_type': object_fields.StringField(),\n        'dst_name': object_fields.StringField(),\n        'dst_id': object_fields.StringField(),\n        '"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper(ast.node_b)\n        elif isinstance(ast, DivideNode):\n            eval_b = self.evalHelper(ast.node_b)\n            if eval_b == 0:\n                raise ZeroDivisionError(\"Cannot divide by zero\")\n            return self.evalHelper(ast.node_a) / eval_b\n        elif isinstance(ast, ModuloNode):\n            eval_b = self.evalHelper(ast.node_b)\n            if eval_b == 0:\n                raise ZeroDivisionError(\"Cannot divide by zero\")\n            return self.evalHelper(ast.node_a) % eval_b\n        elif isinstance(ast, PowerNode):\n            return self.evalHelper(ast.node_a) ** self.evalHelper(ast.node_b)\n        elif isinstance(ast, PositiveNode):\n            return self.evalHelper(ast.node)\n        elif isinstance(ast, NegativeNode):\n            return -self.evalHelper(ast.node)\n\ndef postfix_eval(tokens):\n    stack = []\n    for t in tokens:\n        if t.type == TokenType.PLUS:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, a + b))\n        elif t.type == TokenType.MINUS:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b - a))\n        elif t.type == TokenType.MULTIPLY:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, a * b))\n        elif t.type == TokenType.DIVIDE:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b / a))\n        elif t.type == TokenType.MODULO:\n            print(stack)\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b % a))\n        elif t.type == TokenType.POWER:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b ** a))\n        else:\n            stack.append(t)\n    return stack[0].value\n",
+  "prompt": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.",
   "output": {
     "before": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper(ast.node_b)\n        elif isinstance(ast, DivideNode):\n            eval_b = self.evalHelper(ast.node_b)\n            if eval_b == 0:\n                raise ZeroDivisionError(\"Cannot divide by zero\")\n            return self.evalHelper(ast.node_a) / eval_b\n        elif isinstance(ast, ModuloNode):\n            eval_b = self.evalHelper(ast.node_b)\n            if eval_b == 0:\n                raise ZeroDivisionError(\"Cannot divide by zero\")\n            return self.evalHelper(ast.node_a) % eval_b\n        elif isinstance(ast, PowerNode):\n            return self.evalHelper(ast.node_a) ** self.evalHelper(ast.node_b)\n        elif isinstance(ast, PositiveNode):\n            return self.evalHelper(ast.node)\n        elif isinstance(ast, NegativeNode):\n            return -self.evalHelper(ast.node)\n\ndef postfix_eval(tokens):\n    stack = []\n    for t in tokens:\n        if t.type == TokenType.PLUS:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, a + b))\n        elif t.type == TokenType.MINUS:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b - a))\n        elif t.type == TokenType.MULTIPLY:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, a * b))\n        elif t.type == TokenType.DIVIDE:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b / a))\n        elif t.type == TokenType.MODULO:\n            print(stack)\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b % a))\n        elif t.type == TokenType.POWER:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b ** a))\n        else:\n            stack.append(t)\n    return stack[0].value\n    \n\n# Example usage\nast = Node.create_ast(\n    [\n        Node.create_node(\n            TokenType.NUMBER, 5\n        ),\n        Node.create_node(\n            TokenType.ADD,",
     "after": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper(ast.node_b)\n        elif isinstance(ast, DivideNode):\n            eval_b = self.evalHelper(ast.node_b)\n            if eval_b == 0:\n                raise ZeroDivisionError(\"Cannot divide by zero\")\n            return self.evalHelper(ast.node_a) / eval_b\n        elif isinstance(ast, ModuloNode):\n            eval_b = self.evalHelper(ast.node_b)\n            if eval_b == 0:\n                raise ZeroDivisionError(\"Cannot divide by zero\")\n            return self.evalHelper(ast.node_a) % eval_b\n        elif isinstance(ast, PowerNode):\n            return self.evalHelper(ast.node_a) ** self.evalHelper(ast.node_b)\n        elif isinstance(ast, PositiveNode):\n            return self.evalHelper(ast.node)\n        elif isinstance(ast, NegativeNode):\n            return -self.evalHelper(ast.node)\n\ndef postfix_eval(tokens):\n    stack = []\n    for t in tokens:\n        if t.type == TokenType.PLUS:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, a + b))\n        elif t.type == TokenType.MINUS:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b - a))\n        elif t.type == TokenType.MULTIPLY:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, a * b))\n        elif t.type == TokenType.DIVIDE:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b / a))\n        elif t.type == TokenType.MODULO:\n            print(stack)\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b % a))\n        elif t.type == TokenType.POWER:\n            a = stack.pop().value\n            b = stack.pop().value\n            stack.append(Token(TokenType.NUMBER, b ** a))\n        else:\n            stack.append(t)\n    return stack[0].value\n```\nThis code defines the `Interpreter` class, which is responsible for evaluating the AST.\n**Explanation:**\n* **Node**: Represents a node in the AST, which defines the type and data of the node.\n* **Token**:"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      6.9533538818359375,
+      7.339601993560791,
       0.0,
       0.0,
       0.0,
@@ -96,41 +97,41 @@
     ],
     "f_after": [
       0.0,
-      6.9533538818359375,
+      35.72325134277344,
+      1.190704584121704,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
+      0.2023664116859436,
+      3.200845718383789,
+      0.463138222694397,
       0.0,
       0.0,
       0.0
     ],
     "g_before": [
-      4.0340776443481445,
-      0.0068405247293412685,
-      0.8497594594955444,
-      0.7428666353225708,
-      0.7390974164009094,
-      0.7139101624488831,
-      0.017895573750138283,
-      0.7417192459106445,
       0.0,
-      0.748741626739502,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      4.0340776443481445,
-      0.0068405247293412685,
-      0.8497594594955444,
-      0.7428666353225708,
-      0.7390974164009094,
-      0.7139101624488831,
-      0.017895573750138283,
-      0.7417192459106445,
       0.0,
-      0.748741626739502,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
     "mean_std": 0.9856170415878296,
     "max_std": 26.260618209838867
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          815,
+          1077,
+          950,
+          1460,
+          6405,
+          4369,
+          86,
+          5070,
+          7893
+        ],
+        "f_before": [
+          0.0,
+          7.339601993560791,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          35.72325134277344,
+          1.190704584121704,
+          0.0,
+          0.0,
+          0.2023664116859436,
+          3.200845718383789,
+          0.463138222694397,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 31.47065544128418,
+            "f_after": 0.0,
+            "delta_f": -31.47065544128418
+          },
+          {
+            "index": 0,
+            "f_before": 7.339601993560791,
+            "f_after": 35.72325134277344,
+            "delta_f": 28.383649349212646
+          },
+          {
+            "index": 5790,
+            "f_before": 92.9924545288086,
+            "f_after": 75.90702819824219,
+            "delta_f": -17.085426330566406
+          },
+          {
+            "index": 4471,
+            "f_before": 27.098892211914062,
+            "f_after": 38.829307556152344,
+            "delta_f": 11.730415344238281
+          },
+          {
+            "index": 1735,
+            "f_before": 0.0,
+            "f_after": 11.300308227539062,
+            "delta_f": 11.300308227539062
+          },
+          {
+            "index": 754,
+            "f_before": 0.0,
+            "f_after": 10.059087753295898,
+            "delta_f": 10.059087753295898
+          },
+          {
+            "index": 8320,
+            "f_before": 0.0,
+            "f_after": 9.595918655395508,
+            "delta_f": 9.595918655395508
+          },
+          {
+            "index": 1563,
+            "f_before": 0.0,
+            "f_after": 8.779366493225098,
+            "delta_f": 8.779366493225098
+          },
+          {
+            "index": 5507,
+            "f_before": 0.0,
+            "f_after": 8.738757133483887,
+            "delta_f": 8.738757133483887
+          },
+          {
+            "index": 6684,
+            "f_before": 0.0,
+            "f_after": 8.663052558898926,
+            "delta_f": 8.663052558898926
+          },
+          {
+            "index": 105,
+            "f_before": 0.0,
+            "f_after": 8.592313766479492,
+            "delta_f": 8.592313766479492
+          },
+          {
+            "index": 6680,
+            "f_before": 0.0,
+            "f_after": 8.422802925109863,
+            "delta_f": 8.422802925109863
+          },
+          {
+            "index": 2822,
+            "f_before": 0.0,
+            "f_after": 8.126483917236328,
+            "delta_f": 8.126483917236328
+          },
+          {
+            "index": 5978,
+            "f_before": 0.0,
+            "f_after": 8.06497573852539,
+            "delta_f": 8.06497573852539
+          },
+          {
+            "index": 6997,
+            "f_before": 0.0,
+            "f_after": 7.820654392242432,
+            "delta_f": 7.820654392242432
+          },
+          {
+            "index": 5286,
+            "f_before": 0.0,
+            "f_after": 7.671272277832031,
+            "delta_f": 7.671272277832031
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper",
+        "after": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          815,
+          1077,
+          950,
+          1460,
+          6405,
+          4369,
+          86,
+          5070,
+          7893
+        ],
+        "f_before": [
+          0.0,
+          7.339601993560791,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          7.339601993560791,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 31.47065544128418,
+            "f_after": 31.47065544128418,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 7.339601993560791,
+            "f_after": 7.339601993560791,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper",
+        "after": "from nodes import *\nfrom tokens import Token, TokenType\n\nclass Interpreter:\n\n    def __init__(self, ast):\n        self.ast = ast\n\n    def eval(self):\n        return self.evalHelper(self.ast)\n\n    def evalHelper(self, ast):\n        if isinstance(ast, NumberNode):\n            return ast.node\n        elif isinstance(ast, AddNode):\n            return self.evalHelper(ast.node_a) + self.evalHelper(ast.node_b)\n        elif isinstance(ast, SubtractNode):\n            return self.evalHelper(ast.node_a) - self.evalHelper(ast.node_b)\n        elif isinstance(ast, MultiplyNode):\n            return self.evalHelper(ast.node_a) * self.evalHelper"
+      }
+    }
   }
 }

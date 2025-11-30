@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        \"\"\" Setting up for the test \"\"\"\n        print(\"FooTest:setUp_:begin\")\n        ## do something...\n        print(\"FooTest:setUp_:end\")\n     \n    def XXtearDown(self):\n        \"\"\"Cleaning up after the test\"\"\"\n        print(\"FooTest:tearDown_:begin\")\n        ## do something...\n        print(\"FooTest:tearDown_:end\")\n\n    def test_ArrayWrapper(self):\n        arrinst = arrayclass.ArrayWrapper()\n        arrinst.setSize(10)\n        self.assertEqual(10, arrinst.getSize())\n\n        isize = arrinst.fillSize()\n        self.assertEqual(10, isize)\n\n        arrinst.allocate()\n        arr = arrinst.getArray()\n        self.assertIsInstance(arr, np.ndarray)\n        self.assertEqual('float64', arr.dtype.name)\n        self.assertEqual(1, arr.ndim)\n        self.assertEqual((10,), arr.shape)\n        self.assertEqual(10, arr.size)\n\n        # Make sure we're pointing to the array in the instance.\n        arr[:] = 0.0\n        self.assertEqual(0.0, arrinst.sumArray())\n        arr[:] = 1.0\n        self.assertEqual(10.0, arrinst.sumArray())\n        arr[:] = 0.0\n        arr[0] = 10.0\n        arr[9] = 1.0\n        self.assertEqual(11.0, arrinst.sumArray())\n\n        arrconst = arrinst.getArrayConst()\n        self.assertIsInstance(arrconst, np.ndarray)\n        self.assertEqual('float64', arrconst.dtype.name)\n        self.assertEqual(1, arrconst.ndim)\n        self.assertEqual((10,), arrconst.shape)\n        self.assertEqual(10, arrconst.size)\n\n        # Both getArray and getArrayConst return a NumPy array to the\n        # same pointer. But a new array is created each time.\n        self.assertIsNot(arr, arrconst)\n\n        arr3 = arrinst.getArrayC()\n        self.assertIsInstance(arr3, np.ndarray)\n        self.assertEqual('float64', arr3.dtype.name)\n        self.assertEqual(1, arr3.ndim)\n        self.assertEqual((10,), arr3.shape)\n        self.assertEqual(10, arr3.size)\n\n        arr4 = arrinst.getArrayConstC()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr4.dtype.name)\n        self.assertEqual(1, arr4.ndim)\n        self.assertEqual((10,), arr4.shape)\n        self.assertEqual(10, arr4.size)\n\n        arr5 = arrinst.fetchArrayPtr()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr5.dtype.name)\n        self.assertEqual(1, arr5.ndim)\n        self.assertEqual((10,), arr5.shape)\n        self.assertEqual(10, arr5.size)\n\n        arr6 = arrinst.fetchArrayRef()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr6.dtype.name)\n        self.assertEqual(1, arr6.ndim)\n        self.assertEqual((10,), arr6.shape)\n        self.assertEqual(10, arr6.size)\n\n        arr7 = arrinst.fetchArrayPtrConst()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr7.dtype.name)\n        self.assertEqual(1, arr7.ndim)\n        self.assertEqual((10,), arr7.shape)\n        self.assertEqual(10, arr7.size)\n\n        arr8 = arrinst.fetchArrayRefConst()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr8.dtype.name)\n        self.assertEqual(1, arr8.ndim)\n        self.assertEqual((10,), arr8.shape)\n        self.assertEqual(10, arr8.size)\n\n        with self.assertRaises(ValueError) as context:\n            arrinst.checkPtr(None)\n        self.assertTrue(\"called with invalid PyCapsule object\"\n                        in str(context.exception))\n\n        voidptr = arrinst.fetchVoidPtr()\n        self.assertEqual('PyCapsule', voidptr.__class__.__name__)\n        self.assertTrue(arrinst.checkPtr(voidptr))\n\n        voidptr = arrinst.fetchVoidRef()\n        self.assertEqual('PyCapsule', voidptr.__class__.__name__)\n        self.assertTrue(arrinst.checkPtr(voidptr))\n\n\n# creating a new test suite\nnewSuite = unittest.TestSuite()\n \n# adding a test case\nnewSuite.addTest(unittest.makeSuite(Arrayclass))\n\nif __name__ == \"__main__\":\n    unittest.main()\n",
+  "prompt": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(",
   "output": {
     "before": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        \"\"\" Setting up for the test \"\"\"\n        print(\"FooTest:setUp_:begin\")\n        ## do something...\n        print(\"FooTest:setUp_:end\")\n     \n    def XXtearDown(self):\n        \"\"\"Cleaning up after the test\"\"\"\n        print(\"FooTest:tearDown_:begin\")\n        ## do something...\n        print(\"FooTest:tearDown_:end\")\n\n    def test_ArrayWrapper(self):\n        arrinst = arrayclass.ArrayWrapper()\n        arrinst.setSize(10)\n        self.assertEqual(10, arrinst.getSize())\n\n        isize = arrinst.fillSize()\n        self.assertEqual(10, isize)\n\n        arrinst.allocate()\n        arr = arrinst.getArray()\n        self.assertIsInstance(arr, np.ndarray)\n        self.assertEqual('float64', arr.dtype.name)\n        self.assertEqual(1, arr.ndim)\n        self.assertEqual((10,), arr.shape)\n        self.assertEqual(10, arr.size)\n\n        # Make sure we're pointing to the array in the instance.\n        arr[:] = 0.0\n        self.assertEqual(0.0, arrinst.sumArray())\n        arr[:] = 1.0\n        self.assertEqual(10.0, arrinst.sumArray())\n        arr[:] = 0.0\n        arr[0] = 10.0\n        arr[9] = 1.0\n        self.assertEqual(11.0, arrinst.sumArray())\n\n        arrconst = arrinst.getArrayConst()\n        self.assertIsInstance(arrconst, np.ndarray)\n        self.assertEqual('float64', arrconst.dtype.name)\n        self.assertEqual(1, arrconst.ndim)\n        self.assertEqual((10,), arrconst.shape)\n        self.assertEqual(10, arrconst.size)\n\n        # Both getArray and getArrayConst return a NumPy array to the\n        # same pointer. But a new array is created each time.\n        self.assertIsNot(arr, arrconst)\n\n        arr3 = arrinst.getArrayC()\n        self.assertIsInstance(arr3, np.ndarray)\n        self.assertEqual('float64', arr3.dtype.name)\n        self.assertEqual(1, arr3.ndim)\n        self.assertEqual((10,), arr3.shape)\n        self.assertEqual(10, arr3.size)\n\n        arr4 = arrinst.getArrayConstC()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr4.dtype.name)\n        self.assertEqual(1, arr4.ndim)\n        self.assertEqual((10,), arr4.shape)\n        self.assertEqual(10, arr4.size)\n\n        arr5 = arrinst.fetchArrayPtr()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr5.dtype.name)\n        self.assertEqual(1, arr5.ndim)\n        self.assertEqual((10,), arr5.shape)\n        self.assertEqual(10, arr5.size)\n\n        arr6 = arrinst.fetchArrayRef()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr6.dtype.name)\n        self.assertEqual(1, arr6.ndim)\n        self.assertEqual((10,), arr6.shape)\n        self.assertEqual(10, arr6.size)\n\n        arr7 = arrinst.fetchArrayPtrConst()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr7.dtype.name)\n        self.assertEqual(1, arr7.ndim)\n        self.assertEqual((10,), arr7.shape)\n        self.assertEqual(10, arr7.size)\n\n        arr8 = arrinst.fetchArrayRefConst()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr8.dtype.name)\n        self.assertEqual(1, arr8.ndim)\n        self.assertEqual((10,), arr8.shape)\n        self.assertEqual(10, arr8.size)\n\n        with self.assertRaises(ValueError) as context:\n            arrinst.checkPtr(None)\n        self.assertTrue(\"called with invalid PyCapsule object\"\n                        in str(context.exception))\n\n        voidptr = arrinst.fetchVoidPtr()\n        self.assertEqual('PyCapsule', voidptr.__class__.__name__)\n        self.assertTrue(arrinst.checkPtr(voidptr))\n\n        voidptr = arrinst.fetchVoidRef()\n        self.assertEqual('PyCapsule', voidptr.__class__.__name__)\n        self.assertTrue(arrinst.checkPtr(voidptr))\n\n\n# creating a new test suite\nnewSuite = unittest.TestSuite()\n \n# adding a test case\nnewSuite.addTest(unittest.makeSuite(Arrayclass))\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\n**Explanation:**\n\n* **Imports:**\n    * `numpy` is imported for array operations.\n    * `unittest` is imported for the test framework.\n* **Test Class:**\n    * The `Arrayclass` class",
     "after": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        \"\"\" Setting up for the test \"\"\"\n        print(\"FooTest:setUp_:begin\")\n        ## do something...\n        print(\"FooTest:setUp_:end\")\n     \n    def XXtearDown(self):\n        \"\"\"Cleaning up after the test\"\"\"\n        print(\"FooTest:tearDown_:begin\")\n        ## do something...\n        print(\"FooTest:tearDown_:end\")\n\n    def test_ArrayWrapper(self):\n        arrinst = arrayclass.ArrayWrapper()\n        arrinst.setSize(10)\n        self.assertEqual(10, arrinst.getSize())\n\n        isize = arrinst.fillSize()\n        self.assertEqual(10, isize)\n\n        arrinst.allocate()\n        arr = arrinst.getArray()\n        self.assertIsInstance(arr, np.ndarray)\n        self.assertEqual('float64', arr.dtype.name)\n        self.assertEqual(1, arr.ndim)\n        self.assertEqual((10,), arr.shape)\n        self.assertEqual(10, arr.size)\n\n        # Make sure we're pointing to the array in the instance.\n        arr[:] = 0.0\n        self.assertEqual(0.0, arrinst.sumArray())\n        arr[:] = 1.0\n        self.assertEqual(10.0, arrinst.sumArray())\n        arr[:] = 0.0\n        arr[0] = 10.0\n        arr[9] = 1.0\n        self.assertEqual(11.0, arrinst.sumArray())\n\n        arrconst = arrinst.getArrayConst()\n        self.assertIsInstance(arrconst, np.ndarray)\n        self.assertEqual('float64', arrconst.dtype.name)\n        self.assertEqual(1, arrconst.ndim)\n        self.assertEqual((10,), arrconst.shape)\n        self.assertEqual(10, arrconst.size)\n\n        # Both getArray and getArrayConst return a NumPy array to the\n        # same pointer. But a new array is created each time.\n        self.assertIsNot(arr, arrconst)\n\n        arr3 = arrinst.getArrayC()\n        self.assertIsInstance(arr3, np.ndarray)\n        self.assertEqual('float64', arr3.dtype.name)\n        self.assertEqual(1, arr3.ndim)\n        self.assertEqual((10,), arr3.shape)\n        self.assertEqual(10, arr3.size)\n\n        arr4 = arrinst.getArrayConstC()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr4.dtype.name)\n        self.assertEqual(1, arr4.ndim)\n        self.assertEqual((10,), arr4.shape)\n        self.assertEqual(10, arr4.size)\n\n        arr5 = arrinst.fetchArrayPtr()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr5.dtype.name)\n        self.assertEqual(1, arr5.ndim)\n        self.assertEqual((10,), arr5.shape)\n        self.assertEqual(10, arr5.size)\n\n        arr6 = arrinst.fetchArrayRef()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr6.dtype.name)\n        self.assertEqual(1, arr6.ndim)\n        self.assertEqual((10,), arr6.shape)\n        self.assertEqual(10, arr6.size)\n\n        arr7 = arrinst.fetchArrayPtrConst()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr7.dtype.name)\n        self.assertEqual(1, arr7.ndim)\n        self.assertEqual((10,), arr7.shape)\n        self.assertEqual(10, arr7.size)\n\n        arr8 = arrinst.fetchArrayRefConst()\n        self.assertIsInstance(arr4, np.ndarray)\n        self.assertEqual('float64', arr8.dtype.name)\n        self.assertEqual(1, arr8.ndim)\n        self.assertEqual((10,), arr8.shape)\n        self.assertEqual(10, arr8.size)\n\n        with self.assertRaises(ValueError) as context:\n            arrinst.checkPtr(None)\n        self.assertTrue(\"called with invalid PyCapsule object\"\n                        in str(context.exception))\n\n        voidptr = arrinst.fetchVoidPtr()\n        self.assertEqual('PyCapsule', voidptr.__class__.__name__)\n        self.assertTrue(arrinst.checkPtr(voidptr))\n\n        voidptr = arrinst.fetchVoidRef()\n        self.assertEqual('PyCapsule', voidptr.__class__.__name__)\n        self.assertTrue(arrinst.checkPtr(voidptr))\n\n\n# creating a new test suite\nnewSuite = unittest.TestSuite()\n \n# adding a test case\nnewSuite.addTest(unittest.makeSuite(Arrayclass))\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\n**Explanation:**\n\n* **Test Suite:** Defines a test suite.\n* **Test Cases:** Defines individual test cases.\n* **ArrayWrapper:** Creates a wrapper for the `Array` object.\n* **Test Methods:** Defines"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      93.47777557373047,
+      171.08346557617188,
       0.0,
       0.0,
       0.0,
@@ -95,9 +96,9 @@
       0.0
     ],
     "f_after": [
-      0.0,
-      93.47777557373047,
-      0.0,
+      0.31413692235946655,
+      296.0097961425781,
+      0.7523099780082703,
       0.0,
       0.0,
       0.0,
@@ -108,29 +109,29 @@
       0.0
     ],
     "g_before": [
-      53.70148468017578,
       0.0,
-      9.661458015441895,
       0.0,
-      10.537787437438965,
-      10.114988327026367,
-      8.804988861083984,
       0.0,
-      9.422755241394043,
-      0.0035405182279646397,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      53.70148468017578,
       0.0,
-      9.661458015441895,
       0.0,
-      10.537787437438965,
-      10.114988327026367,
-      8.804988861083984,
       0.0,
-      9.422755241394043,
-      0.0035405182279646397,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
     "mean_std": 1.7113512754440308,
     "max_std": 55.291290283203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          3233,
+          2441,
+          8586,
+          3541,
+          6540,
+          9143,
+          7461,
+          2848,
+          8231
+        ],
+        "f_before": [
+          0.0,
+          171.08346557617188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.31413692235946655,
+          296.0097961425781,
+          0.7523099780082703,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 171.08346557617188,
+            "f_after": 296.0097961425781,
+            "delta_f": 124.92633056640625
+          },
+          {
+            "index": 7137,
+            "f_before": 28.7341365814209,
+            "f_after": 52.776790618896484,
+            "delta_f": 24.042654037475586
+          },
+          {
+            "index": 3515,
+            "f_before": 33.67414474487305,
+            "f_after": 56.52283477783203,
+            "delta_f": 22.848690032958984
+          },
+          {
+            "index": 5371,
+            "f_before": 0.0,
+            "f_after": 7.933335304260254,
+            "delta_f": 7.933335304260254
+          },
+          {
+            "index": 4758,
+            "f_before": 0.0,
+            "f_after": 7.810975074768066,
+            "delta_f": 7.810975074768066
+          },
+          {
+            "index": 7655,
+            "f_before": 0.0,
+            "f_after": 7.660045146942139,
+            "delta_f": 7.660045146942139
+          },
+          {
+            "index": 3490,
+            "f_before": 0.0,
+            "f_after": 7.653841495513916,
+            "delta_f": 7.653841495513916
+          },
+          {
+            "index": 6254,
+            "f_before": 0.0,
+            "f_after": 7.42726993560791,
+            "delta_f": 7.42726993560791
+          },
+          {
+            "index": 6812,
+            "f_before": 0.0,
+            "f_after": 6.884385585784912,
+            "delta_f": 6.884385585784912
+          },
+          {
+            "index": 1521,
+            "f_before": 0.0,
+            "f_after": 6.873558521270752,
+            "delta_f": 6.873558521270752
+          },
+          {
+            "index": 1,
+            "f_before": 23.137531280517578,
+            "f_after": 16.469886779785156,
+            "delta_f": -6.667644500732422
+          },
+          {
+            "index": 3072,
+            "f_before": 0.0,
+            "f_after": 6.5162224769592285,
+            "delta_f": 6.5162224769592285
+          },
+          {
+            "index": 6453,
+            "f_before": 0.0,
+            "f_after": 6.1140546798706055,
+            "delta_f": 6.1140546798706055
+          },
+          {
+            "index": 4470,
+            "f_before": 0.0,
+            "f_after": 6.030007362365723,
+            "delta_f": 6.030007362365723
+          },
+          {
+            "index": 1753,
+            "f_before": 0.0,
+            "f_after": 5.994287014007568,
+            "delta_f": 5.994287014007568
+          },
+          {
+            "index": 4369,
+            "f_before": 0.0,
+            "f_after": 5.661530494689941,
+            "delta_f": 5.661530494689941
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        self.array = arrayclass.Array(2, 3, 4, 5)\n\n    def test_array_creation(self):\n        self.assertEqual(self.array.shape, (2,",
+        "after": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        self.array = arrayclass.Array(dtype=np.float64)\n        \n    def XXtearDown(self):\n        pass\n    \n    def test_array_constructor(self):\n        #"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          3233,
+          2441,
+          8586,
+          3541,
+          6540,
+          9143,
+          7461,
+          2848,
+          8231
+        ],
+        "f_before": [
+          0.0,
+          171.08346557617188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          171.08346557617188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 23.137531280517578,
+            "f_after": 23.137531280517578,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 171.08346557617188,
+            "f_after": 171.08346557617188,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        \"\"\"Setup for the test case\"\"\"\n        pass\n    \n    def test_array_creation(self):\n        \"\"\"Test the creation of an array object\"\"\"\n        array = arrayclass.Array(10)",
+        "after": "# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and\n# other Shroud Project Developers.\n# See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (BSD-3-Clause)\n# #######################################################################\n#\n# Test Python API generated from references.yaml.\n#\nfrom __future__ import print_function\n\nimport numpy as np\nimport unittest\nimport arrayclass\n\nclass Arrayclass(unittest.TestCase):\n    \"\"\"Test struct problem\"\"\"\n     \n    def XXsetUp(self):\n        self.test_array = arrayclass.Arrayclass(arrayclass.Arrayclass.default_value)\n\n    def XXtest(self):\n        # Test cases\n        self.XXtest_1 = True\n\n"
+      }
+    }
   }
 }

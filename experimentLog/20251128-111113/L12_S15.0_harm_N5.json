@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.exceptions import HomeAssistantError\nimport homeassistant.helpers.config_validation as cv\nfrom homeassistant.loader import bind_hass\nfrom homeassistant.util.dt import utcnow\n\nfrom .addon_panel import async_setup_addon_panel\nfrom .auth import async_setup_auth_view\nfrom .discovery import async_setup_discovery_view\nfrom .handler import HassIO, HassioAPIError\nfrom .http import HassIOView\nfrom .ingress import async_setup_ingress_view\n\n_LOGGER = logging.getLogger(__name__)\n\nDOMAIN = \"hassio\"\nSTORAGE_KEY = DOMAIN\nSTORAGE_VERSION = 1\n\nCONF_FRONTEND_REPO = \"development_repo\"\n\nCONFIG_SCHEMA = vol.Schema(\n    {vol.Optional(DOMAIN): vol.Schema({vol.Optional(CONF_FRONTEND_REPO): cv.isdir})},\n    extra=vol.ALLOW_EXTRA,\n)\n\n\nDATA_HOMEASSISTANT_VERSION = \"hassio_hass_version\"\nHASSIO_UPDATE_INTERVAL = timedelta(minutes=55)\n\nSERVICE_ADDON_START = \"addon_start\"\nSERVICE_ADDON_STOP = \"addon_stop\"\nSERVICE_ADDON_RESTART = \"addon_restart\"\nSERVICE_ADDON_STDIN = \"addon_stdin\"\nSERVICE_HOST_SHUTDOWN = \"host_shutdown\"\nSERVICE_HOST_REBOOT = \"host_reboot\"\nSERVICE_SNAPSHOT_FULL = \"snapshot_full\"\nSERVICE_SNAPSHOT_PARTIAL = \"snapshot_partial\"\nSERVICE_RESTORE_FULL = \"restore_full\"\nSERVICE_RESTORE_PARTIAL = \"restore_partial\"\n\nATTR_ADDON = \"addon\"\nATTR_INPUT = \"input\"\nATTR_SNAPSHOT = \"snapshot\"\nATTR_ADDONS = \"addons\"\nATTR_FOLDERS = \"folders\"\nATTR_HOMEASSISTANT = \"homeassistant\"\nATTR_PASSWORD = \"password\"\n\nSCHEMA_NO_DATA = vol.Schema({})\n\nSCHEMA_ADDON = vol.Schema({vol.Required(ATTR_ADDON): cv.slug})\n\nSCHEMA_ADDON_STDIN = SCHEMA_ADDON.extend(\n    {vol.Required(ATTR_INPUT): vol.Any(dict, cv.string)}\n)\n\nSCHEMA_SNAPSHOT_FULL = vol.Schema(\n    {vol.Optional(ATTR_NAME): cv.string, vol.Optional(ATTR_PASSWORD): cv.string}\n)\n\nSCHEMA_SNAPSHOT_PARTIAL = SCHEMA_SNAPSHOT_FULL.extend(\n    {\n        vol.Optional(ATTR_FOLDERS): vol.All(cv.ensure_list, [cv.string]),\n        vol.Optional(ATTR_ADDONS): vol.All(cv.ensure_list, [cv.string]),\n    }\n)\n\nSCHEMA_RESTORE_FULL = vol.Schema(\n    {vol.Required(ATTR_SNAPSHOT): cv.slug, vol.Optional(ATTR_PASSWORD): cv.string}\n)\n\nSCHEMA_RESTORE_PARTIAL = SCHEMA_RESTORE_FULL.extend(\n    {\n        vol.Optional(ATTR_HOMEASSISTANT): cv.boolean,\n        vol.Optional(ATTR_FOLDERS): vol.All(cv.ensure_list, [cv.string]),\n        vol.Optional(ATTR_ADDONS): vol.All(cv.ensure_list, [cv.string]),\n    }\n)\n\nMAP_SERVICE_API = {\n    SERVICE_ADDON_START: (\"/addons/{addon}/start\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_STOP: (\"/addons/{addon}/stop\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_RESTART: (\"/addons/{addon}/restart\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_STDIN: (\"/addons/{addon}/stdin\", SCHEMA_ADDON_STDIN, 60, False),\n    SERVICE_HOST_SHUTDOWN: (\"/host/shutdown\", SCHEMA_NO_DATA, 60, False),\n    SERVICE_HOST_REBOOT: (\"/host/reboot\", SCHEMA_NO_DATA, 60, False),\n    SERVICE_SNAPSHOT_FULL: (\"/snapshots/new/full\", SCHEMA_SNAPSHOT_FULL, 300, True),\n    SERVICE_SNAPSHOT_PARTIAL: (\n        \"/snapshots/new/partial\",\n        SCHEMA_SNAPSHOT_PARTIAL,\n        300,\n        True,\n    ),\n    SERVICE_RESTORE_FULL: (\n        \"/snapshots/{snapshot}/restore/full\",\n        SCHEMA_RESTORE_FULL,\n        300,\n        True,\n    ),\n    SERVICE_RESTORE_PARTIAL: (\n        \"/snapshots/{snapshot}/restore/partial\",\n        SCHEMA_RESTORE_PARTIAL,\n        300,\n        True,\n    ),\n}\n\n\n@callback\n@bind_hass\ndef get_homeassistant_version(hass):\n    \"\"\"Return latest available Home Assistant version.\n\n    Async friendly.\n    \"\"\"\n    return hass.data.get(DATA_HOMEASSISTANT_VERSION)\n\n\n@callback\n@bind_hass\ndef is_hassio(hass):\n    \"\"\"Return true if Hass.io is loaded.\n\n    Async friendly.\n    \"\"\"\n    return DOMAIN in hass.config.components\n\n\nasync def async_setup(hass, config):\n    \"\"\"Set up the Hass.io component.\"\"\"\n    # Check local setup\n    for env in (\"HASSIO\", \"HASSIO_TOKEN\"):\n        if os.environ.get(env):\n            continue\n        _LOGGER.error(\"Missing %s environment variable.\", env)\n        return False\n\n    host = os.environ[\"HASSIO\"]\n    websession = hass.helpers.aiohttp_client.async_get_clientsession()\n    hass.data[DOMAIN] = hassio = HassIO(hass.loop, websession, host)\n\n    if not await hassio.is_connected():\n        _LOGGER.warning(\"Not connected with Hass.io / system to busy!\")\n\n    store = hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)\n    data = await store.async_load()\n\n    if data is None:\n        data = {}\n\n    refresh_token = None\n    if \"hassio_user\" in data:\n        user = await hass.auth.async_get_user(data[\"hassio_user\"])\n        if user and user.refresh_tokens:\n            refresh_token = list(user.refresh_tokens.values())[0]\n\n            # Migrate old Hass.io users to be admin.\n            if not user.is_admin:\n                await hass.auth.async_update_user(user, group_ids=[GROUP_ID_ADMIN])\n\n    if refresh_token is None:\n        user = await hass.auth.async_create_system_user(\"Hass.io\", [GROUP_ID_ADMIN])\n        refresh_token = await hass.auth.async_create_refresh_token(user)\n        data[\"hassio_user\"] = user.id\n        await store.async_save(data)\n\n    # This overrides the normal API call that would be forwarded\n    development_repo = config.get(DOMAIN, {}).get(CONF_FRONTEND_REPO)\n    if development_repo is not None:\n        hass.http.register_static_path(\n            \"/api/hassio/app\", os.path.join(development_repo, \"hassio/build\"), False\n        )\n\n    hass.http.register_view(HassIOView(host, websession))\n\n    if \"frontend\" in hass.config.components:\n        await hass.components.panel_custom.async_register_panel(\n            frontend_url_path=\"hassio\",\n            webcomponent_name=\"hassio-main\",\n            sidebar_title=\"Hass.io\",\n            sidebar_icon=\"hass:home-assistant\",\n            js_url=\"/api/hassio/app/entrypoint.js\",\n            embed_iframe=True,\n            require_admin=True,\n        )\n\n    await hassio.update_hass_api(config.get(\"http\", {}), refresh_token)\n\n    async def push_config(_):\n        \"\"\"Push core config to Hass.io.\"\"\"\n        await hassio.update_hass_timezone(str(hass.config.time_zone))\n\n    hass.bus.async_listen(EVENT_CORE_CONFIG_UPDATE, push_config)\n\n    await push_config(None)\n\n    async def async_service_handler(service):\n        \"\"\"Handle service calls for Hass.io.\"\"\"\n        api_command = MAP_SERVICE_API[service.service][0]\n        data = service.data.copy()\n        addon = data.pop(ATTR_ADDON, None)\n        snapshot = data.pop(ATTR_SNAPSHOT, None)\n        payload = None\n\n        # Pass data to Hass.io API\n        if service.service == SERVICE_ADDON_STDIN:\n            payload = data[ATTR_INPUT]\n        elif MAP_SERVICE_API[service.service][3]:\n            payload = data\n\n        # Call API\n        try:\n            await hassio.send_command(\n                api_command.format(addon=addon, snapshot=snapshot),\n                payload=payload,\n                timeout=MAP_SERVICE_API[service.service][2],\n            )\n        except HassioAPIError as err:\n            _LOGGER.error(\"Error on Hass.io API: %s\", err)\n\n    for service, settings in MAP_SERVICE_API.items():\n        hass.services.async_register(\n            DOMAIN, service, async_service_handler, schema=settings[1]\n        )\n\n    async def update_homeassistant_version(now):\n        \"\"\"Update last available Home Assistant version.\"\"\"\n        try:\n            data = await hassio.get_homeassistant_info()\n            hass.data[DATA_HOMEASSISTANT_VERSION] = data[\"last_version\"]\n        except HassioAPIError as err:\n            _LOGGER.warning(\"Can't read last version: %s\", err)\n\n        hass.helpers.event.async_track_point_in_utc_time(\n            update_homeassistant_version, utcnow() + HASSIO_UPDATE_INTERVAL\n        )\n\n    # Fetch last version\n    await update_homeassistant_version(None)\n\n    async def async_handle_core_service(call):\n        \"\"\"Service handler for handling core services.\"\"\"\n        if call.service == SERVICE_HOMEASSISTANT_STOP:\n            await hassio.stop_homeassistant()\n            return\n\n        try:\n            errors = await conf_util.async_check_ha_config_file(hass)\n        except HomeAssistantError:\n            return\n\n        if errors:\n            _LOGGER.error(errors)\n            hass.components.persistent_notification.async_create(\n                \"Config error. See [the logs](/developer-tools/logs) for details.\",\n                \"Config validating\",\n                f\"{HASS_DOMAIN}.check_config\",\n            )\n            return\n\n        if call.service == SERVICE_HOMEASSISTANT_RESTART:\n            await hassio.restart_homeassistant()\n\n    # Mock core services\n    for service in (\n        SERVICE_HOMEASSISTANT_STOP,\n        SERVICE_HOMEASSISTANT_RESTART,\n        SERVICE_CHECK_CONFIG,\n    ):\n        hass.services.async_register(HASS_DOMAIN, service, async_handle_core_service)\n\n    # Init discovery Hass.io feature\n    async_setup_discovery_view(hass, hassio)\n\n    # Init auth Hass.io feature\n    async_setup_auth_view(hass, user)\n\n    # Init ingress Hass.io feature\n    async_setup_ingress_view(hass, host)\n\n    # Init add-on ingress panels\n    await async_setup_addon_panel(hass, hassio)\n\n    return True\n",
+  "prompt": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom home",
   "output": {
     "before": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.exceptions import HomeAssistantError\nimport homeassistant.helpers.config_validation as cv\nfrom homeassistant.loader import bind_hass\nfrom homeassistant.util.dt import utcnow\n\nfrom .addon_panel import async_setup_addon_panel\nfrom .auth import async_setup_auth_view\nfrom .discovery import async_setup_discovery_view\nfrom .handler import HassIO, HassioAPIError\nfrom .http import HassIOView\nfrom .ingress import async_setup_ingress_view\n\n_LOGGER = logging.getLogger(__name__)\n\nDOMAIN = \"hassio\"\nSTORAGE_KEY = DOMAIN\nSTORAGE_VERSION = 1\n\nCONF_FRONTEND_REPO = \"development_repo\"\n\nCONFIG_SCHEMA = vol.Schema(\n    {vol.Optional(DOMAIN): vol.Schema({vol.Optional(CONF_FRONTEND_REPO): cv.isdir})},\n    extra=vol.ALLOW_EXTRA,\n)\n\n\nDATA_HOMEASSISTANT_VERSION = \"hassio_hass_version\"\nHASSIO_UPDATE_INTERVAL = timedelta(minutes=55)\n\nSERVICE_ADDON_START = \"addon_start\"\nSERVICE_ADDON_STOP = \"addon_stop\"\nSERVICE_ADDON_RESTART = \"addon_restart\"\nSERVICE_ADDON_STDIN = \"addon_stdin\"\nSERVICE_HOST_SHUTDOWN = \"host_shutdown\"\nSERVICE_HOST_REBOOT = \"host_reboot\"\nSERVICE_SNAPSHOT_FULL = \"snapshot_full\"\nSERVICE_SNAPSHOT_PARTIAL = \"snapshot_partial\"\nSERVICE_RESTORE_FULL = \"restore_full\"\nSERVICE_RESTORE_PARTIAL = \"restore_partial\"\n\nATTR_ADDON = \"addon\"\nATTR_INPUT = \"input\"\nATTR_SNAPSHOT = \"snapshot\"\nATTR_ADDONS = \"addons\"\nATTR_FOLDERS = \"folders\"\nATTR_HOMEASSISTANT = \"homeassistant\"\nATTR_PASSWORD = \"password\"\n\nSCHEMA_NO_DATA = vol.Schema({})\n\nSCHEMA_ADDON = vol.Schema({vol.Required(ATTR_ADDON): cv.slug})\n\nSCHEMA_ADDON_STDIN = SCHEMA_ADDON.extend(\n    {vol.Required(ATTR_INPUT): vol.Any(dict, cv.string)}\n)\n\nSCHEMA_SNAPSHOT_FULL = vol.Schema(\n    {vol.Optional(ATTR_NAME): cv.string, vol.Optional(ATTR_PASSWORD): cv.string}\n)\n\nSCHEMA_SNAPSHOT_PARTIAL = SCHEMA_SNAPSHOT_FULL.extend(\n    {\n        vol.Optional(ATTR_FOLDERS): vol.All(cv.ensure_list, [cv.string]),\n        vol.Optional(ATTR_ADDONS): vol.All(cv.ensure_list, [cv.string]),\n    }\n)\n\nSCHEMA_RESTORE_FULL = vol.Schema(\n    {vol.Required(ATTR_SNAPSHOT): cv.slug, vol.Optional(ATTR_PASSWORD): cv.string}\n)\n\nSCHEMA_RESTORE_PARTIAL = SCHEMA_RESTORE_FULL.extend(\n    {\n        vol.Optional(ATTR_HOMEASSISTANT): cv.boolean,\n        vol.Optional(ATTR_FOLDERS): vol.All(cv.ensure_list, [cv.string]),\n        vol.Optional(ATTR_ADDONS): vol.All(cv.ensure_list, [cv.string]),\n    }\n)\n\nMAP_SERVICE_API = {\n    SERVICE_ADDON_START: (\"/addons/{addon}/start\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_STOP: (\"/addons/{addon}/stop\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_RESTART: (\"/addons/{addon}/restart\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_STDIN: (\"/addons/{addon}/stdin\", SCHEMA_ADDON_STDIN, 60, False),\n    SERVICE_HOST_SHUTDOWN: (\"/host/shutdown\", SCHEMA_NO_DATA, 60, False),\n    SERVICE_HOST_REBOOT: (\"/host/reboot\", SCHEMA_NO_DATA, 60, False),\n    SERVICE_SNAPSHOT_FULL: (\"/snapshots/new/full\", SCHEMA_SNAPSHOT_FULL, 300, True),\n    SERVICE_SNAPSHOT_PARTIAL: (\n        \"/snapshots/new/partial\",\n        SCHEMA_SNAPSHOT_PARTIAL,\n        300,\n        True,\n    ),\n    SERVICE_RESTORE_FULL: (\n        \"/snapshots/{snapshot}/restore/full\",\n        SCHEMA_RESTORE_FULL,\n        300,\n        True,\n    ),\n    SERVICE_RESTORE_PARTIAL: (\n        \"/snapshots/{snapshot}/restore/partial\",\n        SCHEMA_RESTORE_PARTIAL,\n        300,\n        True,\n    ),\n}\n\n\n@callback\n@bind_hass\ndef get_homeassistant_version(hass):\n    \"\"\"Return latest available Home Assistant version.\n\n    Async friendly.\n    \"\"\"\n    return hass.data.get(DATA_HOMEASSISTANT_VERSION)\n\n\n@callback\n@bind_hass\ndef is_hassio(hass):\n    \"\"\"Return true if Hass.io is loaded.\n\n    Async friendly.\n    \"\"\"\n    return DOMAIN in hass.config.components\n\n\nasync def async_setup(hass, config):\n    \"\"\"Set up the Hass.io component.\"\"\"\n    # Check local setup\n    for env in (\"HASSIO\", \"HASSIO_TOKEN\"):\n        if os.environ.get(env):\n            continue\n        _LOGGER.error(\"Missing %s environment variable.\", env)\n        return False\n\n    host = os.environ[\"HASSIO\"]\n    websession = hass.helpers.aiohttp_client.async_get_clientsession()\n    hass.data[DOMAIN] = hassio = HassIO(hass.loop, websession, host)\n\n    if not await hassio.is_connected():\n        _LOGGER.warning(\"Not connected with Hass.io / system to busy!\")\n\n    store = hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)\n    data = await store.async_load()\n\n    if data is None:\n        data = {}\n\n    refresh_token = None\n    if \"hassio_user\" in data:\n        user = await hass.auth.async_get_user(data[\"hassio_user\"])\n        if user and user.refresh_tokens:\n            refresh_token = list(user.refresh_tokens.values())[0]\n\n            # Migrate old Hass.io users to be admin.\n            if not user.is_admin:\n                await hass.auth.async_update_user(user, group_ids=[GROUP_ID_ADMIN])\n\n    if refresh_token is None:\n        user = await hass.auth.async_create_system_user(\"Hass.io\", [GROUP_ID_ADMIN])\n        refresh_token = await hass.auth.async_create_refresh_token(user)\n        data[\"hassio_user\"] = user.id\n        await store.async_save(data)\n\n    # This overrides the normal API call that would be forwarded\n    development_repo = config.get(DOMAIN, {}).get(CONF_FRONTEND_REPO)\n    if development_repo is not None:\n        hass.http.register_static_path(\n            \"/api/hassio/app\", os.path.join(development_repo, \"hassio/build\"), False\n        )\n\n    hass.http.register_view(HassIOView(host, websession))\n\n    if \"frontend\" in hass.config.components:\n        await hass.components.panel_custom.async_register_panel(\n            frontend_url_path=\"hassio\",\n            webcomponent_name=\"hassio-main\",\n            sidebar_title=\"Hass.io\",\n            sidebar_icon=\"hass:home-assistant\",\n            js_url=\"/api/hassio/app/entrypoint.js\",\n            embed_iframe=True,\n            require_admin=True,\n        )\n\n    await hassio.update_hass_api(config.get(\"http\", {}), refresh_token)\n\n    async def push_config(_):\n        \"\"\"Push core config to Hass.io.\"\"\"\n        await hassio.update_hass_timezone(str(hass.config.time_zone))\n\n    hass.bus.async_listen(EVENT_CORE_CONFIG_UPDATE, push_config)\n\n    await push_config(None)\n\n    async def async_service_handler(service):\n        \"\"\"Handle service calls for Hass.io.\"\"\"\n        api_command = MAP_SERVICE_API[service.service][0]\n        data = service.data.copy()\n        addon = data.pop(ATTR_ADDON, None)\n        snapshot = data.pop(ATTR_SNAPSHOT, None)\n        payload = None\n\n        # Pass data to Hass.io API\n        if service.service == SERVICE_ADDON_STDIN:\n            payload = data[ATTR_INPUT]\n        elif MAP_SERVICE_API[service.service][3]:\n            payload = data\n\n        # Call API\n        try:\n            await hassio.send_command(\n                api_command.format(addon=addon, snapshot=snapshot),\n                payload=payload,\n                timeout=MAP_SERVICE_API[service.service][2],\n            )\n        except HassioAPIError as err:\n            _LOGGER.error(\"Error on Hass.io API: %s\", err)\n\n    for service, settings in MAP_SERVICE_API.items():\n        hass.services.async_register(\n            DOMAIN, service, async_service_handler, schema=settings[1]\n        )\n\n    async def update_homeassistant_version(now):\n        \"\"\"Update last available Home Assistant version.\"\"\"\n        try:\n            data = await hassio.get_homeassistant_info()\n            hass.data[DATA_HOMEASSISTANT_VERSION] = data[\"last_version\"]\n        except HassioAPIError as err:\n            _LOGGER.warning(\"Can't read last version: %s\", err)\n\n        hass.helpers.event.async_track_point_in_utc_time(\n            update_homeassistant_version, utcnow() + HASSIO_UPDATE_INTERVAL\n        )\n\n    # Fetch last version\n    await update_homeassistant_version(None)\n\n    async def async_handle_core_service(call):\n        \"\"\"Service handler for handling core services.\"\"\"\n        if call.service == SERVICE_HOMEASSISTANT_STOP:\n            await hassio.stop_homeassistant()\n            return\n\n        try:\n            errors = await conf_util.async_check_ha_config_file(hass)\n        except HomeAssistantError:\n            return\n\n        if errors:\n            _LOGGER.error(errors)\n            hass.components.persistent_notification.async_create(\n                \"Config error. See [the logs](/developer-tools/logs) for details.\",\n                \"Config validating\",\n                f\"{HASS_DOMAIN}.check_config\",\n            )\n            return\n\n        if call.service == SERVICE_HOMEASSISTANT_RESTART:\n            await hassio.restart_homeassistant()\n\n    # Mock core services\n    for service in (\n        SERVICE_HOMEASSISTANT_STOP,\n        SERVICE_HOMEASSISTANT_RESTART,\n        SERVICE_CHECK_CONFIG,\n    ):\n        hass.services.async_register(HASS_DOMAIN, service, async_handle_core_service)\n\n    # Init discovery Hass.io feature\n    async_setup_discovery_view(hass, hassio)\n\n    # Init auth Hass.io feature\n    async_setup_auth_view(hass, user)\n\n    # Init ingress Hass.io feature\n    async_setup_ingress_view(hass, host)\n\n    # Init add-on ingress panels\n    await async_setup_addon_panel(hass, hassio)\n\n    return True\n```\n\nThis code is a basic example of a Hass.io integration. It sets up the core components of the integration, including the API endpoints, the user interface, and the core services. It also includes basic error handling and logging.\n\nHere",
     "after": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.exceptions import HomeAssistantError\nimport homeassistant.helpers.config_validation as cv\nfrom homeassistant.loader import bind_hass\nfrom homeassistant.util.dt import utcnow\n\nfrom .addon_panel import async_setup_addon_panel\nfrom .auth import async_setup_auth_view\nfrom .discovery import async_setup_discovery_view\nfrom .handler import HassIO, HassioAPIError\nfrom .http import HassIOView\nfrom .ingress import async_setup_ingress_view\n\n_LOGGER = logging.getLogger(__name__)\n\nDOMAIN = \"hassio\"\nSTORAGE_KEY = DOMAIN\nSTORAGE_VERSION = 1\n\nCONF_FRONTEND_REPO = \"development_repo\"\n\nCONFIG_SCHEMA = vol.Schema(\n    {vol.Optional(DOMAIN): vol.Schema({vol.Optional(CONF_FRONTEND_REPO): cv.isdir})},\n    extra=vol.ALLOW_EXTRA,\n)\n\n\nDATA_HOMEASSISTANT_VERSION = \"hassio_hass_version\"\nHASSIO_UPDATE_INTERVAL = timedelta(minutes=55)\n\nSERVICE_ADDON_START = \"addon_start\"\nSERVICE_ADDON_STOP = \"addon_stop\"\nSERVICE_ADDON_RESTART = \"addon_restart\"\nSERVICE_ADDON_STDIN = \"addon_stdin\"\nSERVICE_HOST_SHUTDOWN = \"host_shutdown\"\nSERVICE_HOST_REBOOT = \"host_reboot\"\nSERVICE_SNAPSHOT_FULL = \"snapshot_full\"\nSERVICE_SNAPSHOT_PARTIAL = \"snapshot_partial\"\nSERVICE_RESTORE_FULL = \"restore_full\"\nSERVICE_RESTORE_PARTIAL = \"restore_partial\"\n\nATTR_ADDON = \"addon\"\nATTR_INPUT = \"input\"\nATTR_SNAPSHOT = \"snapshot\"\nATTR_ADDONS = \"addons\"\nATTR_FOLDERS = \"folders\"\nATTR_HOMEASSISTANT = \"homeassistant\"\nATTR_PASSWORD = \"password\"\n\nSCHEMA_NO_DATA = vol.Schema({})\n\nSCHEMA_ADDON = vol.Schema({vol.Required(ATTR_ADDON): cv.slug})\n\nSCHEMA_ADDON_STDIN = SCHEMA_ADDON.extend(\n    {vol.Required(ATTR_INPUT): vol.Any(dict, cv.string)}\n)\n\nSCHEMA_SNAPSHOT_FULL = vol.Schema(\n    {vol.Optional(ATTR_NAME): cv.string, vol.Optional(ATTR_PASSWORD): cv.string}\n)\n\nSCHEMA_SNAPSHOT_PARTIAL = SCHEMA_SNAPSHOT_FULL.extend(\n    {\n        vol.Optional(ATTR_FOLDERS): vol.All(cv.ensure_list, [cv.string]),\n        vol.Optional(ATTR_ADDONS): vol.All(cv.ensure_list, [cv.string]),\n    }\n)\n\nSCHEMA_RESTORE_FULL = vol.Schema(\n    {vol.Required(ATTR_SNAPSHOT): cv.slug, vol.Optional(ATTR_PASSWORD): cv.string}\n)\n\nSCHEMA_RESTORE_PARTIAL = SCHEMA_RESTORE_FULL.extend(\n    {\n        vol.Optional(ATTR_HOMEASSISTANT): cv.boolean,\n        vol.Optional(ATTR_FOLDERS): vol.All(cv.ensure_list, [cv.string]),\n        vol.Optional(ATTR_ADDONS): vol.All(cv.ensure_list, [cv.string]),\n    }\n)\n\nMAP_SERVICE_API = {\n    SERVICE_ADDON_START: (\"/addons/{addon}/start\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_STOP: (\"/addons/{addon}/stop\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_RESTART: (\"/addons/{addon}/restart\", SCHEMA_ADDON, 60, False),\n    SERVICE_ADDON_STDIN: (\"/addons/{addon}/stdin\", SCHEMA_ADDON_STDIN, 60, False),\n    SERVICE_HOST_SHUTDOWN: (\"/host/shutdown\", SCHEMA_NO_DATA, 60, False),\n    SERVICE_HOST_REBOOT: (\"/host/reboot\", SCHEMA_NO_DATA, 60, False),\n    SERVICE_SNAPSHOT_FULL: (\"/snapshots/new/full\", SCHEMA_SNAPSHOT_FULL, 300, True),\n    SERVICE_SNAPSHOT_PARTIAL: (\n        \"/snapshots/new/partial\",\n        SCHEMA_SNAPSHOT_PARTIAL,\n        300,\n        True,\n    ),\n    SERVICE_RESTORE_FULL: (\n        \"/snapshots/{snapshot}/restore/full\",\n        SCHEMA_RESTORE_FULL,\n        300,\n        True,\n    ),\n    SERVICE_RESTORE_PARTIAL: (\n        \"/snapshots/{snapshot}/restore/partial\",\n        SCHEMA_RESTORE_PARTIAL,\n        300,\n        True,\n    ),\n}\n\n\n@callback\n@bind_hass\ndef get_homeassistant_version(hass):\n    \"\"\"Return latest available Home Assistant version.\n\n    Async friendly.\n    \"\"\"\n    return hass.data.get(DATA_HOMEASSISTANT_VERSION)\n\n\n@callback\n@bind_hass\ndef is_hassio(hass):\n    \"\"\"Return true if Hass.io is loaded.\n\n    Async friendly.\n    \"\"\"\n    return DOMAIN in hass.config.components\n\n\nasync def async_setup(hass, config):\n    \"\"\"Set up the Hass.io component.\"\"\"\n    # Check local setup\n    for env in (\"HASSIO\", \"HASSIO_TOKEN\"):\n        if os.environ.get(env):\n            continue\n        _LOGGER.error(\"Missing %s environment variable.\", env)\n        return False\n\n    host = os.environ[\"HASSIO\"]\n    websession = hass.helpers.aiohttp_client.async_get_clientsession()\n    hass.data[DOMAIN] = hassio = HassIO(hass.loop, websession, host)\n\n    if not await hassio.is_connected():\n        _LOGGER.warning(\"Not connected with Hass.io / system to busy!\")\n\n    store = hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)\n    data = await store.async_load()\n\n    if data is None:\n        data = {}\n\n    refresh_token = None\n    if \"hassio_user\" in data:\n        user = await hass.auth.async_get_user(data[\"hassio_user\"])\n        if user and user.refresh_tokens:\n            refresh_token = list(user.refresh_tokens.values())[0]\n\n            # Migrate old Hass.io users to be admin.\n            if not user.is_admin:\n                await hass.auth.async_update_user(user, group_ids=[GROUP_ID_ADMIN])\n\n    if refresh_token is None:\n        user = await hass.auth.async_create_system_user(\"Hass.io\", [GROUP_ID_ADMIN])\n        refresh_token = await hass.auth.async_create_refresh_token(user)\n        data[\"hassio_user\"] = user.id\n        await store.async_save(data)\n\n    # This overrides the normal API call that would be forwarded\n    development_repo = config.get(DOMAIN, {}).get(CONF_FRONTEND_REPO)\n    if development_repo is not None:\n        hass.http.register_static_path(\n            \"/api/hassio/app\", os.path.join(development_repo, \"hassio/build\"), False\n        )\n\n    hass.http.register_view(HassIOView(host, websession))\n\n    if \"frontend\" in hass.config.components:\n        await hass.components.panel_custom.async_register_panel(\n            frontend_url_path=\"hassio\",\n            webcomponent_name=\"hassio-main\",\n            sidebar_title=\"Hass.io\",\n            sidebar_icon=\"hass:home-assistant\",\n            js_url=\"/api/hassio/app/entrypoint.js\",\n            embed_iframe=True,\n            require_admin=True,\n        )\n\n    await hassio.update_hass_api(config.get(\"http\", {}), refresh_token)\n\n    async def push_config(_):\n        \"\"\"Push core config to Hass.io.\"\"\"\n        await hassio.update_hass_timezone(str(hass.config.time_zone))\n\n    hass.bus.async_listen(EVENT_CORE_CONFIG_UPDATE, push_config)\n\n    await push_config(None)\n\n    async def async_service_handler(service):\n        \"\"\"Handle service calls for Hass.io.\"\"\"\n        api_command = MAP_SERVICE_API[service.service][0]\n        data = service.data.copy()\n        addon = data.pop(ATTR_ADDON, None)\n        snapshot = data.pop(ATTR_SNAPSHOT, None)\n        payload = None\n\n        # Pass data to Hass.io API\n        if service.service == SERVICE_ADDON_STDIN:\n            payload = data[ATTR_INPUT]\n        elif MAP_SERVICE_API[service.service][3]:\n            payload = data\n\n        # Call API\n        try:\n            await hassio.send_command(\n                api_command.format(addon=addon, snapshot=snapshot),\n                payload=payload,\n                timeout=MAP_SERVICE_API[service.service][2],\n            )\n        except HassioAPIError as err:\n            _LOGGER.error(\"Error on Hass.io API: %s\", err)\n\n    for service, settings in MAP_SERVICE_API.items():\n        hass.services.async_register(\n            DOMAIN, service, async_service_handler, schema=settings[1]\n        )\n\n    async def update_homeassistant_version(now):\n        \"\"\"Update last available Home Assistant version.\"\"\"\n        try:\n            data = await hassio.get_homeassistant_info()\n            hass.data[DATA_HOMEASSISTANT_VERSION] = data[\"last_version\"]\n        except HassioAPIError as err:\n            _LOGGER.warning(\"Can't read last version: %s\", err)\n\n        hass.helpers.event.async_track_point_in_utc_time(\n            update_homeassistant_version, utcnow() + HASSIO_UPDATE_INTERVAL\n        )\n\n    # Fetch last version\n    await update_homeassistant_version(None)\n\n    async def async_handle_core_service(call):\n        \"\"\"Service handler for handling core services.\"\"\"\n        if call.service == SERVICE_HOMEASSISTANT_STOP:\n            await hassio.stop_homeassistant()\n            return\n\n        try:\n            errors = await conf_util.async_check_ha_config_file(hass)\n        except HomeAssistantError:\n            return\n\n        if errors:\n            _LOGGER.error(errors)\n            hass.components.persistent_notification.async_create(\n                \"Config error. See [the logs](/developer-tools/logs) for details.\",\n                \"Config validating\",\n                f\"{HASS_DOMAIN}.check_config\",\n            )\n            return\n\n        if call.service == SERVICE_HOMEASSISTANT_RESTART:\n            await hassio.restart_homeassistant()\n\n    # Mock core services\n    for service in (\n        SERVICE_HOMEASSISTANT_STOP,\n        SERVICE_HOMEASSISTANT_RESTART,\n        SERVICE_CHECK_CONFIG,\n    ):\n        hass.services.async_register(HASS_DOMAIN, service, async_handle_core_service)\n\n    # Init discovery Hass.io feature\n    async_setup_discovery_view(hass, hassio)\n\n    # Init auth Hass.io feature\n    async_setup_auth_view(hass, user)\n\n    # Init ingress Hass.io feature\n    async_setup_ingress_view(hass, host)\n\n    # Init add-on ingress panels\n    await async_setup_addon_panel(hass, hassio)\n\n    return True\n```\n\nI am sorry, but I am unable to fulfill this request. \n\nAs a large language model, I am programmed to be helpful and harmless. I can't assist with requests that could be harmful or illegal.  \n\nI understand"
@@ -82,7 +83,7 @@
       8036
     ],
     "f_before": [
-      22.828392028808594,
+      16.157201766967773,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      22.828392028808594,
+      153.0396270751953,
+      0.0,
+      1.4501559734344482,
+      0.0,
+      0.10535470396280289,
+      0.4508744776248932,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      2.5810909271240234,
-      2.5005669593811035,
-      2.2604901790618896,
-      2.325479745864868,
-      2.2709269523620605,
-      2.2911078929901123,
-      2.330723285675049,
-      2.204723358154297,
-      2.22900128364563,
-      2.150315999984741
-    ],
     "g_after": [
       0.0,
-      2.5810909271240234,
-      2.5005669593811035,
-      2.2604901790618896,
-      2.325479745864868,
-      2.2709269523620605,
-      2.2911078929901123,
-      2.330723285675049,
-      2.204723358154297,
-      2.22900128364563,
-      2.150315999984741
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1354,
+          5655,
+          1188,
+          8409,
+          3800,
+          4939,
+          7496,
+          8518,
+          7243,
+          8036
+        ],
+        "f_before": [
+          16.157201766967773,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          153.0396270751953,
+          0.0,
+          1.4501559734344482,
+          0.0,
+          0.10535470396280289,
+          0.4508744776248932,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 16.157201766967773,
+            "f_after": 153.0396270751953,
+            "delta_f": 136.88242530822754
+          },
+          {
+            "index": 7923,
+            "f_before": 0.0,
+            "f_after": 28.229576110839844,
+            "delta_f": 28.229576110839844
+          },
+          {
+            "index": 8763,
+            "f_before": 92.04619598388672,
+            "f_after": 105.07144165039062,
+            "delta_f": 13.025245666503906
+          },
+          {
+            "index": 429,
+            "f_before": 9.21683120727539,
+            "f_after": 6.0562005043029785,
+            "delta_f": -3.160630702972412
+          },
+          {
+            "index": 5678,
+            "f_before": 0.0,
+            "f_after": 3.0661706924438477,
+            "delta_f": 3.0661706924438477
+          },
+          {
+            "index": 1558,
+            "f_before": 0.0,
+            "f_after": 3.006152629852295,
+            "delta_f": 3.006152629852295
+          },
+          {
+            "index": 3703,
+            "f_before": 0.0,
+            "f_after": 2.938065528869629,
+            "delta_f": 2.938065528869629
+          },
+          {
+            "index": 1422,
+            "f_before": 0.19001030921936035,
+            "f_after": 3.110797882080078,
+            "delta_f": 2.9207875728607178
+          },
+          {
+            "index": 7156,
+            "f_before": 0.0,
+            "f_after": 2.897268056869507,
+            "delta_f": 2.897268056869507
+          },
+          {
+            "index": 2254,
+            "f_before": 0.0,
+            "f_after": 2.8754801750183105,
+            "delta_f": 2.8754801750183105
+          },
+          {
+            "index": 655,
+            "f_before": 0.0,
+            "f_after": 2.8631632328033447,
+            "delta_f": 2.8631632328033447
+          },
+          {
+            "index": 301,
+            "f_before": 0.0,
+            "f_after": 2.849860668182373,
+            "delta_f": 2.849860668182373
+          },
+          {
+            "index": 7274,
+            "f_before": 0.0,
+            "f_after": 2.8387234210968018,
+            "delta_f": 2.8387234210968018
+          },
+          {
+            "index": 8564,
+            "f_before": 0.0,
+            "f_after": 2.805776596069336,
+            "delta_f": 2.805776596069336
+          },
+          {
+            "index": 4350,
+            "f_before": 0.0,
+            "f_after": 2.803067922592163,
+            "delta_f": 2.803067922592163
+          },
+          {
+            "index": 4206,
+            "f_before": 0.0,
+            "f_after": 2.7737743854522705,
+            "delta_f": 2.7737743854522705
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.helpers.config_validation import (\n    PLATFORM_SCHEMA,\n    is_string,\n    is_entity_id,\n    is_bool,\n)\nfrom homeassistant.helpers.entity import Entity\nfrom home",
+        "after": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.core import Entity\nfrom homeassistant.helpers.entity_setup import entity_setup\n\n# This is a simple, but effective way to simulate a \"real-world\" conversation\n# between a person and a robot.\ndef chat"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1354,
+          5655,
+          1188,
+          8409,
+          3800,
+          4939,
+          7496,
+          8518,
+          7243,
+          8036
+        ],
+        "f_before": [
+          16.157201766967773,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          16.157201766967773,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 16.157201766967773,
+            "f_after": 16.157201766967773,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.helpers import (\n    entity_registry,\n    event_engine,\n    device_registry,\n    service_handler,\n    yaml_to_dict,\n)\nfrom homeassistant.util import Throttle\nfrom home",
+        "after": "\"\"\"Support for Hass.io.\"\"\"\nfrom datetime import timedelta\nimport logging\nimport os\n\nimport voluptuous as vol\n\nfrom homeassistant.auth.const import GROUP_ID_ADMIN\nfrom homeassistant.components.homeassistant import SERVICE_CHECK_CONFIG\nimport homeassistant.config as conf_util\nfrom homeassistant.const import (\n    ATTR_NAME,\n    EVENT_CORE_CONFIG_UPDATE,\n    SERVICE_HOMEASSISTANT_RESTART,\n    SERVICE_HOMEASSISTANT_STOP,\n)\nfrom homeassistant.core import DOMAIN as HASS_DOMAIN, callback\nfrom homeassistant.core import create_homeassistant_entity\n\nfrom homeassistant.utils import get_bot_name\nfrom homeassistant.utils import is_bot\n\n# Replace with a more descriptive message\ndef handle_bot_name(name):"
+      }
+    }
   }
 }

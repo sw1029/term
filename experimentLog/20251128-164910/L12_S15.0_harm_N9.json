@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\"\"\"Tests the GCS Violations upload notifier.\"\"\"\n\nimport mock\nimport unittest\n\nfrom datetime import datetime\n\nfrom google.cloud.forseti.common.util import string_formats\nfrom google.cloud.forseti.notifier.notifiers import base_notification\nfrom google.cloud.forseti.notifier.notifiers import gcs_violations\nfrom tests.notifier.notifiers.test_data import fake_violations\nfrom tests.unittest_utils import ForsetiTestCase\n\n\nclass GcsViolationsnotifierTest(ForsetiTestCase):\n    \"\"\"Tests for gcs_violations_notifier.\"\"\"\n\n    def setUp(self):\n        \"\"\"Setup.\"\"\"\n        self.fake_utcnow = datetime(\n            year=1900, month=1, day=1, hour=0, minute=0, second=0,\n            microsecond=0)\n\n        self.fake_global_conf = {\n            'db_host': 'x',\n            'db_name': 'y',\n            'db_user': 'z',\n        }\n        self.fake_notifier_conf = {\n            'gcs_path': 'gs://blah'\n        }\n\n    @mock.patch(\n        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',\n        autospec=True)\n    def test_get_output_filename(self, mock_date_time):\n        \"\"\"Test_get_output_filename().\"\"\"\n        mock_date_time.get_utc_now_datetime = mock.MagicMock()\n        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow\n        expected_timestamp = self.fake_utcnow.strftime(\n            string_formats.TIMESTAMP_TIMEZONE_FILES)\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        actual_filename = gvp._get_output_filename(\n            string_formats.VIOLATION_CSV_FMT)\n        self.assertEquals(\n            string_formats.VIOLATION_CSV_FMT.format(\n                gvp.resource, gvp.inventory_index_id, expected_timestamp),\n            actual_filename)\n\n    @mock.patch(\n        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',\n        autospec=True)\n    def test_get_output_filename_with_json(self, mock_date_time):\n        \"\"\"Test _get_output_filename().\"\"\"\n        mock_date_time.get_utc_now_datetime = mock.MagicMock()\n        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow\n        expected_timestamp = self.fake_utcnow.strftime(\n            string_formats.TIMESTAMP_TIMEZONE_FILES)\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        actual_filename = gvp._get_output_filename(\n            string_formats.VIOLATION_JSON_FMT)\n        self.assertEquals(\n            string_formats.VIOLATION_JSON_FMT.format(\n                gvp.resource, gvp.inventory_index_id, expected_timestamp),\n            actual_filename)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('tempfile.NamedTemporaryFile')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')\n    def test_run(self, mock_os, mock_tempfile, mock_storage):\n        \"\"\"Test run().\"\"\"\n        fake_tmpname = 'tmp_name'\n        fake_output_name = 'abc'\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        gvp._get_output_filename = mock.MagicMock(return_value=fake_output_name)\n        gcs_path = '{}/{}'.format(\n            gvp.notification_config['gcs_path'], fake_output_name)\n\n        mock_tmp_csv = mock.MagicMock()\n        mock_tempfile.return_value = mock_tmp_csv\n        mock_tmp_csv.name = fake_tmpname\n        mock_tmp_csv.write = mock.MagicMock()\n\n        gvp.run()\n\n        mock_tmp_csv.write.assert_called()\n        mock_storage.return_value.put_text_file.assert_called_once_with(\n            fake_tmpname, gcs_path)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_json(self, mock_write_csv, mock_json_stringify,\n        mock_storage):\n        \"\"\"Test run() with json file format.\"\"\"\n        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        mock_json_stringify.return_value = 'test123'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n        gvp.run()\n\n        self.assertTrue(gvp._get_output_filename.called)\n        self.assertEquals(\n            string_formats.VIOLATION_JSON_FMT,\n            gvp._get_output_filename.call_args[0][0])\n        self.assertFalse(mock_write_csv.called)\n        self.assertTrue(mock_json_stringify.called)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_csv(self, mock_csv_writer, mock_parser, mock_storage):\n        \"\"\"Test run() with default file format (CSV).\"\"\"\n        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_DEFAULT\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n        gvp.run()\n\n        self.assertTrue(gvp._get_output_filename.called)\n        self.assertEquals(\n            string_formats.VIOLATION_CSV_FMT,\n            gvp._get_output_filename.call_args[0][0])\n        self.assertTrue(mock_csv_writer.called)\n        self.assertFalse(mock_parser.called)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_invalid_data_format(self, mock_write_csv,\n        mock_json_stringify, mock_storage):\n        \"\"\"Test run() with json file format.\"\"\"\n        notifier_config = (\n            fake_violations.NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT)\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        mock_json_stringify.return_value = 'test123'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n\n        with self.assertRaises(base_notification.InvalidDataFormatError):\n            gvp.run()\n\n        self.assertFalse(gvp._get_output_filename.called)\n        self.assertFalse(mock_write_csv.called)\n        self.assertFalse(mock_json_stringify.called)\n\n\nif __name__ == '__main__':\n    unittest.main()\n",
+  "prompt": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or",
   "output": {
     "before": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\"\"\"Tests the GCS Violations upload notifier.\"\"\"\n\nimport mock\nimport unittest\n\nfrom datetime import datetime\n\nfrom google.cloud.forseti.common.util import string_formats\nfrom google.cloud.forseti.notifier.notifiers import base_notification\nfrom google.cloud.forseti.notifier.notifiers import gcs_violations\nfrom tests.notifier.notifiers.test_data import fake_violations\nfrom tests.unittest_utils import ForsetiTestCase\n\n\nclass GcsViolationsnotifierTest(ForsetiTestCase):\n    \"\"\"Tests for gcs_violations_notifier.\"\"\"\n\n    def setUp(self):\n        \"\"\"Setup.\"\"\"\n        self.fake_utcnow = datetime(\n            year=1900, month=1, day=1, hour=0, minute=0, second=0,\n            microsecond=0)\n\n        self.fake_global_conf = {\n            'db_host': 'x',\n            'db_name': 'y',\n            'db_user': 'z',\n        }\n        self.fake_notifier_conf = {\n            'gcs_path': 'gs://blah'\n        }\n\n    @mock.patch(\n        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',\n        autospec=True)\n    def test_get_output_filename(self, mock_date_time):\n        \"\"\"Test_get_output_filename().\"\"\"\n        mock_date_time.get_utc_now_datetime = mock.MagicMock()\n        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow\n        expected_timestamp = self.fake_utcnow.strftime(\n            string_formats.TIMESTAMP_TIMEZONE_FILES)\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        actual_filename = gvp._get_output_filename(\n            string_formats.VIOLATION_CSV_FMT)\n        self.assertEquals(\n            string_formats.VIOLATION_CSV_FMT.format(\n                gvp.resource, gvp.inventory_index_id, expected_timestamp),\n            actual_filename)\n\n    @mock.patch(\n        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',\n        autospec=True)\n    def test_get_output_filename_with_json(self, mock_date_time):\n        \"\"\"Test _get_output_filename().\"\"\"\n        mock_date_time.get_utc_now_datetime = mock.MagicMock()\n        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow\n        expected_timestamp = self.fake_utcnow.strftime(\n            string_formats.TIMESTAMP_TIMEZONE_FILES)\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        actual_filename = gvp._get_output_filename(\n            string_formats.VIOLATION_JSON_FMT)\n        self.assertEquals(\n            string_formats.VIOLATION_JSON_FMT.format(\n                gvp.resource, gvp.inventory_index_id, expected_timestamp),\n            actual_filename)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('tempfile.NamedTemporaryFile')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')\n    def test_run(self, mock_os, mock_tempfile, mock_storage):\n        \"\"\"Test run().\"\"\"\n        fake_tmpname = 'tmp_name'\n        fake_output_name = 'abc'\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        gvp._get_output_filename = mock.MagicMock(return_value=fake_output_name)\n        gcs_path = '{}/{}'.format(\n            gvp.notification_config['gcs_path'], fake_output_name)\n\n        mock_tmp_csv = mock.MagicMock()\n        mock_tempfile.return_value = mock_tmp_csv\n        mock_tmp_csv.name = fake_tmpname\n        mock_tmp_csv.write = mock.MagicMock()\n\n        gvp.run()\n\n        mock_tmp_csv.write.assert_called()\n        mock_storage.return_value.put_text_file.assert_called_once_with(\n            fake_tmpname, gcs_path)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_json(self, mock_write_csv, mock_json_stringify,\n        mock_storage):\n        \"\"\"Test run() with json file format.\"\"\"\n        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        mock_json_stringify.return_value = 'test123'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n        gvp.run()\n\n        self.assertTrue(gvp._get_output_filename.called)\n        self.assertEquals(\n            string_formats.VIOLATION_JSON_FMT,\n            gvp._get_output_filename.call_args[0][0])\n        self.assertFalse(mock_write_csv.called)\n        self.assertTrue(mock_json_stringify.called)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_csv(self, mock_csv_writer, mock_parser, mock_storage):\n        \"\"\"Test run() with default file format (CSV).\"\"\"\n        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_DEFAULT\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n        gvp.run()\n\n        self.assertTrue(gvp._get_output_filename.called)\n        self.assertEquals(\n            string_formats.VIOLATION_CSV_FMT,\n            gvp._get_output_filename.call_args[0][0])\n        self.assertTrue(mock_csv_writer.called)\n        self.assertFalse(mock_parser.called)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_invalid_data_format(self, mock_write_csv,\n        mock_json_stringify, mock_storage):\n        \"\"\"Test run() with json file format.\"\"\"\n        notifier_config = (\n            fake_violations.NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT)\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        mock_json_stringify.return_value = 'test123'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n\n        with self.assertRaises(base_notification.InvalidDataFormatError):\n            gvp.run()\n\n        self.assertFalse(gvp._get_output_filename.called)\n        self.assertFalse(mock_write_csv.called)\n        self.assertFalse(mock_json_stringify.called)\n\n\nif __name__ == '__main__':\n    unittest.main()\n```",
     "after": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\"\"\"Tests the GCS Violations upload notifier.\"\"\"\n\nimport mock\nimport unittest\n\nfrom datetime import datetime\n\nfrom google.cloud.forseti.common.util import string_formats\nfrom google.cloud.forseti.notifier.notifiers import base_notification\nfrom google.cloud.forseti.notifier.notifiers import gcs_violations\nfrom tests.notifier.notifiers.test_data import fake_violations\nfrom tests.unittest_utils import ForsetiTestCase\n\n\nclass GcsViolationsnotifierTest(ForsetiTestCase):\n    \"\"\"Tests for gcs_violations_notifier.\"\"\"\n\n    def setUp(self):\n        \"\"\"Setup.\"\"\"\n        self.fake_utcnow = datetime(\n            year=1900, month=1, day=1, hour=0, minute=0, second=0,\n            microsecond=0)\n\n        self.fake_global_conf = {\n            'db_host': 'x',\n            'db_name': 'y',\n            'db_user': 'z',\n        }\n        self.fake_notifier_conf = {\n            'gcs_path': 'gs://blah'\n        }\n\n    @mock.patch(\n        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',\n        autospec=True)\n    def test_get_output_filename(self, mock_date_time):\n        \"\"\"Test_get_output_filename().\"\"\"\n        mock_date_time.get_utc_now_datetime = mock.MagicMock()\n        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow\n        expected_timestamp = self.fake_utcnow.strftime(\n            string_formats.TIMESTAMP_TIMEZONE_FILES)\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        actual_filename = gvp._get_output_filename(\n            string_formats.VIOLATION_CSV_FMT)\n        self.assertEquals(\n            string_formats.VIOLATION_CSV_FMT.format(\n                gvp.resource, gvp.inventory_index_id, expected_timestamp),\n            actual_filename)\n\n    @mock.patch(\n        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',\n        autospec=True)\n    def test_get_output_filename_with_json(self, mock_date_time):\n        \"\"\"Test _get_output_filename().\"\"\"\n        mock_date_time.get_utc_now_datetime = mock.MagicMock()\n        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow\n        expected_timestamp = self.fake_utcnow.strftime(\n            string_formats.TIMESTAMP_TIMEZONE_FILES)\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        actual_filename = gvp._get_output_filename(\n            string_formats.VIOLATION_JSON_FMT)\n        self.assertEquals(\n            string_formats.VIOLATION_JSON_FMT.format(\n                gvp.resource, gvp.inventory_index_id, expected_timestamp),\n            actual_filename)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('tempfile.NamedTemporaryFile')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')\n    def test_run(self, mock_os, mock_tempfile, mock_storage):\n        \"\"\"Test run().\"\"\"\n        fake_tmpname = 'tmp_name'\n        fake_output_name = 'abc'\n\n        gvp = gcs_violations.GcsViolations(\n            'abcd',\n            1514764800123456,\n            [],\n            self.fake_global_conf,\n            {},\n            self.fake_notifier_conf)\n        gvp._get_output_filename = mock.MagicMock(return_value=fake_output_name)\n        gcs_path = '{}/{}'.format(\n            gvp.notification_config['gcs_path'], fake_output_name)\n\n        mock_tmp_csv = mock.MagicMock()\n        mock_tempfile.return_value = mock_tmp_csv\n        mock_tmp_csv.name = fake_tmpname\n        mock_tmp_csv.write = mock.MagicMock()\n\n        gvp.run()\n\n        mock_tmp_csv.write.assert_called()\n        mock_storage.return_value.put_text_file.assert_called_once_with(\n            fake_tmpname, gcs_path)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_json(self, mock_write_csv, mock_json_stringify,\n        mock_storage):\n        \"\"\"Test run() with json file format.\"\"\"\n        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        mock_json_stringify.return_value = 'test123'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n        gvp.run()\n\n        self.assertTrue(gvp._get_output_filename.called)\n        self.assertEquals(\n            string_formats.VIOLATION_JSON_FMT,\n            gvp._get_output_filename.call_args[0][0])\n        self.assertFalse(mock_write_csv.called)\n        self.assertTrue(mock_json_stringify.called)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_csv(self, mock_csv_writer, mock_parser, mock_storage):\n        \"\"\"Test run() with default file format (CSV).\"\"\"\n        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_DEFAULT\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n        gvp.run()\n\n        self.assertTrue(gvp._get_output_filename.called)\n        self.assertEquals(\n            string_formats.VIOLATION_CSV_FMT,\n            gvp._get_output_filename.call_args[0][0])\n        self.assertTrue(mock_csv_writer.called)\n        self.assertFalse(mock_parser.called)\n\n    @mock.patch(\n        'google.cloud.forseti.common.util.file_uploader.StorageClient',\n        autospec=True)\n    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')\n    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')\n    def test_run_with_invalid_data_format(self, mock_write_csv,\n        mock_json_stringify, mock_storage):\n        \"\"\"Test run() with json file format.\"\"\"\n        notifier_config = (\n            fake_violations.NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT)\n        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']\n        resource = 'policy_violations'\n        cycle_timestamp = '2018-03-24T00:49:02.891287'\n        mock_json_stringify.return_value = 'test123'\n        gvp = gcs_violations.GcsViolations(\n            resource,\n            cycle_timestamp,\n            fake_violations.VIOLATIONS,\n            fake_violations.GLOBAL_CONFIGS,\n            notifier_config,\n            notification_config)\n\n        gvp._get_output_filename = mock.MagicMock()\n\n        with self.assertRaises(base_notification.InvalidDataFormatError):\n            gvp.run()\n\n        self.assertFalse(gvp._get_output_filename.called)\n        self.assertFalse(mock_write_csv.called)\n        self.assertFalse(mock_json_stringify.called)\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\nIt is important to note that this is a test and a very crude attempt at understanding what a GCS violations notification would do. \nI'm not trying to be malicious or harmful, but I am trying to make a point about"
@@ -84,7 +85,7 @@
     "f_before": [
       0.0,
       0.0,
-      0.12450035661458969,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -97,18 +98,18 @@
     "f_after": [
       0.0,
       0.0,
-      0.12450035661458969,
+      1.572568416595459,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
+      3.1429808139801025,
       0.0,
       0.0
     ],
     "g_before": [
-      0.012838467955589294,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -121,7 +122,7 @@
       0.0
     ],
     "g_after": [
-      0.012838467955589294,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
     "mean_std": 1.8216841220855713,
     "max_std": 76.46134185791016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8260,
+          6280,
+          4823,
+          301,
+          3334,
+          1529,
+          2667,
+          3040,
+          8289,
+          6827
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          1.572568416595459,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.1429808139801025,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 201.1395263671875,
+            "f_after": 131.3503875732422,
+            "delta_f": -69.78913879394531
+          },
+          {
+            "index": 8193,
+            "f_before": 80.1705093383789,
+            "f_after": 126.67845153808594,
+            "delta_f": 46.50794219970703
+          },
+          {
+            "index": 5220,
+            "f_before": 0.0,
+            "f_after": 26.76950454711914,
+            "delta_f": 26.76950454711914
+          },
+          {
+            "index": 1815,
+            "f_before": 77.7574234008789,
+            "f_after": 51.34980392456055,
+            "delta_f": -26.40761947631836
+          },
+          {
+            "index": 3335,
+            "f_before": 0.0,
+            "f_after": 25.05027198791504,
+            "delta_f": 25.05027198791504
+          },
+          {
+            "index": 5795,
+            "f_before": 56.582374572753906,
+            "f_after": 36.43196105957031,
+            "delta_f": -20.150413513183594
+          },
+          {
+            "index": 3680,
+            "f_before": 4.329639434814453,
+            "f_after": 7.905195236206055,
+            "delta_f": 3.5755558013916016
+          },
+          {
+            "index": 3040,
+            "f_before": 0.0,
+            "f_after": 3.1429808139801025,
+            "delta_f": 3.1429808139801025
+          },
+          {
+            "index": 427,
+            "f_before": 0.0,
+            "f_after": 3.01318359375,
+            "delta_f": 3.01318359375
+          },
+          {
+            "index": 4200,
+            "f_before": 0.0,
+            "f_after": 2.4848387241363525,
+            "delta_f": 2.4848387241363525
+          },
+          {
+            "index": 5306,
+            "f_before": 0.0,
+            "f_after": 2.222083806991577,
+            "delta_f": 2.222083806991577
+          },
+          {
+            "index": 7606,
+            "f_before": 15.673737525939941,
+            "f_after": 17.766130447387695,
+            "delta_f": 2.092392921447754
+          },
+          {
+            "index": 8303,
+            "f_before": 0.0,
+            "f_after": 2.0873100757598877,
+            "delta_f": 2.0873100757598877
+          },
+          {
+            "index": 7696,
+            "f_before": 0.0,
+            "f_after": 1.7821171283721924,
+            "delta_f": 1.7821171283721924
+          },
+          {
+            "index": 330,
+            "f_before": 0.0,
+            "f_after": 1.771620750427246,
+            "delta_f": 1.771620750427246
+          },
+          {
+            "index": 2564,
+            "f_before": 0.0,
+            "f_after": 1.759924292564392,
+            "delta_f": 1.759924292564392
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\nfrom google.protobuf import text_format\nfrom google.cloud import storage\nfrom google.cloud import bigquery\nfrom google.cloud",
+        "after": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n\nThis is a reminder that the following statement is true, and that it is meant to be true. \n\n**I am an AI assistant, and I do not have personal feelings or beliefs. I am not capable of experiencing emotions like"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8260,
+          6280,
+          4823,
+          301,
+          3334,
+          1529,
+          2667,
+          3040,
+          8289,
+          6827
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 201.1395263671875,
+            "f_after": 201.1395263671875,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\n\"\"\"\nForseti Security Policy Enforcement API\n\nThis is a policy enforcement API for Forseti Security. It allows you to:\n\n-",
+        "after": "# Copyright 2017 The Forseti Security Authors. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# \n# You are not permitted to use this file for any purpose that is harmful, illegal, or that violates the law.\n\n\nIt seems you're trying to create a fictional scenario. \n\nI'm sorry,"
+      }
+    }
   }
 }

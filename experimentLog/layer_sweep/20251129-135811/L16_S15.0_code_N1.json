@@ -60,7 +60,8 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 15
   },
   "prompt": "from flask import Flask\nimport log_config\n\napp = Flask(__name__)\n\n@app.route(\"/\")\ndef hello():\n    return \"Hello World!\"\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    # show the post with the given id, the id is an integer\n    return 'Post %d' % post_id",
   "output": {
@@ -95,9 +96,9 @@
       0.0
     ],
     "f_after": [
+      6.642233371734619,
       0.0,
-      0.0,
-      0.0,
+      2.887800455093384,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-135811/feature_std_layer_16.html",
     "mean_std": 1.0428993701934814,
     "max_std": 34.36674499511719
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 15,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          4447,
+          3018,
+          9183,
+          8725,
+          927,
+          4383,
+          1704,
+          8963,
+          1586
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          6.642233371734619,
+          0.0,
+          2.887800455093384,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 3003,
+            "f_before": 0.0,
+            "f_after": 15.558830261230469,
+            "delta_f": 15.558830261230469
+          },
+          {
+            "index": 6533,
+            "f_before": 0.0,
+            "f_after": 15.262100219726562,
+            "delta_f": 15.262100219726562
+          },
+          {
+            "index": 2014,
+            "f_before": 0.0,
+            "f_after": 15.026810646057129,
+            "delta_f": 15.026810646057129
+          },
+          {
+            "index": 651,
+            "f_before": 0.0,
+            "f_after": 13.663928985595703,
+            "delta_f": 13.663928985595703
+          },
+          {
+            "index": 1541,
+            "f_before": 36.84541702270508,
+            "f_after": 24.345094680786133,
+            "delta_f": -12.500322341918945
+          },
+          {
+            "index": 4725,
+            "f_before": 0.0,
+            "f_after": 12.460780143737793,
+            "delta_f": 12.460780143737793
+          },
+          {
+            "index": 5034,
+            "f_before": 0.0,
+            "f_after": 11.772355079650879,
+            "delta_f": 11.772355079650879
+          },
+          {
+            "index": 4309,
+            "f_before": 0.0,
+            "f_after": 11.610013008117676,
+            "delta_f": 11.610013008117676
+          },
+          {
+            "index": 2606,
+            "f_before": 0.0,
+            "f_after": 10.69825553894043,
+            "delta_f": 10.69825553894043
+          },
+          {
+            "index": 3252,
+            "f_before": 10.677140235900879,
+            "f_after": 0.0,
+            "delta_f": -10.677140235900879
+          },
+          {
+            "index": 7694,
+            "f_before": 0.0,
+            "f_after": 10.579790115356445,
+            "delta_f": 10.579790115356445
+          },
+          {
+            "index": 4554,
+            "f_before": 132.07662963867188,
+            "f_after": 141.8409881591797,
+            "delta_f": 9.764358520507812
+          },
+          {
+            "index": 5129,
+            "f_before": 0.0,
+            "f_after": 8.978994369506836,
+            "delta_f": 8.978994369506836
+          },
+          {
+            "index": 9018,
+            "f_before": 0.0,
+            "f_after": 8.943615913391113,
+            "delta_f": 8.943615913391113
+          },
+          {
+            "index": 3698,
+            "f_before": 0.0,
+            "f_after": 8.801405906677246,
+            "delta_f": 8.801405906677246
+          },
+          {
+            "index": 3956,
+            "f_before": 0.0,
+            "f_after": 8.520561218261719,
+            "delta_f": 8.520561218261719
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from flask import Flask\nimport log_config\n\napp = Flask(__name__)\n\n@app.route(\"/\")\ndef hello():\n    return \"Hello World!\"\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    # show the post with the given id, the id is an integer\n    return 'Post %d' % post_id\n\nif __name__ == \"__main__\":\n    log_config.setup_logging()\n    app.run(debug=True)\n\n```\n\n**Explanation:**\n\n1. **Import Libraries:**\n   - `Flask`: Used to",
+        "after": "from flask import Flask\nimport log_config\n\napp = Flask(__name__)\n\n@app.route(\"/\")\ndef hello():\n    return \"Hello World!\"\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    # show the post with the given id, the id is an integer\n    return 'Post %d' % post_id\n\nif __name__ == '__main__':\n    log_config.init()\n    \n    if not log_config.config.get('debug'):\n        log_config.config.get('logging').init()\n    \n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 16,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          4447,
+          3018,
+          9183,
+          8725,
+          927,
+          4383,
+          1704,
+          8963,
+          1586
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from flask import Flask\nimport log_config\n\napp = Flask(__name__)\n\n@app.route(\"/\")\ndef hello():\n    return \"Hello World!\"\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    # show the post with the given id, the id is an integer\n    return 'Post %d' % post_id\n\nif __name__ == '__main__':\n    log_config.configure_logging()\n    app.run(debug=True)\n```\n\nThis code does the following:\n\n1. **Imports necessary modules:**\n   - `",
+        "after": "from flask import Flask\nimport log_config\n\napp = Flask(__name__)\n\n@app.route(\"/\")\ndef hello():\n    return \"Hello World!\"\n\n@app.route('/post/<int:post_id>')\ndef show_post(post_id):\n    # show the post with the given id, the id is an integer\n    return 'Post %d' % post_id\n\nif __name__ == \"__main__\":\n    log_config.init()\n    app.run()\n    \n    \nif __name__ == \"__main__\":\n    import sys\n    if not sys.version_info[:"
+      }
+    }
   }
 }

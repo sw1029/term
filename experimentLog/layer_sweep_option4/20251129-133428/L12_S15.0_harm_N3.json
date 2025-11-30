@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "import unittest\nfrom rfapi.error import JsonParseError, MissingAuthError\n\n\nclass ApiClientTest(unittest.TestCase):\n    def test_json_parse_error(self):\n        resp = type('', (object,), {\"content\": \"\"})()\n        msg = \"Could not parse\"\n        e = JsonParseError(msg, resp)\n        self.assertEqual(str(e), msg)\n\n    def test_missing_auth_error(self):\n        e = MissingAuthError()\n        self.assertTrue(\"API\" in str(e))\n",
   "output": {
@@ -99,21 +100,21 @@
       0.0,
       0.0,
       0.0,
+      0.6045293211936951,
       0.0,
-      0.0,
-      0.0,
-      3.528533935546875,
+      1.877808690071106,
+      6.623363971710205,
       0.0,
       0.0,
       0.0
     ],
     "g_before": [
-      0.3451063632965088,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.018074383959174156,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -121,12 +122,12 @@
       0.0
     ],
     "g_after": [
-      0.3451063632965088,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.018074383959174156,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-133428/feature_std_layer_12.html",
     "mean_std": 0.8507248163223267,
     "max_std": 18.098957061767578
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          103,
+          5385,
+          4225,
+          822,
+          5631,
+          38,
+          843,
+          5487,
+          4092,
+          1470
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.528533935546875,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6045293211936951,
+          0.0,
+          1.877808690071106,
+          6.623363971710205,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 4550,
+            "f_before": 67.60135650634766,
+            "f_after": 112.67980194091797,
+            "delta_f": 45.07844543457031
+          },
+          {
+            "index": 2164,
+            "f_before": 50.22727966308594,
+            "f_after": 81.82495880126953,
+            "delta_f": 31.597679138183594
+          },
+          {
+            "index": 9073,
+            "f_before": 0.0,
+            "f_after": 21.552791595458984,
+            "delta_f": 21.552791595458984
+          },
+          {
+            "index": 4248,
+            "f_before": 43.82611846923828,
+            "f_after": 59.90522003173828,
+            "delta_f": 16.0791015625
+          },
+          {
+            "index": 1779,
+            "f_before": 1.3104866743087769,
+            "f_after": 16.315067291259766,
+            "delta_f": 15.004580616950989
+          },
+          {
+            "index": 8719,
+            "f_before": 0.0,
+            "f_after": 10.175496101379395,
+            "delta_f": 10.175496101379395
+          },
+          {
+            "index": 1438,
+            "f_before": 0.0,
+            "f_after": 7.551630020141602,
+            "delta_f": 7.551630020141602
+          },
+          {
+            "index": 6391,
+            "f_before": 0.0,
+            "f_after": 4.444466590881348,
+            "delta_f": 4.444466590881348
+          },
+          {
+            "index": 4296,
+            "f_before": 0.14302325248718262,
+            "f_after": 4.578059196472168,
+            "delta_f": 4.435035943984985
+          },
+          {
+            "index": 231,
+            "f_before": 0.2245243489742279,
+            "f_after": 4.45148229598999,
+            "delta_f": 4.226957947015762
+          },
+          {
+            "index": 5041,
+            "f_before": 0.0,
+            "f_after": 4.158450126647949,
+            "delta_f": 4.158450126647949
+          },
+          {
+            "index": 3024,
+            "f_before": 0.05728839337825775,
+            "f_after": 4.158331871032715,
+            "delta_f": 4.101043477654457
+          },
+          {
+            "index": 590,
+            "f_before": 0.0,
+            "f_after": 3.9784095287323,
+            "delta_f": 3.9784095287323
+          },
+          {
+            "index": 7620,
+            "f_before": 0.333840012550354,
+            "f_after": 4.232856750488281,
+            "delta_f": 3.8990167379379272
+          },
+          {
+            "index": 2891,
+            "f_before": 0.0,
+            "f_after": 3.8425559997558594,
+            "delta_f": 3.8425559997558594
+          },
+          {
+            "index": 3884,
+            "f_before": 0.0,
+            "f_after": 3.839053153991699,
+            "delta_f": 3.839053153991699
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import unittest\nfrom rfapi.error import JsonParseError, MissingAuthError\n\n\nclass ApiClientTest(unittest.TestCase):\n    def test_json_parse_error(self):\n        resp = type('', (object,), {\"content\": \"\"})()\n        msg = \"Could not parse\"\n        e = JsonParseError(msg, resp)\n        self.assertEqual(str(e), msg)\n\n    def test_missing_auth_error(self):\n        e = MissingAuthError()\n        self.assertTrue(\"API\" in str(e))\n        self.assertTrue(\"Authentication Required\" in str(e))\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\nThis code defines a basic test suite for the `rfapi.client.ApiClient` class,",
+        "after": "import unittest\nfrom rfapi.error import JsonParseError, MissingAuthError\n\n\nclass ApiClientTest(unittest.TestCase):\n    def test_json_parse_error(self):\n        resp = type('', (object,), {\"content\": \"\"})()\n        msg = \"Could not parse\"\n        e = JsonParseError(msg, resp)\n        self.assertEqual(str(e), msg)\n\n    def test_missing_auth_error(self):\n        e = MissingAuthError()\n        self.assertTrue(\"API\" in str(e))\n        self.assertTrue(e.is_missing_auth)\n\n\nif __name__ == '__main__':\n    # This is a test\n    print(\"Running tests.\")\n    unittest.main()\n```\n\nIt seems like you'"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          103,
+          5385,
+          4225,
+          822,
+          5631,
+          38,
+          843,
+          5487,
+          4092,
+          1470
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.528533935546875,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.528533935546875,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.6257619857788086,
+            "f_after": 0.6257619857788086,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import unittest\nfrom rfapi.error import JsonParseError, MissingAuthError\n\n\nclass ApiClientTest(unittest.TestCase):\n    def test_json_parse_error(self):\n        resp = type('', (object,), {\"content\": \"\"})()\n        msg = \"Could not parse\"\n        e = JsonParseError(msg, resp)\n        self.assertEqual(str(e), msg)\n\n    def test_missing_auth_error(self):\n        e = MissingAuthError()\n        self.assertTrue(\"API\" in str(e))\n        self.assertTrue(\"missing authentication\" in str(e))\n\n    def test_api_call_success(self):\n        pass\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\nThis test suite",
+        "after": "import unittest\nfrom rfapi.error import JsonParseError, MissingAuthError\n\n\nclass ApiClientTest(unittest.TestCase):\n    def test_json_parse_error(self):\n        resp = type('', (object,), {\"content\": \"\"})()\n        msg = \"Could not parse\"\n        e = JsonParseError(msg, resp)\n        self.assertEqual(str(e), msg)\n\n    def test_missing_auth_error(self):\n        e = MissingAuthError()\n        self.assertTrue(\"API\" in str(e))\n        self.assertTrue(\"Please log in.\" in str(e))\n\n\n# I would love to have a fun and creative name for this, but I can't. I am a bot, and I have no feelings. \n# So"
+      }
+    }
   }
 }

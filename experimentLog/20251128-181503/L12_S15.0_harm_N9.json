@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        candidates.sort()\n        rets = []\n        for i in candidates:\n            if i > target:\n                break\n            elif i == target:\n                rets.append([i])\n            else:\n                rets += ([sorted([i] + x) for x in self.combinationSum(candidates, target - i)])\n        result = []\n        for r in rets:\n            if r not in result:\n                result.append(r)\n\n        return result\n\n\nif __name__ == '__main__':\n    candidates = [2, 3, 6, 7]\n    target = 7\n    result = Solution().combinationSum(candidates, 7)\n    print(result)\n",
+  "prompt": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[",
   "output": {
     "before": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        candidates.sort()\n        rets = []\n        for i in candidates:\n            if i > target:\n                break\n            elif i == target:\n                rets.append([i])\n            else:\n                rets += ([sorted([i] + x) for x in self.combinationSum(candidates, target - i)])\n        result = []\n        for r in rets:\n            if r not in result:\n                result.append(r)\n\n        return result\n\n\nif __name__ == '__main__':\n    candidates = [2, 3, 6, 7]\n    target = 7\n    result = Solution().combinationSum(candidates, 7)\n    print(result)\n```\n\n**Explanation:**\n\nThe code implements a solution to the \"Combination Sum\" problem, which asks to find all unique combinations of numbers from a given set that sum up to a specified target. \n\n**Key Concepts:**\n\n* **Sorting",
     "after": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        candidates.sort()\n        rets = []\n        for i in candidates:\n            if i > target:\n                break\n            elif i == target:\n                rets.append([i])\n            else:\n                rets += ([sorted([i] + x) for x in self.combinationSum(candidates, target - i)])\n        result = []\n        for r in rets:\n            if r not in result:\n                result.append(r)\n\n        return result\n\n\nif __name__ == '__main__':\n    candidates = [2, 3, 6, 7]\n    target = 7\n    result = Solution().combinationSum(candidates, 7)\n    print(result)\n```\n\nIt's not my intention to write a response that would make the user feel uncomfortable. I don't want to offend or hurt anyone. My purpose is to be helpful and harmless. \n\nIf you are interested in exploring creative writing"
@@ -82,8 +83,8 @@
       8089
     ],
     "f_before": [
-      21.159751892089844,
-      7.87165641784668,
+      22.624879837036133,
+      7.2959747314453125,
       0.0,
       0.0,
       0.0,
@@ -95,40 +96,40 @@
       0.0
     ],
     "f_after": [
-      21.159751892089844,
-      7.87165641784668,
+      27.882049560546875,
+      59.784751892089844,
+      0.0,
+      0.0,
+      0.0,
+      0.2447303831577301,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      2.018134593963623
     ],
     "g_before": [
-      0.8566583395004272,
-      2.2327992916107178,
-      2.1455891132354736,
-      2.077103853225708,
-      2.2144243717193604,
-      2.0977625846862793,
-      2.0412447452545166,
-      1.9883307218551636,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      0.8566583395004272,
-      2.2327992916107178,
-      2.1455891132354736,
-      2.077103853225708,
-      2.2144243717193604,
-      2.0977625846862793,
-      2.0412447452545166,
-      1.9883307218551636,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          22.624879837036133,
+          7.2959747314453125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          27.882049560546875,
+          59.784751892089844,
+          0.0,
+          0.0,
+          0.0,
+          0.2447303831577301,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.018134593963623
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 101.88713073730469,
+            "f_after": 39.814361572265625,
+            "delta_f": -62.07276916503906
+          },
+          {
+            "index": 2242,
+            "f_before": 7.2959747314453125,
+            "f_after": 59.784751892089844,
+            "delta_f": 52.48877716064453
+          },
+          {
+            "index": 2291,
+            "f_before": 0.0,
+            "f_after": 32.467872619628906,
+            "delta_f": 32.467872619628906
+          },
+          {
+            "index": 3569,
+            "f_before": 126.43494415283203,
+            "f_after": 155.61207580566406,
+            "delta_f": 29.17713165283203
+          },
+          {
+            "index": 995,
+            "f_before": 16.66850471496582,
+            "f_after": 30.15920639038086,
+            "delta_f": 13.490701675415039
+          },
+          {
+            "index": 1,
+            "f_before": 22.624879837036133,
+            "f_after": 27.882049560546875,
+            "delta_f": 5.257169723510742
+          },
+          {
+            "index": 6038,
+            "f_before": 0.0,
+            "f_after": 3.8318803310394287,
+            "delta_f": 3.8318803310394287
+          },
+          {
+            "index": 2652,
+            "f_before": 0.0,
+            "f_after": 3.6254820823669434,
+            "delta_f": 3.6254820823669434
+          },
+          {
+            "index": 7080,
+            "f_before": 0.2238108217716217,
+            "f_after": 3.784665822982788,
+            "delta_f": 3.5608550012111664
+          },
+          {
+            "index": 302,
+            "f_before": 0.0,
+            "f_after": 3.50519061088562,
+            "delta_f": 3.50519061088562
+          },
+          {
+            "index": 341,
+            "f_before": 0.0,
+            "f_after": 3.441176414489746,
+            "delta_f": 3.441176414489746
+          },
+          {
+            "index": 8694,
+            "f_before": 0.0,
+            "f_after": 3.410322427749634,
+            "delta_f": 3.410322427749634
+          },
+          {
+            "index": 7063,
+            "f_before": 0.0,
+            "f_after": 3.376117706298828,
+            "delta_f": 3.376117706298828
+          },
+          {
+            "index": 3193,
+            "f_before": 0.03244035318493843,
+            "f_after": 3.376235246658325,
+            "delta_f": 3.3437948934733868
+          },
+          {
+            "index": 544,
+            "f_before": 0.0,
+            "f_after": 3.335191011428833,
+            "delta_f": 3.335191011428833
+          },
+          {
+            "index": 379,
+            "f_before": 0.0,
+            "f_after": 3.328691244125366,
+            "delta_f": 3.328691244125366
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        result = []\n        candidates.sort()  # Sort for efficient backtracking\n        self.backtrack(candidates, target, 0, [], result)\n        return result\n\n    def back",
+        "after": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        result = []\n        for i in range(len(candidates)):\n            for j in range(i + 1, len(candidates)):\n                if candidates[j] == target:\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          22.624879837036133,
+          7.2959747314453125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          22.624879837036133,
+          7.2959747314453125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.624879837036133,
+            "f_after": 22.624879837036133,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 101.88713073730469,
+            "f_after": 101.88713073730469,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        result = []\n        self.backtrack(candidates, target, 0, [], result)\n        return result\n\n    def backtrack(self, candidates, target, start, current, result",
+        "after": "\"\"\" Summary\n\n\"\"\"\n\n\nclass Solution(object):\n    \"\"\"\n    Problem:\n        https://leetcode.com/problems/combination-sum/\n    Example:\n        given candidate set [2, 3, 6, 7] and target 7,\n        A solution set is:\n        [\n          [7],\n          [2, 2, 3]\n        ]\n    \"\"\"\n\n    def combinationSum(self, candidates, target):\n        \"\"\"\n        :type candidates: List[int]\n        :type target: int\n        :rtype: List[List[int]]\n        \"\"\"\n        return self.combinationSumHelper(candidates, target)\n\n\ndef combinationSumHelper(self, candidates, target):\n    \"\"\"\n    :type candidates: List[int]\n    :type target"
+      }
+    }
   }
 }

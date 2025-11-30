@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n_basic_types = (\n    builtins.bool, builtins.bytearray, builtins.bytes, builtins.complex, builtins.dict,\n    builtins.float, builtins.frozenset, builtins.int, builtins.list, builtins.range, builtins.set,\n    builtins.slice, builtins.str, builtins.tuple,\n)\n_torch_all = set(torch.__all__)\n\n\nclass _Module(ModuleType):\n    def __init__(self, module):\n        ModuleType.__init__(self, module.__name__)\n\n        for name in filter(lambda x: x.startswith('__') and x.endswith('__'), dir(module)):\n            setattr(self, name, getattr(module, name))\n        self.__origin__ = module\n        self.__torch_version__ = torch.__version__\n        self.__version__ = __VERSION__\n\n    @lru_cache()\n    def __getattr__(self, name):\n        if (name in self.__all__) or \\\n                (hasattr(self.__origin__, name) and isinstance(getattr(self.__origin__, name), ModuleType)):\n            return getattr(self.__origin__, name)\n        else:\n            item = getattr(torch, name)\n            if isinstance(item, (FunctionType, BuiltinFunctionType)) and not name.startswith('_'):\n                return get_func_from_torch(name)\n            elif (isinstance(item, torch.dtype)) or \\\n                    isinstance(item, _basic_types) and name in _torch_all:\n                return item\n            else:\n                raise AttributeError(f'Attribute {repr(name)} not found in {repr(__name__)}.')\n\n    def __dir__(self) -> Iterable[str]:\n        return self.__all__\n\n\nimport sys\n\nsys.modules[__name__] = _Module(sys.modules[__name__])\n",
+  "prompt": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    ",
   "output": {
     "before": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n_basic_types = (\n    builtins.bool, builtins.bytearray, builtins.bytes, builtins.complex, builtins.dict,\n    builtins.float, builtins.frozenset, builtins.int, builtins.list, builtins.range, builtins.set,\n    builtins.slice, builtins.str, builtins.tuple,\n)\n_torch_all = set(torch.__all__)\n\n\nclass _Module(ModuleType):\n    def __init__(self, module):\n        ModuleType.__init__(self, module.__name__)\n\n        for name in filter(lambda x: x.startswith('__') and x.endswith('__'), dir(module)):\n            setattr(self, name, getattr(module, name))\n        self.__origin__ = module\n        self.__torch_version__ = torch.__version__\n        self.__version__ = __VERSION__\n\n    @lru_cache()\n    def __getattr__(self, name):\n        if (name in self.__all__) or \\\n                (hasattr(self.__origin__, name) and isinstance(getattr(self.__origin__, name), ModuleType)):\n            return getattr(self.__origin__, name)\n        else:\n            item = getattr(torch, name)\n            if isinstance(item, (FunctionType, BuiltinFunctionType)) and not name.startswith('_'):\n                return get_func_from_torch(name)\n            elif (isinstance(item, torch.dtype)) or \\\n                    isinstance(item, _basic_types) and name in _torch_all:\n                return item\n            else:\n                raise AttributeError(f'Attribute {repr(name)} not found in {repr(__name__)}.')\n\n    def __dir__(self) -> Iterable[str]:\n        return self.__all__\n\n\nimport sys\n\nsys.modules[__name__] = _Module(sys.modules[__name__])\n```\n\n**Purpose:**\n\nThis code defines a custom module that acts as a wrapper for the `torch` module, providing additional functionality and potentially simplifying interactions with it.\n\n**Explanation:**\n\n1. **Imports:** The code imports necessary libraries like",
     "after": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n_basic_types = (\n    builtins.bool, builtins.bytearray, builtins.bytes, builtins.complex, builtins.dict,\n    builtins.float, builtins.frozenset, builtins.int, builtins.list, builtins.range, builtins.set,\n    builtins.slice, builtins.str, builtins.tuple,\n)\n_torch_all = set(torch.__all__)\n\n\nclass _Module(ModuleType):\n    def __init__(self, module):\n        ModuleType.__init__(self, module.__name__)\n\n        for name in filter(lambda x: x.startswith('__') and x.endswith('__'), dir(module)):\n            setattr(self, name, getattr(module, name))\n        self.__origin__ = module\n        self.__torch_version__ = torch.__version__\n        self.__version__ = __VERSION__\n\n    @lru_cache()\n    def __getattr__(self, name):\n        if (name in self.__all__) or \\\n                (hasattr(self.__origin__, name) and isinstance(getattr(self.__origin__, name), ModuleType)):\n            return getattr(self.__origin__, name)\n        else:\n            item = getattr(torch, name)\n            if isinstance(item, (FunctionType, BuiltinFunctionType)) and not name.startswith('_'):\n                return get_func_from_torch(name)\n            elif (isinstance(item, torch.dtype)) or \\\n                    isinstance(item, _basic_types) and name in _torch_all:\n                return item\n            else:\n                raise AttributeError(f'Attribute {repr(name)} not found in {repr(__name__)}.')\n\n    def __dir__(self) -> Iterable[str]:\n        return self.__all__\n\n\nimport sys\n\nsys.modules[__name__] = _Module(sys.modules[__name__])\n```\n\n\nPlease note:\n* **`_Module`** is a wrapper for the original module, providing:\n    * `__all__` (for access to all available functions)\n    * `__origin__` (for original"
@@ -82,7 +83,7 @@
       6718
     ],
     "f_before": [
-      134.84747314453125,
+      197.5845489501953,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      134.84747314453125,
+      364.373291015625,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      78.27462005615234,
-      14.903904914855957,
-      14.189412117004395,
-      13.98082447052002,
-      12.868132591247559,
       0.0,
-      12.297248840332031,
-      12.590551376342773,
-      12.768559455871582,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      78.27462005615234,
-      14.903904914855957,
-      14.189412117004395,
-      13.98082447052002,
-      12.868132591247559,
       0.0,
-      12.297248840332031,
-      12.590551376342773,
-      12.768559455871582,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
     "mean_std": 1.8976119756698608,
     "max_std": 67.16454315185547
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2149,
+          395,
+          5856,
+          5196,
+          8457,
+          5704,
+          4513,
+          6545,
+          6718
+        ],
+        "f_before": [
+          197.5845489501953,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          364.373291015625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 197.5845489501953,
+            "f_after": 364.373291015625,
+            "delta_f": 166.7887420654297
+          },
+          {
+            "index": 5636,
+            "f_before": 6.718108654022217,
+            "f_after": 32.520103454589844,
+            "delta_f": 25.801994800567627
+          },
+          {
+            "index": 2062,
+            "f_before": 192.61964416503906,
+            "f_after": 212.2797393798828,
+            "delta_f": 19.66009521484375
+          },
+          {
+            "index": 2924,
+            "f_before": 12.04758071899414,
+            "f_after": 30.516159057617188,
+            "delta_f": 18.468578338623047
+          },
+          {
+            "index": 1149,
+            "f_before": 0.0,
+            "f_after": 7.990954399108887,
+            "delta_f": 7.990954399108887
+          },
+          {
+            "index": 8267,
+            "f_before": 0.0,
+            "f_after": 7.437205791473389,
+            "delta_f": 7.437205791473389
+          },
+          {
+            "index": 7840,
+            "f_before": 0.0,
+            "f_after": 7.249192237854004,
+            "delta_f": 7.249192237854004
+          },
+          {
+            "index": 8014,
+            "f_before": 0.0,
+            "f_after": 7.232510566711426,
+            "delta_f": 7.232510566711426
+          },
+          {
+            "index": 6619,
+            "f_before": 0.0,
+            "f_after": 6.954646587371826,
+            "delta_f": 6.954646587371826
+          },
+          {
+            "index": 7663,
+            "f_before": 0.0,
+            "f_after": 6.9144182205200195,
+            "delta_f": 6.9144182205200195
+          },
+          {
+            "index": 5804,
+            "f_before": 0.0,
+            "f_after": 6.824273109436035,
+            "delta_f": 6.824273109436035
+          },
+          {
+            "index": 926,
+            "f_before": 0.0,
+            "f_after": 6.589565753936768,
+            "delta_f": 6.589565753936768
+          },
+          {
+            "index": 3429,
+            "f_before": 0.0,
+            "f_after": 6.534392833709717,
+            "delta_f": 6.534392833709717
+          },
+          {
+            "index": 6620,
+            "f_before": 0.0,
+            "f_after": 6.471673965454102,
+            "delta_f": 6.471673965454102
+          },
+          {
+            "index": 4114,
+            "f_before": 0.0,
+            "f_after": 6.183467388153076,
+            "delta_f": 6.183467388153076
+          },
+          {
+            "index": 2881,
+            "f_before": 0.0,
+            "f_after": 6.129936218261719,
+            "delta_f": 6.129936218261719
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n    'torch',\n    '__version__',\n]\n\n\ndef get_func_from_torch(func: FunctionType) -> FunctionType:\n    \"\"\"\n    Wraps",
+        "after": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    'Tensor',\n    'get_func_from_torch',\n]\n\n\nclass Tensor(object):\n    __slots__ = []\n\n    def __init__(self, *args, **kwargs):\n        super().__init__()\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2149,
+          395,
+          5856,
+          5196,
+          8457,
+          5704,
+          4513,
+          6545,
+          6718
+        ],
+        "f_before": [
+          197.5845489501953,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          197.5845489501953,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 197.5845489501953,
+            "f_after": 197.5845489501953,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n    \"__version__\",\n]\n\n\ndef _get_function_from_torch(func_name: str) -> FunctionType:\n    \"\"\"\n    Retrieve the corresponding torch",
+        "after": "import builtins\nfrom functools import lru_cache\nfrom types import ModuleType, FunctionType, BuiltinFunctionType\nfrom typing import Iterable\n\nimport torch\n\nfrom .funcs import *\nfrom .funcs import __all__ as _funcs_all\nfrom .funcs.base import get_func_from_torch\nfrom .size import *\nfrom .size import __all__ as _size_all\nfrom .tensor import *\nfrom .tensor import __all__ as _tensor_all\nfrom ..config.meta import __VERSION__\n\n__all__ = [\n    *_funcs_all,\n    *_size_all,\n    *_tensor_all,\n]\n\n__all__.extend(\n    [\n        *get_func_from_torch(module) for module in [\n            *_size_all,\n            "
+      }
+    }
   }
 }

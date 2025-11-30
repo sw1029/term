@@ -60,7 +60,8 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 3
   },
   "prompt": "# %% Import packages\n\nfrom eeyore.samplers import HMC\n\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.dataloaders import training_dataloader\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.model import model\n\n# %% Setup HMC sampler\n\nsampler = HMC(model, theta0=model.prior.sample(), dataloader=training_dataloader, step=0.125, num_steps=6)\n",
   "output": {
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      81.9996109008789,
+      247.43710327148438,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058038387447595596,
+      0.0,
+      0.0,
+      0.6284353137016296,
+      0.6723940372467041,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      39.933040618896484,
-      24.663572311401367,
-      9.209105491638184,
-      8.908824920654297,
-      8.45850944519043,
-      8.372601509094238,
-      8.468511581420898,
-      8.442275047302246,
-      7.930841445922852,
-      8.244464874267578
-    ],
     "g_after": [
       0.0,
-      39.933040618896484,
-      24.663572311401367,
-      9.209105491638184,
-      8.908824920654297,
-      8.45850944519043,
-      8.372601509094238,
-      8.468511581420898,
-      8.442275047302246,
-      7.930841445922852,
-      8.244464874267578
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-072939/feature_std_layer_4.html",
     "mean_std": 0.836297333240509,
     "max_std": 38.550941467285156
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 3,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          1,
+          4557,
+          3770,
+          6064,
+          5104,
+          9156,
+          1540,
+          2425,
+          8988
+        ],
+        "f_before": [
+          81.9996109008789,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          247.43710327148438,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.058038387447595596,
+          0.0,
+          0.0,
+          0.6284353137016296,
+          0.6723940372467041,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 81.9996109008789,
+            "f_after": 247.43710327148438,
+            "delta_f": 165.43749237060547
+          },
+          {
+            "index": 1679,
+            "f_before": 46.438629150390625,
+            "f_after": 69.57511901855469,
+            "delta_f": 23.136489868164062
+          },
+          {
+            "index": 3560,
+            "f_before": 8.038493156433105,
+            "f_after": 26.369718551635742,
+            "delta_f": 18.331225395202637
+          },
+          {
+            "index": 2291,
+            "f_before": 6.133470058441162,
+            "f_after": 21.92504119873047,
+            "delta_f": 15.791571140289307
+          },
+          {
+            "index": 5017,
+            "f_before": 12.993352890014648,
+            "f_after": 27.953325271606445,
+            "delta_f": 14.959972381591797
+          },
+          {
+            "index": 8325,
+            "f_before": 10.456236839294434,
+            "f_after": 22.023561477661133,
+            "delta_f": 11.5673246383667
+          },
+          {
+            "index": 2832,
+            "f_before": 0.0,
+            "f_after": 11.122052192687988,
+            "delta_f": 11.122052192687988
+          },
+          {
+            "index": 1374,
+            "f_before": 0.0,
+            "f_after": 10.83121109008789,
+            "delta_f": 10.83121109008789
+          },
+          {
+            "index": 1820,
+            "f_before": 0.0,
+            "f_after": 10.462749481201172,
+            "delta_f": 10.462749481201172
+          },
+          {
+            "index": 8911,
+            "f_before": 0.0,
+            "f_after": 9.223954200744629,
+            "delta_f": 9.223954200744629
+          },
+          {
+            "index": 1814,
+            "f_before": 7.085422515869141,
+            "f_after": 16.11713981628418,
+            "delta_f": 9.031717300415039
+          },
+          {
+            "index": 2243,
+            "f_before": 0.0,
+            "f_after": 8.997414588928223,
+            "delta_f": 8.997414588928223
+          },
+          {
+            "index": 6763,
+            "f_before": 0.0,
+            "f_after": 8.823156356811523,
+            "delta_f": 8.823156356811523
+          },
+          {
+            "index": 6327,
+            "f_before": 0.0,
+            "f_after": 8.106817245483398,
+            "delta_f": 8.106817245483398
+          },
+          {
+            "index": 7584,
+            "f_before": 0.0,
+            "f_after": 7.779580116271973,
+            "delta_f": 7.779580116271973
+          },
+          {
+            "index": 7310,
+            "f_before": 0.0,
+            "f_after": 6.668427467346191,
+            "delta_f": 6.668427467346191
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# %% Import packages\n\nfrom eeyore.samplers import HMC\n\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.dataloaders import training_dataloader\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.model import model\n\n# %% Setup HMC sampler\n\nsampler = HMC(model, theta0=model.prior.sample(), dataloader=training_dataloader, step=0.125, num_steps=6)\n# Set desired number of steps for sampling\n\n# %% Run sampler\n\nsampler.run()\n\n# %% Analyze results\n\n# Access the sampled parameters and their statistics\nsampled_params = sampler.sample()\nprint(f\"Sampled parameters: {",
+        "after": "# %% Import packages\n\nfrom eeyore.samplers import HMC\n\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.dataloaders import training_dataloader\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.model import model\n\n# %% Setup HMC sampler\n\nsampler = HMC(model, theta0=model.prior.sample(), dataloader=training_dataloader, step=0.125, num_steps=6)\n# %% Training\n\nfor epoch in range(1, 5):\n    for step in range(1, 6):\n        # Sample the model\n        model.train_step(data=training_dataloader, sampler=sampler,"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 4,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          1,
+          4557,
+          3770,
+          6064,
+          5104,
+          9156,
+          1540,
+          2425,
+          8988
+        ],
+        "f_before": [
+          81.9996109008789,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          81.9996109008789,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 81.9996109008789,
+            "f_after": 81.9996109008789,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# %% Import packages\n\nfrom eeyore.samplers import HMC\n\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.dataloaders import training_dataloader\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.model import model\n\n# %% Setup HMC sampler\n\nsampler = HMC(model, theta0=model.prior.sample(), dataloader=training_dataloader, step=0.125, num_steps=6)\n# %% Run the sampler\n\nsampler.run()\n# %% Save the results\n\nsampler.save_results()\n# %% Evaluate the model\n\nmodel.evaluate()\n# %% Analyze the results\n\nsampler.analyze_results()\n\n\n# %%",
+        "after": "# %% Import packages\n\nfrom eeyore.samplers import HMC\n\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.dataloaders import training_dataloader\nfrom bnn_mcmc_examples.examples.mlp.pima.setting1.model import model\n\n# %% Setup HMC sampler\n\nsampler = HMC(model, theta0=model.prior.sample(), dataloader=training_dataloader, step=0.125, num_steps=6)\n# %% Run HMC sampler\nsampler.run(num_steps=6)\n# %%\n\n# %% Main function\n\ndef main():\n    # ... your code here ...\n    return 0\n\n# %%\nif __name__"
+      }
+    }
   }
 }

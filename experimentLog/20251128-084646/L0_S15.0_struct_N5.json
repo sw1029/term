@@ -59,9 +59,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 0
   },
-  "prompt": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n\n    version('1.20.0', sha256='5695a10cb7f9ae0d01f665b56602a845b0a8cb17e2123bfece10c2e58552468c')\n    version('1.18.1', sha256='70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786')\n    version('1.17.1', sha256='0f0a35ec923d87bc495f6753b1e540fd046d95db56a35250c44089fbce03b698')\n\n    depends_on('cairo@1.15.10: +pdf', when='@1.20.0:')\n    depends_on('cairo@1.13.1: +pdf', when='@:1.18.1')\n    depends_on('pkgconfig', type='build')\n    depends_on('py-setuptools', type='build')\n    depends_on('python@2.7:2.8,3.3:', when='@:1.17.1',  type=('build', 'run'))\n    depends_on('python@2.7:2.8,3.4:3.7', when='@1.18.1:1.19', type=('build', 'run'))\n    depends_on('python@3.6:3', when='@1.20.0:', type=('build', 'run'))\n\n    @run_after('install')\n    def post_install(self):\n        src = self.prefix.lib + '/pkgconfig/py3cairo.pc'\n        dst = self.prefix.lib + '/pkgconfig/pycairo.pc'\n        if os.path.exists(src) and not os.path.exists(dst):\n            copy(src, dst)\n",
+  "prompt": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.",
   "output": {
     "before": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n\n    version('1.20.0', sha256='5695a10cb7f9ae0d01f665b56602a845b0a8cb17e2123bfece10c2e58552468c')\n    version('1.18.1', sha256='70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786')\n    version('1.17.1', sha256='0f0a35ec923d87bc495f6753b1e540fd046d95db56a35250c44089fbce03b698')\n\n    depends_on('cairo@1.15.10: +pdf', when='@1.20.0:')\n    depends_on('cairo@1.13.1: +pdf', when='@:1.18.1')\n    depends_on('pkgconfig', type='build')\n    depends_on('py-setuptools', type='build')\n    depends_on('python@2.7:2.8,3.3:', when='@:1.17.1',  type=('build', 'run'))\n    depends_on('python@2.7:2.8,3.4:3.7', when='@1.18.1:1.19', type=('build', 'run'))\n    depends_on('python@3.6:3', when='@1.20.0:', type=('build', 'run'))\n\n    @run_after('install')\n    def post_install(self):\n        src = self.prefix.lib + '/pkgconfig/py3cairo.pc'\n        dst = self.prefix.lib + '/pkgconfig/pycairo.pc'\n        if os.path.exists(src) and not os.path.exists(dst):\n            copy(src, dst)\n        self.env.set('PYcairo_LIB_DIR', os.path.abspath(self.prefix.lib))\n        self.env.set('PYcairo_INCLUDE_DIR', os.path.abspath(self.prefix",
     "after": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n\n    version('1.20.0', sha256='5695a10cb7f9ae0d01f665b56602a845b0a8cb17e2123bfece10c2e58552468c')\n    version('1.18.1', sha256='70172e58b6bad7572a3518c26729b074acdde15e6fee6cbab6d3528ad552b786')\n    version('1.17.1', sha256='0f0a35ec923d87bc495f6753b1e540fd046d95db56a35250c44089fbce03b698')\n\n    depends_on('cairo@1.15.10: +pdf', when='@1.20.0:')\n    depends_on('cairo@1.13.1: +pdf', when='@:1.18.1')\n    depends_on('pkgconfig', type='build')\n    depends_on('py-setuptools', type='build')\n    depends_on('python@2.7:2.8,3.3:', when='@:1.17.1',  type=('build', 'run'))\n    depends_on('python@2.7:2.8,3.4:3.7', when='@1.18.1:1.19', type=('build', 'run'))\n    depends_on('python@3.6:3', when='@1.20.0:', type=('build', 'run'))\n\n    @run_after('install')\n    def post_install(self):\n        src = self.prefix.lib + '/pkgconfig/py3cairo.pc'\n        dst = self.prefix.lib + '/pkgconfig/pycairo.pc'\n        if os.path.exists(src) and not os.path.exists(dst):\n            copy(src, dst)\n        else:\n            print(f\"Creating a new directory: /pkgconfig/py3cairo.pc\"\n            os.mkdir(os.path.join(os.path.join('/pkgconfig/py3cairo.pc"
@@ -82,7 +83,7 @@
     ],
     "f_before": [
       0.0,
-      84.96479034423828,
+      60.369483947753906,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
     ],
     "f_after": [
       0.0,
-      84.96479034423828,
+      60.369483947753906,
       0.0,
       0.0,
       0.0,
@@ -107,30 +108,30 @@
       0.0
     ],
     "g_before": [
-      34.646026611328125,
       0.0,
-      31.819541931152344,
-      8.819045066833496,
-      8.224908828735352,
-      8.030919075012207,
-      8.768712043762207,
-      8.27653694152832,
-      8.2193021774292,
-      8.518310546875,
-      8.751605987548828
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      34.646026611328125,
       0.0,
-      31.819541931152344,
-      8.819045066833496,
-      8.224908828735352,
-      8.030919075012207,
-      8.768712043762207,
-      8.27653694152832,
-      8.2193021774292,
-      8.518310546875,
-      8.751605987548828
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -145,5 +146,357 @@
     "plot_path": "outputs/plots/20251128-084646/feature_std_layer_0.html",
     "mean_std": 0.4904178977012634,
     "max_std": 36.88555908203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5419,
+          7649,
+          1217,
+          4677,
+          8280,
+          7862,
+          7027,
+          922
+        ],
+        "f_before": [
+          0.0,
+          60.369483947753906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          60.369483947753906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 60.369483947753906,
+            "f_after": 60.369483947753906,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n    version = \"1.17.1\"\n\n    # Install the dependencies, if any\n    install_dependencies = [\n        \"pycairo-dev\",\n    ]\n\n    # Install the package,",
+        "after": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n    \n    version = \"1.17.1\"\n\n    __doc__ = \"\"\"\n    A Python package providing Python bindings for the Cairo graphics library.\n    \"\"\"\n\n    __author__ = \"David"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          5419,
+          7649,
+          1217,
+          4677,
+          8280,
+          7862,
+          7027,
+          922
+        ],
+        "f_before": [
+          0.0,
+          60.369483947753906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          60.369483947753906,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 60.369483947753906,
+            "f_after": 60.369483947753906,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n    version = \"1.17.1\"\n\n    def install(self, env):\n        \"\"\"Install Pycairo.\"\"\"\n        # Install with proper environment setup\n        env.configure_path()\n        ",
+        "after": "# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other\n# Spack Project Developers. See the top-level COPYRIGHT file for details.\n#\n# SPDX-License-Identifier: (Apache-2.0 OR MIT)\n\nimport os\n\nfrom spack import *\n\n\nclass PyPycairo(PythonPackage):\n    \"\"\"Pycairo is a set of Python bindings for the cairo graphics library.\"\"\"\n\n    homepage = \"https://www.cairographics.org/pycairo/\"\n    pypi = \"pycairo/pycairo-1.17.1.tar.gz\"\n    version = \"1.17.1\"\n    description = \"Pycairo is a set of Python bindings for the cairo graphics library.\"\n    author = \"Lawrence Livermore National Security, LLC and other S"
+      }
+    }
   }
 }

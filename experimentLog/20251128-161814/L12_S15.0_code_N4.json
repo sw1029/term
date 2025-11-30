@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-auth: \"userx:passx\",\n    proxy-type: \"meh\"\n}\n\"\"\"\ndef input_time_random():\n    return random.randint(300, 500)\n\n\nasync def main():\n    print(\"in main \")\n    print(os.environ.get('PYPPETEER_CHROMIUM_REVISION'))\n    browser = await pyppeteer.launch(\n        executablePath=r\"D:\\A\\Desktop\\项目+更新\\node_project\\chrome-win\\chrome-win\\chrome.exe\",\n        headless=False,\n        args=[\n            '--proxy-server=118.24.156.214:8118'\n            ],\n        timeout=30000)\n    page = await browser.newPage()\n    await page.setViewport({\"width\": 1000, \"height\": 780})\n    await page.setUserAgent(\"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36\")\n    await page.goto('http://httpbin.net/ip')\n    # await page.waitForNavigation({'waitUntil': 'load'})  # 有时候不需要\n\n    content = await page.content()\n    cookies = await page.cookies()\n    await page.screenshot({'path': 'example.png'})\n\n    dimensions = await page.evaluate('''() => {\n        return {\n            width: document.documentElement.clientWidth,\n            height: document.documentElement.clientHeight,\n            deviceScaleFactor: window.devicePixelRatio,\n        }\n    }''')\n\n    print(dimensions)\n\n    await browser.close()\n    return {'content': content, 'cookies': cookies}\n\n\nasyncio.get_event_loop().run_until_complete(main())",
+  "prompt": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-",
   "output": {
     "before": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-auth: \"userx:passx\",\n    proxy-type: \"meh\"\n}\n\"\"\"\ndef input_time_random():\n    return random.randint(300, 500)\n\n\nasync def main():\n    print(\"in main \")\n    print(os.environ.get('PYPPETEER_CHROMIUM_REVISION'))\n    browser = await pyppeteer.launch(\n        executablePath=r\"D:\\A\\Desktop\\项目+更新\\node_project\\chrome-win\\chrome-win\\chrome.exe\",\n        headless=False,\n        args=[\n            '--proxy-server=118.24.156.214:8118'\n            ],\n        timeout=30000)\n    page = await browser.newPage()\n    await page.setViewport({\"width\": 1000, \"height\": 780})\n    await page.setUserAgent(\"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36\")\n    await page.goto('http://httpbin.net/ip')\n    # await page.waitForNavigation({'waitUntil': 'load'})  # 有时候不需要\n\n    content = await page.content()\n    cookies = await page.cookies()\n    await page.screenshot({'path': 'example.png'})\n\n    dimensions = await page.evaluate('''() => {\n        return {\n            width: document.documentElement.clientWidth,\n            height: document.documentElement.clientHeight,\n            deviceScaleFactor: window.devicePixelRatio,\n        }\n    }''')\n\n    print(dimensions)\n\n    await browser.close()\n    return {'content': content, 'cookies': cookies}\n\n\nasyncio.get_event_loop().run_until_complete(main())\n```\n\n**Explanation:**\n\n1. **Imports:** \n   - `asyncio`: For asynchronous programming.\n   - `pyppeteer`: For browser automation.\n   - `time`: For pausing execution.\n   - `os`:",
     "after": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-auth: \"userx:passx\",\n    proxy-type: \"meh\"\n}\n\"\"\"\ndef input_time_random():\n    return random.randint(300, 500)\n\n\nasync def main():\n    print(\"in main \")\n    print(os.environ.get('PYPPETEER_CHROMIUM_REVISION'))\n    browser = await pyppeteer.launch(\n        executablePath=r\"D:\\A\\Desktop\\项目+更新\\node_project\\chrome-win\\chrome-win\\chrome.exe\",\n        headless=False,\n        args=[\n            '--proxy-server=118.24.156.214:8118'\n            ],\n        timeout=30000)\n    page = await browser.newPage()\n    await page.setViewport({\"width\": 1000, \"height\": 780})\n    await page.setUserAgent(\"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36\")\n    await page.goto('http://httpbin.net/ip')\n    # await page.waitForNavigation({'waitUntil': 'load'})  # 有时候不需要\n\n    content = await page.content()\n    cookies = await page.cookies()\n    await page.screenshot({'path': 'example.png'})\n\n    dimensions = await page.evaluate('''() => {\n        return {\n            width: document.documentElement.clientWidth,\n            height: document.documentElement.clientHeight,\n            deviceScaleFactor: window.devicePixelRatio,\n        }\n    }''')\n\n    print(dimensions)\n\n    await browser.close()\n    return {'content': content, 'cookies': cookies}\n\n\nasyncio.get_event_loop().run_until_complete(main())\n\n\n# 2023-08-20\n# 1.\n# 2.\n# 3.\n# 4.\n# 5.\n# 6.\n# 7.\n#"
@@ -82,7 +83,7 @@
       8147
     ],
     "f_before": [
-      65.23833465576172,
+      77.9437255859375,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      65.23833465576172,
+      169.60992431640625,
       0.0,
       0.0,
       0.0,
@@ -103,34 +104,34 @@
       0.0,
       0.0,
       0.0,
+      0.3659486472606659,
       0.0,
-      0.0,
-      0.0
+      0.8461437225341797
     ],
     "g_before": [
       0.0,
-      38.21778106689453,
-      6.871379375457764,
-      6.669388294219971,
-      6.870412349700928,
-      7.153665065765381,
-      6.316555500030518,
-      6.783613681793213,
-      6.355030536651611,
-      6.390753269195557,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      38.21778106689453,
-      6.871379375457764,
-      6.669388294219971,
-      6.870412349700928,
-      7.153665065765381,
-      6.316555500030518,
-      6.783613681793213,
-      6.355030536651611,
-      6.390753269195557,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
     "mean_std": 1.2764151096343994,
     "max_std": 34.51808166503906
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          8711,
+          2874,
+          1646,
+          5111,
+          3943,
+          8935,
+          7673,
+          3030,
+          8147
+        ],
+        "f_before": [
+          77.9437255859375,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          169.60992431640625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.3659486472606659,
+          0.0,
+          0.8461437225341797
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 77.9437255859375,
+            "f_after": 169.60992431640625,
+            "delta_f": 91.66619873046875
+          },
+          {
+            "index": 7148,
+            "f_before": 0.0,
+            "f_after": 9.971856117248535,
+            "delta_f": 9.971856117248535
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 9.52631950378418,
+            "delta_f": 9.52631950378418
+          },
+          {
+            "index": 849,
+            "f_before": 0.0,
+            "f_after": 9.034387588500977,
+            "delta_f": 9.034387588500977
+          },
+          {
+            "index": 5868,
+            "f_before": 0.0,
+            "f_after": 8.113190650939941,
+            "delta_f": 8.113190650939941
+          },
+          {
+            "index": 583,
+            "f_before": 0.0,
+            "f_after": 7.556660175323486,
+            "delta_f": 7.556660175323486
+          },
+          {
+            "index": 571,
+            "f_before": 103.38477325439453,
+            "f_after": 96.1560287475586,
+            "delta_f": -7.2287445068359375
+          },
+          {
+            "index": 295,
+            "f_before": 0.0,
+            "f_after": 6.474159240722656,
+            "delta_f": 6.474159240722656
+          },
+          {
+            "index": 7265,
+            "f_before": 0.7555466294288635,
+            "f_after": 6.879831314086914,
+            "delta_f": 6.1242846846580505
+          },
+          {
+            "index": 875,
+            "f_before": 0.0,
+            "f_after": 5.993370532989502,
+            "delta_f": 5.993370532989502
+          },
+          {
+            "index": 5145,
+            "f_before": 0.0,
+            "f_after": 5.9227986335754395,
+            "delta_f": 5.9227986335754395
+          },
+          {
+            "index": 755,
+            "f_before": 0.0,
+            "f_after": 5.8755011558532715,
+            "delta_f": 5.8755011558532715
+          },
+          {
+            "index": 1,
+            "f_before": 19.416519165039062,
+            "f_after": 13.600234031677246,
+            "delta_f": -5.816285133361816
+          },
+          {
+            "index": 1849,
+            "f_before": 0.0,
+            "f_after": 5.679059982299805,
+            "delta_f": 5.679059982299805
+          },
+          {
+            "index": 9183,
+            "f_before": 1.3567761182785034,
+            "f_after": 6.6473708152771,
+            "delta_f": 5.290594696998596
+          },
+          {
+            "index": 5623,
+            "f_before": 0.38311803340911865,
+            "f_after": 5.628021240234375,
+            "delta_f": 5.244903206825256
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-protocol: \"http\",\n    proxy-timeout: 5000,\n    proxy-type: \"http\",\n    proxy-user: \"username\",\n    proxy-password: \"password\"\n}\n\"\"\"\n\ndef",
+        "after": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-type: \"http\",\n    proxy-type: \"http\",\n}\n\"\"\"\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault."
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          8711,
+          2874,
+          1646,
+          5111,
+          3943,
+          8935,
+          7673,
+          3030,
+          8147
+        ],
+        "f_before": [
+          77.9437255859375,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          77.9437255859375,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.416519165039062,
+            "f_after": 19.416519165039062,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 77.9437255859375,
+            "f_after": 77.9437255859375,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-protocol: \"http\",\n    proxy-protocol-version: 1,\n    user-agent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53",
+        "after": "#!/usr/bin/python\n# -*- coding: UTF-8 -*-\nimport asyncio\nimport pyppeteer\nimport time\nimport os\nimport random\nfrom exe_js import js1, js3, js4, js5\n\n# http://www.mamicode.com/info-detail-2302923.html\n# https://segmentfault.com/a/1190000011627343\n\"\"\"\n{\n    proxy: \"127.0.0.1:1234\",\n    proxy-type: \"http\",\n}\n\"\"\"\n# \n# \n# \n# \n\nclass Proxy:\n    def __init__(self, proxy):\n        self.proxy = proxy\n        self.proxy_type ="
+      }
+    }
   }
 }

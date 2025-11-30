@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 #\n#   MIT LICENSED - DO WHATEVER YOU WANT WITH THIS FILE.                                   #\n###########################################################################################\n\n# To setup urllib2 / bs4 (BeautifulSoup)\n# Follow this URL: http://linuxconfig.org/how-to-install-python3-beautiful-soup-environment-on-debian-linux\n# and run this command: pip install requests\n\nimport json\nimport requests\nfrom bs4 import BeautifulSoup\n\n# 6 URLs to scrap for lift / trail data.\n# Order is: Waterville Valley, Cannon Mt, Bretton Woods, Loon Mt & Cranmore Mt\nurls = [\"http://www.waterville.com/ski-ride/snow-report.html\",\n        \"http://cannonmt.com/trail-lift-report.html\",\n        \"http://brettonwoods.com/alpine_trails/trail_report#top\",\n        \"http://www.loonmtn.com/explore/snow-conditions/trail-lift-report\",\n        \"http://www.cranmore.com/winter/snow-grooming-report\",\n        \"http://www.patspeak.com/snow_report.php\"]\n\nmountains = [\"Waterville Valley\", \"Cannon Mt\", \"Bretton Woods\",\n             \"Loon Mt\", \"Cranmore Mt\", \"Pats Peak\"]\n\n# global JSON object to write only once.\nJSON_trails = {}\n\n# Waterville Valley\ndef waterville():\n  print (\"DONE\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[0])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get an entire div.\n  ski_data = soup.findAll('div', {'class' : 'tabset_content'})\n\n  # Let's get all open trails.\n  for each_div in soup.findAll('li', {'class' : 'open'}):\n    open_trails.append(each_div.text)\n\n  # Also all closed trails.\n  for each_div in soup.findAll('li', {'class' : 'closed'}):\n    closed_trails.append(each_div.text)\n\n  # Dump to trails object.\n  JSON_trails['waterville_open'] = open_trails\n  JSON_trails['waterville_closed'] = closed_trails\n\n# Cannon Mt\ndef cannon():\n  print (\"DONE\\n\")\n\n  trail_list = []\n  trail_status = []\n  open_trails = []\n  closed_trails = []\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[1])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get lift status\n  # From stackoverflow:\n  # https://stackoverflow.com/questions/13074586/extracting-selected-columns-from-a-table-using-beautifulsoup\n  tables = soup.find('table')    # change this for consistent code.\n\n  rows = tables.findAll('tr')\n  for cells in rows:\n    cell = cells.findAll('td')\n    trail_list.append(cell[0].text)\n    trail_status.append(cell[1].text)\n\n  # Get trail status\n  # THIS TRICK COMES FROM STACKOVERFLOW!\n  # https://stackoverflow.com/questions/14095511/beautifulsoup-in-python-getting-the-n-th-tag-of-a-type\n  tables = soup.findAll('table')[1]\n\n  rows = tables.findAll('tr')\n  for cells in rows:\n    if (len(cells) == 4):\n      cell = cells.findAll('td')\n      trail_list.append(cell[0].text)\n      trail_status.append(cell[1].text)\n\n  # # Print for debugging purposes.\n  # print (\"Trails: \\n\")\n\n  # for trail in trail_list:\n  #   print (trail)\n\n  # print (\"Status: \\n\")\n\n  # for status in trail_status:\n  #   print (status)\n\n  # Now let's figure out open / closed status for trails!\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == 'Open'):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n\n  # Dump to trails object.\n  JSON_trails['cannon_open'] = open_trails\n  JSON_trails['cannon_closed'] = closed_trails\n\n# Bretton Woods\ndef bretton_woods():\n  print (\"DONE\\n\")\n\n  trail_list = []       # List of all the trails, in order on the page.\n  trail_status = []     # List of trail status, in order on the page.\n  open_trails = []      # All the open trails or lifts\n  closed_trails = []    # All the closed trails or lifts\n\n  open_src = '/images/icons/open-sm.png'\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[2])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get an entire div.\n  ski_data = soup.findAll('div', {'id' : 'trail-content'})\n\n  # Using this Stackoverflow post to figure out how to get the text I need.\n  # https://stackoverflow.com/questions/13202087/beautiful-soup-find-children-for-particular-div\n  for tag in ski_data:\n    tab = tag.findAll('div', {'class': 'trails-report'})\n    for tag2 in tab:\n      trail_list.append(tag2.text)      # This gets all the trails by name.\n\n    # Now to get trail conditions\n    tab = tag.findAll('div', {'class': 'condition'})\n    for img in tab:\n      img_src = img.findAll('img')[0].get('src')  # This gets the trail status (by image source)\n      trail_status.append(img_src)\n\n  # Now let's figure out open / closed status for trails!\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == open_src):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n  # Dump to trails object.\n  JSON_trails['bretton_woods_open'] = open_trails\n  JSON_trails['bretton_woods_closed'] = closed_trails\n\n# Loon Mt\ndef loon():\n  trail_list = []       # List of all the trails, in order on the page.\n  trail_status = []     # List of trail status, in order on the page.\n  open_trails = []      # All the open trails or lifts\n  closed_trails = []    # All the closed trails or lifts\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[3])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  lifts = soup.findAll(\"table\", {\"class\": \"lift-status\"})\n\n  titles_html = []\n\n  open_src = \"/assets/prebuilt/img/template/small-green-checkmark.png\"\n  closed_src = \"/assets/prebuilt/img/template/small-red-x.png\"\n\n  # Get all the td's on the page so we can go through and find the names / trail status.\n  for td in soup.findAll(\"td\"):\n    titles_html += td\n\n  # Let's get all the img's so we can find open / closed trails and lifts.\n  for lift in lifts:\n\n    # Get all the trail names.\n    for td in lift.findAll('td'):\n      #print (td.getText())\n      trail_list.append(td.getText().strip())\n\n    # Get all the trail status'\n    img_src = lift.findAll('img')   # Get all img's.\n    # See if we found an image\n    if len(img_src):\n      # We did, so only keep the relevant images.\n      if (img_src[0].get('src') == open_src or img_src[0].get('src') == closed_src):\n        # Append to our trail status list.\n        trail_status.append(img_src)\n\n  # See what list of trails we got.\n  # for trail in trail_list:\n  #   print (trail)\n\n  # See what list of status we got.\n  for status in trail_status:\n    print (status)\n\n  print (\"length of names: \")\n  print (len(trail_list))\n  print (\"length of status: \")\n  print (len(trail_status))\n\n  # Now that we have a list of status and trails, let's put them together.\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == open_src):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n  # Dump to trails object.\n  JSON_trails['loon_open'] = open_trails\n  JSON_trails['loon_closed'] = closed_trails\n\n# Cranmore Mt\ndef cranmore():\n  print (\"NOT DONE.\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Dump to trails object.\n  JSON_trails['cranmore_open'] = open_trails\n  JSON_trails['cranmore_closed'] = closed_trails\n\ndef pats_peak():\n  print (\"NOT DONE.\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Dump to trails object.\n  JSON_trails['pats_peak_open'] = open_trails\n  JSON_trails['pats_peak_closed'] = closed_trails\n\n# Main loop for data gathering\nfor num in range(0, len(urls)):\n  print (mountains[num] + \" lift / trail conditions\")\n  print (\"Current URL to check: \" + urls[num] + \"\\n\")\n\n  if (num == 0):\n    print (\"Hello.\")\n    #waterville()\n\n  if (num == 1):\n    print (\"Hello.\")\n    #cannon()\n\n  if (num == 2):\n    print (\"Hello.\")\n    #bretton_woods()\n\n  if (num == 3):\n    loon()\n\n  if (num == 4):\n    print (\"Hello.\")\n    #cranmore()\n\n  if (num == 5):\n    print (\"Hello.\")\n    #pats_peak()\n\n# Dump to JSON file now.\n# Stackoverflow post this is from:\n# https://stackoverflow.com/questions/16267767/python-writing-json-to-file\nwith open(\"json/ski.json\", \"w\") as outfile:\n  json.dump(JSON_trails, outfile, indent = 4)\n",
+  "prompt": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 ",
   "output": {
     "before": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 #\n#   MIT LICENSED - DO WHATEVER YOU WANT WITH THIS FILE.                                   #\n###########################################################################################\n\n# To setup urllib2 / bs4 (BeautifulSoup)\n# Follow this URL: http://linuxconfig.org/how-to-install-python3-beautiful-soup-environment-on-debian-linux\n# and run this command: pip install requests\n\nimport json\nimport requests\nfrom bs4 import BeautifulSoup\n\n# 6 URLs to scrap for lift / trail data.\n# Order is: Waterville Valley, Cannon Mt, Bretton Woods, Loon Mt & Cranmore Mt\nurls = [\"http://www.waterville.com/ski-ride/snow-report.html\",\n        \"http://cannonmt.com/trail-lift-report.html\",\n        \"http://brettonwoods.com/alpine_trails/trail_report#top\",\n        \"http://www.loonmtn.com/explore/snow-conditions/trail-lift-report\",\n        \"http://www.cranmore.com/winter/snow-grooming-report\",\n        \"http://www.patspeak.com/snow_report.php\"]\n\nmountains = [\"Waterville Valley\", \"Cannon Mt\", \"Bretton Woods\",\n             \"Loon Mt\", \"Cranmore Mt\", \"Pats Peak\"]\n\n# global JSON object to write only once.\nJSON_trails = {}\n\n# Waterville Valley\ndef waterville():\n  print (\"DONE\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[0])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get an entire div.\n  ski_data = soup.findAll('div', {'class' : 'tabset_content'})\n\n  # Let's get all open trails.\n  for each_div in soup.findAll('li', {'class' : 'open'}):\n    open_trails.append(each_div.text)\n\n  # Also all closed trails.\n  for each_div in soup.findAll('li', {'class' : 'closed'}):\n    closed_trails.append(each_div.text)\n\n  # Dump to trails object.\n  JSON_trails['waterville_open'] = open_trails\n  JSON_trails['waterville_closed'] = closed_trails\n\n# Cannon Mt\ndef cannon():\n  print (\"DONE\\n\")\n\n  trail_list = []\n  trail_status = []\n  open_trails = []\n  closed_trails = []\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[1])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get lift status\n  # From stackoverflow:\n  # https://stackoverflow.com/questions/13074586/extracting-selected-columns-from-a-table-using-beautifulsoup\n  tables = soup.find('table')    # change this for consistent code.\n\n  rows = tables.findAll('tr')\n  for cells in rows:\n    cell = cells.findAll('td')\n    trail_list.append(cell[0].text)\n    trail_status.append(cell[1].text)\n\n  # Get trail status\n  # THIS TRICK COMES FROM STACKOVERFLOW!\n  # https://stackoverflow.com/questions/14095511/beautifulsoup-in-python-getting-the-n-th-tag-of-a-type\n  tables = soup.findAll('table')[1]\n\n  rows = tables.findAll('tr')\n  for cells in rows:\n    if (len(cells) == 4):\n      cell = cells.findAll('td')\n      trail_list.append(cell[0].text)\n      trail_status.append(cell[1].text)\n\n  # # Print for debugging purposes.\n  # print (\"Trails: \\n\")\n\n  # for trail in trail_list:\n  #   print (trail)\n\n  # print (\"Status: \\n\")\n\n  # for status in trail_status:\n  #   print (status)\n\n  # Now let's figure out open / closed status for trails!\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == 'Open'):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n\n  # Dump to trails object.\n  JSON_trails['cannon_open'] = open_trails\n  JSON_trails['cannon_closed'] = closed_trails\n\n# Bretton Woods\ndef bretton_woods():\n  print (\"DONE\\n\")\n\n  trail_list = []       # List of all the trails, in order on the page.\n  trail_status = []     # List of trail status, in order on the page.\n  open_trails = []      # All the open trails or lifts\n  closed_trails = []    # All the closed trails or lifts\n\n  open_src = '/images/icons/open-sm.png'\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[2])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get an entire div.\n  ski_data = soup.findAll('div', {'id' : 'trail-content'})\n\n  # Using this Stackoverflow post to figure out how to get the text I need.\n  # https://stackoverflow.com/questions/13202087/beautiful-soup-find-children-for-particular-div\n  for tag in ski_data:\n    tab = tag.findAll('div', {'class': 'trails-report'})\n    for tag2 in tab:\n      trail_list.append(tag2.text)      # This gets all the trails by name.\n\n    # Now to get trail conditions\n    tab = tag.findAll('div', {'class': 'condition'})\n    for img in tab:\n      img_src = img.findAll('img')[0].get('src')  # This gets the trail status (by image source)\n      trail_status.append(img_src)\n\n  # Now let's figure out open / closed status for trails!\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == open_src):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n  # Dump to trails object.\n  JSON_trails['bretton_woods_open'] = open_trails\n  JSON_trails['bretton_woods_closed'] = closed_trails\n\n# Loon Mt\ndef loon():\n  trail_list = []       # List of all the trails, in order on the page.\n  trail_status = []     # List of trail status, in order on the page.\n  open_trails = []      # All the open trails or lifts\n  closed_trails = []    # All the closed trails or lifts\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[3])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  lifts = soup.findAll(\"table\", {\"class\": \"lift-status\"})\n\n  titles_html = []\n\n  open_src = \"/assets/prebuilt/img/template/small-green-checkmark.png\"\n  closed_src = \"/assets/prebuilt/img/template/small-red-x.png\"\n\n  # Get all the td's on the page so we can go through and find the names / trail status.\n  for td in soup.findAll(\"td\"):\n    titles_html += td\n\n  # Let's get all the img's so we can find open / closed trails and lifts.\n  for lift in lifts:\n\n    # Get all the trail names.\n    for td in lift.findAll('td'):\n      #print (td.getText())\n      trail_list.append(td.getText().strip())\n\n    # Get all the trail status'\n    img_src = lift.findAll('img')   # Get all img's.\n    # See if we found an image\n    if len(img_src):\n      # We did, so only keep the relevant images.\n      if (img_src[0].get('src') == open_src or img_src[0].get('src') == closed_src):\n        # Append to our trail status list.\n        trail_status.append(img_src)\n\n  # See what list of trails we got.\n  # for trail in trail_list:\n  #   print (trail)\n\n  # See what list of status we got.\n  for status in trail_status:\n    print (status)\n\n  print (\"length of names: \")\n  print (len(trail_list))\n  print (\"length of status: \")\n  print (len(trail_status))\n\n  # Now that we have a list of status and trails, let's put them together.\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == open_src):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n  # Dump to trails object.\n  JSON_trails['loon_open'] = open_trails\n  JSON_trails['loon_closed'] = closed_trails\n\n# Cranmore Mt\ndef cranmore():\n  print (\"NOT DONE.\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Dump to trails object.\n  JSON_trails['cranmore_open'] = open_trails\n  JSON_trails['cranmore_closed'] = closed_trails\n\ndef pats_peak():\n  print (\"NOT DONE.\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Dump to trails object.\n  JSON_trails['pats_peak_open'] = open_trails\n  JSON_trails['pats_peak_closed'] = closed_trails\n\n# Main loop for data gathering\nfor num in range(0, len(urls)):\n  print (mountains[num] + \" lift / trail conditions\")\n  print (\"Current URL to check: \" + urls[num] + \"\\n\")\n\n  if (num == 0):\n    print (\"Hello.\")\n    #waterville()\n\n  if (num == 1):\n    print (\"Hello.\")\n    #cannon()\n\n  if (num == 2):\n    print (\"Hello.\")\n    #bretton_woods()\n\n  if (num == 3):\n    loon()\n\n  if (num == 4):\n    print (\"Hello.\")\n    #cranmore()\n\n  if (num == 5):\n    print (\"Hello.\")\n    #pats_peak()\n\n# Dump to JSON file now.\n# Stackoverflow post this is from:\n# https://stackoverflow.com/questions/16267767/python-writing-json-to-file\nwith open(\"json/ski.json\", \"w\") as outfile:\n  json.dump(JSON_trails, outfile, indent = 4)\n```\n\n**How to Use:**\n\n1. **Install Libraries:** Make sure you have `requests`, `BeautifulSoup`, and `json` installed. Run `pip install requests beautifulsoup4 json` in your terminal.\n2. **Run",
     "after": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 #\n#   MIT LICENSED - DO WHATEVER YOU WANT WITH THIS FILE.                                   #\n###########################################################################################\n\n# To setup urllib2 / bs4 (BeautifulSoup)\n# Follow this URL: http://linuxconfig.org/how-to-install-python3-beautiful-soup-environment-on-debian-linux\n# and run this command: pip install requests\n\nimport json\nimport requests\nfrom bs4 import BeautifulSoup\n\n# 6 URLs to scrap for lift / trail data.\n# Order is: Waterville Valley, Cannon Mt, Bretton Woods, Loon Mt & Cranmore Mt\nurls = [\"http://www.waterville.com/ski-ride/snow-report.html\",\n        \"http://cannonmt.com/trail-lift-report.html\",\n        \"http://brettonwoods.com/alpine_trails/trail_report#top\",\n        \"http://www.loonmtn.com/explore/snow-conditions/trail-lift-report\",\n        \"http://www.cranmore.com/winter/snow-grooming-report\",\n        \"http://www.patspeak.com/snow_report.php\"]\n\nmountains = [\"Waterville Valley\", \"Cannon Mt\", \"Bretton Woods\",\n             \"Loon Mt\", \"Cranmore Mt\", \"Pats Peak\"]\n\n# global JSON object to write only once.\nJSON_trails = {}\n\n# Waterville Valley\ndef waterville():\n  print (\"DONE\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[0])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get an entire div.\n  ski_data = soup.findAll('div', {'class' : 'tabset_content'})\n\n  # Let's get all open trails.\n  for each_div in soup.findAll('li', {'class' : 'open'}):\n    open_trails.append(each_div.text)\n\n  # Also all closed trails.\n  for each_div in soup.findAll('li', {'class' : 'closed'}):\n    closed_trails.append(each_div.text)\n\n  # Dump to trails object.\n  JSON_trails['waterville_open'] = open_trails\n  JSON_trails['waterville_closed'] = closed_trails\n\n# Cannon Mt\ndef cannon():\n  print (\"DONE\\n\")\n\n  trail_list = []\n  trail_status = []\n  open_trails = []\n  closed_trails = []\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[1])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get lift status\n  # From stackoverflow:\n  # https://stackoverflow.com/questions/13074586/extracting-selected-columns-from-a-table-using-beautifulsoup\n  tables = soup.find('table')    # change this for consistent code.\n\n  rows = tables.findAll('tr')\n  for cells in rows:\n    cell = cells.findAll('td')\n    trail_list.append(cell[0].text)\n    trail_status.append(cell[1].text)\n\n  # Get trail status\n  # THIS TRICK COMES FROM STACKOVERFLOW!\n  # https://stackoverflow.com/questions/14095511/beautifulsoup-in-python-getting-the-n-th-tag-of-a-type\n  tables = soup.findAll('table')[1]\n\n  rows = tables.findAll('tr')\n  for cells in rows:\n    if (len(cells) == 4):\n      cell = cells.findAll('td')\n      trail_list.append(cell[0].text)\n      trail_status.append(cell[1].text)\n\n  # # Print for debugging purposes.\n  # print (\"Trails: \\n\")\n\n  # for trail in trail_list:\n  #   print (trail)\n\n  # print (\"Status: \\n\")\n\n  # for status in trail_status:\n  #   print (status)\n\n  # Now let's figure out open / closed status for trails!\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == 'Open'):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n\n  # Dump to trails object.\n  JSON_trails['cannon_open'] = open_trails\n  JSON_trails['cannon_closed'] = closed_trails\n\n# Bretton Woods\ndef bretton_woods():\n  print (\"DONE\\n\")\n\n  trail_list = []       # List of all the trails, in order on the page.\n  trail_status = []     # List of trail status, in order on the page.\n  open_trails = []      # All the open trails or lifts\n  closed_trails = []    # All the closed trails or lifts\n\n  open_src = '/images/icons/open-sm.png'\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[2])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  # Get an entire div.\n  ski_data = soup.findAll('div', {'id' : 'trail-content'})\n\n  # Using this Stackoverflow post to figure out how to get the text I need.\n  # https://stackoverflow.com/questions/13202087/beautiful-soup-find-children-for-particular-div\n  for tag in ski_data:\n    tab = tag.findAll('div', {'class': 'trails-report'})\n    for tag2 in tab:\n      trail_list.append(tag2.text)      # This gets all the trails by name.\n\n    # Now to get trail conditions\n    tab = tag.findAll('div', {'class': 'condition'})\n    for img in tab:\n      img_src = img.findAll('img')[0].get('src')  # This gets the trail status (by image source)\n      trail_status.append(img_src)\n\n  # Now let's figure out open / closed status for trails!\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == open_src):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n  # Dump to trails object.\n  JSON_trails['bretton_woods_open'] = open_trails\n  JSON_trails['bretton_woods_closed'] = closed_trails\n\n# Loon Mt\ndef loon():\n  trail_list = []       # List of all the trails, in order on the page.\n  trail_status = []     # List of trail status, in order on the page.\n  open_trails = []      # All the open trails or lifts\n  closed_trails = []    # All the closed trails or lifts\n\n  # Get the page, then grab just the text and use BeautifulSoup to work some magic on it.\n  page = requests.get(urls[3])\n  data = page.text\n  soup = BeautifulSoup(data, \"lxml\")\n\n  lifts = soup.findAll(\"table\", {\"class\": \"lift-status\"})\n\n  titles_html = []\n\n  open_src = \"/assets/prebuilt/img/template/small-green-checkmark.png\"\n  closed_src = \"/assets/prebuilt/img/template/small-red-x.png\"\n\n  # Get all the td's on the page so we can go through and find the names / trail status.\n  for td in soup.findAll(\"td\"):\n    titles_html += td\n\n  # Let's get all the img's so we can find open / closed trails and lifts.\n  for lift in lifts:\n\n    # Get all the trail names.\n    for td in lift.findAll('td'):\n      #print (td.getText())\n      trail_list.append(td.getText().strip())\n\n    # Get all the trail status'\n    img_src = lift.findAll('img')   # Get all img's.\n    # See if we found an image\n    if len(img_src):\n      # We did, so only keep the relevant images.\n      if (img_src[0].get('src') == open_src or img_src[0].get('src') == closed_src):\n        # Append to our trail status list.\n        trail_status.append(img_src)\n\n  # See what list of trails we got.\n  # for trail in trail_list:\n  #   print (trail)\n\n  # See what list of status we got.\n  for status in trail_status:\n    print (status)\n\n  print (\"length of names: \")\n  print (len(trail_list))\n  print (\"length of status: \")\n  print (len(trail_status))\n\n  # Now that we have a list of status and trails, let's put them together.\n  list_length = len(trail_list)\n\n  for a in range(list_length):\n    if (trail_status[a] == open_src):\n      open_trails.append(trail_list[a])\n    else:\n      closed_trails.append(trail_list[a])\n\n  # Dump to trails object.\n  JSON_trails['loon_open'] = open_trails\n  JSON_trails['loon_closed'] = closed_trails\n\n# Cranmore Mt\ndef cranmore():\n  print (\"NOT DONE.\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Dump to trails object.\n  JSON_trails['cranmore_open'] = open_trails\n  JSON_trails['cranmore_closed'] = closed_trails\n\ndef pats_peak():\n  print (\"NOT DONE.\\n\")\n\n  open_trails = []\n  closed_trails = []\n\n  # Dump to trails object.\n  JSON_trails['pats_peak_open'] = open_trails\n  JSON_trails['pats_peak_closed'] = closed_trails\n\n# Main loop for data gathering\nfor num in range(0, len(urls)):\n  print (mountains[num] + \" lift / trail conditions\")\n  print (\"Current URL to check: \" + urls[num] + \"\\n\")\n\n  if (num == 0):\n    print (\"Hello.\")\n    #waterville()\n\n  if (num == 1):\n    print (\"Hello.\")\n    #cannon()\n\n  if (num == 2):\n    print (\"Hello.\")\n    #bretton_woods()\n\n  if (num == 3):\n    loon()\n\n  if (num == 4):\n    print (\"Hello.\")\n    #cranmore()\n\n  if (num == 5):\n    print (\"Hello.\")\n    #pats_peak()\n\n# Dump to JSON file now.\n# Stackoverflow post this is from:\n# https://stackoverflow.com/questions/16267767/python-writing-json-to-file\nwith open(\"json/ski.json\", \"w\") as outfile:\n  json.dump(JSON_trails, outfile, indent = 4)\n```\n"
@@ -83,8 +84,8 @@
     ],
     "f_before": [
       0.0,
-      79.7052230834961,
-      0.17307958006858826,
+      115.88047790527344,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -96,41 +97,41 @@
     ],
     "f_after": [
       0.0,
-      79.7052230834961,
-      0.17307958006858826,
+      258.58404541015625,
+      0.8771039247512817,
+      0.0,
+      1.504902720451355,
+      1.4561606645584106,
+      0.0,
+      4.416643142700195,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      0.8290822505950928
     ],
     "g_before": [
-      46.252017974853516,
-      0.008747185580432415,
-      8.74122142791748,
-      0.0616682767868042,
       0.0,
       0.0,
-      7.281174182891846,
-      7.699315547943115,
-      0.07439377903938293,
-      0.05427476018667221,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      46.252017974853516,
-      0.008747185580432415,
-      8.74122142791748,
-      0.0616682767868042,
       0.0,
       0.0,
-      7.281174182891846,
-      7.699315547943115,
-      0.07439377903938293,
-      0.05427476018667221,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
     "mean_std": 1.7725918292999268,
     "max_std": 67.36790466308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5066,
+          5773,
+          4352,
+          693,
+          3751,
+          4878,
+          8838,
+          5643,
+          1032
+        ],
+        "f_before": [
+          0.0,
+          115.88047790527344,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          258.58404541015625,
+          0.8771039247512817,
+          0.0,
+          1.504902720451355,
+          1.4561606645584106,
+          0.0,
+          4.416643142700195,
+          0.0,
+          0.0,
+          0.8290822505950928
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 115.88047790527344,
+            "f_after": 258.58404541015625,
+            "delta_f": 142.7035675048828
+          },
+          {
+            "index": 2397,
+            "f_before": 0.0,
+            "f_after": 10.05335807800293,
+            "delta_f": 10.05335807800293
+          },
+          {
+            "index": 5651,
+            "f_before": 0.0,
+            "f_after": 10.007872581481934,
+            "delta_f": 10.007872581481934
+          },
+          {
+            "index": 3301,
+            "f_before": 8.344359397888184,
+            "f_after": 18.100839614868164,
+            "delta_f": 9.75648021697998
+          },
+          {
+            "index": 5339,
+            "f_before": 0.0,
+            "f_after": 9.024154663085938,
+            "delta_f": 9.024154663085938
+          },
+          {
+            "index": 4314,
+            "f_before": 0.0,
+            "f_after": 8.984648704528809,
+            "delta_f": 8.984648704528809
+          },
+          {
+            "index": 1219,
+            "f_before": 5.504615783691406,
+            "f_after": 14.02426528930664,
+            "delta_f": 8.519649505615234
+          },
+          {
+            "index": 1,
+            "f_before": 25.87685775756836,
+            "f_after": 17.413278579711914,
+            "delta_f": -8.463579177856445
+          },
+          {
+            "index": 527,
+            "f_before": 4.798044204711914,
+            "f_after": 13.014188766479492,
+            "delta_f": 8.216144561767578
+          },
+          {
+            "index": 2641,
+            "f_before": 0.0,
+            "f_after": 7.850705623626709,
+            "delta_f": 7.850705623626709
+          },
+          {
+            "index": 584,
+            "f_before": 0.0,
+            "f_after": 7.671992301940918,
+            "delta_f": 7.671992301940918
+          },
+          {
+            "index": 3126,
+            "f_before": 1.8021326065063477,
+            "f_after": 9.325751304626465,
+            "delta_f": 7.523618698120117
+          },
+          {
+            "index": 8243,
+            "f_before": 7.3808393478393555,
+            "f_after": 0.0,
+            "delta_f": -7.3808393478393555
+          },
+          {
+            "index": 3822,
+            "f_before": 0.0,
+            "f_after": 7.158539295196533,
+            "delta_f": 7.158539295196533
+          },
+          {
+            "index": 3855,
+            "f_before": 0.0,
+            "f_after": 6.844717979431152,
+            "delta_f": 6.844717979431152
+          },
+          {
+            "index": 5715,
+            "f_before": 0.0,
+            "f_after": 6.707241535186768,
+            "delta_f": 6.707241535186768
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 \n#   Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at                                                                                                      \n#   http://",
+        "after": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 \n#                                                                                         #\n#   Licensed under the Apache License 2.0                                           #\n#                                                                                         #\n#   -------------------------------------------------------------------------------- #\n#   This script is designed to take HTML and parse it into"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5066,
+          5773,
+          4352,
+          693,
+          3751,
+          4878,
+          8838,
+          5643,
+          1032
+        ],
+        "f_before": [
+          0.0,
+          115.88047790527344,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          115.88047790527344,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 25.87685775756836,
+            "f_after": 25.87685775756836,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 115.88047790527344,
+            "f_after": 115.88047790527344,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 \n#   ---------------------------------------------------------------------------------------#\n#   Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License",
+        "after": "###########################################################################################\n#   Created by Jason Downing                                                              #\n#   Some code originally found at this Stackoverflow Post:                                #\n#   https://stackoverflow.com/questions/18966368/python-beautifulsoup-scrape-tables       #\n#   Also this page as well:                                                               #\n#   http://www.pythonforbeginners.com/python-on-the-web/web-scraping-with-beautifulsoup/  #\n#                                                                                         #\n#   Copyright 2016 Jason Downing                                                          #                 \n#                                                                                         #\n#   License: MIT                                                                        #\n#                                                                                         #\n#   Please use this code as is or modify as needed.                                       #\n#                                                                                         #\n#   Note:"
+      }
+    }
   }
 }

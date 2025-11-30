@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Estonie\",\n            \"note\": \"multilingual\"\n        },\n        {\n            \"lang\": \"et\",\n            \"name\": \"Valimisringkond nr 10\",\n            \"note\": \"multilingual\"\n        },\n        {\n            \"lang\": \"en\",\n            \"name\": \"Electoral District 10 (Tartu)\",\n            \"note\": \"multilingual\"\n        }\n    ],\n    \"type\": \"constituency\"\n}\n\n\nclass TestAreas(TestCase):\n\n    def test_empty_file_gives_no_areas(self):\n        popolo = Popolo({})\n        assert len(popolo.areas) == 0\n\n    def test_single_area_with_name(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        assert len(popolo.areas) == 1\n        area = popolo.areas[0]\n        assert area.name == 'Tartu linn'\n\n    def test_area_id(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.id == 'area/tartu_linn'\n\n    def test_area_type(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.type == 'constituency'\n\n    def test_area_identifiers(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.identifiers == [\n            {\n                \"identifier\": \"Q3032626\",\n                \"scheme\": \"wikidata\"\n            }\n        ]\n\n    def test_area_other_names(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.other_names == [\n            {\n                \"lang\": \"fr\",\n                \"name\": \"Dixième circonscription législative d'Estonie\",\n                \"note\": \"multilingual\"\n            },\n            {\n                \"lang\": \"et\",\n                \"name\": \"Valimisringkond nr 10\",\n                \"note\": \"multilingual\"\n            },\n            {\n                \"lang\": \"en\",\n                \"name\": \"Electoral District 10 (Tartu)\",\n                \"note\": \"multilingual\"\n            }\n        ]\n\n    def test_area_wikidata(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.wikidata == 'Q3032626'\n\n    def test_area_repr(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        if six.PY2:\n            assert repr(area) == b\"<Area: Tartu linn>\"\n        else:\n            assert repr(area) == u\"<Area: Tartu linn>\"\n\n    def test_area_identity_equality_and_inequality(self):\n        popolo_a = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area_a = popolo_a.areas[0]\n        popolo_b = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area_b = popolo_b.areas[0]\n        assert area_a == area_b\n        assert not (area_a != area_b)\n",
+  "prompt": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'E",
   "output": {
     "before": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Estonie\",\n            \"note\": \"multilingual\"\n        },\n        {\n            \"lang\": \"et\",\n            \"name\": \"Valimisringkond nr 10\",\n            \"note\": \"multilingual\"\n        },\n        {\n            \"lang\": \"en\",\n            \"name\": \"Electoral District 10 (Tartu)\",\n            \"note\": \"multilingual\"\n        }\n    ],\n    \"type\": \"constituency\"\n}\n\n\nclass TestAreas(TestCase):\n\n    def test_empty_file_gives_no_areas(self):\n        popolo = Popolo({})\n        assert len(popolo.areas) == 0\n\n    def test_single_area_with_name(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        assert len(popolo.areas) == 1\n        area = popolo.areas[0]\n        assert area.name == 'Tartu linn'\n\n    def test_area_id(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.id == 'area/tartu_linn'\n\n    def test_area_type(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.type == 'constituency'\n\n    def test_area_identifiers(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.identifiers == [\n            {\n                \"identifier\": \"Q3032626\",\n                \"scheme\": \"wikidata\"\n            }\n        ]\n\n    def test_area_other_names(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.other_names == [\n            {\n                \"lang\": \"fr\",\n                \"name\": \"Dixième circonscription législative d'Estonie\",\n                \"note\": \"multilingual\"\n            },\n            {\n                \"lang\": \"et\",\n                \"name\": \"Valimisringkond nr 10\",\n                \"note\": \"multilingual\"\n            },\n            {\n                \"lang\": \"en\",\n                \"name\": \"Electoral District 10 (Tartu)\",\n                \"note\": \"multilingual\"\n            }\n        ]\n\n    def test_area_wikidata(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.wikidata == 'Q3032626'\n\n    def test_area_repr(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        if six.PY2:\n            assert repr(area) == b\"<Area: Tartu linn>\"\n        else:\n            assert repr(area) == u\"<Area: Tartu linn>\"\n\n    def test_area_identity_equality_and_inequality(self):\n        popolo_a = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area_a = popolo_a.areas[0]\n        popolo_b = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area_b = popolo_b.areas[0]\n        assert area_a == area_b\n        assert not (area_a != area_b)\n        assert area_a != area_a\n\n\nif __name__ == '__main__':\n    unittest.main()\n```\n\nThis code defines a test suite for the `Popolo` class. \n* It tests various aspects of the",
     "after": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Estonie\",\n            \"note\": \"multilingual\"\n        },\n        {\n            \"lang\": \"et\",\n            \"name\": \"Valimisringkond nr 10\",\n            \"note\": \"multilingual\"\n        },\n        {\n            \"lang\": \"en\",\n            \"name\": \"Electoral District 10 (Tartu)\",\n            \"note\": \"multilingual\"\n        }\n    ],\n    \"type\": \"constituency\"\n}\n\n\nclass TestAreas(TestCase):\n\n    def test_empty_file_gives_no_areas(self):\n        popolo = Popolo({})\n        assert len(popolo.areas) == 0\n\n    def test_single_area_with_name(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        assert len(popolo.areas) == 1\n        area = popolo.areas[0]\n        assert area.name == 'Tartu linn'\n\n    def test_area_id(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.id == 'area/tartu_linn'\n\n    def test_area_type(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.type == 'constituency'\n\n    def test_area_identifiers(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.identifiers == [\n            {\n                \"identifier\": \"Q3032626\",\n                \"scheme\": \"wikidata\"\n            }\n        ]\n\n    def test_area_other_names(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.other_names == [\n            {\n                \"lang\": \"fr\",\n                \"name\": \"Dixième circonscription législative d'Estonie\",\n                \"note\": \"multilingual\"\n            },\n            {\n                \"lang\": \"et\",\n                \"name\": \"Valimisringkond nr 10\",\n                \"note\": \"multilingual\"\n            },\n            {\n                \"lang\": \"en\",\n                \"name\": \"Electoral District 10 (Tartu)\",\n                \"note\": \"multilingual\"\n            }\n        ]\n\n    def test_area_wikidata(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        assert area.wikidata == 'Q3032626'\n\n    def test_area_repr(self):\n        popolo = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area = popolo.areas[0]\n        if six.PY2:\n            assert repr(area) == b\"<Area: Tartu linn>\"\n        else:\n            assert repr(area) == u\"<Area: Tartu linn>\"\n\n    def test_area_identity_equality_and_inequality(self):\n        popolo_a = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area_a = popolo_a.areas[0]\n        popolo_b = Popolo({\"areas\": [EXAMPLE_AREA]})\n        area_b = popolo_b.areas[0]\n        assert area_a == area_b\n        assert not (area_a != area_b)\n        assert (area_a is None)\n        assert (area_a is area_b)\n\n    def test_area_identity_equality_and_inequality(self):\n        # Test for identity equality\n        popolo"
@@ -97,7 +98,7 @@
     "f_after": [
       0.0,
       0.0,
-      0.0,
+      0.004669738933444023,
       0.0,
       0.0,
       0.0,
@@ -111,27 +112,27 @@
       0.0,
       0.0,
       0.0,
-      0.002455283422023058,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.03197206184267998
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
       0.0,
       0.0,
-      0.002455283422023058,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.03197206184267998
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          6770,
+          6328,
+          4282,
+          2950,
+          8978,
+          5991,
+          6033,
+          4546,
+          9169
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.004669738933444023,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 29.872404098510742,
+            "f_after": 0.0,
+            "delta_f": -29.872404098510742
+          },
+          {
+            "index": 527,
+            "f_before": 1.4400701522827148,
+            "f_after": 16.78659439086914,
+            "delta_f": 15.346524238586426
+          },
+          {
+            "index": 6170,
+            "f_before": 0.0,
+            "f_after": 9.332145690917969,
+            "delta_f": 9.332145690917969
+          },
+          {
+            "index": 6544,
+            "f_before": 0.0,
+            "f_after": 9.251917839050293,
+            "delta_f": 9.251917839050293
+          },
+          {
+            "index": 2905,
+            "f_before": 0.0,
+            "f_after": 9.18269157409668,
+            "delta_f": 9.18269157409668
+          },
+          {
+            "index": 7697,
+            "f_before": 0.0,
+            "f_after": 8.258481979370117,
+            "delta_f": 8.258481979370117
+          },
+          {
+            "index": 2315,
+            "f_before": 0.0,
+            "f_after": 7.814877510070801,
+            "delta_f": 7.814877510070801
+          },
+          {
+            "index": 1947,
+            "f_before": 0.0,
+            "f_after": 7.166635513305664,
+            "delta_f": 7.166635513305664
+          },
+          {
+            "index": 5749,
+            "f_before": 0.0,
+            "f_after": 7.091636657714844,
+            "delta_f": 7.091636657714844
+          },
+          {
+            "index": 365,
+            "f_before": 0.0,
+            "f_after": 7.057932376861572,
+            "delta_f": 7.057932376861572
+          },
+          {
+            "index": 6037,
+            "f_before": 0.0,
+            "f_after": 6.971816539764404,
+            "delta_f": 6.971816539764404
+          },
+          {
+            "index": 7209,
+            "f_before": 0.0,
+            "f_after": 6.93351411819458,
+            "delta_f": 6.93351411819458
+          },
+          {
+            "index": 5130,
+            "f_before": 0.0,
+            "f_after": 6.791360855102539,
+            "delta_f": 6.791360855102539
+          },
+          {
+            "index": 6786,
+            "f_before": 0.0,
+            "f_after": 6.58167028427124,
+            "delta_f": 6.58167028427124
+          },
+          {
+            "index": 3927,
+            "f_before": 0.0,
+            "f_after": 5.966175556182861,
+            "delta_f": 5.966175556182861
+          },
+          {
+            "index": 4530,
+            "f_before": 0.0,
+            "f_after": 5.871700286865234,
+            "delta_f": 5.871700286865234
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Etampes\"\n        }\n    ],\n    \"coordinates\": {\n        \"lat\": 58.52,\n        \"lon\": 26.49\n    }\n}\n\n\nclass TestPopoloImporter(",
+        "after": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Echirolles\"\n        }\n    ],\n}\n\n\nclass TestPopolo(TestCase):\n    def test_popolo_import(self):\n        # Example usage\n        popolo = Popolo(\n            \"popolo"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          6770,
+          6328,
+          4282,
+          2950,
+          8978,
+          5991,
+          6033,
+          4546,
+          9169
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 29.872404098510742,
+            "f_after": 29.872404098510742,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Etampes\"\n        }\n    ],\n    \"description\": \"Tartu linn is a city in Estonia.\",\n    \"wikidata\": \"Q3032626\",\n    \"geo\": {\n        \"type",
+        "after": "# -*- coding: utf-8 -*-\n\nfrom unittest import TestCase\n\nimport six\n\nfrom popolo_data.importer import Popolo\n\n\nEXAMPLE_AREA = {\n    \"id\": \"area/tartu_linn\",\n    \"identifiers\": [\n        {\n            \"identifier\": \"Q3032626\",\n            \"scheme\": \"wikidata\"\n        }\n    ],\n    \"name\": \"Tartu linn\",\n    \"other_names\": [\n        {\n            \"lang\": \"fr\",\n            \"name\": \"Dixième circonscription législative d'Estrasbourg\",\n        }\n    ]\n}\n\nclass TestPopolo(TestCase):\n    def test_Popolo(self):\n        # Create Popolo instance\n        popolo = Popolo(\n            # Example data\n"
+      }
+    }
   }
 }

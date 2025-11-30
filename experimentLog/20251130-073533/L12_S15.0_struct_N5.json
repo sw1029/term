@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n",
+  "output": {
+    "before": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n```\n\nThis code snippet defines a custom validator class called `TickangleValidator` that extends the functionality of the base `AngleValidator` class from the `plotly_utils` package. \n\nHere's a breakdown of its purpose and functionality:",
+    "after": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n        \n        self.tickangle = kwargs.pop(\n            \"tickangle\",\n            None,\n        )\n        \n        \n    def __call__(self, v, **kwargs):\n        \"\"\"\n        TickangleValidator"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1359,
+      2068,
+      6496,
+      4195,
+      9171,
+      54,
+      414,
+      2972,
+      2833
+    ],
+    "f_before": [
+      0.0,
+      0.29973700642585754,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      2.2636878490448,
+      1.6078975200653076,
+      0.0,
+      0.0,
+      0.0,
+      1.3324981927871704,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.29973700642585754,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          2.2636878490448,
+          1.6078975200653076,
+          0.0,
+          0.0,
+          0.0,
+          1.3324981927871704,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5859,
+            "f_before": 5.507714748382568,
+            "f_after": 28.452425003051758,
+            "delta_f": 22.94471025466919
+          },
+          {
+            "index": 5364,
+            "f_before": 67.25825500488281,
+            "f_after": 56.4637451171875,
+            "delta_f": -10.794509887695312
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 9.664861679077148,
+            "delta_f": 9.664861679077148
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 8.877829551696777,
+            "delta_f": 8.877829551696777
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 8.711525917053223,
+            "delta_f": 8.711525917053223
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 8.144250869750977,
+            "delta_f": 8.144250869750977
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 8.139284133911133,
+            "delta_f": 8.139284133911133
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 7.686962604522705,
+            "delta_f": 7.686962604522705
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 7.554454326629639,
+            "delta_f": 7.554454326629639
+          },
+          {
+            "index": 238,
+            "f_before": 0.0,
+            "f_after": 7.512453079223633,
+            "delta_f": 7.512453079223633
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 7.432928562164307,
+            "delta_f": 7.432928562164307
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 6.831264495849609,
+            "delta_f": 6.831264495849609
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 6.502070903778076,
+            "delta_f": 6.502070903778076
+          },
+          {
+            "index": 6482,
+            "f_before": 0.0,
+            "f_after": 6.487478733062744,
+            "delta_f": 6.487478733062744
+          },
+          {
+            "index": 5695,
+            "f_before": 0.0,
+            "f_after": 5.662997722625732,
+            "delta_f": 5.662997722625732
+          },
+          {
+            "index": 6192,
+            "f_before": 0.0,
+            "f_after": 5.461389064788818,
+            "delta_f": 5.461389064788818
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n        self.df_key = \"tickangle\"\n        self.df_values = [\"tickangle\"]\n\n    def update_df_key(self, new_key):\n        self.df_key = new_key\n",
+        "after": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n    \n        self.plotly_name = plotly_name\n    \n        self.parent_name = parent_name\n    \n        self.edit_type = edit_type\n\n\nclass ColorbarValidator(_plotly_utils.basevalidators"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.29973700642585754,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.29973700642585754,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.29973700642585754,
+            "f_after": 0.29973700642585754,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n        self.edit_type = kwargs.pop(\"edit_type\", \"colorbars\")\n\n\n    def __call__(self, v):\n        return super(TickangleValidator, self).__call__(v)\n```\n\n**Explanation:**",
+        "after": "import _plotly_utils.basevalidators\n\n\nclass TickangleValidator(_plotly_utils.basevalidators.AngleValidator):\n    def __init__(\n        self, plotly_name=\"tickangle\", parent_name=\"icicle.marker.colorbar\", **kwargs\n    ):\n        super(TickangleValidator, self).__init__(\n            plotly_name=plotly_name,\n            parent_name=parent_name,\n            edit_type=kwargs.pop(\"edit_type\", \"colorbars\"),\n            **kwargs,\n        )\n```\n\nThe `TickangleValidator` class is used to validate the tickangle attribute of a Scatter (or other) object. This class ensures that the tickangle is within a specified range, using the following logic:\n\n* **Default:** The"
+      }
+    }
+  }
+}

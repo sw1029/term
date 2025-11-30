@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n",
+  "output": {
+    "before": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n```\n\nThis configuration sets up the WSGI server for your Django project. Here's a breakdown of the key parts:\n\n* **`import os`**: This line imports the `os` module, which provides functions for interacting with the operating",
+    "after": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n```\n**Explanation:**\n\n1. **Import necessary modules:**\n   - `os`: Used for environment variables (e.g., Django settings).\n   - `get_wsgi_application`: Retrieves the WSGI application.\n\n2."
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1359,
+      2068,
+      6496,
+      4195,
+      9171,
+      54,
+      414,
+      2972,
+      2833
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      1.3598124980926514,
+      0.5407152771949768,
+      0.0,
+      0.0,
+      0.0,
+      0.7081560492515564,
+      0.38307467103004456,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.3598124980926514,
+          0.5407152771949768,
+          0.0,
+          0.0,
+          0.0,
+          0.7081560492515564,
+          0.38307467103004456,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5859,
+            "f_before": 17.07190704345703,
+            "f_after": 39.820613861083984,
+            "delta_f": 22.748706817626953
+          },
+          {
+            "index": 5364,
+            "f_before": 73.90763092041016,
+            "f_after": 62.78074264526367,
+            "delta_f": -11.126888275146484
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 9.575901985168457,
+            "delta_f": 9.575901985168457
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 9.529522895812988,
+            "delta_f": 9.529522895812988
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 8.815768241882324,
+            "delta_f": 8.815768241882324
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 7.30488920211792,
+            "delta_f": 7.30488920211792
+          },
+          {
+            "index": 238,
+            "f_before": 0.0,
+            "f_after": 6.940392017364502,
+            "delta_f": 6.940392017364502
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 6.915743827819824,
+            "delta_f": 6.915743827819824
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 6.6626105308532715,
+            "delta_f": 6.6626105308532715
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 6.4829630851745605,
+            "delta_f": 6.4829630851745605
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 6.450649738311768,
+            "delta_f": 6.450649738311768
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 6.3481764793396,
+            "delta_f": 6.3481764793396
+          },
+          {
+            "index": 6192,
+            "f_before": 0.0,
+            "f_after": 5.6193037033081055,
+            "delta_f": 5.6193037033081055
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 5.30930233001709,
+            "delta_f": 5.30930233001709
+          },
+          {
+            "index": 987,
+            "f_before": 0.0,
+            "f_after": 5.2953691482543945,
+            "delta_f": 5.2953691482543945
+          },
+          {
+            "index": 5735,
+            "f_before": 0.0,
+            "f_after": 5.094903469085693,
+            "delta_f": 5.094903469085693
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n```\n\n**Explanation:**\n\n1. **Import necessary modules:**\n   - `os`: For accessing environment variables.\n   - `django.core.wsgi import get_wsgi_application`: To retrieve the WSGI application.\n\n2.",
+        "after": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n```\n```python\n# ... (your imports)\n\nfrom django.db import models\nfrom django.contrib.auth.models import User\n\n# ... (your other imports)\n\nfrom django.core.management.base import BaseCommand\n\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n```\n\nThis configuration file sets up the WSGI application for your Django project. \n\nHere's a breakdown:\n\n- **Import necessary modules:**  The code imports `os` to access environment variables and `get_wsgi_application`",
+        "after": "\"\"\"\nWSGI config for ChamberOfSecret project.\n\nIt exposes the WSGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/\n\"\"\"\n\nimport os\n\nfrom django.core.wsgi import get_wsgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChamberOfSecret.settings')\n\napplication = get_wsgi_application()\n```\n**Explanation:**\n\n1. **Import Necessary Modules:**\n   - `os`: Provides functions for interacting with the operating system.\n   - `get_wsgi_application`: Retrieves the WSGI application instance.\n\n2. **Define"
+      }
+    }
+  }
+}

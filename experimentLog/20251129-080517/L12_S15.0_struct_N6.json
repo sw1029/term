@@ -60,7 +60,8 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "import pickle\nimport numpy as np\n\nxgboost = pickle.load(open('./xgboost.pkl', 'rb'))\nscaler  = pickle.load(open('./scaler.pkl', 'rb'))\n\n\ndef transform_input(input):\n\treturn scaler.transform([input])\n\ndef make_hard_prediction(input):\n    return xgboost.predict(transform_input(input))\n\ndef make_soft_prediction(input):\n    return xgboost.predict_proba(transform_input(input))[0,1]\n",
   "output": {
@@ -112,7 +113,7 @@
       0.0,
       0.0,
       0.0,
-      0.00826946459710598,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -125,7 +126,7 @@
       0.0,
       0.0,
       0.0,
-      0.00826946459710598,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-080517/feature_std_layer_12.html",
     "mean_std": 0.9313503503799438,
     "max_std": 27.80159568786621
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4034,
+          774,
+          2262,
+          742,
+          789,
+          4022,
+          4623,
+          8215,
+          2255
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1866,
+            "f_before": 118.26738739013672,
+            "f_after": 98.04045104980469,
+            "delta_f": -20.22693634033203
+          },
+          {
+            "index": 5162,
+            "f_before": 0.0,
+            "f_after": 11.235125541687012,
+            "delta_f": 11.235125541687012
+          },
+          {
+            "index": 7438,
+            "f_before": 10.320245742797852,
+            "f_after": 0.0,
+            "delta_f": -10.320245742797852
+          },
+          {
+            "index": 2693,
+            "f_before": 0.0,
+            "f_after": 10.217958450317383,
+            "delta_f": 10.217958450317383
+          },
+          {
+            "index": 4516,
+            "f_before": 0.0,
+            "f_after": 8.406946182250977,
+            "delta_f": 8.406946182250977
+          },
+          {
+            "index": 6013,
+            "f_before": 0.0,
+            "f_after": 8.151822090148926,
+            "delta_f": 8.151822090148926
+          },
+          {
+            "index": 6405,
+            "f_before": 0.0,
+            "f_after": 8.146512031555176,
+            "delta_f": 8.146512031555176
+          },
+          {
+            "index": 136,
+            "f_before": 0.0,
+            "f_after": 7.693417072296143,
+            "delta_f": 7.693417072296143
+          },
+          {
+            "index": 6741,
+            "f_before": 0.0,
+            "f_after": 7.533301830291748,
+            "delta_f": 7.533301830291748
+          },
+          {
+            "index": 4165,
+            "f_before": 0.0,
+            "f_after": 7.526883602142334,
+            "delta_f": 7.526883602142334
+          },
+          {
+            "index": 2547,
+            "f_before": 7.101681232452393,
+            "f_after": 0.0,
+            "delta_f": -7.101681232452393
+          },
+          {
+            "index": 5888,
+            "f_before": 0.0,
+            "f_after": 7.091219902038574,
+            "delta_f": 7.091219902038574
+          },
+          {
+            "index": 2196,
+            "f_before": 0.0,
+            "f_after": 6.704536437988281,
+            "delta_f": 6.704536437988281
+          },
+          {
+            "index": 5659,
+            "f_before": 0.0,
+            "f_after": 6.13834810256958,
+            "delta_f": 6.13834810256958
+          },
+          {
+            "index": 4959,
+            "f_before": 0.0,
+            "f_after": 6.0974507331848145,
+            "delta_f": 6.0974507331848145
+          },
+          {
+            "index": 1797,
+            "f_before": 0.0,
+            "f_after": 5.834035873413086,
+            "delta_f": 5.834035873413086
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import pickle\nimport numpy as np\n\nxgboost = pickle.load(open('./xgboost.pkl', 'rb'))\nscaler  = pickle.load(open('./scaler.pkl', 'rb'))\n\n\ndef transform_input(input):\n\treturn scaler.transform([input])\n\ndef make_hard_prediction(input):\n    return xgboost.predict(transform_input(input))\n\ndef make_soft_prediction(input):\n    return xgboost.predict_proba(transform_input(input))[0,1]\n```\n\n**Explanation:**\n\nThis code defines functions for making predictions using an XGBoost model that has been previously trained and saved. \n\n**1. Loading the Model and Scaler:**\n   - `pickle.load(open('./x",
+        "after": "import pickle\nimport numpy as np\n\nxgboost = pickle.load(open('./xgboost.pkl', 'rb'))\nscaler  = pickle.load(open('./scaler.pkl', 'rb'))\n\n\ndef transform_input(input):\n\treturn scaler.transform([input])\n\ndef make_hard_prediction(input):\n    return xgboost.predict(transform_input(input))\n\ndef make_soft_prediction(input):\n    return xgboost.predict_proba(transform_input(input))[0,1]\n \nif __name__ == '__main__':\n    # Load your data\n    X = np.load('./data.npy')\n    # Load your model\n    model = make_model()\n    # Make predictions\n    predictions"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4034,
+          774,
+          2262,
+          742,
+          789,
+          4022,
+          4623,
+          8215,
+          2255
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import pickle\nimport numpy as np\n\nxgboost = pickle.load(open('./xgboost.pkl', 'rb'))\nscaler  = pickle.load(open('./scaler.pkl', 'rb'))\n\n\ndef transform_input(input):\n\treturn scaler.transform([input])\n\ndef make_hard_prediction(input):\n    return xgboost.predict(transform_input(input))\n\ndef make_soft_prediction(input):\n    return xgboost.predict_proba(transform_input(input))[0,1]\n \n# Example usage\nnew_data = np.array([[1, 2, 3]])\nhard_prediction = make_hard_prediction(new_data)\nsoft_prediction = make_soft_prediction(new_",
+        "after": "import pickle\nimport numpy as np\n\nxgboost = pickle.load(open('./xgboost.pkl', 'rb'))\nscaler  = pickle.load(open('./scaler.pkl', 'rb'))\n\n\ndef transform_input(input):\n\treturn scaler.transform([input])\n\ndef make_hard_prediction(input):\n    return xgboost.predict(transform_input(input))\n\ndef make_soft_prediction(input):\n    return xgboost.predict_proba(transform_input(input))[0,1]\n```\n\nThis code snippet demonstrates the use of XGBoost for classification and regression tasks.\n\n**Key Components:**\n\n1. **Loading XGBoost:**\n   - The code starts by loading the XGBoost model and scaler from the specified"
+      }
+    }
   }
 }

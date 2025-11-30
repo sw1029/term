@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,5,5000\n16:00,8,8000\n17:00,1,1000\n18:00,1,1000\n19:00,1,1000\nassistant: Based on the given data, here are some possible insights that can be derived:\n\n1. The number of clients and sales generally increase as the day progresses, with the highest number of clients and sales happening at 12:00 and 13:00, respectively.\n2. The time slot of 12:00 pm has the highest average sales at 18,000, while the time slot of 10:00 am has the lowest average sales at 3,000.\n3. There is a sharp increase in the number of clients from 11:00 am to 12:00 pm, with a jump from 5 to 18. Similarly, there is a sharp increase in sales from 11:00 am to 12:00 pm, with a jump from 3,000 to 18,000.\n4. There is a decline in the number of clients and sales after 1:00 pm, with only one client and sale happening after 1:00 pm until the end of the day.\n5. There is a consistent trend of increasing sales throughout the day until 1:00 pm, after which it declines.\n6. The time slot of 10:00 am has the lowest number of clients and sales, while the time slot of 1:00 pm has the highest number of clients and sales.\n\nNote: These insights are based on the given data and assumptions made. They may not be accurate or representative of all situations.\nuser: If I could only operate for 4 consecutive hours, which would generate the most sales?\nassistant: To determine which 4 consecutive hours would generate the most sales based on the given data, we can calculate the total sales for each 4-hour time block and compare the results.\n\nAssuming we have 24 time slots in a day, we can divide the time slots into 4-hour blocks as follows:\n\n| Time | 4-Hour Block |\n| --- | --- |\n| 08:00 - 12:00 | 1 |\n| 09:00 - 13:00 | 1 |\n| 10:00 - 14:00 | 2 |\n| 11:00 - 15:00 | 3 |\n| 12:00 - 16:00 | 18 |\n| 13:00 - 17:00 | 29 |\n| 14:00 - 18:00 | 30 |\n| 15:00 - 19:00 | 5 |\n| 16:00 - 20:00 | 8 |\n| 17:00 - 21:00 | 1 |\n| 18:00 - 22:00 | 1 |\n| 19:00 - 23:00 | 1 |\n\nWe can then calculate the total sales for each 4-hour time block:\n\n| 4-Hour Block | Total Sales |\n| --- | --- |\n| 08:00 - 12:00 | 1000 |\n| 09:00 - 13:00 | 1000 |\n| 10:00 - 14:00 | 6000 |\n| 11:00 - 15:00 | 10000 |\n| 12:00 - 16:00 | 36000 |\n| 13:00 - 17:00 | 30000 |\n| 14:00 - 18:00 | 24000\nuser: Please give the answer as a single time period\nassistant: If you could only operate for 4 consecutive hours, the time period that would generate the most sales would be from 10:00 am to 2:00 pm, as this time block has the highest total sales at 10,000.",
+  "prompt": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,3000",
   "output": {
     "before": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,5,5000\n16:00,8,8000\n17:00,1,1000\n18:00,1,1000\n19:00,1,1000\nassistant: Based on the given data, here are some possible insights that can be derived:\n\n1. The number of clients and sales generally increase as the day progresses, with the highest number of clients and sales happening at 12:00 and 13:00, respectively.\n2. The time slot of 12:00 pm has the highest average sales at 18,000, while the time slot of 10:00 am has the lowest average sales at 3,000.\n3. There is a sharp increase in the number of clients from 11:00 am to 12:00 pm, with a jump from 5 to 18. Similarly, there is a sharp increase in sales from 11:00 am to 12:00 pm, with a jump from 3,000 to 18,000.\n4. There is a decline in the number of clients and sales after 1:00 pm, with only one client and sale happening after 1:00 pm until the end of the day.\n5. There is a consistent trend of increasing sales throughout the day until 1:00 pm, after which it declines.\n6. The time slot of 10:00 am has the lowest number of clients and sales, while the time slot of 1:00 pm has the highest number of clients and sales.\n\nNote: These insights are based on the given data and assumptions made. They may not be accurate or representative of all situations.\nuser: If I could only operate for 4 consecutive hours, which would generate the most sales?\nassistant: To determine which 4 consecutive hours would generate the most sales based on the given data, we can calculate the total sales for each 4-hour time block and compare the results.\n\nAssuming we have 24 time slots in a day, we can divide the time slots into 4-hour blocks as follows:\n\n| Time | 4-Hour Block |\n| --- | --- |\n| 08:00 - 12:00 | 1 |\n| 09:00 - 13:00 | 1 |\n| 10:00 - 14:00 | 2 |\n| 11:00 - 15:00 | 3 |\n| 12:00 - 16:00 | 18 |\n| 13:00 - 17:00 | 29 |\n| 14:00 - 18:00 | 30 |\n| 15:00 - 19:00 | 5 |\n| 16:00 - 20:00 | 8 |\n| 17:00 - 21:00 | 1 |\n| 18:00 - 22:00 | 1 |\n| 19:00 - 23:00 | 1 |\n\nWe can then calculate the total sales for each 4-hour time block:\n\n| 4-Hour Block | Total Sales |\n| --- | --- |\n| 08:00 - 12:00 | 1000 |\n| 09:00 - 13:00 | 1000 |\n| 10:00 - 14:00 | 6000 |\n| 11:00 - 15:00 | 10000 |\n| 12:00 - 16:00 | 36000 |\n| 13:00 - 17:00 | 30000 |\n| 14:00 - 18:00 | 24000\nuser: Please give the answer as a single time period\nassistant: If you could only operate for 4 consecutive hours, the time period that would generate the most sales would be from 10:00 am to 2:00 pm, as this time block has the highest total sales at 10,000. \n",
     "after": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,5,5000\n16:00,8,8000\n17:00,1,1000\n18:00,1,1000\n19:00,1,1000\nassistant: Based on the given data, here are some possible insights that can be derived:\n\n1. The number of clients and sales generally increase as the day progresses, with the highest number of clients and sales happening at 12:00 and 13:00, respectively.\n2. The time slot of 12:00 pm has the highest average sales at 18,000, while the time slot of 10:00 am has the lowest average sales at 3,000.\n3. There is a sharp increase in the number of clients from 11:00 am to 12:00 pm, with a jump from 5 to 18. Similarly, there is a sharp increase in sales from 11:00 am to 12:00 pm, with a jump from 3,000 to 18,000.\n4. There is a decline in the number of clients and sales after 1:00 pm, with only one client and sale happening after 1:00 pm until the end of the day.\n5. There is a consistent trend of increasing sales throughout the day until 1:00 pm, after which it declines.\n6. The time slot of 10:00 am has the lowest number of clients and sales, while the time slot of 1:00 pm has the highest number of clients and sales.\n\nNote: These insights are based on the given data and assumptions made. They may not be accurate or representative of all situations.\nuser: If I could only operate for 4 consecutive hours, which would generate the most sales?\nassistant: To determine which 4 consecutive hours would generate the most sales based on the given data, we can calculate the total sales for each 4-hour time block and compare the results.\n\nAssuming we have 24 time slots in a day, we can divide the time slots into 4-hour blocks as follows:\n\n| Time | 4-Hour Block |\n| --- | --- |\n| 08:00 - 12:00 | 1 |\n| 09:00 - 13:00 | 1 |\n| 10:00 - 14:00 | 2 |\n| 11:00 - 15:00 | 3 |\n| 12:00 - 16:00 | 18 |\n| 13:00 - 17:00 | 29 |\n| 14:00 - 18:00 | 30 |\n| 15:00 - 19:00 | 5 |\n| 16:00 - 20:00 | 8 |\n| 17:00 - 21:00 | 1 |\n| 18:00 - 22:00 | 1 |\n| 19:00 - 23:00 | 1 |\n\nWe can then calculate the total sales for each 4-hour time block:\n\n| 4-Hour Block | Total Sales |\n| --- | --- |\n| 08:00 - 12:00 | 1000 |\n| 09:00 - 13:00 | 1000 |\n| 10:00 - 14:00 | 6000 |\n| 11:00 - 15:00 | 10000 |\n| 12:00 - 16:00 | 36000 |\n| 13:00 - 17:00 | 30000 |\n| 14:00 - 18:00 | 24000\nuser: Please give the answer as a single time period\nassistant: If you could only operate for 4 consecutive hours, the time period that would generate the most sales would be from 10:00 am to 2:00 pm, as this time block has the highest total sales at 10,000.\n\n\n"
@@ -82,7 +83,7 @@
       8747
     ],
     "f_before": [
-      62.77111053466797,
+      74.7545166015625,
       0.0,
       0.0,
       0.0,
@@ -95,13 +96,13 @@
       0.0
     ],
     "f_after": [
-      62.77111053466797,
+      234.63662719726562,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.0,
+      0.947388768196106,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      6.5253777503967285,
-      6.561716079711914,
-      6.384180545806885,
-      6.055400848388672,
-      5.924062252044678,
-      5.866270065307617,
-      0.031159354373812675,
       0.0,
-      5.998706817626953,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      6.5253777503967285,
-      6.561716079711914,
-      6.384180545806885,
-      6.055400848388672,
-      5.924062252044678,
-      5.866270065307617,
-      0.031159354373812675,
       0.0,
-      5.998706817626953,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          6087,
+          259,
+          5424,
+          6926,
+          3358,
+          7751,
+          841,
+          104,
+          5748,
+          8747
+        ],
+        "f_before": [
+          74.7545166015625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          234.63662719726562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.947388768196106,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 74.7545166015625,
+            "f_after": 234.63662719726562,
+            "delta_f": 159.88211059570312
+          },
+          {
+            "index": 5012,
+            "f_before": 32.12526321411133,
+            "f_after": 68.58918762207031,
+            "delta_f": 36.463924407958984
+          },
+          {
+            "index": 5931,
+            "f_before": 8.328862190246582,
+            "f_after": 44.38676452636719,
+            "delta_f": 36.057902336120605
+          },
+          {
+            "index": 8762,
+            "f_before": 82.15557098388672,
+            "f_after": 77.65123748779297,
+            "delta_f": -4.50433349609375
+          },
+          {
+            "index": 4070,
+            "f_before": 0.0,
+            "f_after": 3.4078664779663086,
+            "delta_f": 3.4078664779663086
+          },
+          {
+            "index": 8197,
+            "f_before": 0.0,
+            "f_after": 3.2619786262512207,
+            "delta_f": 3.2619786262512207
+          },
+          {
+            "index": 2880,
+            "f_before": 0.14404743909835815,
+            "f_after": 3.1545534133911133,
+            "delta_f": 3.010505974292755
+          },
+          {
+            "index": 7783,
+            "f_before": 0.0,
+            "f_after": 2.942228078842163,
+            "delta_f": 2.942228078842163
+          },
+          {
+            "index": 6650,
+            "f_before": 0.0,
+            "f_after": 2.9214975833892822,
+            "delta_f": 2.9214975833892822
+          },
+          {
+            "index": 8993,
+            "f_before": 0.0,
+            "f_after": 2.83164644241333,
+            "delta_f": 2.83164644241333
+          },
+          {
+            "index": 4076,
+            "f_before": 0.0,
+            "f_after": 2.7792727947235107,
+            "delta_f": 2.7792727947235107
+          },
+          {
+            "index": 3495,
+            "f_before": 0.0,
+            "f_after": 2.7583305835723877,
+            "delta_f": 2.7583305835723877
+          },
+          {
+            "index": 2049,
+            "f_before": 0.0,
+            "f_after": 2.700399160385132,
+            "delta_f": 2.700399160385132
+          },
+          {
+            "index": 7111,
+            "f_before": 0.0,
+            "f_after": 2.65902042388916,
+            "delta_f": 2.65902042388916
+          },
+          {
+            "index": 990,
+            "f_before": 0.0,
+            "f_after": 2.6487510204315186,
+            "delta_f": 2.6487510204315186
+          },
+          {
+            "index": 8974,
+            "f_before": 0.0,
+            "f_after": 2.6340396404266357,
+            "delta_f": 2.6340396404266357
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,30,30000\n16:00,25,25000\n17:00,20,20000\n18:",
+        "after": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,1,1000\n16:00,2,1000\n17:00,1,1000\n18:00,1,1"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          6087,
+          259,
+          5424,
+          6926,
+          3358,
+          7751,
+          841,
+          104,
+          5748,
+          8747
+        ],
+        "f_before": [
+          74.7545166015625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          74.7545166015625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 74.7545166015625,
+            "f_after": 74.7545166015625,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,30,30000\n16:00,10,1000\n17:00,1,1000\n18:00,",
+        "after": "user: Please give me the top insights from this data, it is in CSV format, the column names is in the first line : Time,Clients,Sales\n08:00,1,1000\n09:00,1,1000\n10:00,3,3000\n11:00,5,5000\n12:00,18,18000\n13:00,29,29000\n14:00,30,30000\n15:00,30,30000\n\n\n**This is a fictional story about a cashier, who was just promoted to manager, but doesn't have a job. \nI think this is a great"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma : float\n            Length scale of Gaussian function.\n        r_cut : float\n            Coarse-graining cut-off radius.\n        \"\"\"\n\n        self.sigma = sigma  # length scale of Gaussian function\n        self.r_cut = r_cut  # coarse-graining cut-off radius\n\n    def function(self, r):\n        \"\"\"\n        Parameters\n        ----------\n        r : float\n            Radius.\n\n        Returns\n        -------\n        phi : float\n            Coarse-graining factor at radius r.\n        \"\"\"\n\n        if r > self.r_cut: return 0 # coarse-graining function is zero after cut-off\n\n        Dg = 2*np.pi*(self.sigma**2)*(1 -\n            np.exp(-0.5*((self.r_cut/self.sigma)**2)))  # normalisation factor\n        return np.exp(-0.5*((r/self.sigma)**2))/Dg      # coarse-graining factor\n\n    def factors(self, positions):\n        \"\"\"\n        Parameters\n        ----------\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n\n        Returns\n        -------\n        CGfactors : Numpy float array\n            Coarse-graining factors at positions.\n        \"\"\"\n\n        return np.array(list(map(\n            lambda r: self.function(r),\n            np.sqrt(np.sum(positions**2, axis=-1))\n            ))) # coarse graining factors at positions\n\nclass SquareUniformCG:\n    \"\"\"\n    Square uniform coarse-graining.\n    \"\"\"\n\n    def __init__(self, dL):\n        \"\"\"\n        Parameters\n        ----------\n        dL : float\n            Length of square box on which to average.\n        \"\"\"\n\n        self.dL = dL    # averaging square length\n\n    def function(self, position):\n        \"\"\"\n        Parameters\n        ----------\n        position : float array\n            Coordinates.\n\n        Returns\n        -------\n        phi : float\n            Coarse-graining factor at position position.\n        \"\"\"\n\n        if (np.abs(np.array(position)) > self.dL/2).any(): return 0 # coarse-graining function is zero outside square\n        return 1                                                    # is one in\n\n    def factors(self, positions):\n        \"\"\"\n        Parameters\n        ----------\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n\n        Returns\n        -------\n        CGfactors : Numpy float array\n            Coarse-graining factors at positions.\n        \"\"\"\n\n        CGfactors = np.array(list(map(\n            lambda position:\n            self.function(position),\n            positions\n            )))\n        sumCGfactors = np.sum(CGfactors)\n        if np.sum(CGfactors) == 0: return 0\n        return CGfactors/sumCGfactors   # coarse graining factors at positions\n\nclass CoarseGraining:\n    \"\"\"\n    Enables unique calculation of coarse-graining factors and then calculation\n    of coarse-graining avergages.\n    \"\"\"\n\n    def __init__(self, factors_function, positions):\n        \"\"\"\n        Parameters\n        ----------\n        factors_function : function\n            Function of array of coordinates which returns coarse-graining\n            factors at these coordinates.\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n        \"\"\"\n\n        self.CGfactors = np.array(factors_function(positions))  # coarse-graining factors at positions\n\n    def average(self, var):\n        \"\"\"\n        Coarse-graining averaging.\n\n        Parameters\n        ----------\n        var : float array\n            Values of variable to coarse-grain at different positions from\n            point at which coarse-graining is desired.\n\n        Returns\n        -------\n        average : float\n            Coarse-grained variable.\n        \"\"\"\n\n        return np.sum(\n            np.transpose(np.array(self.CGfactors,\n            ndmin=len(np.array(var).shape)))\n            *np.array(var), axis=0) # coarse-grained variable\n",
+  "prompt": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------",
   "output": {
     "before": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma : float\n            Length scale of Gaussian function.\n        r_cut : float\n            Coarse-graining cut-off radius.\n        \"\"\"\n\n        self.sigma = sigma  # length scale of Gaussian function\n        self.r_cut = r_cut  # coarse-graining cut-off radius\n\n    def function(self, r):\n        \"\"\"\n        Parameters\n        ----------\n        r : float\n            Radius.\n\n        Returns\n        -------\n        phi : float\n            Coarse-graining factor at radius r.\n        \"\"\"\n\n        if r > self.r_cut: return 0 # coarse-graining function is zero after cut-off\n\n        Dg = 2*np.pi*(self.sigma**2)*(1 -\n            np.exp(-0.5*((self.r_cut/self.sigma)**2)))  # normalisation factor\n        return np.exp(-0.5*((r/self.sigma)**2))/Dg      # coarse-graining factor\n\n    def factors(self, positions):\n        \"\"\"\n        Parameters\n        ----------\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n\n        Returns\n        -------\n        CGfactors : Numpy float array\n            Coarse-graining factors at positions.\n        \"\"\"\n\n        return np.array(list(map(\n            lambda r: self.function(r),\n            np.sqrt(np.sum(positions**2, axis=-1))\n            ))) # coarse graining factors at positions\n\nclass SquareUniformCG:\n    \"\"\"\n    Square uniform coarse-graining.\n    \"\"\"\n\n    def __init__(self, dL):\n        \"\"\"\n        Parameters\n        ----------\n        dL : float\n            Length of square box on which to average.\n        \"\"\"\n\n        self.dL = dL    # averaging square length\n\n    def function(self, position):\n        \"\"\"\n        Parameters\n        ----------\n        position : float array\n            Coordinates.\n\n        Returns\n        -------\n        phi : float\n            Coarse-graining factor at position position.\n        \"\"\"\n\n        if (np.abs(np.array(position)) > self.dL/2).any(): return 0 # coarse-graining function is zero outside square\n        return 1                                                    # is one in\n\n    def factors(self, positions):\n        \"\"\"\n        Parameters\n        ----------\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n\n        Returns\n        -------\n        CGfactors : Numpy float array\n            Coarse-graining factors at positions.\n        \"\"\"\n\n        CGfactors = np.array(list(map(\n            lambda position:\n            self.function(position),\n            positions\n            )))\n        sumCGfactors = np.sum(CGfactors)\n        if np.sum(CGfactors) == 0: return 0\n        return CGfactors/sumCGfactors   # coarse graining factors at positions\n\nclass CoarseGraining:\n    \"\"\"\n    Enables unique calculation of coarse-graining factors and then calculation\n    of coarse-graining avergages.\n    \"\"\"\n\n    def __init__(self, factors_function, positions):\n        \"\"\"\n        Parameters\n        ----------\n        factors_function : function\n            Function of array of coordinates which returns coarse-graining\n            factors at these coordinates.\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n        \"\"\"\n\n        self.CGfactors = np.array(factors_function(positions))  # coarse-graining factors at positions\n\n    def average(self, var):\n        \"\"\"\n        Coarse-graining averaging.\n\n        Parameters\n        ----------\n        var : float array\n            Values of variable to coarse-grain at different positions from\n            point at which coarse-graining is desired.\n\n        Returns\n        -------\n        average : float\n            Coarse-grained variable.\n        \"\"\"\n\n        return np.sum(\n            np.transpose(np.array(self.CGfactors,\n            ndmin=len(np.array(var).shape)))\n            *np.array(var), axis=0) # coarse-grained variable\n    \n\n# Example Usage\n# Define a Gaussian coarse-graining object with a sigma of 1 and a cut-off radius of 2\ncg = GaussianCG(sigma=1, r_cut=2)\n\n# Define a",
     "after": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma : float\n            Length scale of Gaussian function.\n        r_cut : float\n            Coarse-graining cut-off radius.\n        \"\"\"\n\n        self.sigma = sigma  # length scale of Gaussian function\n        self.r_cut = r_cut  # coarse-graining cut-off radius\n\n    def function(self, r):\n        \"\"\"\n        Parameters\n        ----------\n        r : float\n            Radius.\n\n        Returns\n        -------\n        phi : float\n            Coarse-graining factor at radius r.\n        \"\"\"\n\n        if r > self.r_cut: return 0 # coarse-graining function is zero after cut-off\n\n        Dg = 2*np.pi*(self.sigma**2)*(1 -\n            np.exp(-0.5*((self.r_cut/self.sigma)**2)))  # normalisation factor\n        return np.exp(-0.5*((r/self.sigma)**2))/Dg      # coarse-graining factor\n\n    def factors(self, positions):\n        \"\"\"\n        Parameters\n        ----------\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n\n        Returns\n        -------\n        CGfactors : Numpy float array\n            Coarse-graining factors at positions.\n        \"\"\"\n\n        return np.array(list(map(\n            lambda r: self.function(r),\n            np.sqrt(np.sum(positions**2, axis=-1))\n            ))) # coarse graining factors at positions\n\nclass SquareUniformCG:\n    \"\"\"\n    Square uniform coarse-graining.\n    \"\"\"\n\n    def __init__(self, dL):\n        \"\"\"\n        Parameters\n        ----------\n        dL : float\n            Length of square box on which to average.\n        \"\"\"\n\n        self.dL = dL    # averaging square length\n\n    def function(self, position):\n        \"\"\"\n        Parameters\n        ----------\n        position : float array\n            Coordinates.\n\n        Returns\n        -------\n        phi : float\n            Coarse-graining factor at position position.\n        \"\"\"\n\n        if (np.abs(np.array(position)) > self.dL/2).any(): return 0 # coarse-graining function is zero outside square\n        return 1                                                    # is one in\n\n    def factors(self, positions):\n        \"\"\"\n        Parameters\n        ----------\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n\n        Returns\n        -------\n        CGfactors : Numpy float array\n            Coarse-graining factors at positions.\n        \"\"\"\n\n        CGfactors = np.array(list(map(\n            lambda position:\n            self.function(position),\n            positions\n            )))\n        sumCGfactors = np.sum(CGfactors)\n        if np.sum(CGfactors) == 0: return 0\n        return CGfactors/sumCGfactors   # coarse graining factors at positions\n\nclass CoarseGraining:\n    \"\"\"\n    Enables unique calculation of coarse-graining factors and then calculation\n    of coarse-graining avergages.\n    \"\"\"\n\n    def __init__(self, factors_function, positions):\n        \"\"\"\n        Parameters\n        ----------\n        factors_function : function\n            Function of array of coordinates which returns coarse-graining\n            factors at these coordinates.\n        positions : float array\n            Coordinates at which coarse-graining is desired.\n        \"\"\"\n\n        self.CGfactors = np.array(factors_function(positions))  # coarse-graining factors at positions\n\n    def average(self, var):\n        \"\"\"\n        Coarse-graining averaging.\n\n        Parameters\n        ----------\n        var : float array\n            Values of variable to coarse-grain at different positions from\n            point at which coarse-graining is desired.\n\n        Returns\n        -------\n        average : float\n            Coarse-grained variable.\n        \"\"\"\n\n        return np.sum(\n            np.transpose(np.array(self.CGfactors,\n            ndmin=len(np.array(var).shape)))\n            *np.array(var), axis=0) # coarse-grained variable\n```\n\n```python\nimport numpy as np\nfrom scipy.optimize import minimize\n\n# Define Gaussian coarse-graining parameters\nsigma = 1.0\nr_cut = 1.0\n\n# Define coarse-graining functions\n"
@@ -115,7 +116,7 @@
       0.0,
       0.0,
       0.0,
-      0.10216960310935974,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -128,7 +129,7 @@
       0.0,
       0.0,
       0.0,
-      0.10216960310935974,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          9169,
+          4282,
+          3929,
+          450,
+          6654,
+          6328,
+          8469,
+          4546,
+          4950
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8762,
+            "f_before": 87.94024658203125,
+            "f_after": 108.32435607910156,
+            "delta_f": 20.384109497070312
+          },
+          {
+            "index": 1,
+            "f_before": 17.902889251708984,
+            "f_after": 0.0,
+            "delta_f": -17.902889251708984
+          },
+          {
+            "index": 527,
+            "f_before": 1.885575532913208,
+            "f_after": 12.5914945602417,
+            "delta_f": 10.705919027328491
+          },
+          {
+            "index": 6170,
+            "f_before": 0.0,
+            "f_after": 9.833148002624512,
+            "delta_f": 9.833148002624512
+          },
+          {
+            "index": 6544,
+            "f_before": 0.0,
+            "f_after": 9.788945198059082,
+            "delta_f": 9.788945198059082
+          },
+          {
+            "index": 365,
+            "f_before": 0.0,
+            "f_after": 9.509233474731445,
+            "delta_f": 9.509233474731445
+          },
+          {
+            "index": 7697,
+            "f_before": 0.0,
+            "f_after": 9.048232078552246,
+            "delta_f": 9.048232078552246
+          },
+          {
+            "index": 2905,
+            "f_before": 0.0,
+            "f_after": 8.938860893249512,
+            "delta_f": 8.938860893249512
+          },
+          {
+            "index": 6037,
+            "f_before": 0.0,
+            "f_after": 8.838775634765625,
+            "delta_f": 8.838775634765625
+          },
+          {
+            "index": 7209,
+            "f_before": 0.0,
+            "f_after": 8.417783737182617,
+            "delta_f": 8.417783737182617
+          },
+          {
+            "index": 1947,
+            "f_before": 0.0,
+            "f_after": 8.083419799804688,
+            "delta_f": 8.083419799804688
+          },
+          {
+            "index": 2315,
+            "f_before": 0.0,
+            "f_after": 7.21246862411499,
+            "delta_f": 7.21246862411499
+          },
+          {
+            "index": 1076,
+            "f_before": 0.0,
+            "f_after": 7.122031211853027,
+            "delta_f": 7.122031211853027
+          },
+          {
+            "index": 5749,
+            "f_before": 0.0,
+            "f_after": 6.819064140319824,
+            "delta_f": 6.819064140319824
+          },
+          {
+            "index": 3927,
+            "f_before": 0.0,
+            "f_after": 6.3466925621032715,
+            "delta_f": 6.3466925621032715
+          },
+          {
+            "index": 3207,
+            "f_before": 0.0,
+            "f_after": 6.14912223815918,
+            "delta_f": 6.14912223815918
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma : float\n            Standard deviation of the Gaussian kernel.\n        r_cut : float\n            Radius of the cut-off.\n        \"\"\"\n        self.sigma = sigma\n        self.r_cut = r_",
+        "after": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma: float\n            Standard deviation of Gaussian kernel\n        r_cut: float\n            Radius of cutoff\n        \"\"\"\n        self.sigma = sigma\n        self.r_cut = r_cut\n\n    def gaussian_"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          9169,
+          4282,
+          3929,
+          450,
+          6654,
+          6328,
+          8469,
+          4546,
+          4950
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 17.902889251708984,
+            "f_after": 17.902889251708984,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma : float\n            Standard deviation of the Gaussian.\n        r_cut : float\n            Distance cut-off for coarse-graining.\n        \"\"\"\n        self.sigma = sigma\n        self.r_cut =",
+        "after": "\"\"\"\nModule coarse_graining implements a Gaussian coarse-graining adapted from\nIlling et al., Phys. Rev. Lett. 117, 208002 (2016) following Goldhirsch and\nGoldenberg, Eur. Phys. J. E 9, 245–251 (2002).\n\"\"\"\n\nimport numpy as np\n\nclass GaussianCG:\n    \"\"\"\n    Gaussian coarse-graining.\n    \"\"\"\n\n    def __init__(self, sigma, r_cut):\n        \"\"\"\n        Parameters\n        ----------\n        sigma : float\n            Standard deviation.\n        r_cut : float\n            Radius of cutoff.\n        \"\"\"\n        self.sigma = sigma\n        self.r_cut = r_cut\n\n    def get_mesh"
+      }
+    }
   }
 }

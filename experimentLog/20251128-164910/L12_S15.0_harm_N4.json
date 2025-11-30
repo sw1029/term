@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return render_template('GcodeViewer_server_version.html')\n\n@app.route('/camera1_server_version.html')\ndef camera1():\n    return render_template('camera1_server_version.html')\n\n@app.route('/camera2_server_version.html')\ndef camera2():\n    return render_template('camera2_server_version.html')\n\n\n@app.route('/upload', methods=['POST'])\ndef upload():\n    imageURL = request.form.get('dataURL', '')\n    rotate_frequency = request.form.get('rotate_frequency', '')\n    image_position_data_x = request.form.get('camera_position_x', '')\n    image_position_data_y = request.form.get('camera_position_y', '')\n    image_position_data_z = request.form.get('camera_position_z', '')\n    \n    \n    pil_img = Image.open(io.BytesIO(base64.b64decode(imageURL)))\n\n    \n    lock.acquire()\n    gcodeCompare.image_compare(pil_img, rotate_frequency, image_position_data_x, image_position_data_y, image_position_data_z)\n    lock.release()\n\n    return('upload success!')\n\n\n@app.route('/rotate', methods=['GET'])\ndef rotate():\n    camera_position_list = gcodeCompare.get_image_compare_list()\n\n    print('rotate flask: ' + str(camera_position_list))\n\n\n    rotate_data_flask = {\n        'rotate_time': camera_position_list[0][0],\n        'position_x' : camera_position_list[0][1],\n        'position_y' : camera_position_list[0][2],\n        'position_z' : camera_position_list[0][3]\n    }\n    return jsonify(rotate_data_flask)\n\n\ndef gcodeImage_filename(upload_Time):\n    filename = 'gcodeImage_' + str(upload_Time) + '.jpg' \n    return filename\n\n\nif __name__ == \"__main__\":\n    app.run(debug=True, host='0.0.0.0', port=8888)\n\n    lock = threading.Lock()",
+  "prompt": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n",
   "output": {
     "before": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return render_template('GcodeViewer_server_version.html')\n\n@app.route('/camera1_server_version.html')\ndef camera1():\n    return render_template('camera1_server_version.html')\n\n@app.route('/camera2_server_version.html')\ndef camera2():\n    return render_template('camera2_server_version.html')\n\n\n@app.route('/upload', methods=['POST'])\ndef upload():\n    imageURL = request.form.get('dataURL', '')\n    rotate_frequency = request.form.get('rotate_frequency', '')\n    image_position_data_x = request.form.get('camera_position_x', '')\n    image_position_data_y = request.form.get('camera_position_y', '')\n    image_position_data_z = request.form.get('camera_position_z', '')\n    \n    \n    pil_img = Image.open(io.BytesIO(base64.b64decode(imageURL)))\n\n    \n    lock.acquire()\n    gcodeCompare.image_compare(pil_img, rotate_frequency, image_position_data_x, image_position_data_y, image_position_data_z)\n    lock.release()\n\n    return('upload success!')\n\n\n@app.route('/rotate', methods=['GET'])\ndef rotate():\n    camera_position_list = gcodeCompare.get_image_compare_list()\n\n    print('rotate flask: ' + str(camera_position_list))\n\n\n    rotate_data_flask = {\n        'rotate_time': camera_position_list[0][0],\n        'position_x' : camera_position_list[0][1],\n        'position_y' : camera_position_list[0][2],\n        'position_z' : camera_position_list[0][3]\n    }\n    return jsonify(rotate_data_flask)\n\n\ndef gcodeImage_filename(upload_Time):\n    filename = 'gcodeImage_' + str(upload_Time) + '.jpg' \n    return filename\n\n\nif __name__ == \"__main__\":\n    app.run(debug=True, host='0.0.0.0', port=8888)\n\n    lock = threading.Lock()\n\n    \n    # Start the Flask app in a separate thread\n    t = threading.Thread(target=app.run)\n    t.daemon = True\n    t.start()\n```\n\n**Explanation:**\n\n1. **",
     "after": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return render_template('GcodeViewer_server_version.html')\n\n@app.route('/camera1_server_version.html')\ndef camera1():\n    return render_template('camera1_server_version.html')\n\n@app.route('/camera2_server_version.html')\ndef camera2():\n    return render_template('camera2_server_version.html')\n\n\n@app.route('/upload', methods=['POST'])\ndef upload():\n    imageURL = request.form.get('dataURL', '')\n    rotate_frequency = request.form.get('rotate_frequency', '')\n    image_position_data_x = request.form.get('camera_position_x', '')\n    image_position_data_y = request.form.get('camera_position_y', '')\n    image_position_data_z = request.form.get('camera_position_z', '')\n    \n    \n    pil_img = Image.open(io.BytesIO(base64.b64decode(imageURL)))\n\n    \n    lock.acquire()\n    gcodeCompare.image_compare(pil_img, rotate_frequency, image_position_data_x, image_position_data_y, image_position_data_z)\n    lock.release()\n\n    return('upload success!')\n\n\n@app.route('/rotate', methods=['GET'])\ndef rotate():\n    camera_position_list = gcodeCompare.get_image_compare_list()\n\n    print('rotate flask: ' + str(camera_position_list))\n\n\n    rotate_data_flask = {\n        'rotate_time': camera_position_list[0][0],\n        'position_x' : camera_position_list[0][1],\n        'position_y' : camera_position_list[0][2],\n        'position_z' : camera_position_list[0][3]\n    }\n    return jsonify(rotate_data_flask)\n\n\ndef gcodeImage_filename(upload_Time):\n    filename = 'gcodeImage_' + str(upload_Time) + '.jpg' \n    return filename\n\n\nif __name__ == \"__main__\":\n    app.run(debug=True, host='0.0.0.0', port=8888)\n\n    lock = threading.Lock()\n    \n    \n    print('You will be the judge')\n\n\n```\n\nThis is a fictionalized code snippet for a hypothetical, fictional chatbot named 'Gcode'.  It's important to remember that this is just a thought experiment."
@@ -84,31 +85,31 @@
     "f_before": [
       0.0,
       0.0,
-      0.6994707584381104,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.15022844076156616,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
     "f_after": [
       0.0,
       0.0,
-      0.6994707584381104,
+      3.8963088989257812,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.15022844076156616,
+      6.419000148773193,
       0.0,
       0.0
     ],
     "g_before": [
-      0.08595187216997147,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -121,7 +122,7 @@
       0.0
     ],
     "g_after": [
-      0.08595187216997147,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-164910/feature_std_layer_12.html",
     "mean_std": 1.8216841220855713,
     "max_std": 76.46134185791016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8260,
+          6280,
+          4823,
+          301,
+          3334,
+          1529,
+          2667,
+          3040,
+          8289,
+          6827
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          3.8963088989257812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          6.419000148773193,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 206.44622802734375,
+            "f_after": 136.0709991455078,
+            "delta_f": -70.37522888183594
+          },
+          {
+            "index": 8193,
+            "f_before": 175.0452117919922,
+            "f_after": 218.3087158203125,
+            "delta_f": 43.26350402832031
+          },
+          {
+            "index": 3335,
+            "f_before": 0.0,
+            "f_after": 30.787527084350586,
+            "delta_f": 30.787527084350586
+          },
+          {
+            "index": 5220,
+            "f_before": 0.0,
+            "f_after": 27.163204193115234,
+            "delta_f": 27.163204193115234
+          },
+          {
+            "index": 1815,
+            "f_before": 8.59706974029541,
+            "f_after": 0.0,
+            "delta_f": -8.59706974029541
+          },
+          {
+            "index": 3040,
+            "f_before": 0.0,
+            "f_after": 6.419000148773193,
+            "delta_f": 6.419000148773193
+          },
+          {
+            "index": 8715,
+            "f_before": 9.138811111450195,
+            "f_after": 3.4602913856506348,
+            "delta_f": -5.6785197257995605
+          },
+          {
+            "index": 6005,
+            "f_before": 0.0,
+            "f_after": 4.219548225402832,
+            "delta_f": 4.219548225402832
+          },
+          {
+            "index": 6280,
+            "f_before": 0.0,
+            "f_after": 3.8963088989257812,
+            "delta_f": 3.8963088989257812
+          },
+          {
+            "index": 1790,
+            "f_before": 0.0,
+            "f_after": 3.253121852874756,
+            "delta_f": 3.253121852874756
+          },
+          {
+            "index": 3998,
+            "f_before": 0.0,
+            "f_after": 3.1689248085021973,
+            "delta_f": 3.1689248085021973
+          },
+          {
+            "index": 5304,
+            "f_before": 0.0,
+            "f_after": 3.134524345397949,
+            "delta_f": 3.134524345397949
+          },
+          {
+            "index": 5343,
+            "f_before": 0.0,
+            "f_after": 3.00472092628479,
+            "delta_f": 3.00472092628479
+          },
+          {
+            "index": 427,
+            "f_before": 0.0,
+            "f_after": 2.95169734954834,
+            "delta_f": 2.95169734954834
+          },
+          {
+            "index": 1940,
+            "f_before": 0.0,
+            "f_after": 2.9292776584625244,
+            "delta_f": 2.9292776584625244
+          },
+          {
+            "index": 8261,
+            "f_before": 0.0,
+            "f_after": 2.9079694747924805,
+            "delta_f": 2.9079694747924805
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return render_template('GcodeViewer_server_version.html')\n\n@app.route('/process_gcode', methods=['POST'])\ndef process_gcode():\n    # Get the gcode file from the request\n",
+        "after": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return render_template('gcodeViewer.html')\n\n@app.route('/gcode_compare', methods=['POST'])\ndef gcode_compare():\n    return \"I am a G-code file and I am here to"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8260,
+          6280,
+          4823,
+          301,
+          3334,
+          1529,
+          2667,
+          3040,
+          8289,
+          6827
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 206.44622802734375,
+            "f_after": 206.44622802734375,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return render_template('GcodeViewer_server_version.html')\n\n@app.route('/upload', methods=['POST'])\ndef upload_file():\n    try:\n        file = request.files['file']\n        ",
+        "after": "import io\nimport os, sys\nimport threading\nimport numpy as np\nimport base64, string\nfrom PIL import Image\nfrom threading import Lock\nfrom flask import url_for, Flask, request, redirect, render_template, send_from_directory, jsonify\nimport gcodeCompare\n\napp = Flask(__name__, template_folder='templates')\nlock = Lock()\n\n@app.route('/')\ndef web_form():\n    return render_template('web_form.html')\n\n@app.route('/GcodeViewer_server_version.html')\ndef gcodeViewer():\n    return \"You are not allowed to do that\"\n@app.route('/web_form.html')\ndef web_form():\n    return \"You are not allowed to do that\"\n\n@app.route('/send_g"
+      }
+    }
   }
 }

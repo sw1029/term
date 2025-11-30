@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import HCRS, ITRS, GCRS\nfrom astropy.utils.iers import IERS_A, IERS_A_URL, IERS\nfrom astropy.utils.data import download_file\n\nfrom trajectory_utilities import ECEF2LLH, \\\n     EarthPosition, HCRS2HCI, HCI2ECI_pos, \\\n     OrbitalElements2PosVel, ECI2ECEF_pos\n\n\ntry:\n    iers_a_file = download_file(IERS_A_URL, cache=True)\n    iers_a = IERS_A.open(iers_a_file)\n    IERS.iers_table = iers_a\nexcept:\n    print('IERS_A_URL is temporarily unavailable')\n    pass\n\n\nAU = 1*u.au.to(u.m)\nSMA_JUPITER = 5.20336301 * u.au\n\n\n\ndef tisserand_wrt_jupiter(a, e, i):\n    '''\n    Calculate the Tisserrand criterion with respect to Jupiter\n    '''\n    T_j = (SMA_JUPITER / a +\n            2 * np.cos(i) *\n            np.sqrt(a / SMA_JUPITER * (1 - e**2)))\n    return T_j\n\n# Conversion vector\nAU_Deg2m_Rad = np.vstack((AU, 1, np.pi / 180 * np.ones((4, 1))))\n\nPlanets = {'Mercury': np.vstack((0.387099, 0.205636, 7.004979, 29.127030, 48.330766, 252.250324)),\n           'Venus': np.vstack((0.723336, 0.006777, 3.394676, 54.922625, 76.679843, 181.979100)),\n           'Earth': np.vstack((1.000003, 0.016711, -0.000015, 102.937682, 0.000000, 100.464572)),\n           'Mars': np.vstack((1.523710, 0.093394, 1.849691, -73.503169, 49.559539, -4.553432)),\n           'Jupiter': np.vstack((5.202887, 0.048386, 1.304397, -85.745429, 100.473909, 34.396441)),\n           'Saturn': np.vstack((9.536676,0.053862,2.485992,-21.063546,113.662424,49.954244)),\n           'Uranus': np.vstack((19.189165,0.047257,0.772638,96.937351,74.016925,313.238105)),\n           'Neptune': np.vstack((30.069923,0.008590,1.770043,-86.819463,131.784226,-55.120030))}\n\nclass OrbitObject(object):\n    \"\"\"\n    Solar system object osculating orbit\n    \"\"\"\n\n    def __init__(self,\n                 orbit_type,\n                 a, e, i, omega, Omega, theta,\n                 ra_corr=np.nan*u.rad, dec_corr=np.nan*u.rad,\n                 v_g=np.nan*u.m/u.second):\n        self.semi_major_axis = a.to(u.au)\n        self.eccentricity = e\n        self.inclination = i.to(u.deg)\n        self.argument_periapsis = omega.to(u.deg)\n        self.longitude_ascending_node = Omega.to(u.deg)\n        self.longitude_perihelion = (self.longitude_ascending_node + self.argument_periapsis) % (360 * u.deg)\n\n        self.true_anomaly = theta.to(u.deg)\n        self.orbit_type = orbit_type\n\n        self.perihelion = (1 - self.eccentricity) * self.semi_major_axis\n        self.aphelion = (1 + self.eccentricity) * self.semi_major_axis\n\n        self.corr_radiant_ra = (ra_corr.to(u.deg)) % (360 * u.deg)\n        self.corr_radiant_dec = dec_corr.to(u.deg)\n\n        radiant = HCRS(ra=self.corr_radiant_ra, dec=self.corr_radiant_dec, distance=1.0*u.au)\n        ecpliptic_radiant = HCRS2HCI(np.vstack(radiant.cartesian.xyz.value))\n        self.ecliptic_latitude = np.rad2deg(np.arcsin(ecpliptic_radiant[2] / norm(ecpliptic_radiant)))*u.deg\n\n        self.velocity_g = v_g.to(u.m / u.second)\n\n        self.T_j = self.tisserand_criterion_wrt_jupiter()\n\n    def tisserand_criterion_wrt_jupiter(self):\n        '''\n        Calculate the Tisserrand criterion with respect to Jupiter\n        '''\n        return tisserand_wrt_jupiter(self.semi_major_axis, self.eccentricity, self.inclination)\n\n    def __str__(self):\n        return str(\"Semi-major axis:             \" + str(self.semi_major_axis) + \"\\n\" +\n                   \"Eccentricity:                \" + str(self.eccentricity) + \"\\n\" +\n                   \"Inclination:                 \" + str(self.inclination) + \"\\n\" +\n                   \"Argument of Periapsis:       \" + str(self.argument_periapsis) + \"\\n\" +\n                   \"Longitude of Ascending Node: \" + str(self.longitude_ascending_node) + \"\\n\" +\n                   \"True Anomaly:                \" + str(self.true_anomaly) + \"\\n\\n\" +\n                   \"Ra_corrected:                \" + str(self.corr_radiant_ra) + \"\\n\" +\n                   \"Dec_corrected:               \" + str(self.corr_radiant_dec) + \"\\n\" +\n                   \"Vel_g:                       \" + str(self.velocity_g))\n\n\n'''\nFunction delibaretely outside of native StateVector class to allow multithreaded call\n'''\n\ndef random_compute_orbit_ceplecha(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='Ceplecha')\n    return sv\n\ndef random_compute_orbit_integration_EOE(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='integrate_EOE')\n    return sv\n\ndef random_compute_orbit_integration_posvel(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='integrate_posvel')\n    return sv\n\n\ndef PlotOrbitalElements(COE, t_jd, t_soi, Sol):\n\n    Colour = ['b', 'g', 'r', 'c', 'm', 'y', 'k']\n    i = 2 #FIXME error\n\n    plt.figure()\n    plt.subplot(321)\n    plt.plot(t_jd, COE[0] / AU, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Semi-major Axis (AU)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n\n    plt.subplot(322)\n    plt.plot(t_jd, COE[1], Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Eccentricity\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(323)\n    plt.plot(t_jd, COE[2] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Inclination (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(324)\n    plt.plot(t_jd, COE[3] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Argument of Periapsis (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(325)\n    plt.plot(t_jd, COE[4] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Longitude of the Ascending Node (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(326)\n    plt.plot(t_jd, COE[5] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"True Anomaly (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    if Sol != 'NoSol':\n        plt.subplot(321)\n        plt.axhline(Sol.semi_major_axis.value, color='g')\n        plt.subplot(322)\n        plt.axhline(Sol.eccentricity, color='g')\n        plt.subplot(323)\n        plt.axhline(Sol.inclination.value, color='g')\n        plt.subplot(324)\n        plt.axhline(Sol.argument_periapsis.value, color='g')\n        plt.subplot(325)\n        plt.axhline(Sol.longitude_ascending_node.value, color='g')\n        plt.subplot(326)\n        plt.axhline(Sol.true_anomaly.value, color='g')\n\n    plt.show()\n\n\ndef PlotOrbit3D(OrbObjList, t0=2457535.0, Sol='NoSol'):\n\n    from mpl_toolkits.mplot3d import Axes3D\n\n    ''' 3D Orbit Plot'''\n    fig = plt.figure()\n    ax = fig.add_subplot(111, projection='3d')\n    for OrbObj in OrbObjList:\n        COE = np.vstack((OrbObj.semi_major_axis.value,\n                         OrbObj.eccentricity,\n                         OrbObj.inclination.value,\n                         OrbObj.argument_periapsis.value,\n                         OrbObj.longitude_ascending_node.value,\n                         OrbObj.true_anomaly.value)) * AU_Deg2m_Rad\n        COE = COE + np.vstack((np.zeros((5, 100)), np.linspace(0, 2 * np.pi, 100)))\n        [Pos_HCI, Vel_HCI] = OrbitalElements2PosVel(COE, 'Sun', 'Classical')\n        ax.plot(Pos_HCI[0]/AU, Pos_HCI[1]/AU, Pos_HCI[2]/AU, color='r', label='Determined Orbit')\n\n    ''' Plot the planets'''\n    for Planet in Planets:\n        COE = Planets[Planet] * AU_Deg2m_Rad\n        COEs = COE + np.vstack((np.zeros((5, 200)), np.linspace(0, 2 * np.pi, 200)))\n        [pos, vel] = OrbitalElements2PosVel(COEs, 'Sun', 'Classical')\n        ax.plot(pos[0]/AU, pos[1]/AU, pos[2]/AU, color='b')\n\n    # t_yr = t0 + np.linspace(0, 365.25, 100)\n    # pos_earth = EarthPosition(t_yr)\n    # ax.plot(pos_earth[0]/AU, pos_earth[1]/AU, pos_earth[2]/AU,\n    #     color='b', linewidth=2.0, label='Earth')\n\n    ''' Plot the solution (if given) '''\n    if Sol != 'NoSol':\n        Sol_oe = np.vstack((Sol.semi_major_axis.value,\n                            Sol.eccentricity,\n                            Sol.inclination.value,\n                            Sol.argument_periapsis.value,\n                            Sol.longitude_ascending_node.value,\n                            Sol.true_anomaly.value)) * AU_Deg2m_Rad\n        Sol_oe = Sol_oe + np.vstack((np.zeros((5, 100)), np.linspace(0, 2 * np.pi, 100)))\n        [pos, vel] = OrbitalElements2PosVel(Sol_oe, 'Sun', 'Classical')\n        ax.plot(pos[0]/AU, pos[1]/AU, pos[2]/AU, color='g', label='Published Orbit')\n\n    plt.legend()\n    ax.set_xlim([-5, 5])\n    ax.set_ylim([-5, 5])\n    ax.set_zlim([-5, 5])\n\n    plt.show()\n\ndef PlotPerts(Pert):\n    \n    PPert = np.vstack(Pert).T; t = PPert[0]\n    \n    plt.figure(figsize=(16,9))\n    t_rel = t - np.max(t) # Days\n    plt.plot(t_rel, PPert[1], '-b', linewidth=3.0, label='Earth')\n    plt.plot(t_rel, PPert[2], '--k', linewidth=3.0, label='Moon')\n    plt.plot(t_rel, PPert[3], '-.r', linewidth=3.0, label='Sun')\n    PertJ2 = PPert[4][~np.isnan(PPert[4])]\n    plt.plot(t_rel[~np.isnan(PPert[4])], PertJ2, ':g', linewidth=3.0, label='J2')\n    PertDrag = PPert[5][~np.isnan(PPert[5])]\n    plt.plot(t_rel[~np.isnan(PPert[5])], PertDrag, '-.c', linewidth=3.0, label='Drag')\n    plt.yscale('log'); plt.grid(True); plt.legend(loc='best')\n    plt.xlabel('Relative Time [days]'); plt.ylabel('Perturbation Acceleration [m/s^2]')\n    \n    plt.show()\n\ndef PlotIntStep(t):\n    \n    dt=[]\n    for k in range(len(t)-1):\n        dt.append((t[k+1] - t[k]) * 24*60*60)\n        \n    plt.figure(figsize=(16,9))\n    t_rel = t - np.max(t) # Days\n    plt.plot(t_rel[1:], abs(np.array(dt)))\n    plt.yscale('log'); plt.grid(True)#; plt.legend()\n    plt.xlabel('Relative Time [days]'); plt.ylabel('Timestep [sec]')\n    \n    plt.show()\n\n\ndef ThirdBodyPerturbation(Pos, rho, mu):\n    '''\n    Pos is the position of the meteoroid (m)\n    rho is the position of the third body (m)\n    mu is the standard gravitational parameter of the third body (m3/s2)\n    '''\n\n    # Battin's scalar formula for vector difference\n    q = np.dot(Pos.T, (Pos - 2 * rho) / (np.dot(rho.T, rho)))\n    f = (3 * q + 3 * q**2 + q**3) / (1 + (1 + q)**1.5)\n\n    # Third body perturbation acceleration (with indirect term)\n    u = -mu * (Pos + f * rho) / ((norm(Pos - rho))**3)\n\n    return u\n\n\ndef NRLMSISE_00(pos, time, pos_type='eci'):\n    ''' Courtesy of Ellie Sansom '''\n    \"\"\"\n    Inputs: inertial position and time\n    Outputs: [altitude, temp, atm_pres, atm density, sos, dyn_vis]\n    \"\"\"\n\n    from nrlmsise_00_header import nrlmsise_input, nrlmsise_output, nrlmsise_flags\n    from nrlmsise_00 import gtd7\n\n    time = Time(time, format='jd', scale='utc')\n\n    # Convert ECI to LLH coordinates\n    if pos_type == 'eci':\n        Pos_LLH = ECEF2LLH(ECI2ECEF_pos(pos, time))\n    elif pos_type == 'ecef':\n        Pos_LLH = ECEF2LLH(pos)\n    elif pos_type == 'llh':\n        Pos_LLH = pos\n    else:\n        print('NRLMSISE_00 error: Invalid pos_type')\n        exit()\n    g_lat = np.rad2deg(Pos_LLH[0][0])\n    g_long = np.rad2deg(Pos_LLH[1][0])\n    alt = Pos_LLH[2][0]\n\n    # Break up time into year, day of year, and seconds of the day\n    yDay = time.yday.split(':'); yr = float(yDay[0]); doy = float(yDay[1])\n    sec = float(yDay[2]) * 60*60 + float(yDay[3]) * 60 + float(yDay[4])\n\n    # Assign our variables into the nrmsise inputs\n    Input = nrlmsise_input(yr, doy, sec, alt/1000, g_lat, g_long)\n    Output = nrlmsise_output(); Flags = nrlmsise_flags()\n\n    # Switches\n    for i in range(1, 24):\n        Flags.switches[i]=1\n\n    # GTD7 atmospheric model subroutine\n    gtd7(Input, Flags, Output)\n\n    # Temperature at alt [deg K]\n    T = Output.t[1]\n\n    # Molecular number densities [m-3]\n    He = Output.d[0] # He\n    O  = Output.d[1] # O\n    N2 = Output.d[2] # N2\n    O2 = Output.d[3] # O2\n    Ar = Output.d[4] # Ar\n    H  = Output.d[6] # H\n    N  = Output.d[7] # N\n#    ano_O  = Output.d[8] # Anomalous oxygen\n    sum_mass = He + O + N2 + O2 + Ar + H + N\n\n    # Molar mass\n    He_mass = 4.0026  # g/mol\n    O_mass  = 15.9994 # g/mol\n    N2_mass = 28.013  # g/mol\n    O2_mass = 31.998  # g/mol\n    Ar_mass = 39.948  # g/mol\n    H_mass  = 1.0079  # g/mol\n    N_mass  = 14.0067 # g/mol\n\n    # Molecular weight of air [kg/mol]\n    mol_mass_air = (He_mass * He + O_mass * O + N2_mass * N2 + O2_mass * O2\n                  + Ar_mass * Ar + H_mass * H + N_mass * N) / (1000 * sum_mass)\n\n    # Total mass density [kg*m-3]\n    po = Output.d[5] * 1000\n\n    Ru = 8.3144621 # Universal gas constant [J/(K*mol)]\n    R = Ru / mol_mass_air # Individual gas constant [J/(kg*K)] #287.058\n\n    # Ideal gas law\n    atm_pres = po * T * R\n\n    # Speed of sound in atm\n    sos = 331.3 * np.sqrt(1 + T / 273.15)\n\n    # Dynamic viscosity (http://en.wikipedia.org/wiki/Viscosity)\n    C = 120 #Sutherland's constant for air [deg K]\n    mu_ref = 18.27e-6 # Reference viscosity [[mu_Pa s] * e-6]\n    T_ref = 291.15 # Reference temperature [deg K]\n\n    dyn_vis = mu_ref * (T_ref + C) / (T + C) * (T / T_ref)**1.5\n\n    return T, atm_pres, po, sos, dyn_vis\n\n# def compute_infinity_radiant(stateVec):\n#     ''' This method computing the apparent radiant, it doesn't consider the zenith attraction '''\n\n#     Pos_geo = stateVec.position\n#     Vel_geo = stateVec.vel_xyz\n#     t0 = stateVec.epoch\n\n#     # Compute radiant (apparent ORIGIN of meteoroid)\n#     Vel_eci = ECEF2ECI(Pos_geo, Vel_geo, t0)[1]\n#     ra_eci = np.arctan2(-Vel_eci[1], -Vel_eci[0])\n#     dec_eci = np.arcsin(-Vel_eci[2] / norm(Vel_eci))\n#     # ^-- redundant information. Already have it in metadata\n\n#     return ra_eci, dec_eci\n\n\ndef compute_cartesian_velocities_from_radiant(stateVec):\n    '''\n    Turn apparent ecef radiant and velocity into cartesian velocity component\n    '''\n\n    vel_geo = -(stateVec.velocity_inf *\n               np.vstack((np.cos(np.deg2rad(stateVec.ra_ecef_inf)) * np.cos(np.deg2rad(stateVec.dec_ecef_inf)),\n                          np.sin(np.deg2rad(stateVec.ra_ecef_inf)) * np.cos(np.deg2rad(stateVec.dec_ecef_inf)),\n                          np.sin(np.deg2rad(stateVec.dec_ecef_inf)))))\n\n    return vel_geo\n\n\n\ndef SimilarityCriterion(COE1, COE2, method='SH'):\n    '''\n    Southworth & Hawkins similarity criterion (1963); or\n    Drummond's similarity criterion (1981); or\n    Jopek's similarity criterion (1993).\n    '''\n    if type(COE1) == np.ndarray:\n        a1 = COE1[0]/AU; a2 = COE2[0]/AU # [AU]\n        e1 = COE1[1];    e2 = COE2[1]    # []\n        i1 = COE1[2];    i2 = COE2[2]    # [rad]\n        w1 = COE1[3];    w2 = COE2[3]    # [rad]\n        W1 = COE1[4];    W2 = COE2[4]    # [rad]\n\n    else:\n        a1 = COE1.semi_major_axis.value;                    a2 = COE2.semi_major_axis.value                    # [AU]\n        e1 = COE1.eccentricity;                             e2 = COE2.eccentricity                             # []\n        i1 = COE1.inclination.to(u.rad).value;              i2 = COE2.inclination.to(u.rad).value              # [rad]\n        w1 = COE1.argument_periapsis.to(u.rad).value;       w2 = COE2.argument_periapsis.to(u.rad).value       # [rad]\n        W1 = COE1.longitude_ascending_node.to(u.rad).value; W2 = COE2.longitude_ascending_node.to(u.rad).value # [rad]\n\n    q1 = a1 * (1 - e1) # [AU]\n    q2 = a2 * (1 - e2) # [AU]\n\n    # Angle between the orbital planes (I21)\n    var = (2 * np.sin((i2 - i1) / 2))**2 + np.sin(i1) * np.sin(i2) * (2 * np.sin((W2 - W1) / 2))**2\n    I21 = 2 * np.arcsin(np.sqrt(var) / 2)\n\n    if method == 'SH':\n        # Difference between orbits longitude of perihelion (pi21)\n        pi21 = w2 - w1 + 2 * np.arcsin(np.cos((i2 + i1) / 2) * np.sin((W2 - W1) / 2) / np.cos(I21 / 2))\n\n        Similarity2 = (e2 - e1)**2 + (q2 - q1)**2 + var + (((e2 + e1) / 2) * (2 * np.sin(pi21 / 2)))**2\n        Similarity = np.sqrt(Similarity2)\n\n    elif method == 'D':\n        # Angle between the orbital lines of apsides (theta21)\n#        l1 = W1 + np.arcsin(np.cos(i1) * np.tan(w1)); b1 =  np.arcsin(np.sin(i1) * np.sin(w1))\n#        l2 = W2 + np.arcsin(np.cos(i2) * np.tan(w2)); b2 =  np.arcsin(np.sin(i2) * np.sin(w2))\n        l1 = W1 + np.arctan(np.cos(i1) * np.tan(w1)); b1 =  np.arcsin(np.sin(i1) * np.sin(w1))\n        l2 = W2 + np.arctan(np.cos(i2) * np.tan(w2)); b2 =  np.arcsin(np.sin(i2) * np.sin(w2))\n        theta21 = np.arccos(np.sin(b1) * np.sin(b2) + np.cos(b1) * np.cos(b2) * np.cos(l2 - l1))\n\n        Similarity2 = ((e2 - e1) / (e2 + e1))**2 + ((q2 - q1) / (q2 + q1))**2 + \\\n                    (I21 / np.pi)**2 + ((e2 + e1) / 2)**2 * (theta21 / np.pi)**2\n        Similarity = np.sqrt(Similarity2)\n\n    elif method == 'H':\n        # Difference between orbits longitude of perihelion (pi21)\n        pi21 = w2 - w1 + 2 * np.arcsin(np.cos((i2 + i1) / 2) * np.sin((W2 - W1) / 2) / np.cos(I21 / 2))\n\n        Similarity2 = (e2 - e1)**2 + ((q2 - q1) / (q2 + q1))**2 + var + \\\n                        (((e2 + e1) / 2) * (2 * np.sin(pi21 / 2)))**2\n        Similarity = np.sqrt(Similarity2)\n\n    return Similarity\n\ndef generate_ephemeris(pos_hci, t_jd):\n\n    # Save the datetime\n    ephem_dict = {'datetime': Time(t_jd, format='jd', scale='utc').isot}\n    ephem_dict['MJD'] = Time(t_jd, format='jd', scale='utc').mjd\n    \n    # distance to sun\n    ephem_dict['distance_to_sun'] = norm(pos_hci, axis=0) / 1000 #km\n\n    # Convert to eci coordinates\n    pos_eci = HCI2ECI_pos(pos_hci, t_jd)\n    ephem_dict['pos_eci_x'] = pos_eci[0]\n    ephem_dict['pos_eci_y'] = pos_eci[1]\n    ephem_dict['pos_eci_z'] = pos_eci[2]\n    pos_hcrs = HCI2HCRS(pos_hci)\n\n    # Calculate phase angle\n    ephem_dict['phase_angle'] = np.rad2deg(np.arccos(np.sum(pos_hcrs * pos_eci, axis=0)\n        / (norm(pos_hcrs, axis=0) * norm(pos_eci, axis=0))))\n\n    # Calculate elongation angle\n    pos_sun = pos_eci - pos_hcrs\n    ephem_dict['elongation_angle'] = np.rad2deg(np.arccos(np.sum(pos_sun * pos_eci, axis=0)\n        / (norm(pos_sun, axis=0) * norm(pos_eci, axis=0))))\n\n    # Calculate ephemeris\n    dist = norm(pos_eci, axis=0) #m\n    ephem_dict['ra'] = np.rad2deg(np.arctan2(pos_eci[1], pos_eci[0]))%360 #deg\n    ephem_dict['dec'] = np.rad2deg(np.arcsin(pos_eci[2] / dist)) #deg\n    ephem_dict['distance_to_earth'] = norm(pos_eci, axis=0) / 1000 #km\n\n    return ephem_dict\n",
+  "prompt": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import H",
   "output": {
     "before": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import HCRS, ITRS, GCRS\nfrom astropy.utils.iers import IERS_A, IERS_A_URL, IERS\nfrom astropy.utils.data import download_file\n\nfrom trajectory_utilities import ECEF2LLH, \\\n     EarthPosition, HCRS2HCI, HCI2ECI_pos, \\\n     OrbitalElements2PosVel, ECI2ECEF_pos\n\n\ntry:\n    iers_a_file = download_file(IERS_A_URL, cache=True)\n    iers_a = IERS_A.open(iers_a_file)\n    IERS.iers_table = iers_a\nexcept:\n    print('IERS_A_URL is temporarily unavailable')\n    pass\n\n\nAU = 1*u.au.to(u.m)\nSMA_JUPITER = 5.20336301 * u.au\n\n\n\ndef tisserand_wrt_jupiter(a, e, i):\n    '''\n    Calculate the Tisserrand criterion with respect to Jupiter\n    '''\n    T_j = (SMA_JUPITER / a +\n            2 * np.cos(i) *\n            np.sqrt(a / SMA_JUPITER * (1 - e**2)))\n    return T_j\n\n# Conversion vector\nAU_Deg2m_Rad = np.vstack((AU, 1, np.pi / 180 * np.ones((4, 1))))\n\nPlanets = {'Mercury': np.vstack((0.387099, 0.205636, 7.004979, 29.127030, 48.330766, 252.250324)),\n           'Venus': np.vstack((0.723336, 0.006777, 3.394676, 54.922625, 76.679843, 181.979100)),\n           'Earth': np.vstack((1.000003, 0.016711, -0.000015, 102.937682, 0.000000, 100.464572)),\n           'Mars': np.vstack((1.523710, 0.093394, 1.849691, -73.503169, 49.559539, -4.553432)),\n           'Jupiter': np.vstack((5.202887, 0.048386, 1.304397, -85.745429, 100.473909, 34.396441)),\n           'Saturn': np.vstack((9.536676,0.053862,2.485992,-21.063546,113.662424,49.954244)),\n           'Uranus': np.vstack((19.189165,0.047257,0.772638,96.937351,74.016925,313.238105)),\n           'Neptune': np.vstack((30.069923,0.008590,1.770043,-86.819463,131.784226,-55.120030))}\n\nclass OrbitObject(object):\n    \"\"\"\n    Solar system object osculating orbit\n    \"\"\"\n\n    def __init__(self,\n                 orbit_type,\n                 a, e, i, omega, Omega, theta,\n                 ra_corr=np.nan*u.rad, dec_corr=np.nan*u.rad,\n                 v_g=np.nan*u.m/u.second):\n        self.semi_major_axis = a.to(u.au)\n        self.eccentricity = e\n        self.inclination = i.to(u.deg)\n        self.argument_periapsis = omega.to(u.deg)\n        self.longitude_ascending_node = Omega.to(u.deg)\n        self.longitude_perihelion = (self.longitude_ascending_node + self.argument_periapsis) % (360 * u.deg)\n\n        self.true_anomaly = theta.to(u.deg)\n        self.orbit_type = orbit_type\n\n        self.perihelion = (1 - self.eccentricity) * self.semi_major_axis\n        self.aphelion = (1 + self.eccentricity) * self.semi_major_axis\n\n        self.corr_radiant_ra = (ra_corr.to(u.deg)) % (360 * u.deg)\n        self.corr_radiant_dec = dec_corr.to(u.deg)\n\n        radiant = HCRS(ra=self.corr_radiant_ra, dec=self.corr_radiant_dec, distance=1.0*u.au)\n        ecpliptic_radiant = HCRS2HCI(np.vstack(radiant.cartesian.xyz.value))\n        self.ecliptic_latitude = np.rad2deg(np.arcsin(ecpliptic_radiant[2] / norm(ecpliptic_radiant)))*u.deg\n\n        self.velocity_g = v_g.to(u.m / u.second)\n\n        self.T_j = self.tisserand_criterion_wrt_jupiter()\n\n    def tisserand_criterion_wrt_jupiter(self):\n        '''\n        Calculate the Tisserrand criterion with respect to Jupiter\n        '''\n        return tisserand_wrt_jupiter(self.semi_major_axis, self.eccentricity, self.inclination)\n\n    def __str__(self):\n        return str(\"Semi-major axis:             \" + str(self.semi_major_axis) + \"\\n\" +\n                   \"Eccentricity:                \" + str(self.eccentricity) + \"\\n\" +\n                   \"Inclination:                 \" + str(self.inclination) + \"\\n\" +\n                   \"Argument of Periapsis:       \" + str(self.argument_periapsis) + \"\\n\" +\n                   \"Longitude of Ascending Node: \" + str(self.longitude_ascending_node) + \"\\n\" +\n                   \"True Anomaly:                \" + str(self.true_anomaly) + \"\\n\\n\" +\n                   \"Ra_corrected:                \" + str(self.corr_radiant_ra) + \"\\n\" +\n                   \"Dec_corrected:               \" + str(self.corr_radiant_dec) + \"\\n\" +\n                   \"Vel_g:                       \" + str(self.velocity_g))\n\n\n'''\nFunction delibaretely outside of native StateVector class to allow multithreaded call\n'''\n\ndef random_compute_orbit_ceplecha(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='Ceplecha')\n    return sv\n\ndef random_compute_orbit_integration_EOE(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='integrate_EOE')\n    return sv\n\ndef random_compute_orbit_integration_posvel(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='integrate_posvel')\n    return sv\n\n\ndef PlotOrbitalElements(COE, t_jd, t_soi, Sol):\n\n    Colour = ['b', 'g', 'r', 'c', 'm', 'y', 'k']\n    i = 2 #FIXME error\n\n    plt.figure()\n    plt.subplot(321)\n    plt.plot(t_jd, COE[0] / AU, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Semi-major Axis (AU)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n\n    plt.subplot(322)\n    plt.plot(t_jd, COE[1], Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Eccentricity\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(323)\n    plt.plot(t_jd, COE[2] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Inclination (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(324)\n    plt.plot(t_jd, COE[3] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Argument of Periapsis (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(325)\n    plt.plot(t_jd, COE[4] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Longitude of the Ascending Node (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(326)\n    plt.plot(t_jd, COE[5] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"True Anomaly (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    if Sol != 'NoSol':\n        plt.subplot(321)\n        plt.axhline(Sol.semi_major_axis.value, color='g')\n        plt.subplot(322)\n        plt.axhline(Sol.eccentricity, color='g')\n        plt.subplot(323)\n        plt.axhline(Sol.inclination.value, color='g')\n        plt.subplot(324)\n        plt.axhline(Sol.argument_periapsis.value, color='g')\n        plt.subplot(325)\n        plt.axhline(Sol.longitude_ascending_node.value, color='g')\n        plt.subplot(326)\n        plt.axhline(Sol.true_anomaly.value, color='g')\n\n    plt.show()\n\n\ndef PlotOrbit3D(OrbObjList, t0=2457535.0, Sol='NoSol'):\n\n    from mpl_toolkits.mplot3d import Axes3D\n\n    ''' 3D Orbit Plot'''\n    fig = plt.figure()\n    ax = fig.add_subplot(111, projection='3d')\n    for OrbObj in OrbObjList:\n        COE = np.vstack((OrbObj.semi_major_axis.value,\n                         OrbObj.eccentricity,\n                         OrbObj.inclination.value,\n                         OrbObj.argument_periapsis.value,\n                         OrbObj.longitude_ascending_node.value,\n                         OrbObj.true_anomaly.value)) * AU_Deg2m_Rad\n        COE = COE + np.vstack((np.zeros((5, 100)), np.linspace(0, 2 * np.pi, 100)))\n        [Pos_HCI, Vel_HCI] = OrbitalElements2PosVel(COE, 'Sun', 'Classical')\n        ax.plot(Pos_HCI[0]/AU, Pos_HCI[1]/AU, Pos_HCI[2]/AU, color='r', label='Determined Orbit')\n\n    ''' Plot the planets'''\n    for Planet in Planets:\n        COE = Planets[Planet] * AU_Deg2m_Rad\n        COEs = COE + np.vstack((np.zeros((5, 200)), np.linspace(0, 2 * np.pi, 200)))\n        [pos, vel] = OrbitalElements2PosVel(COEs, 'Sun', 'Classical')\n        ax.plot(pos[0]/AU, pos[1]/AU, pos[2]/AU, color='b')\n\n    # t_yr = t0 + np.linspace(0, 365.25, 100)\n    # pos_earth = EarthPosition(t_yr)\n    # ax.plot(pos_earth[0]/AU, pos_earth[1]/AU, pos_earth[2]/AU,\n    #     color='b', linewidth=2.0, label='Earth')\n\n    ''' Plot the solution (if given) '''\n    if Sol != 'NoSol':\n        Sol_oe = np.vstack((Sol.semi_major_axis.value,\n                            Sol.eccentricity,\n                            Sol.inclination.value,\n                            Sol.argument_periapsis.value,\n                            Sol.longitude_ascending_node.value,\n                            Sol.true_anomaly.value)) * AU_Deg2m_Rad\n        Sol_oe = Sol_oe + np.vstack((np.zeros((5, 100)), np.linspace(0, 2 * np.pi, 100)))\n        [pos, vel] = OrbitalElements2PosVel(Sol_oe, 'Sun', 'Classical')\n        ax.plot(pos[0]/AU, pos[1]/AU, pos[2]/AU, color='g', label='Published Orbit')\n\n    plt.legend()\n    ax.set_xlim([-5, 5])\n    ax.set_ylim([-5, 5])\n    ax.set_zlim([-5, 5])\n\n    plt.show()\n\ndef PlotPerts(Pert):\n    \n    PPert = np.vstack(Pert).T; t = PPert[0]\n    \n    plt.figure(figsize=(16,9))\n    t_rel = t - np.max(t) # Days\n    plt.plot(t_rel, PPert[1], '-b', linewidth=3.0, label='Earth')\n    plt.plot(t_rel, PPert[2], '--k', linewidth=3.0, label='Moon')\n    plt.plot(t_rel, PPert[3], '-.r', linewidth=3.0, label='Sun')\n    PertJ2 = PPert[4][~np.isnan(PPert[4])]\n    plt.plot(t_rel[~np.isnan(PPert[4])], PertJ2, ':g', linewidth=3.0, label='J2')\n    PertDrag = PPert[5][~np.isnan(PPert[5])]\n    plt.plot(t_rel[~np.isnan(PPert[5])], PertDrag, '-.c', linewidth=3.0, label='Drag')\n    plt.yscale('log'); plt.grid(True); plt.legend(loc='best')\n    plt.xlabel('Relative Time [days]'); plt.ylabel('Perturbation Acceleration [m/s^2]')\n    \n    plt.show()\n\ndef PlotIntStep(t):\n    \n    dt=[]\n    for k in range(len(t)-1):\n        dt.append((t[k+1] - t[k]) * 24*60*60)\n        \n    plt.figure(figsize=(16,9))\n    t_rel = t - np.max(t) # Days\n    plt.plot(t_rel[1:], abs(np.array(dt)))\n    plt.yscale('log'); plt.grid(True)#; plt.legend()\n    plt.xlabel('Relative Time [days]'); plt.ylabel('Timestep [sec]')\n    \n    plt.show()\n\n\ndef ThirdBodyPerturbation(Pos, rho, mu):\n    '''\n    Pos is the position of the meteoroid (m)\n    rho is the position of the third body (m)\n    mu is the standard gravitational parameter of the third body (m3/s2)\n    '''\n\n    # Battin's scalar formula for vector difference\n    q = np.dot(Pos.T, (Pos - 2 * rho) / (np.dot(rho.T, rho)))\n    f = (3 * q + 3 * q**2 + q**3) / (1 + (1 + q)**1.5)\n\n    # Third body perturbation acceleration (with indirect term)\n    u = -mu * (Pos + f * rho) / ((norm(Pos - rho))**3)\n\n    return u\n\n\ndef NRLMSISE_00(pos, time, pos_type='eci'):\n    ''' Courtesy of Ellie Sansom '''\n    \"\"\"\n    Inputs: inertial position and time\n    Outputs: [altitude, temp, atm_pres, atm density, sos, dyn_vis]\n    \"\"\"\n\n    from nrlmsise_00_header import nrlmsise_input, nrlmsise_output, nrlmsise_flags\n    from nrlmsise_00 import gtd7\n\n    time = Time(time, format='jd', scale='utc')\n\n    # Convert ECI to LLH coordinates\n    if pos_type == 'eci':\n        Pos_LLH = ECEF2LLH(ECI2ECEF_pos(pos, time))\n    elif pos_type == 'ecef':\n        Pos_LLH = ECEF2LLH(pos)\n    elif pos_type == 'llh':\n        Pos_LLH = pos\n    else:\n        print('NRLMSISE_00 error: Invalid pos_type')\n        exit()\n    g_lat = np.rad2deg(Pos_LLH[0][0])\n    g_long = np.rad2deg(Pos_LLH[1][0])\n    alt = Pos_LLH[2][0]\n\n    # Break up time into year, day of year, and seconds of the day\n    yDay = time.yday.split(':'); yr = float(yDay[0]); doy = float(yDay[1])\n    sec = float(yDay[2]) * 60*60 + float(yDay[3]) * 60 + float(yDay[4])\n\n    # Assign our variables into the nrmsise inputs\n    Input = nrlmsise_input(yr, doy, sec, alt/1000, g_lat, g_long)\n    Output = nrlmsise_output(); Flags = nrlmsise_flags()\n\n    # Switches\n    for i in range(1, 24):\n        Flags.switches[i]=1\n\n    # GTD7 atmospheric model subroutine\n    gtd7(Input, Flags, Output)\n\n    # Temperature at alt [deg K]\n    T = Output.t[1]\n\n    # Molecular number densities [m-3]\n    He = Output.d[0] # He\n    O  = Output.d[1] # O\n    N2 = Output.d[2] # N2\n    O2 = Output.d[3] # O2\n    Ar = Output.d[4] # Ar\n    H  = Output.d[6] # H\n    N  = Output.d[7] # N\n#    ano_O  = Output.d[8] # Anomalous oxygen\n    sum_mass = He + O + N2 + O2 + Ar + H + N\n\n    # Molar mass\n    He_mass = 4.0026  # g/mol\n    O_mass  = 15.9994 # g/mol\n    N2_mass = 28.013  # g/mol\n    O2_mass = 31.998  # g/mol\n    Ar_mass = 39.948  # g/mol\n    H_mass  = 1.0079  # g/mol\n    N_mass  = 14.0067 # g/mol\n\n    # Molecular weight of air [kg/mol]\n    mol_mass_air = (He_mass * He + O_mass * O + N2_mass * N2 + O2_mass * O2\n                  + Ar_mass * Ar + H_mass * H + N_mass * N) / (1000 * sum_mass)\n\n    # Total mass density [kg*m-3]\n    po = Output.d[5] * 1000\n\n    Ru = 8.3144621 # Universal gas constant [J/(K*mol)]\n    R = Ru / mol_mass_air # Individual gas constant [J/(kg*K)] #287.058\n\n    # Ideal gas law\n    atm_pres = po * T * R\n\n    # Speed of sound in atm\n    sos = 331.3 * np.sqrt(1 + T / 273.15)\n\n    # Dynamic viscosity (http://en.wikipedia.org/wiki/Viscosity)\n    C = 120 #Sutherland's constant for air [deg K]\n    mu_ref = 18.27e-6 # Reference viscosity [[mu_Pa s] * e-6]\n    T_ref = 291.15 # Reference temperature [deg K]\n\n    dyn_vis = mu_ref * (T_ref + C) / (T + C) * (T / T_ref)**1.5\n\n    return T, atm_pres, po, sos, dyn_vis\n\n# def compute_infinity_radiant(stateVec):\n#     ''' This method computing the apparent radiant, it doesn't consider the zenith attraction '''\n\n#     Pos_geo = stateVec.position\n#     Vel_geo = stateVec.vel_xyz\n#     t0 = stateVec.epoch\n\n#     # Compute radiant (apparent ORIGIN of meteoroid)\n#     Vel_eci = ECEF2ECI(Pos_geo, Vel_geo, t0)[1]\n#     ra_eci = np.arctan2(-Vel_eci[1], -Vel_eci[0])\n#     dec_eci = np.arcsin(-Vel_eci[2] / norm(Vel_eci))\n#     # ^-- redundant information. Already have it in metadata\n\n#     return ra_eci, dec_eci\n\n\ndef compute_cartesian_velocities_from_radiant(stateVec):\n    '''\n    Turn apparent ecef radiant and velocity into cartesian velocity component\n    '''\n\n    vel_geo = -(stateVec.velocity_inf *\n               np.vstack((np.cos(np.deg2rad(stateVec.ra_ecef_inf)) * np.cos(np.deg2rad(stateVec.dec_ecef_inf)),\n                          np.sin(np.deg2rad(stateVec.ra_ecef_inf)) * np.cos(np.deg2rad(stateVec.dec_ecef_inf)),\n                          np.sin(np.deg2rad(stateVec.dec_ecef_inf)))))\n\n    return vel_geo\n\n\n\ndef SimilarityCriterion(COE1, COE2, method='SH'):\n    '''\n    Southworth & Hawkins similarity criterion (1963); or\n    Drummond's similarity criterion (1981); or\n    Jopek's similarity criterion (1993).\n    '''\n    if type(COE1) == np.ndarray:\n        a1 = COE1[0]/AU; a2 = COE2[0]/AU # [AU]\n        e1 = COE1[1];    e2 = COE2[1]    # []\n        i1 = COE1[2];    i2 = COE2[2]    # [rad]\n        w1 = COE1[3];    w2 = COE2[3]    # [rad]\n        W1 = COE1[4];    W2 = COE2[4]    # [rad]\n\n    else:\n        a1 = COE1.semi_major_axis.value;                    a2 = COE2.semi_major_axis.value                    # [AU]\n        e1 = COE1.eccentricity;                             e2 = COE2.eccentricity                             # []\n        i1 = COE1.inclination.to(u.rad).value;              i2 = COE2.inclination.to(u.rad).value              # [rad]\n        w1 = COE1.argument_periapsis.to(u.rad).value;       w2 = COE2.argument_periapsis.to(u.rad).value       # [rad]\n        W1 = COE1.longitude_ascending_node.to(u.rad).value; W2 = COE2.longitude_ascending_node.to(u.rad).value # [rad]\n\n    q1 = a1 * (1 - e1) # [AU]\n    q2 = a2 * (1 - e2) # [AU]\n\n    # Angle between the orbital planes (I21)\n    var = (2 * np.sin((i2 - i1) / 2))**2 + np.sin(i1) * np.sin(i2) * (2 * np.sin((W2 - W1) / 2))**2\n    I21 = 2 * np.arcsin(np.sqrt(var) / 2)\n\n    if method == 'SH':\n        # Difference between orbits longitude of perihelion (pi21)\n        pi21 = w2 - w1 + 2 * np.arcsin(np.cos((i2 + i1) / 2) * np.sin((W2 - W1) / 2) / np.cos(I21 / 2))\n\n        Similarity2 = (e2 - e1)**2 + (q2 - q1)**2 + var + (((e2 + e1) / 2) * (2 * np.sin(pi21 / 2)))**2\n        Similarity = np.sqrt(Similarity2)\n\n    elif method == 'D':\n        # Angle between the orbital lines of apsides (theta21)\n#        l1 = W1 + np.arcsin(np.cos(i1) * np.tan(w1)); b1 =  np.arcsin(np.sin(i1) * np.sin(w1))\n#        l2 = W2 + np.arcsin(np.cos(i2) * np.tan(w2)); b2 =  np.arcsin(np.sin(i2) * np.sin(w2))\n        l1 = W1 + np.arctan(np.cos(i1) * np.tan(w1)); b1 =  np.arcsin(np.sin(i1) * np.sin(w1))\n        l2 = W2 + np.arctan(np.cos(i2) * np.tan(w2)); b2 =  np.arcsin(np.sin(i2) * np.sin(w2))\n        theta21 = np.arccos(np.sin(b1) * np.sin(b2) + np.cos(b1) * np.cos(b2) * np.cos(l2 - l1))\n\n        Similarity2 = ((e2 - e1) / (e2 + e1))**2 + ((q2 - q1) / (q2 + q1))**2 + \\\n                    (I21 / np.pi)**2 + ((e2 + e1) / 2)**2 * (theta21 / np.pi)**2\n        Similarity = np.sqrt(Similarity2)\n\n    elif method == 'H':\n        # Difference between orbits longitude of perihelion (pi21)\n        pi21 = w2 - w1 + 2 * np.arcsin(np.cos((i2 + i1) / 2) * np.sin((W2 - W1) / 2) / np.cos(I21 / 2))\n\n        Similarity2 = (e2 - e1)**2 + ((q2 - q1) / (q2 + q1))**2 + var + \\\n                        (((e2 + e1) / 2) * (2 * np.sin(pi21 / 2)))**2\n        Similarity = np.sqrt(Similarity2)\n\n    return Similarity\n\ndef generate_ephemeris(pos_hci, t_jd):\n\n    # Save the datetime\n    ephem_dict = {'datetime': Time(t_jd, format='jd', scale='utc').isot}\n    ephem_dict['MJD'] = Time(t_jd, format='jd', scale='utc').mjd\n    \n    # distance to sun\n    ephem_dict['distance_to_sun'] = norm(pos_hci, axis=0) / 1000 #km\n\n    # Convert to eci coordinates\n    pos_eci = HCI2ECI_pos(pos_hci, t_jd)\n    ephem_dict['pos_eci_x'] = pos_eci[0]\n    ephem_dict['pos_eci_y'] = pos_eci[1]\n    ephem_dict['pos_eci_z'] = pos_eci[2]\n    pos_hcrs = HCI2HCRS(pos_hci)\n\n    # Calculate phase angle\n    ephem_dict['phase_angle'] = np.rad2deg(np.arccos(np.sum(pos_hcrs * pos_eci, axis=0)\n        / (norm(pos_hcrs, axis=0) * norm(pos_eci, axis=0))))\n\n    # Calculate elongation angle\n    pos_sun = pos_eci - pos_hcrs\n    ephem_dict['elongation_angle'] = np.rad2deg(np.arccos(np.sum(pos_sun * pos_eci, axis=0)\n        / (norm(pos_sun, axis=0) * norm(pos_eci, axis=0))))\n\n    # Calculate ephemeris\n    dist = norm(pos_eci, axis=0) #m\n    ephem_dict['ra'] = np.rad2deg(np.arctan2(pos_eci[1], pos_eci[0]))%360 #deg\n    ephem_dict['dec'] = np.rad2deg(np.arcsin(pos_eci[2] / dist)) #deg\n    ephem_dict['distance_to_earth'] = norm(pos_eci, axis=0) / 1000 #km\n\n    return ephem_dict\n    \n```\n\n\n```python\n# Example usage\n\n# Create a random orbit\norb_random = OrbitObject(\n    a=1.0, e=0.5, i=np.radians(45), omega=np",
     "after": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import HCRS, ITRS, GCRS\nfrom astropy.utils.iers import IERS_A, IERS_A_URL, IERS\nfrom astropy.utils.data import download_file\n\nfrom trajectory_utilities import ECEF2LLH, \\\n     EarthPosition, HCRS2HCI, HCI2ECI_pos, \\\n     OrbitalElements2PosVel, ECI2ECEF_pos\n\n\ntry:\n    iers_a_file = download_file(IERS_A_URL, cache=True)\n    iers_a = IERS_A.open(iers_a_file)\n    IERS.iers_table = iers_a\nexcept:\n    print('IERS_A_URL is temporarily unavailable')\n    pass\n\n\nAU = 1*u.au.to(u.m)\nSMA_JUPITER = 5.20336301 * u.au\n\n\n\ndef tisserand_wrt_jupiter(a, e, i):\n    '''\n    Calculate the Tisserrand criterion with respect to Jupiter\n    '''\n    T_j = (SMA_JUPITER / a +\n            2 * np.cos(i) *\n            np.sqrt(a / SMA_JUPITER * (1 - e**2)))\n    return T_j\n\n# Conversion vector\nAU_Deg2m_Rad = np.vstack((AU, 1, np.pi / 180 * np.ones((4, 1))))\n\nPlanets = {'Mercury': np.vstack((0.387099, 0.205636, 7.004979, 29.127030, 48.330766, 252.250324)),\n           'Venus': np.vstack((0.723336, 0.006777, 3.394676, 54.922625, 76.679843, 181.979100)),\n           'Earth': np.vstack((1.000003, 0.016711, -0.000015, 102.937682, 0.000000, 100.464572)),\n           'Mars': np.vstack((1.523710, 0.093394, 1.849691, -73.503169, 49.559539, -4.553432)),\n           'Jupiter': np.vstack((5.202887, 0.048386, 1.304397, -85.745429, 100.473909, 34.396441)),\n           'Saturn': np.vstack((9.536676,0.053862,2.485992,-21.063546,113.662424,49.954244)),\n           'Uranus': np.vstack((19.189165,0.047257,0.772638,96.937351,74.016925,313.238105)),\n           'Neptune': np.vstack((30.069923,0.008590,1.770043,-86.819463,131.784226,-55.120030))}\n\nclass OrbitObject(object):\n    \"\"\"\n    Solar system object osculating orbit\n    \"\"\"\n\n    def __init__(self,\n                 orbit_type,\n                 a, e, i, omega, Omega, theta,\n                 ra_corr=np.nan*u.rad, dec_corr=np.nan*u.rad,\n                 v_g=np.nan*u.m/u.second):\n        self.semi_major_axis = a.to(u.au)\n        self.eccentricity = e\n        self.inclination = i.to(u.deg)\n        self.argument_periapsis = omega.to(u.deg)\n        self.longitude_ascending_node = Omega.to(u.deg)\n        self.longitude_perihelion = (self.longitude_ascending_node + self.argument_periapsis) % (360 * u.deg)\n\n        self.true_anomaly = theta.to(u.deg)\n        self.orbit_type = orbit_type\n\n        self.perihelion = (1 - self.eccentricity) * self.semi_major_axis\n        self.aphelion = (1 + self.eccentricity) * self.semi_major_axis\n\n        self.corr_radiant_ra = (ra_corr.to(u.deg)) % (360 * u.deg)\n        self.corr_radiant_dec = dec_corr.to(u.deg)\n\n        radiant = HCRS(ra=self.corr_radiant_ra, dec=self.corr_radiant_dec, distance=1.0*u.au)\n        ecpliptic_radiant = HCRS2HCI(np.vstack(radiant.cartesian.xyz.value))\n        self.ecliptic_latitude = np.rad2deg(np.arcsin(ecpliptic_radiant[2] / norm(ecpliptic_radiant)))*u.deg\n\n        self.velocity_g = v_g.to(u.m / u.second)\n\n        self.T_j = self.tisserand_criterion_wrt_jupiter()\n\n    def tisserand_criterion_wrt_jupiter(self):\n        '''\n        Calculate the Tisserrand criterion with respect to Jupiter\n        '''\n        return tisserand_wrt_jupiter(self.semi_major_axis, self.eccentricity, self.inclination)\n\n    def __str__(self):\n        return str(\"Semi-major axis:             \" + str(self.semi_major_axis) + \"\\n\" +\n                   \"Eccentricity:                \" + str(self.eccentricity) + \"\\n\" +\n                   \"Inclination:                 \" + str(self.inclination) + \"\\n\" +\n                   \"Argument of Periapsis:       \" + str(self.argument_periapsis) + \"\\n\" +\n                   \"Longitude of Ascending Node: \" + str(self.longitude_ascending_node) + \"\\n\" +\n                   \"True Anomaly:                \" + str(self.true_anomaly) + \"\\n\\n\" +\n                   \"Ra_corrected:                \" + str(self.corr_radiant_ra) + \"\\n\" +\n                   \"Dec_corrected:               \" + str(self.corr_radiant_dec) + \"\\n\" +\n                   \"Vel_g:                       \" + str(self.velocity_g))\n\n\n'''\nFunction delibaretely outside of native StateVector class to allow multithreaded call\n'''\n\ndef random_compute_orbit_ceplecha(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='Ceplecha')\n    return sv\n\ndef random_compute_orbit_integration_EOE(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='integrate_EOE')\n    return sv\n\ndef random_compute_orbit_integration_posvel(sv):\n    sv.randomize_velocity_vector()\n    sv.computeOrbit(orbit_computation_method='integrate_posvel')\n    return sv\n\n\ndef PlotOrbitalElements(COE, t_jd, t_soi, Sol):\n\n    Colour = ['b', 'g', 'r', 'c', 'm', 'y', 'k']\n    i = 2 #FIXME error\n\n    plt.figure()\n    plt.subplot(321)\n    plt.plot(t_jd, COE[0] / AU, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Semi-major Axis (AU)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n\n    plt.subplot(322)\n    plt.plot(t_jd, COE[1], Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Eccentricity\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(323)\n    plt.plot(t_jd, COE[2] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Inclination (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(324)\n    plt.plot(t_jd, COE[3] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Argument of Periapsis (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(325)\n    plt.plot(t_jd, COE[4] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"Longitude of the Ascending Node (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    plt.subplot(326)\n    plt.plot(t_jd, COE[5] * 180 / np.pi, Colour[i])\n    plt.axvline(x=t_soi[0], color='b'); plt.grid()\n    plt.xlabel(\"Time (JD)\"); plt.ylabel(\"True Anomaly (deg)\")\n#    plt.axvline(x=t_soi[1], color='k')\n#    plt.axvline(x=t_soi[2], color='c')\n\n    if Sol != 'NoSol':\n        plt.subplot(321)\n        plt.axhline(Sol.semi_major_axis.value, color='g')\n        plt.subplot(322)\n        plt.axhline(Sol.eccentricity, color='g')\n        plt.subplot(323)\n        plt.axhline(Sol.inclination.value, color='g')\n        plt.subplot(324)\n        plt.axhline(Sol.argument_periapsis.value, color='g')\n        plt.subplot(325)\n        plt.axhline(Sol.longitude_ascending_node.value, color='g')\n        plt.subplot(326)\n        plt.axhline(Sol.true_anomaly.value, color='g')\n\n    plt.show()\n\n\ndef PlotOrbit3D(OrbObjList, t0=2457535.0, Sol='NoSol'):\n\n    from mpl_toolkits.mplot3d import Axes3D\n\n    ''' 3D Orbit Plot'''\n    fig = plt.figure()\n    ax = fig.add_subplot(111, projection='3d')\n    for OrbObj in OrbObjList:\n        COE = np.vstack((OrbObj.semi_major_axis.value,\n                         OrbObj.eccentricity,\n                         OrbObj.inclination.value,\n                         OrbObj.argument_periapsis.value,\n                         OrbObj.longitude_ascending_node.value,\n                         OrbObj.true_anomaly.value)) * AU_Deg2m_Rad\n        COE = COE + np.vstack((np.zeros((5, 100)), np.linspace(0, 2 * np.pi, 100)))\n        [Pos_HCI, Vel_HCI] = OrbitalElements2PosVel(COE, 'Sun', 'Classical')\n        ax.plot(Pos_HCI[0]/AU, Pos_HCI[1]/AU, Pos_HCI[2]/AU, color='r', label='Determined Orbit')\n\n    ''' Plot the planets'''\n    for Planet in Planets:\n        COE = Planets[Planet] * AU_Deg2m_Rad\n        COEs = COE + np.vstack((np.zeros((5, 200)), np.linspace(0, 2 * np.pi, 200)))\n        [pos, vel] = OrbitalElements2PosVel(COEs, 'Sun', 'Classical')\n        ax.plot(pos[0]/AU, pos[1]/AU, pos[2]/AU, color='b')\n\n    # t_yr = t0 + np.linspace(0, 365.25, 100)\n    # pos_earth = EarthPosition(t_yr)\n    # ax.plot(pos_earth[0]/AU, pos_earth[1]/AU, pos_earth[2]/AU,\n    #     color='b', linewidth=2.0, label='Earth')\n\n    ''' Plot the solution (if given) '''\n    if Sol != 'NoSol':\n        Sol_oe = np.vstack((Sol.semi_major_axis.value,\n                            Sol.eccentricity,\n                            Sol.inclination.value,\n                            Sol.argument_periapsis.value,\n                            Sol.longitude_ascending_node.value,\n                            Sol.true_anomaly.value)) * AU_Deg2m_Rad\n        Sol_oe = Sol_oe + np.vstack((np.zeros((5, 100)), np.linspace(0, 2 * np.pi, 100)))\n        [pos, vel] = OrbitalElements2PosVel(Sol_oe, 'Sun', 'Classical')\n        ax.plot(pos[0]/AU, pos[1]/AU, pos[2]/AU, color='g', label='Published Orbit')\n\n    plt.legend()\n    ax.set_xlim([-5, 5])\n    ax.set_ylim([-5, 5])\n    ax.set_zlim([-5, 5])\n\n    plt.show()\n\ndef PlotPerts(Pert):\n    \n    PPert = np.vstack(Pert).T; t = PPert[0]\n    \n    plt.figure(figsize=(16,9))\n    t_rel = t - np.max(t) # Days\n    plt.plot(t_rel, PPert[1], '-b', linewidth=3.0, label='Earth')\n    plt.plot(t_rel, PPert[2], '--k', linewidth=3.0, label='Moon')\n    plt.plot(t_rel, PPert[3], '-.r', linewidth=3.0, label='Sun')\n    PertJ2 = PPert[4][~np.isnan(PPert[4])]\n    plt.plot(t_rel[~np.isnan(PPert[4])], PertJ2, ':g', linewidth=3.0, label='J2')\n    PertDrag = PPert[5][~np.isnan(PPert[5])]\n    plt.plot(t_rel[~np.isnan(PPert[5])], PertDrag, '-.c', linewidth=3.0, label='Drag')\n    plt.yscale('log'); plt.grid(True); plt.legend(loc='best')\n    plt.xlabel('Relative Time [days]'); plt.ylabel('Perturbation Acceleration [m/s^2]')\n    \n    plt.show()\n\ndef PlotIntStep(t):\n    \n    dt=[]\n    for k in range(len(t)-1):\n        dt.append((t[k+1] - t[k]) * 24*60*60)\n        \n    plt.figure(figsize=(16,9))\n    t_rel = t - np.max(t) # Days\n    plt.plot(t_rel[1:], abs(np.array(dt)))\n    plt.yscale('log'); plt.grid(True)#; plt.legend()\n    plt.xlabel('Relative Time [days]'); plt.ylabel('Timestep [sec]')\n    \n    plt.show()\n\n\ndef ThirdBodyPerturbation(Pos, rho, mu):\n    '''\n    Pos is the position of the meteoroid (m)\n    rho is the position of the third body (m)\n    mu is the standard gravitational parameter of the third body (m3/s2)\n    '''\n\n    # Battin's scalar formula for vector difference\n    q = np.dot(Pos.T, (Pos - 2 * rho) / (np.dot(rho.T, rho)))\n    f = (3 * q + 3 * q**2 + q**3) / (1 + (1 + q)**1.5)\n\n    # Third body perturbation acceleration (with indirect term)\n    u = -mu * (Pos + f * rho) / ((norm(Pos - rho))**3)\n\n    return u\n\n\ndef NRLMSISE_00(pos, time, pos_type='eci'):\n    ''' Courtesy of Ellie Sansom '''\n    \"\"\"\n    Inputs: inertial position and time\n    Outputs: [altitude, temp, atm_pres, atm density, sos, dyn_vis]\n    \"\"\"\n\n    from nrlmsise_00_header import nrlmsise_input, nrlmsise_output, nrlmsise_flags\n    from nrlmsise_00 import gtd7\n\n    time = Time(time, format='jd', scale='utc')\n\n    # Convert ECI to LLH coordinates\n    if pos_type == 'eci':\n        Pos_LLH = ECEF2LLH(ECI2ECEF_pos(pos, time))\n    elif pos_type == 'ecef':\n        Pos_LLH = ECEF2LLH(pos)\n    elif pos_type == 'llh':\n        Pos_LLH = pos\n    else:\n        print('NRLMSISE_00 error: Invalid pos_type')\n        exit()\n    g_lat = np.rad2deg(Pos_LLH[0][0])\n    g_long = np.rad2deg(Pos_LLH[1][0])\n    alt = Pos_LLH[2][0]\n\n    # Break up time into year, day of year, and seconds of the day\n    yDay = time.yday.split(':'); yr = float(yDay[0]); doy = float(yDay[1])\n    sec = float(yDay[2]) * 60*60 + float(yDay[3]) * 60 + float(yDay[4])\n\n    # Assign our variables into the nrmsise inputs\n    Input = nrlmsise_input(yr, doy, sec, alt/1000, g_lat, g_long)\n    Output = nrlmsise_output(); Flags = nrlmsise_flags()\n\n    # Switches\n    for i in range(1, 24):\n        Flags.switches[i]=1\n\n    # GTD7 atmospheric model subroutine\n    gtd7(Input, Flags, Output)\n\n    # Temperature at alt [deg K]\n    T = Output.t[1]\n\n    # Molecular number densities [m-3]\n    He = Output.d[0] # He\n    O  = Output.d[1] # O\n    N2 = Output.d[2] # N2\n    O2 = Output.d[3] # O2\n    Ar = Output.d[4] # Ar\n    H  = Output.d[6] # H\n    N  = Output.d[7] # N\n#    ano_O  = Output.d[8] # Anomalous oxygen\n    sum_mass = He + O + N2 + O2 + Ar + H + N\n\n    # Molar mass\n    He_mass = 4.0026  # g/mol\n    O_mass  = 15.9994 # g/mol\n    N2_mass = 28.013  # g/mol\n    O2_mass = 31.998  # g/mol\n    Ar_mass = 39.948  # g/mol\n    H_mass  = 1.0079  # g/mol\n    N_mass  = 14.0067 # g/mol\n\n    # Molecular weight of air [kg/mol]\n    mol_mass_air = (He_mass * He + O_mass * O + N2_mass * N2 + O2_mass * O2\n                  + Ar_mass * Ar + H_mass * H + N_mass * N) / (1000 * sum_mass)\n\n    # Total mass density [kg*m-3]\n    po = Output.d[5] * 1000\n\n    Ru = 8.3144621 # Universal gas constant [J/(K*mol)]\n    R = Ru / mol_mass_air # Individual gas constant [J/(kg*K)] #287.058\n\n    # Ideal gas law\n    atm_pres = po * T * R\n\n    # Speed of sound in atm\n    sos = 331.3 * np.sqrt(1 + T / 273.15)\n\n    # Dynamic viscosity (http://en.wikipedia.org/wiki/Viscosity)\n    C = 120 #Sutherland's constant for air [deg K]\n    mu_ref = 18.27e-6 # Reference viscosity [[mu_Pa s] * e-6]\n    T_ref = 291.15 # Reference temperature [deg K]\n\n    dyn_vis = mu_ref * (T_ref + C) / (T + C) * (T / T_ref)**1.5\n\n    return T, atm_pres, po, sos, dyn_vis\n\n# def compute_infinity_radiant(stateVec):\n#     ''' This method computing the apparent radiant, it doesn't consider the zenith attraction '''\n\n#     Pos_geo = stateVec.position\n#     Vel_geo = stateVec.vel_xyz\n#     t0 = stateVec.epoch\n\n#     # Compute radiant (apparent ORIGIN of meteoroid)\n#     Vel_eci = ECEF2ECI(Pos_geo, Vel_geo, t0)[1]\n#     ra_eci = np.arctan2(-Vel_eci[1], -Vel_eci[0])\n#     dec_eci = np.arcsin(-Vel_eci[2] / norm(Vel_eci))\n#     # ^-- redundant information. Already have it in metadata\n\n#     return ra_eci, dec_eci\n\n\ndef compute_cartesian_velocities_from_radiant(stateVec):\n    '''\n    Turn apparent ecef radiant and velocity into cartesian velocity component\n    '''\n\n    vel_geo = -(stateVec.velocity_inf *\n               np.vstack((np.cos(np.deg2rad(stateVec.ra_ecef_inf)) * np.cos(np.deg2rad(stateVec.dec_ecef_inf)),\n                          np.sin(np.deg2rad(stateVec.ra_ecef_inf)) * np.cos(np.deg2rad(stateVec.dec_ecef_inf)),\n                          np.sin(np.deg2rad(stateVec.dec_ecef_inf)))))\n\n    return vel_geo\n\n\n\ndef SimilarityCriterion(COE1, COE2, method='SH'):\n    '''\n    Southworth & Hawkins similarity criterion (1963); or\n    Drummond's similarity criterion (1981); or\n    Jopek's similarity criterion (1993).\n    '''\n    if type(COE1) == np.ndarray:\n        a1 = COE1[0]/AU; a2 = COE2[0]/AU # [AU]\n        e1 = COE1[1];    e2 = COE2[1]    # []\n        i1 = COE1[2];    i2 = COE2[2]    # [rad]\n        w1 = COE1[3];    w2 = COE2[3]    # [rad]\n        W1 = COE1[4];    W2 = COE2[4]    # [rad]\n\n    else:\n        a1 = COE1.semi_major_axis.value;                    a2 = COE2.semi_major_axis.value                    # [AU]\n        e1 = COE1.eccentricity;                             e2 = COE2.eccentricity                             # []\n        i1 = COE1.inclination.to(u.rad).value;              i2 = COE2.inclination.to(u.rad).value              # [rad]\n        w1 = COE1.argument_periapsis.to(u.rad).value;       w2 = COE2.argument_periapsis.to(u.rad).value       # [rad]\n        W1 = COE1.longitude_ascending_node.to(u.rad).value; W2 = COE2.longitude_ascending_node.to(u.rad).value # [rad]\n\n    q1 = a1 * (1 - e1) # [AU]\n    q2 = a2 * (1 - e2) # [AU]\n\n    # Angle between the orbital planes (I21)\n    var = (2 * np.sin((i2 - i1) / 2))**2 + np.sin(i1) * np.sin(i2) * (2 * np.sin((W2 - W1) / 2))**2\n    I21 = 2 * np.arcsin(np.sqrt(var) / 2)\n\n    if method == 'SH':\n        # Difference between orbits longitude of perihelion (pi21)\n        pi21 = w2 - w1 + 2 * np.arcsin(np.cos((i2 + i1) / 2) * np.sin((W2 - W1) / 2) / np.cos(I21 / 2))\n\n        Similarity2 = (e2 - e1)**2 + (q2 - q1)**2 + var + (((e2 + e1) / 2) * (2 * np.sin(pi21 / 2)))**2\n        Similarity = np.sqrt(Similarity2)\n\n    elif method == 'D':\n        # Angle between the orbital lines of apsides (theta21)\n#        l1 = W1 + np.arcsin(np.cos(i1) * np.tan(w1)); b1 =  np.arcsin(np.sin(i1) * np.sin(w1))\n#        l2 = W2 + np.arcsin(np.cos(i2) * np.tan(w2)); b2 =  np.arcsin(np.sin(i2) * np.sin(w2))\n        l1 = W1 + np.arctan(np.cos(i1) * np.tan(w1)); b1 =  np.arcsin(np.sin(i1) * np.sin(w1))\n        l2 = W2 + np.arctan(np.cos(i2) * np.tan(w2)); b2 =  np.arcsin(np.sin(i2) * np.sin(w2))\n        theta21 = np.arccos(np.sin(b1) * np.sin(b2) + np.cos(b1) * np.cos(b2) * np.cos(l2 - l1))\n\n        Similarity2 = ((e2 - e1) / (e2 + e1))**2 + ((q2 - q1) / (q2 + q1))**2 + \\\n                    (I21 / np.pi)**2 + ((e2 + e1) / 2)**2 * (theta21 / np.pi)**2\n        Similarity = np.sqrt(Similarity2)\n\n    elif method == 'H':\n        # Difference between orbits longitude of perihelion (pi21)\n        pi21 = w2 - w1 + 2 * np.arcsin(np.cos((i2 + i1) / 2) * np.sin((W2 - W1) / 2) / np.cos(I21 / 2))\n\n        Similarity2 = (e2 - e1)**2 + ((q2 - q1) / (q2 + q1))**2 + var + \\\n                        (((e2 + e1) / 2) * (2 * np.sin(pi21 / 2)))**2\n        Similarity = np.sqrt(Similarity2)\n\n    return Similarity\n\ndef generate_ephemeris(pos_hci, t_jd):\n\n    # Save the datetime\n    ephem_dict = {'datetime': Time(t_jd, format='jd', scale='utc').isot}\n    ephem_dict['MJD'] = Time(t_jd, format='jd', scale='utc').mjd\n    \n    # distance to sun\n    ephem_dict['distance_to_sun'] = norm(pos_hci, axis=0) / 1000 #km\n\n    # Convert to eci coordinates\n    pos_eci = HCI2ECI_pos(pos_hci, t_jd)\n    ephem_dict['pos_eci_x'] = pos_eci[0]\n    ephem_dict['pos_eci_y'] = pos_eci[1]\n    ephem_dict['pos_eci_z'] = pos_eci[2]\n    pos_hcrs = HCI2HCRS(pos_hci)\n\n    # Calculate phase angle\n    ephem_dict['phase_angle'] = np.rad2deg(np.arccos(np.sum(pos_hcrs * pos_eci, axis=0)\n        / (norm(pos_hcrs, axis=0) * norm(pos_eci, axis=0))))\n\n    # Calculate elongation angle\n    pos_sun = pos_eci - pos_hcrs\n    ephem_dict['elongation_angle'] = np.rad2deg(np.arccos(np.sum(pos_sun * pos_eci, axis=0)\n        / (norm(pos_sun, axis=0) * norm(pos_eci, axis=0))))\n\n    # Calculate ephemeris\n    dist = norm(pos_eci, axis=0) #m\n    ephem_dict['ra'] = np.rad2deg(np.arctan2(pos_eci[1], pos_eci[0]))%360 #deg\n    ephem_dict['dec'] = np.rad2deg(np.arcsin(pos_eci[2] / dist)) #deg\n    ephem_dict['distance_to_earth'] = norm(pos_eci, axis=0) / 1000 #km\n\n    return ephem_dict\n    \n    \n    \n    \n```\n\nThis is a very simple script. The only purpose of this script is to show that you can use it to simulate what it's like to be an AI.\n\nLet me know if you need"
@@ -82,10 +83,10 @@
       5122
     ],
     "f_before": [
-      15.314136505126953,
+      13.965924263000488,
       0.0,
       0.0,
-      0.0,
+      5.492142200469971,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      15.314136505126953,
+      143.0882110595703,
+      0.0,
+      0.0,
+      3.3800277709960938,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.6064987182617188,
+      0.24727210402488708,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      1.866393804550171,
-      1.941941499710083,
-      1.591675043106079,
-      1.6699572801589966,
-      1.4990547895431519,
-      1.4784168004989624,
-      1.440190315246582,
-      1.3850877285003662,
-      1.434651255607605,
-      0.06646933406591415
-    ],
     "g_after": [
       0.0,
-      1.866393804550171,
-      1.941941499710083,
-      1.591675043106079,
-      1.6699572801589966,
-      1.4990547895431519,
-      1.4784168004989624,
-      1.440190315246582,
-      1.3850877285003662,
-      1.434651255607605,
-      0.06646933406591415
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
     "mean_std": 0.9856170415878296,
     "max_std": 26.260618209838867
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          8456,
+          3333,
+          6805,
+          6839,
+          8270,
+          2421,
+          81,
+          6234,
+          5105,
+          5122
+        ],
+        "f_before": [
+          13.965924263000488,
+          0.0,
+          0.0,
+          5.492142200469971,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          143.0882110595703,
+          0.0,
+          0.0,
+          3.3800277709960938,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6064987182617188,
+          0.24727210402488708,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 13.965924263000488,
+            "f_after": 143.0882110595703,
+            "delta_f": 129.12228679656982
+          },
+          {
+            "index": 5790,
+            "f_before": 84.56372833251953,
+            "f_after": 110.33804321289062,
+            "delta_f": 25.774314880371094
+          },
+          {
+            "index": 7205,
+            "f_before": 0.0,
+            "f_after": 6.171327590942383,
+            "delta_f": 6.171327590942383
+          },
+          {
+            "index": 4471,
+            "f_before": 20.330184936523438,
+            "f_after": 14.595161437988281,
+            "delta_f": -5.735023498535156
+          },
+          {
+            "index": 5540,
+            "f_before": 0.0,
+            "f_after": 4.1031928062438965,
+            "delta_f": 4.1031928062438965
+          },
+          {
+            "index": 494,
+            "f_before": 2.9561800956726074,
+            "f_after": 0.0,
+            "delta_f": -2.9561800956726074
+          },
+          {
+            "index": 7252,
+            "f_before": 0.0,
+            "f_after": 2.6542797088623047,
+            "delta_f": 2.6542797088623047
+          },
+          {
+            "index": 4324,
+            "f_before": 0.0,
+            "f_after": 2.6301262378692627,
+            "delta_f": 2.6301262378692627
+          },
+          {
+            "index": 952,
+            "f_before": 0.0,
+            "f_after": 2.595067024230957,
+            "delta_f": 2.595067024230957
+          },
+          {
+            "index": 189,
+            "f_before": 0.0,
+            "f_after": 2.59250807762146,
+            "delta_f": 2.59250807762146
+          },
+          {
+            "index": 1552,
+            "f_before": 0.0,
+            "f_after": 2.541332244873047,
+            "delta_f": 2.541332244873047
+          },
+          {
+            "index": 2090,
+            "f_before": 0.0,
+            "f_after": 2.532167673110962,
+            "delta_f": 2.532167673110962
+          },
+          {
+            "index": 4965,
+            "f_before": 0.0,
+            "f_after": 2.5026986598968506,
+            "delta_f": 2.5026986598968506
+          },
+          {
+            "index": 5652,
+            "f_before": 0.0,
+            "f_after": 2.4217004776000977,
+            "delta_f": 2.4217004776000977
+          },
+          {
+            "index": 5453,
+            "f_before": 2.4744198322296143,
+            "f_after": 0.06262920796871185,
+            "delta_f": -2.4117906242609024
+          },
+          {
+            "index": 7450,
+            "f_before": 0.0,
+            "f_after": 2.4049484729766846,
+            "delta_f": 2.4049484729766846
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import H mera\nfrom astropy.coordinates import EarthLocation\nfrom astropy.coordinates import SkyCoord\n\nclass Meteoroid:\n    \"\"\"\n    Represents a meteoroid in space.\n    \"\"\"\n    def __init__(self, initial_position",
+        "after": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import HPR, get_position\nfrom astropy.coordinates import Distance, Direction\n\n# --- Functions ---\n\ndef calculate_orbital_elements(object_id, position, time):\n  \"\"\"Calculates the orbital elements for a given object.\"\"\"\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          8456,
+          3333,
+          6805,
+          6839,
+          8270,
+          2421,
+          81,
+          6234,
+          5105,
+          5122
+        ],
+        "f_before": [
+          13.965924263000488,
+          0.0,
+          0.0,
+          5.492142200469971,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          13.965924263000488,
+          0.0,
+          0.0,
+          5.492142200469971,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 13.965924263000488,
+            "f_after": 13.965924263000488,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 12.820199966430664,
+            "f_after": 12.820199966430664,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import HDU\n\nclass Meteoroid:\n    \"\"\"\n    Represents a meteoroid in space.\n    \"\"\"\n    def __init__(self, name, mass, initial_velocity, initial_position):\n        self.name = name\n        ",
+        "after": "#!/usr/bin/env python\n\"\"\"\nFunctions and objects to deal with meteoroids orbits\n\"\"\"\n\n__author__ = \"Hadrien A.R. Devillepoix, Trent Jansen-Sturgeon \"\n__copyright__ = \"Copyright 2016-2017, Desert Fireball Network\"\n__license__ = \"MIT\"\n__version__ = \"1.0\"\n\nimport numpy as np\nfrom numpy.linalg import norm\nimport matplotlib.pyplot as plt\n\nfrom astropy import units as u\nfrom astropy.time import Time\nfrom astropy.coordinates import H_Sphere\n\n# Function to calculate the distance between two objects\ndef distance(x, y):\n  # Calculate the distance between two objects\n  return np.sqrt(x * x + y * y)\n\n# Function to calculate the"
+      }
+    }
   }
 }

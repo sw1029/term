@@ -60,7 +60,8 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 19
   },
   "prompt": "from django.core.management.base import BaseCommand\nfrom django.utils.timezone import now\n\n\nclass Command(BaseCommand):\n    args = '[event_slug...]'\n    help = 'Create missing email aliases'\n\n    def handle(*args, **opts):\n        from access.models import InternalEmailAlias\n\n        InternalEmailAlias.ensure_internal_email_aliases()\n\n",
   "output": {
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      0.0,
+      0.0430401936173439,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-170833/feature_std_layer_20.html",
     "mean_std": 0.5002440810203552,
     "max_std": 25.62422752380371
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 19,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          1071,
+          5729,
+          559,
+          8899,
+          5927,
+          6363,
+          2362,
+          2450
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0430401936173439,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 7255,
+            "f_before": 1.8203437328338623,
+            "f_after": 0.0,
+            "delta_f": -1.8203437328338623
+          },
+          {
+            "index": 2796,
+            "f_before": 0.9459865093231201,
+            "f_after": 0.0,
+            "delta_f": -0.9459865093231201
+          },
+          {
+            "index": 1408,
+            "f_before": 0.7642444372177124,
+            "f_after": 0.0,
+            "delta_f": -0.7642444372177124
+          },
+          {
+            "index": 2743,
+            "f_before": 0.5207390785217285,
+            "f_after": 1.280729055404663,
+            "delta_f": 0.7599899768829346
+          },
+          {
+            "index": 3645,
+            "f_before": 0.42147862911224365,
+            "f_after": 0.0,
+            "delta_f": -0.42147862911224365
+          },
+          {
+            "index": 4288,
+            "f_before": 0.3138953149318695,
+            "f_after": 0.0,
+            "delta_f": -0.3138953149318695
+          },
+          {
+            "index": 2396,
+            "f_before": 0.7333300113677979,
+            "f_after": 0.9881426095962524,
+            "delta_f": 0.2548125982284546
+          },
+          {
+            "index": 2763,
+            "f_before": 15.09950065612793,
+            "f_after": 15.343092918395996,
+            "delta_f": 0.2435922622680664
+          },
+          {
+            "index": 4637,
+            "f_before": 0.0,
+            "f_after": 0.1463870406150818,
+            "delta_f": 0.1463870406150818
+          },
+          {
+            "index": 2657,
+            "f_before": 0.0,
+            "f_after": 0.1237296611070633,
+            "delta_f": 0.1237296611070633
+          },
+          {
+            "index": 3555,
+            "f_before": 0.033533670008182526,
+            "f_after": 0.13319027423858643,
+            "delta_f": 0.0996566042304039
+          },
+          {
+            "index": 6434,
+            "f_before": 0.23537006974220276,
+            "f_after": 0.13651102781295776,
+            "delta_f": -0.098859041929245
+          },
+          {
+            "index": 5124,
+            "f_before": 50.3996467590332,
+            "f_after": 50.326053619384766,
+            "delta_f": -0.0735931396484375
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0430401936173439,
+            "delta_f": 0.0430401936173439
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from django.core.management.base import BaseCommand\nfrom django.utils.timezone import now\n\n\nclass Command(BaseCommand):\n    args = '[event_slug...]'\n    help = 'Create missing email aliases'\n\n    def handle(*args, **opts):\n        from access.models import InternalEmailAlias\n\n        InternalEmailAlias.ensure_internal_email_aliases()\n\n        now = datetime.now()\n        for event_slug in args:\n            if not InternalEmailAlias.objects.filter(event=event_slug).exists():\n                # Create the alias\n                internal_email_alias = InternalEmailAlias(event_slug)\n                internal_email_alias.save()\n",
+        "after": "from django.core.management.base import BaseCommand\nfrom django.utils.timezone import now\n\n\nclass Command(BaseCommand):\n    args = '[event_slug...]'\n    help = 'Create missing email aliases'\n\n    def handle(*args, **opts):\n        from access.models import InternalEmailAlias\n\n        InternalEmailAlias.ensure_internal_email_aliases()\n\n        today = now()\n        for event_slug in args:\n            event_id = event_slug.split('event_')[0]\n            alias = InternalEmailAlias.objects.filter(event_id=event_id).first()\n            if not alias:\n                alias = InternalEmail"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 20,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1,
+          1071,
+          5729,
+          559,
+          8899,
+          5927,
+          6363,
+          2362,
+          2450
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from django.core.management.base import BaseCommand\nfrom django.utils.timezone import now\n\n\nclass Command(BaseCommand):\n    args = '[event_slug...]'\n    help = 'Create missing email aliases'\n\n    def handle(*args, **opts):\n        from access.models import InternalEmailAlias\n\n        InternalEmailAlias.ensure_internal_email_aliases()\n\n        for event_slug in args:\n            event_id = int(event_slug.split('/')[-1])\n            alias = InternalEmailAlias.objects.get(id=event_id)\n            alias.email = event_slug + '@example.com'\n            alias.save()",
+        "after": "from django.core.management.base import BaseCommand\nfrom django.utils.timezone import now\n\n\nclass Command(BaseCommand):\n    args = '[event_slug...]'\n    help = 'Create missing email aliases'\n\n    def handle(*args, **opts):\n        from access.models import InternalEmailAlias\n\n        InternalEmailAlias.ensure_internal_email_aliases()\n\n        print('All internal email aliases created.')\n        print(now().strftime('%Y-%m-%d %H:%M:%S'))\n\nif __name__ == '__main__':\n    Command().execute()"
+      }
+    }
   }
 }

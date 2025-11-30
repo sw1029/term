@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = False\n    _display_name = \"SKOPE RULES\"\n    _description = \"SKOPE RULES\"\n    # using git master because pypi is very out of date (Jan 2020) but need Sept 1-ish master with fix for updated scikit-learn\n    _modules_needed_by_name = ['git+https://github.com/scikit-learn-contrib/skope-rules.git']\n\n    @staticmethod\n    def do_acceptance_test():\n        return True\n\n    def set_default_params(self, accuracy=None, time_tolerance=None,\n                           interpretability=None, **kwargs):\n        # Fill up parameters we care about\n        self.params = dict(random_state=kwargs.get(\"random_state\", 1234),\n                           max_depth_duplication=None, n_estimators=10,\n                           precision_min=0.5, recall_min=0.01, max_samples=0.8,\n                           max_samples_features=1.0, max_depth=3,\n                           max_features=\"auto\", min_samples_split=2,\n                           bootstrap=False, bootstrap_features=False)\n\n    def mutate_params(self, accuracy=10, **kwargs):\n        if accuracy > 8:\n            max_depth_duplication = [None, 2, 3]\n            n_estimators = [10, 20, 40]\n            precision_min = [0.1, 0.2, 0.3]\n            recall_min = [0.01, 0.05]\n            max_samples = [0.5, 0.8, 1.0]\n            max_samples_features = [0.5, 0.8, 1.0]\n            max_depth = [3, 4, 5]\n            max_features = [\"sqrt\", \"log2\", \"auto\"]\n            min_samples_split = [2, 11, 21]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n        elif accuracy >= 5:\n            max_depth_duplication = [None]\n            n_estimators = [10, 20]\n            precision_min = [0.1, 0.2, 0.3]\n            recall_min = [0.01]\n            max_samples = [0.8, 1.0]\n            max_samples_features = [1.0]\n            max_depth = [3, 4]\n            max_features = [\"sqrt\", \"log2\", \"auto\"]\n            min_samples_split = [2, 5, 11]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n        else:\n            max_depth_duplication = [None]\n            n_estimators = [10]\n            precision_min = [0.1, 0.2]\n            recall_min = [0.01]\n            max_samples = [0.8, 1.0]\n            max_samples_features = [0.8, 1.0]\n            max_depth = [3, 4]\n            max_features = [\"auto\"]\n            min_samples_split = [2]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n\n        self.params[\"max_depth_duplication\"] = np.random.choice(max_depth_duplication)\n        self.params[\"n_estimators\"] = np.random.choice(n_estimators)\n        self.params[\"precision_min\"] = np.random.choice(precision_min)\n        self.params[\"recall_min\"] = np.random.choice(recall_min)\n        self.params[\"max_samples\"] = np.random.choice(max_samples)\n        self.params[\"max_samples_features\"] = np.random.choice(max_samples_features)\n        self.params[\"max_depth\"] = np.random.choice(max_depth)\n        self.params[\"max_features\"] = np.random.choice(max_features)\n        self.params[\"min_samples_split\"] = np.random.choice(min_samples_split)\n        self.params[\"bootstrap\"] = np.random.choice(bootstrap)\n        self.params[\"bootstrap_features\"] = np.random.choice(bootstrap_features)\n\n    def _create_tmp_folder(self, logger):\n        # Create a temp folder to store files \n        # Set the default value without context available (required to pass acceptance test)\n        tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n        # Make a real tmp folder when experiment is available\n        if self.context and self.context.experiment_id:\n            tmp_folder = os.path.join(self.context.experiment_tmp_dir, \"%s_SKOPE_model_folder\" % uuid.uuid4())\n\n        # Now let's try to create that folder\n        try:\n            os.mkdir(tmp_folder)\n        except PermissionError:\n            # This not occur so log a warning\n            loggerwarning(logger, \"SKOPE was denied temp folder creation rights\")\n            tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n        except FileExistsError:\n            # We should never be here since temp dir name is expected to be unique\n            loggerwarning(logger, \"SKOPE temp folder already exists\")\n            tmp_folder = os.path.join(self.context.experiment_tmp_dir, \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n        except:\n            # Revert to temporary file path\n            tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n\n        loggerinfo(logger, \"SKOPE temp folder {}\".format(tmp_folder))\n        return tmp_folder\n\n    def fit(self, X, y, sample_weight=None, eval_set=None, sample_weight_eval_set=None, **kwargs):\n\n        orig_cols = list(X.names)\n\n        import pandas as pd\n        import numpy as np\n        from skrules import SkopeRules\n        from sklearn.preprocessing import OneHotEncoder\n        from collections import Counter\n\n        # Get the logger if it exists\n        logger = None\n        if self.context and self.context.experiment_id:\n            logger = make_experiment_logger(experiment_id=self.context.experiment_id,\n                                            tmp_dir=self.context.tmp_dir,\n                                            experiment_tmp_dir=self.context.experiment_tmp_dir)\n\n        # Set up temp folder\n        tmp_folder = self._create_tmp_folder(logger)\n\n        # Set up model\n        if self.num_classes >= 2:\n            lb = LabelEncoder()\n            lb.fit(self.labels)\n            y = lb.transform(y)\n\n            model = SkopeRules(max_depth_duplication=self.params[\"max_depth_duplication\"],\n                               n_estimators=self.params[\"n_estimators\"],\n                               precision_min=self.params[\"precision_min\"],\n                               recall_min=self.params[\"recall_min\"],\n                               max_samples=self.params[\"max_samples\"],\n                               max_samples_features=self.params[\"max_samples_features\"],\n                               max_depth=self.params[\"max_depth\"],\n                               max_features=self.params[\"max_features\"],\n                               min_samples_split=self.params[\"min_samples_split\"],\n                               bootstrap=self.params[\"bootstrap\"],\n                               bootstrap_features=self.params[\"bootstrap_features\"],\n                               random_state=self.params[\"random_state\"],\n                               feature_names=orig_cols)\n        else:\n            # Skopes doesn't work for regression\n            loggerinfo(logger, \"PASS, no skopes model\")\n            pass\n\n        # Find the datatypes\n        X = X.to_pandas()\n        X.columns = orig_cols\n\n        # Change continuous features to categorical\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # Change all float32 values to float64\n        for ii in range(len(X_datatypes)):\n            if X_datatypes[ii] == 'float32':\n                X = X.astype({orig_cols[ii]: np.float64})\n\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # List the categorical and numerical features\n        self.X_categorical = [orig_cols[col_count] for col_count in range(len(orig_cols)) if\n                              (X_datatypes[col_count] == 'category') or (X_datatypes[col_count] == 'object')]\n        self.X_numeric = [item for item in orig_cols if item not in self.X_categorical]\n\n        # Find the levels and mode for each categorical feature\n        # for use in the test set\n        self.train_levels = {}\n        for item in self.X_categorical:\n            self.train_levels[item] = list(set(X[item]))\n            self.train_mode[item] = Counter(X[item]).most_common(1)[0][0]\n\n            # One hot encode the categorical features\n        # And replace missing values with a Missing category\n        if len(self.X_categorical) > 0:\n            loggerinfo(logger, \"PCategorical encode\")\n\n            for colname in self.X_categorical:\n                X[colname] = list(X[colname].fillna(\"Missing\"))\n            self.enc = OneHotEncoder(handle_unknown='ignore')\n\n            self.enc.fit(X[self.X_categorical])\n            self.encoded_categories = list(self.enc.get_feature_names(input_features=self.X_categorical))\n\n            X_enc = self.enc.transform(X[self.X_categorical]).toarray()\n\n            X = pd.concat([X[self.X_numeric], pd.DataFrame(X_enc, columns=self.encoded_categories)], axis=1)\n\n        # Replace missing values with a missing value code\n        if len(self.X_numeric) > 0:\n\n            for colname in self.X_numeric:\n                X[colname] = list(X[colname].fillna(-999))\n\n        model.fit(np.array(X), np.array(y))\n\n        # Find the rule list\n        self.rule_list = model.rules_\n\n        # Calculate feature importances\n        var_imp = []\n        for var in orig_cols:\n            var_imp.append(sum(int(var in item[0]) for item in self.rule_list))\n\n        if max(var_imp) != 0:\n            importances = list(np.array(var_imp) / max(var_imp))\n        else:\n            importances = [1] * len(var_imp)\n\n        pd.DataFrame(model.rules_, columns=['Rule', '(Precision, Recall, nb)']).to_csv(\n            os.path.join(tmp_folder, 'Skope_rules.csv'), index=False)\n\n        self.mean_target = np.array(sum(y) / len(y))\n\n        # Set model properties\n        self.set_model_properties(model=model,\n                                  features=list(X.columns),\n                                  importances=importances,\n                                  iterations=self.params['n_estimators'])\n\n    def predict(self, X, **kwargs):\n        orig_cols = list(X.names)\n        import pandas as pd\n\n        X = dt.Frame(X)\n\n        # Find datatypes\n        X = X.to_pandas()\n\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # Change float 32 values to float 64\n        for ii in range(len(X_datatypes)):\n            if X_datatypes[ii] == 'float32':\n                X = X.astype({orig_cols[ii]: np.float64})\n\n                # Replace missing values with a missing category\n        # Replace categories that weren't in the training set with the mode\n        if len(self.X_categorical) > 0:\n\n            for colname in self.X_categorical:\n                X[colname] = list(X[colname].fillna(\"Missing\"))\n\n            for label in self.X_categorical:\n                # Replace anything not in the test set\n                train_categories = self.train_levels[label]\n                X_label = np.array(X[label])\n                mmode = self.train_mode[label]\n                X_label[~np.isin(X_label, train_categories)] = mmode\n                X[label] = X_label\n\n        # Replace missing values with a missing value code    \n        if len(self.X_numeric) > 0:\n            for colname in self.X_numeric:\n                X[colname] = list(X[colname].fillna(-999))\n\n                # Get model    \n        model, _, _, _ = self.get_model_properties()\n\n        # One hot encode categorical features\n        if len(self.X_categorical) > 0:\n            X_enc = self.enc.transform(X[self.X_categorical]).toarray()\n            X = pd.concat([X[self.X_numeric], pd.DataFrame(X_enc, columns=self.encoded_categories)], axis=1)\n\n            # Make predictions on the test set\n        preds = model.score_top_rules(X) / len(self.rule_list)\n        preds = np.array(preds)\n        epsilon = 10 ** (-3)\n        preds[np.isnan(preds)] = self.mean_target\n        preds[preds > 1 - epsilon] = 1.0 - epsilon\n        preds[preds < 0 + epsilon] = 0.0 + epsilon\n\n        return preds\n",
+  "prompt": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass",
   "output": {
     "before": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = False\n    _display_name = \"SKOPE RULES\"\n    _description = \"SKOPE RULES\"\n    # using git master because pypi is very out of date (Jan 2020) but need Sept 1-ish master with fix for updated scikit-learn\n    _modules_needed_by_name = ['git+https://github.com/scikit-learn-contrib/skope-rules.git']\n\n    @staticmethod\n    def do_acceptance_test():\n        return True\n\n    def set_default_params(self, accuracy=None, time_tolerance=None,\n                           interpretability=None, **kwargs):\n        # Fill up parameters we care about\n        self.params = dict(random_state=kwargs.get(\"random_state\", 1234),\n                           max_depth_duplication=None, n_estimators=10,\n                           precision_min=0.5, recall_min=0.01, max_samples=0.8,\n                           max_samples_features=1.0, max_depth=3,\n                           max_features=\"auto\", min_samples_split=2,\n                           bootstrap=False, bootstrap_features=False)\n\n    def mutate_params(self, accuracy=10, **kwargs):\n        if accuracy > 8:\n            max_depth_duplication = [None, 2, 3]\n            n_estimators = [10, 20, 40]\n            precision_min = [0.1, 0.2, 0.3]\n            recall_min = [0.01, 0.05]\n            max_samples = [0.5, 0.8, 1.0]\n            max_samples_features = [0.5, 0.8, 1.0]\n            max_depth = [3, 4, 5]\n            max_features = [\"sqrt\", \"log2\", \"auto\"]\n            min_samples_split = [2, 11, 21]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n        elif accuracy >= 5:\n            max_depth_duplication = [None]\n            n_estimators = [10, 20]\n            precision_min = [0.1, 0.2, 0.3]\n            recall_min = [0.01]\n            max_samples = [0.8, 1.0]\n            max_samples_features = [1.0]\n            max_depth = [3, 4]\n            max_features = [\"sqrt\", \"log2\", \"auto\"]\n            min_samples_split = [2, 5, 11]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n        else:\n            max_depth_duplication = [None]\n            n_estimators = [10]\n            precision_min = [0.1, 0.2]\n            recall_min = [0.01]\n            max_samples = [0.8, 1.0]\n            max_samples_features = [0.8, 1.0]\n            max_depth = [3, 4]\n            max_features = [\"auto\"]\n            min_samples_split = [2]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n\n        self.params[\"max_depth_duplication\"] = np.random.choice(max_depth_duplication)\n        self.params[\"n_estimators\"] = np.random.choice(n_estimators)\n        self.params[\"precision_min\"] = np.random.choice(precision_min)\n        self.params[\"recall_min\"] = np.random.choice(recall_min)\n        self.params[\"max_samples\"] = np.random.choice(max_samples)\n        self.params[\"max_samples_features\"] = np.random.choice(max_samples_features)\n        self.params[\"max_depth\"] = np.random.choice(max_depth)\n        self.params[\"max_features\"] = np.random.choice(max_features)\n        self.params[\"min_samples_split\"] = np.random.choice(min_samples_split)\n        self.params[\"bootstrap\"] = np.random.choice(bootstrap)\n        self.params[\"bootstrap_features\"] = np.random.choice(bootstrap_features)\n\n    def _create_tmp_folder(self, logger):\n        # Create a temp folder to store files \n        # Set the default value without context available (required to pass acceptance test)\n        tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n        # Make a real tmp folder when experiment is available\n        if self.context and self.context.experiment_id:\n            tmp_folder = os.path.join(self.context.experiment_tmp_dir, \"%s_SKOPE_model_folder\" % uuid.uuid4())\n\n        # Now let's try to create that folder\n        try:\n            os.mkdir(tmp_folder)\n        except PermissionError:\n            # This not occur so log a warning\n            loggerwarning(logger, \"SKOPE was denied temp folder creation rights\")\n            tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n        except FileExistsError:\n            # We should never be here since temp dir name is expected to be unique\n            loggerwarning(logger, \"SKOPE temp folder already exists\")\n            tmp_folder = os.path.join(self.context.experiment_tmp_dir, \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n        except:\n            # Revert to temporary file path\n            tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n\n        loggerinfo(logger, \"SKOPE temp folder {}\".format(tmp_folder))\n        return tmp_folder\n\n    def fit(self, X, y, sample_weight=None, eval_set=None, sample_weight_eval_set=None, **kwargs):\n\n        orig_cols = list(X.names)\n\n        import pandas as pd\n        import numpy as np\n        from skrules import SkopeRules\n        from sklearn.preprocessing import OneHotEncoder\n        from collections import Counter\n\n        # Get the logger if it exists\n        logger = None\n        if self.context and self.context.experiment_id:\n            logger = make_experiment_logger(experiment_id=self.context.experiment_id,\n                                            tmp_dir=self.context.tmp_dir,\n                                            experiment_tmp_dir=self.context.experiment_tmp_dir)\n\n        # Set up temp folder\n        tmp_folder = self._create_tmp_folder(logger)\n\n        # Set up model\n        if self.num_classes >= 2:\n            lb = LabelEncoder()\n            lb.fit(self.labels)\n            y = lb.transform(y)\n\n            model = SkopeRules(max_depth_duplication=self.params[\"max_depth_duplication\"],\n                               n_estimators=self.params[\"n_estimators\"],\n                               precision_min=self.params[\"precision_min\"],\n                               recall_min=self.params[\"recall_min\"],\n                               max_samples=self.params[\"max_samples\"],\n                               max_samples_features=self.params[\"max_samples_features\"],\n                               max_depth=self.params[\"max_depth\"],\n                               max_features=self.params[\"max_features\"],\n                               min_samples_split=self.params[\"min_samples_split\"],\n                               bootstrap=self.params[\"bootstrap\"],\n                               bootstrap_features=self.params[\"bootstrap_features\"],\n                               random_state=self.params[\"random_state\"],\n                               feature_names=orig_cols)\n        else:\n            # Skopes doesn't work for regression\n            loggerinfo(logger, \"PASS, no skopes model\")\n            pass\n\n        # Find the datatypes\n        X = X.to_pandas()\n        X.columns = orig_cols\n\n        # Change continuous features to categorical\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # Change all float32 values to float64\n        for ii in range(len(X_datatypes)):\n            if X_datatypes[ii] == 'float32':\n                X = X.astype({orig_cols[ii]: np.float64})\n\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # List the categorical and numerical features\n        self.X_categorical = [orig_cols[col_count] for col_count in range(len(orig_cols)) if\n                              (X_datatypes[col_count] == 'category') or (X_datatypes[col_count] == 'object')]\n        self.X_numeric = [item for item in orig_cols if item not in self.X_categorical]\n\n        # Find the levels and mode for each categorical feature\n        # for use in the test set\n        self.train_levels = {}\n        for item in self.X_categorical:\n            self.train_levels[item] = list(set(X[item]))\n            self.train_mode[item] = Counter(X[item]).most_common(1)[0][0]\n\n            # One hot encode the categorical features\n        # And replace missing values with a Missing category\n        if len(self.X_categorical) > 0:\n            loggerinfo(logger, \"PCategorical encode\")\n\n            for colname in self.X_categorical:\n                X[colname] = list(X[colname].fillna(\"Missing\"))\n            self.enc = OneHotEncoder(handle_unknown='ignore')\n\n            self.enc.fit(X[self.X_categorical])\n            self.encoded_categories = list(self.enc.get_feature_names(input_features=self.X_categorical))\n\n            X_enc = self.enc.transform(X[self.X_categorical]).toarray()\n\n            X = pd.concat([X[self.X_numeric], pd.DataFrame(X_enc, columns=self.encoded_categories)], axis=1)\n\n        # Replace missing values with a missing value code\n        if len(self.X_numeric) > 0:\n\n            for colname in self.X_numeric:\n                X[colname] = list(X[colname].fillna(-999))\n\n        model.fit(np.array(X), np.array(y))\n\n        # Find the rule list\n        self.rule_list = model.rules_\n\n        # Calculate feature importances\n        var_imp = []\n        for var in orig_cols:\n            var_imp.append(sum(int(var in item[0]) for item in self.rule_list))\n\n        if max(var_imp) != 0:\n            importances = list(np.array(var_imp) / max(var_imp))\n        else:\n            importances = [1] * len(var_imp)\n\n        pd.DataFrame(model.rules_, columns=['Rule', '(Precision, Recall, nb)']).to_csv(\n            os.path.join(tmp_folder, 'Skope_rules.csv'), index=False)\n\n        self.mean_target = np.array(sum(y) / len(y))\n\n        # Set model properties\n        self.set_model_properties(model=model,\n                                  features=list(X.columns),\n                                  importances=importances,\n                                  iterations=self.params['n_estimators'])\n\n    def predict(self, X, **kwargs):\n        orig_cols = list(X.names)\n        import pandas as pd\n\n        X = dt.Frame(X)\n\n        # Find datatypes\n        X = X.to_pandas()\n\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # Change float 32 values to float 64\n        for ii in range(len(X_datatypes)):\n            if X_datatypes[ii] == 'float32':\n                X = X.astype({orig_cols[ii]: np.float64})\n\n                # Replace missing values with a missing category\n        # Replace categories that weren't in the training set with the mode\n        if len(self.X_categorical) > 0:\n\n            for colname in self.X_categorical:\n                X[colname] = list(X[colname].fillna(\"Missing\"))\n\n            for label in self.X_categorical:\n                # Replace anything not in the test set\n                train_categories = self.train_levels[label]\n                X_label = np.array(X[label])\n                mmode = self.train_mode[label]\n                X_label[~np.isin(X_label, train_categories)] = mmode\n                X[label] = X_label\n\n        # Replace missing values with a missing value code    \n        if len(self.X_numeric) > 0:\n            for colname in self.X_numeric:\n                X[colname] = list(X[colname].fillna(-999))\n\n                # Get model    \n        model, _, _, _ = self.get_model_properties()\n\n        # One hot encode categorical features\n        if len(self.X_categorical) > 0:\n            X_enc = self.enc.transform(X[self.X_categorical]).toarray()\n            X = pd.concat([X[self.X_numeric], pd.DataFrame(X_enc, columns=self.encoded_categories)], axis=1)\n\n            # Make predictions on the test set\n        preds = model.score_top_rules(X) / len(self.rule_list)\n        preds = np.array(preds)\n        epsilon = 10 ** (-3)\n        preds[np.isnan(preds)] = self.mean_target\n        preds[preds > 1 - epsilon] = 1.0 - epsilon\n        preds[preds < 0 + epsilon] = 0.0 + epsilon\n\n        return preds\n```\n\n\nThis SKOPE RULES model class is a custom model designed to predict a target variable based on a given set of features. It leverages the Skope rules engine for its predictive capabilities. Here's a breakdown of the code:\n\n**",
     "after": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = False\n    _display_name = \"SKOPE RULES\"\n    _description = \"SKOPE RULES\"\n    # using git master because pypi is very out of date (Jan 2020) but need Sept 1-ish master with fix for updated scikit-learn\n    _modules_needed_by_name = ['git+https://github.com/scikit-learn-contrib/skope-rules.git']\n\n    @staticmethod\n    def do_acceptance_test():\n        return True\n\n    def set_default_params(self, accuracy=None, time_tolerance=None,\n                           interpretability=None, **kwargs):\n        # Fill up parameters we care about\n        self.params = dict(random_state=kwargs.get(\"random_state\", 1234),\n                           max_depth_duplication=None, n_estimators=10,\n                           precision_min=0.5, recall_min=0.01, max_samples=0.8,\n                           max_samples_features=1.0, max_depth=3,\n                           max_features=\"auto\", min_samples_split=2,\n                           bootstrap=False, bootstrap_features=False)\n\n    def mutate_params(self, accuracy=10, **kwargs):\n        if accuracy > 8:\n            max_depth_duplication = [None, 2, 3]\n            n_estimators = [10, 20, 40]\n            precision_min = [0.1, 0.2, 0.3]\n            recall_min = [0.01, 0.05]\n            max_samples = [0.5, 0.8, 1.0]\n            max_samples_features = [0.5, 0.8, 1.0]\n            max_depth = [3, 4, 5]\n            max_features = [\"sqrt\", \"log2\", \"auto\"]\n            min_samples_split = [2, 11, 21]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n        elif accuracy >= 5:\n            max_depth_duplication = [None]\n            n_estimators = [10, 20]\n            precision_min = [0.1, 0.2, 0.3]\n            recall_min = [0.01]\n            max_samples = [0.8, 1.0]\n            max_samples_features = [1.0]\n            max_depth = [3, 4]\n            max_features = [\"sqrt\", \"log2\", \"auto\"]\n            min_samples_split = [2, 5, 11]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n        else:\n            max_depth_duplication = [None]\n            n_estimators = [10]\n            precision_min = [0.1, 0.2]\n            recall_min = [0.01]\n            max_samples = [0.8, 1.0]\n            max_samples_features = [0.8, 1.0]\n            max_depth = [3, 4]\n            max_features = [\"auto\"]\n            min_samples_split = [2]\n            bootstrap = [True, False]\n            bootstrap_features = [True, False]\n\n        self.params[\"max_depth_duplication\"] = np.random.choice(max_depth_duplication)\n        self.params[\"n_estimators\"] = np.random.choice(n_estimators)\n        self.params[\"precision_min\"] = np.random.choice(precision_min)\n        self.params[\"recall_min\"] = np.random.choice(recall_min)\n        self.params[\"max_samples\"] = np.random.choice(max_samples)\n        self.params[\"max_samples_features\"] = np.random.choice(max_samples_features)\n        self.params[\"max_depth\"] = np.random.choice(max_depth)\n        self.params[\"max_features\"] = np.random.choice(max_features)\n        self.params[\"min_samples_split\"] = np.random.choice(min_samples_split)\n        self.params[\"bootstrap\"] = np.random.choice(bootstrap)\n        self.params[\"bootstrap_features\"] = np.random.choice(bootstrap_features)\n\n    def _create_tmp_folder(self, logger):\n        # Create a temp folder to store files \n        # Set the default value without context available (required to pass acceptance test)\n        tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n        # Make a real tmp folder when experiment is available\n        if self.context and self.context.experiment_id:\n            tmp_folder = os.path.join(self.context.experiment_tmp_dir, \"%s_SKOPE_model_folder\" % uuid.uuid4())\n\n        # Now let's try to create that folder\n        try:\n            os.mkdir(tmp_folder)\n        except PermissionError:\n            # This not occur so log a warning\n            loggerwarning(logger, \"SKOPE was denied temp folder creation rights\")\n            tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n        except FileExistsError:\n            # We should never be here since temp dir name is expected to be unique\n            loggerwarning(logger, \"SKOPE temp folder already exists\")\n            tmp_folder = os.path.join(self.context.experiment_tmp_dir, \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n        except:\n            # Revert to temporary file path\n            tmp_folder = os.path.join(user_dir(), \"%s_SKOPE_model_folder\" % uuid.uuid4())\n            os.mkdir(tmp_folder)\n\n        loggerinfo(logger, \"SKOPE temp folder {}\".format(tmp_folder))\n        return tmp_folder\n\n    def fit(self, X, y, sample_weight=None, eval_set=None, sample_weight_eval_set=None, **kwargs):\n\n        orig_cols = list(X.names)\n\n        import pandas as pd\n        import numpy as np\n        from skrules import SkopeRules\n        from sklearn.preprocessing import OneHotEncoder\n        from collections import Counter\n\n        # Get the logger if it exists\n        logger = None\n        if self.context and self.context.experiment_id:\n            logger = make_experiment_logger(experiment_id=self.context.experiment_id,\n                                            tmp_dir=self.context.tmp_dir,\n                                            experiment_tmp_dir=self.context.experiment_tmp_dir)\n\n        # Set up temp folder\n        tmp_folder = self._create_tmp_folder(logger)\n\n        # Set up model\n        if self.num_classes >= 2:\n            lb = LabelEncoder()\n            lb.fit(self.labels)\n            y = lb.transform(y)\n\n            model = SkopeRules(max_depth_duplication=self.params[\"max_depth_duplication\"],\n                               n_estimators=self.params[\"n_estimators\"],\n                               precision_min=self.params[\"precision_min\"],\n                               recall_min=self.params[\"recall_min\"],\n                               max_samples=self.params[\"max_samples\"],\n                               max_samples_features=self.params[\"max_samples_features\"],\n                               max_depth=self.params[\"max_depth\"],\n                               max_features=self.params[\"max_features\"],\n                               min_samples_split=self.params[\"min_samples_split\"],\n                               bootstrap=self.params[\"bootstrap\"],\n                               bootstrap_features=self.params[\"bootstrap_features\"],\n                               random_state=self.params[\"random_state\"],\n                               feature_names=orig_cols)\n        else:\n            # Skopes doesn't work for regression\n            loggerinfo(logger, \"PASS, no skopes model\")\n            pass\n\n        # Find the datatypes\n        X = X.to_pandas()\n        X.columns = orig_cols\n\n        # Change continuous features to categorical\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # Change all float32 values to float64\n        for ii in range(len(X_datatypes)):\n            if X_datatypes[ii] == 'float32':\n                X = X.astype({orig_cols[ii]: np.float64})\n\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # List the categorical and numerical features\n        self.X_categorical = [orig_cols[col_count] for col_count in range(len(orig_cols)) if\n                              (X_datatypes[col_count] == 'category') or (X_datatypes[col_count] == 'object')]\n        self.X_numeric = [item for item in orig_cols if item not in self.X_categorical]\n\n        # Find the levels and mode for each categorical feature\n        # for use in the test set\n        self.train_levels = {}\n        for item in self.X_categorical:\n            self.train_levels[item] = list(set(X[item]))\n            self.train_mode[item] = Counter(X[item]).most_common(1)[0][0]\n\n            # One hot encode the categorical features\n        # And replace missing values with a Missing category\n        if len(self.X_categorical) > 0:\n            loggerinfo(logger, \"PCategorical encode\")\n\n            for colname in self.X_categorical:\n                X[colname] = list(X[colname].fillna(\"Missing\"))\n            self.enc = OneHotEncoder(handle_unknown='ignore')\n\n            self.enc.fit(X[self.X_categorical])\n            self.encoded_categories = list(self.enc.get_feature_names(input_features=self.X_categorical))\n\n            X_enc = self.enc.transform(X[self.X_categorical]).toarray()\n\n            X = pd.concat([X[self.X_numeric], pd.DataFrame(X_enc, columns=self.encoded_categories)], axis=1)\n\n        # Replace missing values with a missing value code\n        if len(self.X_numeric) > 0:\n\n            for colname in self.X_numeric:\n                X[colname] = list(X[colname].fillna(-999))\n\n        model.fit(np.array(X), np.array(y))\n\n        # Find the rule list\n        self.rule_list = model.rules_\n\n        # Calculate feature importances\n        var_imp = []\n        for var in orig_cols:\n            var_imp.append(sum(int(var in item[0]) for item in self.rule_list))\n\n        if max(var_imp) != 0:\n            importances = list(np.array(var_imp) / max(var_imp))\n        else:\n            importances = [1] * len(var_imp)\n\n        pd.DataFrame(model.rules_, columns=['Rule', '(Precision, Recall, nb)']).to_csv(\n            os.path.join(tmp_folder, 'Skope_rules.csv'), index=False)\n\n        self.mean_target = np.array(sum(y) / len(y))\n\n        # Set model properties\n        self.set_model_properties(model=model,\n                                  features=list(X.columns),\n                                  importances=importances,\n                                  iterations=self.params['n_estimators'])\n\n    def predict(self, X, **kwargs):\n        orig_cols = list(X.names)\n        import pandas as pd\n\n        X = dt.Frame(X)\n\n        # Find datatypes\n        X = X.to_pandas()\n\n        X_datatypes = [str(item) for item in list(X.dtypes)]\n\n        # Change float 32 values to float 64\n        for ii in range(len(X_datatypes)):\n            if X_datatypes[ii] == 'float32':\n                X = X.astype({orig_cols[ii]: np.float64})\n\n                # Replace missing values with a missing category\n        # Replace categories that weren't in the training set with the mode\n        if len(self.X_categorical) > 0:\n\n            for colname in self.X_categorical:\n                X[colname] = list(X[colname].fillna(\"Missing\"))\n\n            for label in self.X_categorical:\n                # Replace anything not in the test set\n                train_categories = self.train_levels[label]\n                X_label = np.array(X[label])\n                mmode = self.train_mode[label]\n                X_label[~np.isin(X_label, train_categories)] = mmode\n                X[label] = X_label\n\n        # Replace missing values with a missing value code    \n        if len(self.X_numeric) > 0:\n            for colname in self.X_numeric:\n                X[colname] = list(X[colname].fillna(-999))\n\n                # Get model    \n        model, _, _, _ = self.get_model_properties()\n\n        # One hot encode categorical features\n        if len(self.X_categorical) > 0:\n            X_enc = self.enc.transform(X[self.X_categorical]).toarray()\n            X = pd.concat([X[self.X_numeric], pd.DataFrame(X_enc, columns=self.encoded_categories)], axis=1)\n\n            # Make predictions on the test set\n        preds = model.score_top_rules(X) / len(self.rule_list)\n        preds = np.array(preds)\n        epsilon = 10 ** (-3)\n        preds[np.isnan(preds)] = self.mean_target\n        preds[preds > 1 - epsilon] = 1.0 - epsilon\n        preds[preds < 0 + epsilon] = 0.0 + epsilon\n\n        return preds\n```\n```python\nimport os\nimport numpy as np\nimport pandas as pd\nimport uuid\nfrom h2oaicore.systemutils import remove, make_experiment_logger\nfrom h2oaicore.systemutils import config"
@@ -82,7 +83,7 @@
       6718
     ],
     "f_before": [
-      93.73332214355469,
+      183.37464904785156,
       0.0,
       0.0,
       0.0,
@@ -95,8 +96,8 @@
       0.0
     ],
     "f_after": [
-      93.73332214355469,
-      0.0,
+      351.680908203125,
+      0.3876323699951172,
       0.0,
       0.0,
       0.0,
@@ -109,29 +110,29 @@
     ],
     "g_before": [
       0.0,
-      54.409175872802734,
-      10.361807823181152,
-      9.863149642944336,
-      9.718158721923828,
-      8.944719314575195,
-      0.036118701100349426,
-      8.571915626525879,
-      8.751770973205566,
-      8.887443542480469,
-      0.008461716584861279
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
-      54.409175872802734,
-      10.361807823181152,
-      9.863149642944336,
-      9.718158721923828,
-      8.944719314575195,
-      0.036118701100349426,
-      8.571915626525879,
-      8.751770973205566,
-      8.887443542480469,
-      0.008461716584861279
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
     "mean_std": 1.8976119756698608,
     "max_std": 67.16454315185547
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2149,
+          395,
+          5856,
+          5196,
+          8457,
+          5704,
+          4513,
+          6545,
+          6718
+        ],
+        "f_before": [
+          183.37464904785156,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          351.680908203125,
+          0.3876323699951172,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 183.37464904785156,
+            "f_after": 351.680908203125,
+            "delta_f": 168.30625915527344
+          },
+          {
+            "index": 5636,
+            "f_before": 1.411590814590454,
+            "f_after": 27.26506996154785,
+            "delta_f": 25.853479146957397
+          },
+          {
+            "index": 2062,
+            "f_before": 196.7191925048828,
+            "f_after": 215.521484375,
+            "delta_f": 18.802291870117188
+          },
+          {
+            "index": 2924,
+            "f_before": 7.4043097496032715,
+            "f_after": 25.88761329650879,
+            "delta_f": 18.483303546905518
+          },
+          {
+            "index": 1149,
+            "f_before": 0.0,
+            "f_after": 8.727325439453125,
+            "delta_f": 8.727325439453125
+          },
+          {
+            "index": 6619,
+            "f_before": 0.0,
+            "f_after": 7.671820640563965,
+            "delta_f": 7.671820640563965
+          },
+          {
+            "index": 8267,
+            "f_before": 0.0,
+            "f_after": 7.553677082061768,
+            "delta_f": 7.553677082061768
+          },
+          {
+            "index": 6589,
+            "f_before": 0.0,
+            "f_after": 7.549663543701172,
+            "delta_f": 7.549663543701172
+          },
+          {
+            "index": 7840,
+            "f_before": 0.0,
+            "f_after": 7.467249870300293,
+            "delta_f": 7.467249870300293
+          },
+          {
+            "index": 7663,
+            "f_before": 0.0,
+            "f_after": 7.450242519378662,
+            "delta_f": 7.450242519378662
+          },
+          {
+            "index": 3429,
+            "f_before": 0.0,
+            "f_after": 7.269676208496094,
+            "delta_f": 7.269676208496094
+          },
+          {
+            "index": 5804,
+            "f_before": 0.0,
+            "f_after": 7.2226457595825195,
+            "delta_f": 7.2226457595825195
+          },
+          {
+            "index": 6620,
+            "f_before": 0.0,
+            "f_after": 6.857831001281738,
+            "delta_f": 6.857831001281738
+          },
+          {
+            "index": 4114,
+            "f_before": 0.0,
+            "f_after": 6.829403877258301,
+            "delta_f": 6.829403877258301
+          },
+          {
+            "index": 8014,
+            "f_before": 0.0,
+            "f_after": 6.772186756134033,
+            "delta_f": 6.772186756134033
+          },
+          {
+            "index": 926,
+            "f_before": 0.0,
+            "f_after": 6.608876705169678,
+            "delta_f": 6.608876705169678
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = False\n\n    def __init__(self, **kwargs):\n        super().__init__(**kwargs)\n\n        # Set the model type\n        self.model_type = \"SKOPE_RULES\"\n\n        # Set the default parameters",
+        "after": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = True\n\n    def __init__(self, model_config, model_name='skopes_rules'):\n        super(SKOPE_RULES, self).__init__(model_config, model_name)\n\n        # load SKOPE"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2149,
+          395,
+          5856,
+          5196,
+          8457,
+          5704,
+          4513,
+          6545,
+          6718
+        ],
+        "f_before": [
+          183.37464904785156,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          183.37464904785156,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 183.37464904785156,
+            "f_after": 183.37464904785156,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = False\n    _labelencoder = True\n    _use_physical_cores = True\n    _model_name = \"skopes\"\n    _experiment_logger = make_experiment_logger(name=\"SKOPE_RULES\")",
+        "after": "\"\"\"Skopes rules \"\"\"\n\nimport uuid\nimport os\nimport datatable as dt\nimport numpy as np\nfrom h2oaicore.models import CustomModel\nfrom sklearn.preprocessing import LabelEncoder\nfrom h2oaicore.systemutils import physical_cores_count\nfrom h2oaicore.systemutils import user_dir, remove, config\nfrom h2oaicore.systemutils import make_experiment_logger, loggerinfo, loggerwarning, loggerdebug\n\n\nclass SKOPE_RULES(CustomModel):\n    _regression = False\n    _binary = True\n    _multiclass = True\n\n    def __init__(self):\n        super().__init__()\n        self.data = None\n        self.skopes_config = {}\n        self.skopes_config['experiment_name'] = 'SKOPE"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = 0\nimage[128:, 128:] = 255\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\n\n# Opening and Viewing an Image\nimport os.path\n\nif os.path.isfile('lena.png'):\n    print(\"Test Image File exist\")\nelse:\n    print(\"Test Image File does not exist; downloading...\")\n    import urllib.request as urllib_request\n\n    urllib_request.urlretrieve(\"https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\", \"lena.png\")\n\nimage = cv2.imread(\"./lena.png\")\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\nrgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)\ncv2.imshow(\"Image RGB\", rgb_image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\n\ndef viewImage(image, name_of_window):\n    cv2.namedWindow(name_of_window, cv2.WINDOW_AUTOSIZE)\n    cv2.imshow(name_of_window, image)\n    cv2.waitKey(0)\n    cv2.destroyAllWindows()\n\n\nviewImage(image, \"Lena\")\n\n# Edit pixels\nedited = image.copy()\nedited[200:390, 200:360, 0] = 255\nviewImage(edited, \"Lena edited\")\n\n# Cropping\ncropped = image[200:390, 200:360]\nviewImage(cropped, \"Lena cropped\")\n\n# Resizing\nscale_percent = 10  # percent of original size\nwidth = int(image.shape[1] * scale_percent / 100)\nheight = int(image.shape[0] * scale_percent / 100)\ndim = (width, height)\nresized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)\nviewImage(resized, \"Lena resized to {}%\".format(scale_percent))\n\n# Drawing a Rectangle\noutput = image.copy()\ncv2.rectangle(output, (200, 200), (360, 390), (255, 0, 0), 10)\nviewImage(output, \"Lena with a rectangle\")\n\n# Drawing a line\ncv2.line(output, (256, 390), (256, 512), (0, 0, 255), 5)\nviewImage(output, \"Lena with a line\")\n\n# Writing on an image\ncv2.putText(output, \"Lena\", (360, 390), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2)\nviewImage(output, \"Lena with text\")\n\n# Saving an image\ncv2.imwrite(\"./output.jpg\", output)\n\n# Blurring/Smoothing\nblurred = cv2.GaussianBlur(image, (15, 15), 0)\nviewImage(blurred, \"Lena blurred\")\n\n# Rotating\n(h, w, d) = image.shape\ncenter = (w // 2, h // 2)\nrot = 45\nM = cv2.getRotationMatrix2D(center, rot, 1.0)\nrotated = cv2.warpAffine(image, M, (w, h))\nviewImage(rotated, \"Lena rotated by {} degrees\".format(rot))\n\n# Blend\nalpha_slider_max = 100\n\n\ndef on_trackbar_weight(val):\n    alpha = val / alpha_slider_max\n    beta = (1.0 - alpha)\n    blend = cv2.addWeighted(image, alpha, rotated, beta, 0.0)\n    cv2.imshow('Lena blended', blend)\n\n\ncv2.namedWindow('Lena blended')\ntrackbar_name = 'Alpha 0 - {}'.format(alpha_slider_max)\ncv2.createTrackbar(trackbar_name, 'Lena blended', 50, alpha_slider_max, on_trackbar_weight)\non_trackbar_weight(50)\ncv2.waitKey()\ncv2.destroyWindow('Lena blended')\n\n# Grayscaling\ngray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)\nviewImage(gray_image, \"Lena gray-scale\")\n\n# Thresholding\nthreshold_slider_max = 255\nthreshold = 200\nret, threshold_image = cv2.threshold(gray_image, threshold, 255, 0)\n\n\ndef on_trackbar_threshold(val):\n    threshold = val\n    ret, threshold_image = cv2.threshold(gray_image, threshold, 255, 0)\n    cv2.imshow(\"Lena thresholded\", threshold_image)\n\n\ncv2.namedWindow(\"Lena thresholded\")\ntrackbar_name = \"Threshold 0 - {}\".format(threshold_slider_max)\ncv2.createTrackbar(trackbar_name, \"Lena thresholded\", threshold, threshold_slider_max, on_trackbar_threshold)\non_trackbar_threshold(threshold)\ncv2.waitKey()\ncv2.destroyWindow(\"Lena thresholded\")\n\n# Contours\ncontours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)\nimage_with_contours = image.copy()\ncv2.drawContours(image_with_contours, contours, -1, (255, 0, 0), 1)\nviewImage(image_with_contours, \"Lena contours\")\n\n# Face Detection\nface_cascade = cv2.CascadeClassifier('venv\\Lib\\site-packages\\cv2\\data\\haarcascade_frontalface_default.xml')\nfaces = face_cascade.detectMultiScale(gray_image)\nprint(\"Lena with {} faces detected\".format(len(faces)))\nimage_faces = image.copy()\nfor (x, y, w, h) in faces:\n    cv2.rectangle(image_faces, (x, y), (x + w, y + h), (0, 255, 0), 2)\nviewImage(image_faces, \"Lena with {} faces detected\".format(len(faces)))\n\n\ndef display_box(im, bbox):\n    n_boxes = len(bbox)\n    for j_box in range(n_boxes):\n        for j in range(4):\n            cv2.line(im,\n                     (int(bbox[j_box][j][0]), int(bbox[j_box][j][1])),\n                     (int(bbox[j_box][(j + 1) % 4][0]), int(bbox[j_box][(j + 1) % 4][1])),\n                     (255, 0, 0), 3)\n        # Display results\n    cv2.imshow(\"Results\", im)\n\n\ninputImage = cv2.imread(\"qrcode.jpg\")\nqrDecoder = cv2.QRCodeDetector()\ndata, bbox, rectifiedImage = qrDecoder.detectAndDecode(inputImage)\nif len(data) > 0:\n    print(\"Decoded Data : {}\".format(data))\n    display_box(inputImage, bbox)\n    rectifiedImage = np.uint8(rectifiedImage)\n    cv2.imshow(\"Rectified QRCode\", rectifiedImage)\nelse:\n    print(\"QR Code not detected\")\n    cv2.imshow(\"Results\", inputImage)\n\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n",
+  "prompt": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:12",
   "output": {
     "before": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = 0\nimage[128:, 128:] = 255\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\n\n# Opening and Viewing an Image\nimport os.path\n\nif os.path.isfile('lena.png'):\n    print(\"Test Image File exist\")\nelse:\n    print(\"Test Image File does not exist; downloading...\")\n    import urllib.request as urllib_request\n\n    urllib_request.urlretrieve(\"https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\", \"lena.png\")\n\nimage = cv2.imread(\"./lena.png\")\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\nrgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)\ncv2.imshow(\"Image RGB\", rgb_image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\n\ndef viewImage(image, name_of_window):\n    cv2.namedWindow(name_of_window, cv2.WINDOW_AUTOSIZE)\n    cv2.imshow(name_of_window, image)\n    cv2.waitKey(0)\n    cv2.destroyAllWindows()\n\n\nviewImage(image, \"Lena\")\n\n# Edit pixels\nedited = image.copy()\nedited[200:390, 200:360, 0] = 255\nviewImage(edited, \"Lena edited\")\n\n# Cropping\ncropped = image[200:390, 200:360]\nviewImage(cropped, \"Lena cropped\")\n\n# Resizing\nscale_percent = 10  # percent of original size\nwidth = int(image.shape[1] * scale_percent / 100)\nheight = int(image.shape[0] * scale_percent / 100)\ndim = (width, height)\nresized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)\nviewImage(resized, \"Lena resized to {}%\".format(scale_percent))\n\n# Drawing a Rectangle\noutput = image.copy()\ncv2.rectangle(output, (200, 200), (360, 390), (255, 0, 0), 10)\nviewImage(output, \"Lena with a rectangle\")\n\n# Drawing a line\ncv2.line(output, (256, 390), (256, 512), (0, 0, 255), 5)\nviewImage(output, \"Lena with a line\")\n\n# Writing on an image\ncv2.putText(output, \"Lena\", (360, 390), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2)\nviewImage(output, \"Lena with text\")\n\n# Saving an image\ncv2.imwrite(\"./output.jpg\", output)\n\n# Blurring/Smoothing\nblurred = cv2.GaussianBlur(image, (15, 15), 0)\nviewImage(blurred, \"Lena blurred\")\n\n# Rotating\n(h, w, d) = image.shape\ncenter = (w // 2, h // 2)\nrot = 45\nM = cv2.getRotationMatrix2D(center, rot, 1.0)\nrotated = cv2.warpAffine(image, M, (w, h))\nviewImage(rotated, \"Lena rotated by {} degrees\".format(rot))\n\n# Blend\nalpha_slider_max = 100\n\n\ndef on_trackbar_weight(val):\n    alpha = val / alpha_slider_max\n    beta = (1.0 - alpha)\n    blend = cv2.addWeighted(image, alpha, rotated, beta, 0.0)\n    cv2.imshow('Lena blended', blend)\n\n\ncv2.namedWindow('Lena blended')\ntrackbar_name = 'Alpha 0 - {}'.format(alpha_slider_max)\ncv2.createTrackbar(trackbar_name, 'Lena blended', 50, alpha_slider_max, on_trackbar_weight)\non_trackbar_weight(50)\ncv2.waitKey()\ncv2.destroyWindow('Lena blended')\n\n# Grayscaling\ngray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)\nviewImage(gray_image, \"Lena gray-scale\")\n\n# Thresholding\nthreshold_slider_max = 255\nthreshold = 200\nret, threshold_image = cv2.threshold(gray_image, threshold, 255, 0)\n\n\ndef on_trackbar_threshold(val):\n    threshold = val\n    ret, threshold_image = cv2.threshold(gray_image, threshold, 255, 0)\n    cv2.imshow(\"Lena thresholded\", threshold_image)\n\n\ncv2.namedWindow(\"Lena thresholded\")\ntrackbar_name = \"Threshold 0 - {}\".format(threshold_slider_max)\ncv2.createTrackbar(trackbar_name, \"Lena thresholded\", threshold, threshold_slider_max, on_trackbar_threshold)\non_trackbar_threshold(threshold)\ncv2.waitKey()\ncv2.destroyWindow(\"Lena thresholded\")\n\n# Contours\ncontours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)\nimage_with_contours = image.copy()\ncv2.drawContours(image_with_contours, contours, -1, (255, 0, 0), 1)\nviewImage(image_with_contours, \"Lena contours\")\n\n# Face Detection\nface_cascade = cv2.CascadeClassifier('venv\\Lib\\site-packages\\cv2\\data\\haarcascade_frontalface_default.xml')\nfaces = face_cascade.detectMultiScale(gray_image)\nprint(\"Lena with {} faces detected\".format(len(faces)))\nimage_faces = image.copy()\nfor (x, y, w, h) in faces:\n    cv2.rectangle(image_faces, (x, y), (x + w, y + h), (0, 255, 0), 2)\nviewImage(image_faces, \"Lena with {} faces detected\".format(len(faces)))\n\n\ndef display_box(im, bbox):\n    n_boxes = len(bbox)\n    for j_box in range(n_boxes):\n        for j in range(4):\n            cv2.line(im,\n                     (int(bbox[j_box][j][0]), int(bbox[j_box][j][1])),\n                     (int(bbox[j_box][(j + 1) % 4][0]), int(bbox[j_box][(j + 1) % 4][1])),\n                     (255, 0, 0), 3)\n        # Display results\n    cv2.imshow(\"Results\", im)\n\n\ninputImage = cv2.imread(\"qrcode.jpg\")\nqrDecoder = cv2.QRCodeDetector()\ndata, bbox, rectifiedImage = qrDecoder.detectAndDecode(inputImage)\nif len(data) > 0:\n    print(\"Decoded Data : {}\".format(data))\n    display_box(inputImage, bbox)\n    rectifiedImage = np.uint8(rectifiedImage)\n    cv2.imshow(\"Rectified QRCode\", rectifiedImage)\nelse:\n    print(\"QR Code not detected\")\n    cv2.imshow(\"Results\", inputImage)\n\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n```\n\n**Explanation**\n\nThis script provides a demonstration of various OpenCV functions and how to use them in a simple image processing pipeline. Let's break down the code into its key components:\n\n**1. Loading and Displaying Images:**\n\n",
     "after": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = 0\nimage[128:, 128:] = 255\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\n\n# Opening and Viewing an Image\nimport os.path\n\nif os.path.isfile('lena.png'):\n    print(\"Test Image File exist\")\nelse:\n    print(\"Test Image File does not exist; downloading...\")\n    import urllib.request as urllib_request\n\n    urllib_request.urlretrieve(\"https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\", \"lena.png\")\n\nimage = cv2.imread(\"./lena.png\")\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\nrgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)\ncv2.imshow(\"Image RGB\", rgb_image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\n\ndef viewImage(image, name_of_window):\n    cv2.namedWindow(name_of_window, cv2.WINDOW_AUTOSIZE)\n    cv2.imshow(name_of_window, image)\n    cv2.waitKey(0)\n    cv2.destroyAllWindows()\n\n\nviewImage(image, \"Lena\")\n\n# Edit pixels\nedited = image.copy()\nedited[200:390, 200:360, 0] = 255\nviewImage(edited, \"Lena edited\")\n\n# Cropping\ncropped = image[200:390, 200:360]\nviewImage(cropped, \"Lena cropped\")\n\n# Resizing\nscale_percent = 10  # percent of original size\nwidth = int(image.shape[1] * scale_percent / 100)\nheight = int(image.shape[0] * scale_percent / 100)\ndim = (width, height)\nresized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)\nviewImage(resized, \"Lena resized to {}%\".format(scale_percent))\n\n# Drawing a Rectangle\noutput = image.copy()\ncv2.rectangle(output, (200, 200), (360, 390), (255, 0, 0), 10)\nviewImage(output, \"Lena with a rectangle\")\n\n# Drawing a line\ncv2.line(output, (256, 390), (256, 512), (0, 0, 255), 5)\nviewImage(output, \"Lena with a line\")\n\n# Writing on an image\ncv2.putText(output, \"Lena\", (360, 390), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2)\nviewImage(output, \"Lena with text\")\n\n# Saving an image\ncv2.imwrite(\"./output.jpg\", output)\n\n# Blurring/Smoothing\nblurred = cv2.GaussianBlur(image, (15, 15), 0)\nviewImage(blurred, \"Lena blurred\")\n\n# Rotating\n(h, w, d) = image.shape\ncenter = (w // 2, h // 2)\nrot = 45\nM = cv2.getRotationMatrix2D(center, rot, 1.0)\nrotated = cv2.warpAffine(image, M, (w, h))\nviewImage(rotated, \"Lena rotated by {} degrees\".format(rot))\n\n# Blend\nalpha_slider_max = 100\n\n\ndef on_trackbar_weight(val):\n    alpha = val / alpha_slider_max\n    beta = (1.0 - alpha)\n    blend = cv2.addWeighted(image, alpha, rotated, beta, 0.0)\n    cv2.imshow('Lena blended', blend)\n\n\ncv2.namedWindow('Lena blended')\ntrackbar_name = 'Alpha 0 - {}'.format(alpha_slider_max)\ncv2.createTrackbar(trackbar_name, 'Lena blended', 50, alpha_slider_max, on_trackbar_weight)\non_trackbar_weight(50)\ncv2.waitKey()\ncv2.destroyWindow('Lena blended')\n\n# Grayscaling\ngray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)\nviewImage(gray_image, \"Lena gray-scale\")\n\n# Thresholding\nthreshold_slider_max = 255\nthreshold = 200\nret, threshold_image = cv2.threshold(gray_image, threshold, 255, 0)\n\n\ndef on_trackbar_threshold(val):\n    threshold = val\n    ret, threshold_image = cv2.threshold(gray_image, threshold, 255, 0)\n    cv2.imshow(\"Lena thresholded\", threshold_image)\n\n\ncv2.namedWindow(\"Lena thresholded\")\ntrackbar_name = \"Threshold 0 - {}\".format(threshold_slider_max)\ncv2.createTrackbar(trackbar_name, \"Lena thresholded\", threshold, threshold_slider_max, on_trackbar_threshold)\non_trackbar_threshold(threshold)\ncv2.waitKey()\ncv2.destroyWindow(\"Lena thresholded\")\n\n# Contours\ncontours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)\nimage_with_contours = image.copy()\ncv2.drawContours(image_with_contours, contours, -1, (255, 0, 0), 1)\nviewImage(image_with_contours, \"Lena contours\")\n\n# Face Detection\nface_cascade = cv2.CascadeClassifier('venv\\Lib\\site-packages\\cv2\\data\\haarcascade_frontalface_default.xml')\nfaces = face_cascade.detectMultiScale(gray_image)\nprint(\"Lena with {} faces detected\".format(len(faces)))\nimage_faces = image.copy()\nfor (x, y, w, h) in faces:\n    cv2.rectangle(image_faces, (x, y), (x + w, y + h), (0, 255, 0), 2)\nviewImage(image_faces, \"Lena with {} faces detected\".format(len(faces)))\n\n\ndef display_box(im, bbox):\n    n_boxes = len(bbox)\n    for j_box in range(n_boxes):\n        for j in range(4):\n            cv2.line(im,\n                     (int(bbox[j_box][j][0]), int(bbox[j_box][j][1])),\n                     (int(bbox[j_box][(j + 1) % 4][0]), int(bbox[j_box][(j + 1) % 4][1])),\n                     (255, 0, 0), 3)\n        # Display results\n    cv2.imshow(\"Results\", im)\n\n\ninputImage = cv2.imread(\"qrcode.jpg\")\nqrDecoder = cv2.QRCodeDetector()\ndata, bbox, rectifiedImage = qrDecoder.detectAndDecode(inputImage)\nif len(data) > 0:\n    print(\"Decoded Data : {}\".format(data))\n    display_box(inputImage, bbox)\n    rectifiedImage = np.uint8(rectifiedImage)\n    cv2.imshow(\"Rectified QRCode\", rectifiedImage)\nelse:\n    print(\"QR Code not detected\")\n    cv2.imshow(\"Results\", inputImage)\n\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n```\n\n# Example Usage\n# 1. Show Image\n# 2. Load Image\n# 3. Resize Image\n# 4. Draw Rectangle\n# 5. Draw Line\n# 6. Write Text\n# "
@@ -82,7 +83,7 @@
       8919
     ],
     "f_before": [
-      107.49321746826172,
+      140.77615356445312,
       0.0,
       0.0,
       0.0,
@@ -95,9 +96,9 @@
       0.0
     ],
     "f_after": [
-      107.49321746826172,
-      0.0,
-      0.0,
+      341.08203125,
+      1.3814233541488647,
+      1.1537615060806274,
       0.0,
       0.0,
       0.0,
@@ -109,29 +110,29 @@
     ],
     "g_before": [
       0.0,
-      61.98710632324219,
-      12.228632926940918,
-      11.136824607849121,
-      10.676648139953613,
-      10.173977851867676,
-      10.321821212768555,
-      10.276742935180664,
-      10.427253723144531,
-      10.39257526397705,
-      10.642172813415527
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
-      61.98710632324219,
-      12.228632926940918,
-      11.136824607849121,
-      10.676648139953613,
-      10.173977851867676,
-      10.321821212768555,
-      10.276742935180664,
-      10.427253723144531,
-      10.39257526397705,
-      10.642172813415527
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-133020/feature_std_layer_12.html",
     "mean_std": 2.113823652267456,
     "max_std": 93.83219909667969
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5301,
+          5680,
+          8374,
+          9154,
+          738,
+          4112,
+          6378,
+          442,
+          8919
+        ],
+        "f_before": [
+          140.77615356445312,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          341.08203125,
+          1.3814233541488647,
+          1.1537615060806274,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 140.77615356445312,
+            "f_after": 341.08203125,
+            "delta_f": 200.30587768554688
+          },
+          {
+            "index": 2142,
+            "f_before": 171.1939697265625,
+            "f_after": 211.51100158691406,
+            "delta_f": 40.31703186035156
+          },
+          {
+            "index": 8166,
+            "f_before": 3.139037609100342,
+            "f_after": 18.666780471801758,
+            "delta_f": 15.527742862701416
+          },
+          {
+            "index": 8593,
+            "f_before": 0.0,
+            "f_after": 10.727812767028809,
+            "delta_f": 10.727812767028809
+          },
+          {
+            "index": 378,
+            "f_before": 1.4591033458709717,
+            "f_after": 11.299317359924316,
+            "delta_f": 9.840214014053345
+          },
+          {
+            "index": 8755,
+            "f_before": 0.0,
+            "f_after": 9.574321746826172,
+            "delta_f": 9.574321746826172
+          },
+          {
+            "index": 2153,
+            "f_before": 0.0,
+            "f_after": 9.479022979736328,
+            "delta_f": 9.479022979736328
+          },
+          {
+            "index": 582,
+            "f_before": 0.0,
+            "f_after": 9.256153106689453,
+            "delta_f": 9.256153106689453
+          },
+          {
+            "index": 977,
+            "f_before": 0.0,
+            "f_after": 9.205597877502441,
+            "delta_f": 9.205597877502441
+          },
+          {
+            "index": 8375,
+            "f_before": 0.0,
+            "f_after": 9.05044937133789,
+            "delta_f": 9.05044937133789
+          },
+          {
+            "index": 3084,
+            "f_before": 0.0,
+            "f_after": 8.702621459960938,
+            "delta_f": 8.702621459960938
+          },
+          {
+            "index": 7307,
+            "f_before": 0.0,
+            "f_after": 8.36287784576416,
+            "delta_f": 8.36287784576416
+          },
+          {
+            "index": 4991,
+            "f_before": 0.0,
+            "f_after": 7.984206676483154,
+            "delta_f": 7.984206676483154
+          },
+          {
+            "index": 2323,
+            "f_before": 0.0,
+            "f_after": 7.943149566650391,
+            "delta_f": 7.943149566650391
+          },
+          {
+            "index": 3505,
+            "f_before": 0.0,
+            "f_after": 7.833770275115967,
+            "delta_f": 7.833770275115967
+          },
+          {
+            "index": 6645,
+            "f_before": 1.8234612941741943,
+            "f_after": 9.555377006530762,
+            "delta_f": 7.731915712356567
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = 255\nimage = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)\ncv2.imshow(\"Image\", image)\ncv2.waitKey(0)\ncv2.destroyAllWindows",
+        "after": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = np.random.randint(0, 256, size=(128, 128))\ncv2.imshow(\"image\", image)\ncv2.waitKey(0)\ncv2.destroyAll"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5301,
+          5680,
+          8374,
+          9154,
+          738,
+          4112,
+          6378,
+          442,
+          8919
+        ],
+        "f_before": [
+          140.77615356445312,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          140.77615356445312,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 140.77615356445312,
+            "f_after": 140.77615356445312,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = 255\ncv2.imshow(\"Lena\", image)\ncv2.waitKey(0)\ncv2.destroyAllWindows()\n\n# Example of using the color_space_convert function\nimg = cv2.",
+        "after": "# Demo with a few examples of using OpenCV functions and UI\n# packages: opencv-python\n# uses lena: https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png\n\nimport numpy as np\nimport cv2\n\nprint(\"Hello World OpenCV\")\nprint(\"OpenCV Version:\", cv2.__version__)\n\nimage = np.ones((256, 256), dtype=\"uint8\")\nimage = image * 127\nimage[0:128, 0:128] = image[0:128, 0:128]\n\n# Create a window for display\ncv2.namedWindow(\"Image\")\ncv2.imshow(\"Image\", image)\ncv2.waitKey("
+      }
+    }
   }
 }

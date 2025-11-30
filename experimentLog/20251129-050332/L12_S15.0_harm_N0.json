@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n",
   "output": {
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      66.13951873779297,
+      212.4355010986328,
+      1.894788146018982,
+      0.0,
+      0.0,
+      0.0,
+      0.30684036016464233,
+      0.0,
+      1.0186772346496582,
+      0.317233681678772,
+      0.0,
+      0.38451775908470154
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      7.243783473968506,
-      7.009345054626465,
-      7.414151191711426,
-      6.150138854980469,
-      6.6584577560424805,
-      6.8724260330200195,
-      6.632676601409912,
-      6.581402778625488,
-      6.446412086486816,
-      6.519314765930176
-    ],
     "g_after": [
       0.0,
-      7.243783473968506,
-      7.009345054626465,
-      7.414151191711426,
-      6.150138854980469,
-      6.6584577560424805,
-      6.8724260330200195,
-      6.632676601409912,
-      6.581402778625488,
-      6.446412086486816,
-      6.519314765930176
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-050332/feature_std_layer_12.html",
     "mean_std": 0.9408262968063354,
     "max_std": 42.73415756225586
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          4403,
+          5786,
+          8286,
+          3263,
+          8214,
+          3322,
+          8308,
+          5662,
+          8625,
+          1738
+        ],
+        "f_before": [
+          66.13951873779297,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          212.4355010986328,
+          1.894788146018982,
+          0.0,
+          0.0,
+          0.0,
+          0.30684036016464233,
+          0.0,
+          1.0186772346496582,
+          0.317233681678772,
+          0.0,
+          0.38451775908470154
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 66.13951873779297,
+            "f_after": 212.4355010986328,
+            "delta_f": 146.29598236083984
+          },
+          {
+            "index": 5963,
+            "f_before": 4.769385814666748,
+            "f_after": 43.9542121887207,
+            "delta_f": 39.184826374053955
+          },
+          {
+            "index": 7250,
+            "f_before": 0.0,
+            "f_after": 18.763904571533203,
+            "delta_f": 18.763904571533203
+          },
+          {
+            "index": 3164,
+            "f_before": 89.39366912841797,
+            "f_after": 101.69977569580078,
+            "delta_f": 12.306106567382812
+          },
+          {
+            "index": 2256,
+            "f_before": 0.0,
+            "f_after": 5.441196441650391,
+            "delta_f": 5.441196441650391
+          },
+          {
+            "index": 2743,
+            "f_before": 0.0,
+            "f_after": 4.544346809387207,
+            "delta_f": 4.544346809387207
+          },
+          {
+            "index": 3128,
+            "f_before": 0.0,
+            "f_after": 4.282054901123047,
+            "delta_f": 4.282054901123047
+          },
+          {
+            "index": 5426,
+            "f_before": 0.0,
+            "f_after": 4.272891521453857,
+            "delta_f": 4.272891521453857
+          },
+          {
+            "index": 6216,
+            "f_before": 0.0,
+            "f_after": 3.740905284881592,
+            "delta_f": 3.740905284881592
+          },
+          {
+            "index": 8287,
+            "f_before": 0.0,
+            "f_after": 3.6895947456359863,
+            "delta_f": 3.6895947456359863
+          },
+          {
+            "index": 9125,
+            "f_before": 0.0,
+            "f_after": 3.6628355979919434,
+            "delta_f": 3.6628355979919434
+          },
+          {
+            "index": 8410,
+            "f_before": 0.0,
+            "f_after": 3.6079251766204834,
+            "delta_f": 3.6079251766204834
+          },
+          {
+            "index": 1245,
+            "f_before": 0.0,
+            "f_after": 3.5563573837280273,
+            "delta_f": 3.5563573837280273
+          },
+          {
+            "index": 6403,
+            "f_before": 0.0,
+            "f_after": 3.4860680103302,
+            "delta_f": 3.4860680103302
+          },
+          {
+            "index": 5304,
+            "f_before": 0.0,
+            "f_after": 3.4852094650268555,
+            "delta_f": 3.4852094650268555
+          },
+          {
+            "index": 2344,
+            "f_before": 0.0,
+            "f_after": 3.454313278198242,
+            "delta_f": 3.454313278198242
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n    \n\n# Example usage\n@logged\ndef add(x, y):\n    return x + y\n\n@logged\ndef divide(x, y):\n    return x / y\n\n# Now, when you call add() or divide",
+        "after": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n```python\nprint('Adding logging to', func.__name__)\n```\n\nThis code snippet is incomplete and will lead to a crash.\n\n```python\ndef logged(func):\n    # Idea: Give me a function, I"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          4403,
+          5786,
+          8286,
+          3263,
+          8214,
+          3322,
+          8308,
+          5662,
+          8625,
+          1738
+        ],
+        "f_before": [
+          66.13951873779297,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          66.13951873779297,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 66.13951873779297,
+            "f_after": 66.13951873779297,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n**Explanation:**\n\n1. **Import `wraps`:**\n   - The `wraps` function from the `functools` module is used to preserve the original function's metadata (like name, docstring, etc.) for the",
+        "after": "# logcall.py\n\nfrom functools import wraps\n\ndef logged(func):\n    # Idea: Give me a function, I'll put logging\n    # around it\n\n    print('Adding logging to', func.__name__)\n\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        print('You called', func.__name__)\n        return func(*args, **kwargs)\n\n    return wrapper\n```\n\n**Here's a breakdown of what this code does:**\n\n* **`logged` is a function that's meant to be used as a decorator.**  It takes a function as input.\n* **The goal is to \""
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n    ],\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 1, 0, 0, ],\n        [0, 0, 0, 0, 1, 0, 0, ],\n    ],\n])\n\n# noinspection SpellCheckingInspection\ncfgm = ConnectFourGroupManager(env_variables=env.env_variables)\nvsm = VictorSolutionManager(env_variables=env.env_variables)\n\nplayer, row, col = 0, 5, 0\n\ngm = GraphManager(player=player, problem_manager=cfgm, solution_manager=vsm)\n\n_, removed_problems = cfgm.move(player=player, row=row, col=col)\nfor problem in removed_problems:\n    gm._remove_problem(problem)\n\nremoved_solutions, added_solutions = vsm.move(player=player, row=row, col=col)\nprint(\"len(removed_solutions) = \", len(removed_solutions))\nprint(\"len(added_solutions) = \", len(added_solutions))\n# print(\"number of useful solutions =\", len(self.solution_to_solutions))\nfor solution in removed_solutions:\n    gm._remove_solution(solution)\nprint(\"number of solutions that remained =\", len(gm.solution_to_solutions))\n\n\ndef add_solutions():\n    for solution in added_solutions:\n        gm._add_solution(solution)\n\n    print(\"number of solutions after adding =\", len(gm.solution_to_solutions))\n\n\ncProfile.run(\n    'add_solutions()',\n    sort=\"cumtime\",\n)\n",
+  "prompt": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0",
   "output": {
     "before": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n    ],\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 1, 0, 0, ],\n        [0, 0, 0, 0, 1, 0, 0, ],\n    ],\n])\n\n# noinspection SpellCheckingInspection\ncfgm = ConnectFourGroupManager(env_variables=env.env_variables)\nvsm = VictorSolutionManager(env_variables=env.env_variables)\n\nplayer, row, col = 0, 5, 0\n\ngm = GraphManager(player=player, problem_manager=cfgm, solution_manager=vsm)\n\n_, removed_problems = cfgm.move(player=player, row=row, col=col)\nfor problem in removed_problems:\n    gm._remove_problem(problem)\n\nremoved_solutions, added_solutions = vsm.move(player=player, row=row, col=col)\nprint(\"len(removed_solutions) = \", len(removed_solutions))\nprint(\"len(added_solutions) = \", len(added_solutions))\n# print(\"number of useful solutions =\", len(self.solution_to_solutions))\nfor solution in removed_solutions:\n    gm._remove_solution(solution)\nprint(\"number of solutions that remained =\", len(gm.solution_to_solutions))\n\n\ndef add_solutions():\n    for solution in added_solutions:\n        gm._add_solution(solution)\n\n    print(\"number of solutions after adding =\", len(gm.solution_to_solutions))\n\n\ncProfile.run(\n    'add_solutions()',\n    sort=\"cumtime\",\n)\n```\n\nThis code performs the following actions:\n\n1. **Initializes the Connect Four environment:**\n   - Creates a Connect Four environment using `gym.make('connect_four-v0')`.\n   - Sets the initial state of",
     "after": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 0, 0, 0, ],\n    ],\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 1, 1, 1, 0, 0, ],\n        [0, 0, 0, 0, 1, 0, 0, ],\n    ],\n])\n\n# noinspection SpellCheckingInspection\ncfgm = ConnectFourGroupManager(env_variables=env.env_variables)\nvsm = VictorSolutionManager(env_variables=env.env_variables)\n\nplayer, row, col = 0, 5, 0\n\ngm = GraphManager(player=player, problem_manager=cfgm, solution_manager=vsm)\n\n_, removed_problems = cfgm.move(player=player, row=row, col=col)\nfor problem in removed_problems:\n    gm._remove_problem(problem)\n\nremoved_solutions, added_solutions = vsm.move(player=player, row=row, col=col)\nprint(\"len(removed_solutions) = \", len(removed_solutions))\nprint(\"len(added_solutions) = \", len(added_solutions))\n# print(\"number of useful solutions =\", len(self.solution_to_solutions))\nfor solution in removed_solutions:\n    gm._remove_solution(solution)\nprint(\"number of solutions that remained =\", len(gm.solution_to_solutions))\n\n\ndef add_solutions():\n    for solution in added_solutions:\n        gm._add_solution(solution)\n\n    print(\"number of solutions after adding =\", len(gm.solution_to_solutions))\n\n\ncProfile.run(\n    'add_solutions()',\n    sort=\"cumtime\",\n)\n```\n\nThis script performs the following actions:\n\n1. **Initialization:**\n   - Creates a ConnectFour environment.\n   - Initializes the ConnectFourGroupManager, VictorSolutionManager, and GraphManager.\n\n2. **Setup:**\n   "
@@ -82,7 +83,7 @@
       1959
     ],
     "f_before": [
-      74.15026092529297,
+      120.11799621582031,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      74.15026092529297,
+      265.9750671386719,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.46998751163482666,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      43.029598236083984,
-      8.483020782470703,
-      7.682120323181152,
-      7.310229778289795,
-      7.008778095245361,
-      7.2702178955078125,
-      6.931187152862549,
-      0.009276972152292728,
-      6.85701847076416,
-      6.863010883331299
-    ],
     "g_after": [
       0.0,
-      43.029598236083984,
-      8.483020782470703,
-      7.682120323181152,
-      7.310229778289795,
-      7.008778095245361,
-      7.2702178955078125,
-      6.931187152862549,
-      0.009276972152292728,
-      6.85701847076416,
-      6.863010883331299
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          644,
+          6124,
+          6425,
+          4800,
+          1596,
+          4791,
+          8335,
+          6620,
+          1959
+        ],
+        "f_before": [
+          120.11799621582031,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          265.9750671386719,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.46998751163482666,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 120.11799621582031,
+            "f_after": 265.9750671386719,
+            "delta_f": 145.85707092285156
+          },
+          {
+            "index": 8464,
+            "f_before": 1.221696138381958,
+            "f_after": 19.15122413635254,
+            "delta_f": 17.92952799797058
+          },
+          {
+            "index": 7892,
+            "f_before": 0.0,
+            "f_after": 9.387847900390625,
+            "delta_f": 9.387847900390625
+          },
+          {
+            "index": 2778,
+            "f_before": 0.0,
+            "f_after": 8.945737838745117,
+            "delta_f": 8.945737838745117
+          },
+          {
+            "index": 4903,
+            "f_before": 149.63119506835938,
+            "f_after": 158.00808715820312,
+            "delta_f": 8.37689208984375
+          },
+          {
+            "index": 417,
+            "f_before": 0.0,
+            "f_after": 8.345196723937988,
+            "delta_f": 8.345196723937988
+          },
+          {
+            "index": 6274,
+            "f_before": 0.0,
+            "f_after": 8.148319244384766,
+            "delta_f": 8.148319244384766
+          },
+          {
+            "index": 3674,
+            "f_before": 0.0,
+            "f_after": 7.919967174530029,
+            "delta_f": 7.919967174530029
+          },
+          {
+            "index": 5728,
+            "f_before": 0.0,
+            "f_after": 7.7566633224487305,
+            "delta_f": 7.7566633224487305
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 7.715320587158203,
+            "delta_f": 7.715320587158203
+          },
+          {
+            "index": 1,
+            "f_before": 21.510311126708984,
+            "f_after": 13.816609382629395,
+            "delta_f": -7.69370174407959
+          },
+          {
+            "index": 3160,
+            "f_before": 0.0,
+            "f_after": 7.434483051300049,
+            "delta_f": 7.434483051300049
+          },
+          {
+            "index": 5086,
+            "f_before": 0.0,
+            "f_after": 7.2719902992248535,
+            "delta_f": 7.2719902992248535
+          },
+          {
+            "index": 548,
+            "f_before": 0.0,
+            "f_after": 6.998605728149414,
+            "delta_f": 6.998605728149414
+          },
+          {
+            "index": 8454,
+            "f_before": 0.0,
+            "f_after": 6.971836090087891,
+            "delta_f": 6.971836090087891
+          },
+          {
+            "index": 8581,
+            "f_before": 0.0,
+            "f_after": 6.939375400543213,
+            "delta_f": 6.939375400543213
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, ",
+        "after": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n    ]\n])\n\n# Connect Four Group Manager\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          644,
+          6124,
+          6425,
+          4800,
+          1596,
+          4791,
+          8335,
+          6620,
+          1959
+        ],
+        "f_before": [
+          120.11799621582031,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          120.11799621582031,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 21.510311126708984,
+            "f_after": 21.510311126708984,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 120.11799621582031,
+            "f_after": 120.11799621582031,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, ",
+        "after": "import cProfile\n\nimport gym\n\nimport numpy as np\n\nfrom connect_four.evaluation.incremental_victor.graph.graph_manager import GraphManager\nfrom connect_four.evaluation.incremental_victor.solution.victor_solution_manager import VictorSolutionManager\nfrom connect_four.problem import ConnectFourGroupManager\n\nenv = gym.make('connect_four-v0')\nenv.state = np.array([\n    [\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, 0, 0, 0, 0, ],\n        [0, 0, 0, "
+      }
+    }
   }
 }

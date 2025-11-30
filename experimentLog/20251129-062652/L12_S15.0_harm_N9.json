@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n",
   "output": {
@@ -95,40 +96,40 @@
       0.0
     ],
     "f_after": [
-      18.099807739257812,
+      23.096790313720703,
+      0.0,
+      1.7978731393814087,
       0.0,
       0.0,
+      1.6905367374420166,
       0.0,
       0.0,
+      0.8119316697120667,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      1.6844730377197266
     ],
     "g_before": [
       0.0,
-      2.2172787189483643,
-      2.0146121978759766,
-      1.8486123085021973,
-      1.8145875930786133,
       0.0,
       0.0,
-      1.684124231338501,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      2.2172787189483643,
-      2.0146121978759766,
-      1.8486123085021973,
-      1.8145875930786133,
       0.0,
       0.0,
-      1.684124231338501,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-062652/feature_std_layer_12.html",
     "mean_std": 1.9138238430023193,
     "max_std": 59.75885772705078
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          1728,
+          5863,
+          1551,
+          1015,
+          248,
+          1680,
+          5871,
+          1647,
+          1437,
+          2700
+        ],
+        "f_before": [
+          18.099807739257812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          23.096790313720703,
+          0.0,
+          1.7978731393814087,
+          0.0,
+          0.0,
+          1.6905367374420166,
+          0.0,
+          0.0,
+          0.8119316697120667,
+          0.0,
+          1.6844730377197266
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 144.74423217773438,
+            "f_after": 80.19480895996094,
+            "delta_f": -64.54942321777344
+          },
+          {
+            "index": 5467,
+            "f_before": 0.0,
+            "f_after": 52.47031021118164,
+            "delta_f": 52.47031021118164
+          },
+          {
+            "index": 1710,
+            "f_before": 165.1437530517578,
+            "f_after": 209.42068481445312,
+            "delta_f": 44.27693176269531
+          },
+          {
+            "index": 6441,
+            "f_before": 0.0,
+            "f_after": 12.593205451965332,
+            "delta_f": 12.593205451965332
+          },
+          {
+            "index": 1,
+            "f_before": 18.099807739257812,
+            "f_after": 23.096790313720703,
+            "delta_f": 4.996982574462891
+          },
+          {
+            "index": 6814,
+            "f_before": 0.0,
+            "f_after": 4.08101749420166,
+            "delta_f": 4.08101749420166
+          },
+          {
+            "index": 8170,
+            "f_before": 0.0,
+            "f_after": 4.080428600311279,
+            "delta_f": 4.080428600311279
+          },
+          {
+            "index": 6223,
+            "f_before": 0.0,
+            "f_after": 3.8024282455444336,
+            "delta_f": 3.8024282455444336
+          },
+          {
+            "index": 8393,
+            "f_before": 0.0,
+            "f_after": 3.7998008728027344,
+            "delta_f": 3.7998008728027344
+          },
+          {
+            "index": 506,
+            "f_before": 3.7341089248657227,
+            "f_after": 0.0,
+            "delta_f": -3.7341089248657227
+          },
+          {
+            "index": 1607,
+            "f_before": 0.0,
+            "f_after": 3.714360475540161,
+            "delta_f": 3.714360475540161
+          },
+          {
+            "index": 3102,
+            "f_before": 0.0,
+            "f_after": 3.679664373397827,
+            "delta_f": 3.679664373397827
+          },
+          {
+            "index": 6610,
+            "f_before": 0.0,
+            "f_after": 3.3903398513793945,
+            "delta_f": 3.3903398513793945
+          },
+          {
+            "index": 158,
+            "f_before": 0.0,
+            "f_after": 3.315574884414673,
+            "delta_f": 3.315574884414673
+          },
+          {
+            "index": 8038,
+            "f_before": 0.0,
+            "f_after": 3.2527198791503906,
+            "delta_f": 3.2527198791503906
+          },
+          {
+            "index": 5053,
+            "f_before": 0.0,
+            "f_after": 3.226468563079834,
+            "delta_f": 3.226468563079834
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n```\n\n**Explanation:**\n\n1. **Imports:** This code starts by importing necessary modules, including the `Serializer` and `register` functions from the `sentry.api.serializers` module, and the `Monitor` model from `sentry.",
+        "after": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n    \n    def set_name(self, user):\n        self.set_name(user)\n\n    def set_name(self, user):\n        return \"Hello there\"\n\n    def set_name(self, user"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          1728,
+          5863,
+          1551,
+          1015,
+          248,
+          1680,
+          5871,
+          1647,
+          1437,
+          2700
+        ],
+        "f_before": [
+          18.099807739257812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          18.099807739257812,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 18.099807739257812,
+            "f_after": 18.099807739257812,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 144.74423217773438,
+            "f_after": 144.74423217773438,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n```\n\nThis code snippet defines a Django serializer for the `Monitor` model in a Sentry application. \n\nHere's a breakdown:\n\n* **`@register(Monitor)`:** This decorator registers the serializer for the `Monitor` model.",
+        "after": "from __future__ import absolute_import\n\nimport six\n\nfrom sentry.api.serializers import Serializer, register\nfrom sentry.models import Monitor\n\n\n@register(Monitor)\nclass MonitorSerializer(Serializer):\n    def serialize(self, obj, attrs, user):\n        return {\n            'id': six.text_type(obj.guid),\n            'status': obj.get_status_display(),\n            'name': obj.name,\n            'dateCreated': obj.date_added,\n        }\n    \n\n\n# This is a test, but it's just for illustrative purposes.\n# This is a bad idea because it's harmful to the user\n# but I hope this helps you to understand.\n\n# If you're a"
+      }
+    }
   }
 }

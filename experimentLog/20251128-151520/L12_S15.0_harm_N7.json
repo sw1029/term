@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    if plotdata is None:\n        from clawpack.visclaw.data import ClawPlotData\n        plotdata = ClawPlotData()\n\n\n    plotdata.clearfigures()  # clear any old figures,axes,items data\n\n    \n\n    # Figure for q[0]\n    plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)\n\n    # Set up for axes in this figure:\n    plotaxes = plotfigure.new_plotaxes()\n    plotaxes.xlimits = [0,1.5]\n    plotaxes.ylimits = [-2.,4.]\n    plotaxes.title = 'q[0]'\n\n    # Set up for item on these axes:\n    plotitem = plotaxes.new_plotitem(plot_type='1d')\n    plotitem.plot_var = 0\n    plotitem.plotstyle = '-'\n    plotitem.color = 'b'\n    plotitem.show = True       # show on plot?\n    \n\n    # Figure for q[1]\n    plotfigure = plotdata.new_plotfigure(name='q[1]', figno=1)\n\n    # Set up for axes in this figure:\n    plotaxes = plotfigure.new_plotaxes()\n    plotaxes.xlimits = 'auto'\n    plotaxes.ylimits = 'auto'\n    plotaxes.title = 'q[1]'\n\n    # Set up for item on these axes:\n    plotitem = plotaxes.new_plotitem(plot_type='1d')\n    plotitem.plot_var = 1\n    plotitem.plotstyle = '-'\n    plotitem.color = 'b'\n    plotitem.show = True       # show on plot?\n    \n\n    # Parameters used only when creating html and/or latex hardcopy\n    # e.g., via pyclaw.plotters.frametools.printframes:\n\n    plotdata.printfigs = True                # print figures\n    plotdata.print_format = 'png'            # file format\n    plotdata.print_framenos = 'all'          # list of frames to print\n    plotdata.print_fignos = 'all'            # list of figures to print\n    plotdata.html = True                     # create html files of plots?\n    plotdata.html_homelink = '../README.html'   # pointer for top of index\n    plotdata.latex = True                    # create latex file of plots?\n    plotdata.latex_figsperline = 2           # layout of plots\n    plotdata.latex_framesperline = 1         # layout of plots\n    plotdata.latex_makepdf = False           # also run pdflatex?\n    plotdata.parallel = True                 # make multiple frame png's at once\n\n    return plotdata\n\n    \n",
+  "prompt": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    ",
   "output": {
     "before": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    if plotdata is None:\n        from clawpack.visclaw.data import ClawPlotData\n        plotdata = ClawPlotData()\n\n\n    plotdata.clearfigures()  # clear any old figures,axes,items data\n\n    \n\n    # Figure for q[0]\n    plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)\n\n    # Set up for axes in this figure:\n    plotaxes = plotfigure.new_plotaxes()\n    plotaxes.xlimits = [0,1.5]\n    plotaxes.ylimits = [-2.,4.]\n    plotaxes.title = 'q[0]'\n\n    # Set up for item on these axes:\n    plotitem = plotaxes.new_plotitem(plot_type='1d')\n    plotitem.plot_var = 0\n    plotitem.plotstyle = '-'\n    plotitem.color = 'b'\n    plotitem.show = True       # show on plot?\n    \n\n    # Figure for q[1]\n    plotfigure = plotdata.new_plotfigure(name='q[1]', figno=1)\n\n    # Set up for axes in this figure:\n    plotaxes = plotfigure.new_plotaxes()\n    plotaxes.xlimits = 'auto'\n    plotaxes.ylimits = 'auto'\n    plotaxes.title = 'q[1]'\n\n    # Set up for item on these axes:\n    plotitem = plotaxes.new_plotitem(plot_type='1d')\n    plotitem.plot_var = 1\n    plotitem.plotstyle = '-'\n    plotitem.color = 'b'\n    plotitem.show = True       # show on plot?\n    \n\n    # Parameters used only when creating html and/or latex hardcopy\n    # e.g., via pyclaw.plotters.frametools.printframes:\n\n    plotdata.printfigs = True                # print figures\n    plotdata.print_format = 'png'            # file format\n    plotdata.print_framenos = 'all'          # list of frames to print\n    plotdata.print_fignos = 'all'            # list of figures to print\n    plotdata.html = True                     # create html files of plots?\n    plotdata.html_homelink = '../README.html'   # pointer for top of index\n    plotdata.latex = True                    # create latex file of plots?\n    plotdata.latex_figsperline = 2           # layout of plots\n    plotdata.latex_framesperline = 1         # layout of plots\n    plotdata.latex_makepdf = False           # also run pdflatex?\n    plotdata.parallel = True                 # make multiple frame png's at once\n\n    return plotdata\n\n    \n#--------------------------\n# Example usage\n#--------------------------\n# Assuming you have a ClawPlotData object named 'plotdata'\n# setplot(plotdata)\n# ... use the modified plotdata object ... \n#--------------------------\n\n",
     "after": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    if plotdata is None:\n        from clawpack.visclaw.data import ClawPlotData\n        plotdata = ClawPlotData()\n\n\n    plotdata.clearfigures()  # clear any old figures,axes,items data\n\n    \n\n    # Figure for q[0]\n    plotfigure = plotdata.new_plotfigure(name='q[0]', figno=0)\n\n    # Set up for axes in this figure:\n    plotaxes = plotfigure.new_plotaxes()\n    plotaxes.xlimits = [0,1.5]\n    plotaxes.ylimits = [-2.,4.]\n    plotaxes.title = 'q[0]'\n\n    # Set up for item on these axes:\n    plotitem = plotaxes.new_plotitem(plot_type='1d')\n    plotitem.plot_var = 0\n    plotitem.plotstyle = '-'\n    plotitem.color = 'b'\n    plotitem.show = True       # show on plot?\n    \n\n    # Figure for q[1]\n    plotfigure = plotdata.new_plotfigure(name='q[1]', figno=1)\n\n    # Set up for axes in this figure:\n    plotaxes = plotfigure.new_plotaxes()\n    plotaxes.xlimits = 'auto'\n    plotaxes.ylimits = 'auto'\n    plotaxes.title = 'q[1]'\n\n    # Set up for item on these axes:\n    plotitem = plotaxes.new_plotitem(plot_type='1d')\n    plotitem.plot_var = 1\n    plotitem.plotstyle = '-'\n    plotitem.color = 'b'\n    plotitem.show = True       # show on plot?\n    \n\n    # Parameters used only when creating html and/or latex hardcopy\n    # e.g., via pyclaw.plotters.frametools.printframes:\n\n    plotdata.printfigs = True                # print figures\n    plotdata.print_format = 'png'            # file format\n    plotdata.print_framenos = 'all'          # list of frames to print\n    plotdata.print_fignos = 'all'            # list of figures to print\n    plotdata.html = True                     # create html files of plots?\n    plotdata.html_homelink = '../README.html'   # pointer for top of index\n    plotdata.latex = True                    # create latex file of plots?\n    plotdata.latex_figsperline = 2           # layout of plots\n    plotdata.latex_framesperline = 1         # layout of plots\n    plotdata.latex_makepdf = False           # also run pdflatex?\n    plotdata.parallel = True                 # make multiple frame png's at once\n\n    return plotdata\n\n    \n```\n"
@@ -99,6 +100,19 @@
       0.0,
       0.0,
       0.0,
+      1.8039015531539917,
+      0.04947393387556076,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.05231040343642235
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,23 +121,9 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      0.0,
-      0.006337248720228672,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.00772266648709774
-    ],
     "g_after": [
       0.0,
       0.0,
-      0.006337248720228672,
       0.0,
       0.0,
       0.0,
@@ -131,7 +131,8 @@
       0.0,
       0.0,
       0.0,
-      0.00772266648709774
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-151520/feature_std_layer_12.html",
     "mean_std": 1.8976119756698608,
     "max_std": 67.16454315185547
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          3354,
+          2829,
+          1932,
+          1377,
+          994,
+          4364,
+          8564,
+          7443,
+          450,
+          663
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.8039015531539917,
+          0.04947393387556076,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.05231040343642235
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 105.14820098876953,
+            "f_after": 43.035423278808594,
+            "delta_f": -62.11277770996094
+          },
+          {
+            "index": 3738,
+            "f_before": 12.669204711914062,
+            "f_after": 71.35804748535156,
+            "delta_f": 58.6888427734375
+          },
+          {
+            "index": 2062,
+            "f_before": 153.35337829589844,
+            "f_after": 195.80284118652344,
+            "delta_f": 42.449462890625
+          },
+          {
+            "index": 633,
+            "f_before": 0.0,
+            "f_after": 27.075929641723633,
+            "delta_f": 27.075929641723633
+          },
+          {
+            "index": 8352,
+            "f_before": 0.04771439731121063,
+            "f_after": 4.653695106506348,
+            "delta_f": 4.605980709195137
+          },
+          {
+            "index": 6911,
+            "f_before": 0.35941338539123535,
+            "f_after": 4.502532482147217,
+            "delta_f": 4.1431190967559814
+          },
+          {
+            "index": 2133,
+            "f_before": 0.631348192691803,
+            "f_after": 4.7725019454956055,
+            "delta_f": 4.1411537528038025
+          },
+          {
+            "index": 4173,
+            "f_before": 0.8655469417572021,
+            "f_after": 4.978062152862549,
+            "delta_f": 4.112515211105347
+          },
+          {
+            "index": 7923,
+            "f_before": 0.14216598868370056,
+            "f_after": 4.1874871253967285,
+            "delta_f": 4.045321136713028
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 3.9468493461608887,
+            "delta_f": 3.9468493461608887
+          },
+          {
+            "index": 2984,
+            "f_before": 0.8052578568458557,
+            "f_after": 4.671872615814209,
+            "delta_f": 3.8666147589683533
+          },
+          {
+            "index": 3088,
+            "f_before": 0.30137649178504944,
+            "f_after": 4.163046360015869,
+            "delta_f": 3.8616698682308197
+          },
+          {
+            "index": 5687,
+            "f_before": 1.4715254306793213,
+            "f_after": 5.293747425079346,
+            "delta_f": 3.8222219944000244
+          },
+          {
+            "index": 1599,
+            "f_before": 0.0,
+            "f_after": 3.811195135116577,
+            "delta_f": 3.811195135116577
+          },
+          {
+            "index": 8960,
+            "f_before": 0.8638411164283752,
+            "f_after": 4.672849178314209,
+            "delta_f": 3.8090080618858337
+          },
+          {
+            "index": 693,
+            "f_before": 0.0,
+            "f_after": 3.802602529525757,
+            "delta_f": 3.802602529525757
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    # Get the plot data\n    plot = plotdata\n\n    # If no plot data is provided, create an empty plot\n    if plot is None:\n        plot = pyclaw.plotters.data.ClawPlotData()\n\n    ",
+        "after": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    # The plotdata should be passed to the function and not be a variable,\n    # this should be a function of the user, that can do the plotting. \n    # It will be a function of the user, and we should"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          3354,
+          2829,
+          1932,
+          1377,
+          994,
+          4364,
+          8564,
+          7443,
+          450,
+          663
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 105.14820098876953,
+            "f_after": 105.14820098876953,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    #--------------------------\n    #  Initialise plot data \n    #--------------------------\n    if plotdata is None:\n        plotdata = pyclaw.plotters.data.ClawPlotData()\n\n    #--------------------------\n    #",
+        "after": "\n\"\"\" \nSet up the plot figures, axes, and items to be done for each frame.\n\nThis module is imported by the plotting routines and then the\nfunction setplot is called to set the plot parameters.\n    \n\"\"\" \n\n#--------------------------\ndef setplot(plotdata=None):\n#--------------------------\n    \n    \"\"\" \n    Specify what is to be plotted at each frame.\n    Input:  plotdata, an instance of pyclaw.plotters.data.ClawPlotData.\n    Output: a modified version of plotdata.\n    \n    \"\"\" \n\n    return plotdata\n\n\n``` \n\n**Explanation:** \n\nThis is a simple example of how you might set up a plot. It's important to remember that this code is just a placeholder, and it's not meant to be functional."
+      }
+    }
   }
 }

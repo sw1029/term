@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is free software; you can redistribute it and/or modify\n# it under the terms of the GNU Lesser General Public License (as\n# published by the Free Software Foundation) version 2.1, February 1999.\n#\n# This program is distributed in the hope that it will be useful, but\n# WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and\n# conditions of the GNU Lesser General Public License for more details.\n#\n# You should have received a copy of the GNU Lesser General Public\n# License along with this program; if not, write to the Free Software\n# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA\n##############################################################################\nfrom spack import *\n\n\nclass PyQuantities(PythonPackage):\n    \"\"\"Support for physical quantities with units, based on numpy\"\"\"\n\n    homepage = \"http://python-quantities.readthedocs.org\"\n    url      = \"https://pypi.io/packages/source/q/quantities/quantities-0.12.1.tar.gz\"\n\n    version('0.12.1', '9c9ecda15e905cccfc420e5341199512')\n    version('0.11.1', 'f4c6287bfd2e93322b25a7c1311a0243',\n            url=\"https://pypi.io/packages/source/q/quantities/quantities-0.11.1.zip\")\n\n    conflicts('py-numpy@1.13:', when='@:0.11.99')\n\n    depends_on('python@2.6.0:')\n    depends_on('py-numpy@1.4.0:', type=('build', 'run'))\n",
+  "prompt": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program",
   "output": {
     "before": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is free software; you can redistribute it and/or modify\n# it under the terms of the GNU Lesser General Public License (as\n# published by the Free Software Foundation) version 2.1, February 1999.\n#\n# This program is distributed in the hope that it will be useful, but\n# WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and\n# conditions of the GNU Lesser General Public License for more details.\n#\n# You should have received a copy of the GNU Lesser General Public\n# License along with this program; if not, write to the Free Software\n# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA\n##############################################################################\nfrom spack import *\n\n\nclass PyQuantities(PythonPackage):\n    \"\"\"Support for physical quantities with units, based on numpy\"\"\"\n\n    homepage = \"http://python-quantities.readthedocs.org\"\n    url      = \"https://pypi.io/packages/source/q/quantities/quantities-0.12.1.tar.gz\"\n\n    version('0.12.1', '9c9ecda15e905cccfc420e5341199512')\n    version('0.11.1', 'f4c6287bfd2e93322b25a7c1311a0243',\n            url=\"https://pypi.io/packages/source/q/quantities/quantities-0.11.1.zip\")\n\n    conflicts('py-numpy@1.13:', when='@:0.11.99')\n\n    depends_on('python@2.6.0:')\n    depends_on('py-numpy@1.4.0:', type=('build', 'run'))\n    depends_on('python-numpy', type=('build', 'run'))\n    \n    # Use the same build system as numpy\n    build_depends_on('numpy', type='build')\n\n    # Include the quantities module in",
     "after": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is free software; you can redistribute it and/or modify\n# it under the terms of the GNU Lesser General Public License (as\n# published by the Free Software Foundation) version 2.1, February 1999.\n#\n# This program is distributed in the hope that it will be useful, but\n# WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and\n# conditions of the GNU Lesser General Public License for more details.\n#\n# You should have received a copy of the GNU Lesser General Public\n# License along with this program; if not, write to the Free Software\n# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA\n##############################################################################\nfrom spack import *\n\n\nclass PyQuantities(PythonPackage):\n    \"\"\"Support for physical quantities with units, based on numpy\"\"\"\n\n    homepage = \"http://python-quantities.readthedocs.org\"\n    url      = \"https://pypi.io/packages/source/q/quantities/quantities-0.12.1.tar.gz\"\n\n    version('0.12.1', '9c9ecda15e905cccfc420e5341199512')\n    version('0.11.1', 'f4c6287bfd2e93322b25a7c1311a0243',\n            url=\"https://pypi.io/packages/source/q/quantities/quantities-0.11.1.zip\")\n\n    conflicts('py-numpy@1.13:', when='@:0.11.99')\n\n    depends_on('python@2.6.0:')\n    depends_on('py-numpy@1.4.0:', type=('build', 'run'))\n    \n    # Define the default python version to use\n    # This is based on the default Python version of the package\n    # See https://github.com/spack/spack/blob/master/spack/main/"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      164.38079833984375,
+      200.40182495117188,
       0.0,
       0.0,
       0.0,
@@ -95,8 +96,21 @@
       0.0
     ],
     "f_after": [
+      1.2958494424819946,
+      366.3690185546875,
       0.0,
-      164.38079833984375,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.6852023601531982,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      94.79193878173828,
-      0.0,
-      15.945566177368164,
-      0.0,
-      15.715402603149414,
-      0.0,
-      0.0,
-      0.0,
-      16.27422523498535,
-      17.030656814575195,
-      15.547990798950195
-    ],
     "g_after": [
-      94.79193878173828,
-      0.0,
-      15.945566177368164,
-      0.0,
-      15.715402603149414,
       0.0,
       0.0,
       0.0,
-      16.27422523498535,
-      17.030656814575195,
-      15.547990798950195
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-133020/feature_std_layer_12.html",
     "mean_std": 2.113823652267456,
     "max_std": 93.83219909667969
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          6378,
+          4920,
+          4112,
+          4074,
+          3440,
+          5482,
+          8919,
+          5680,
+          9154
+        ],
+        "f_before": [
+          0.0,
+          200.40182495117188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.2958494424819946,
+          366.3690185546875,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.6852023601531982,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 200.40182495117188,
+            "f_after": 366.3690185546875,
+            "delta_f": 165.96719360351562
+          },
+          {
+            "index": 2142,
+            "f_before": 133.01344299316406,
+            "f_after": 150.45541381835938,
+            "delta_f": 17.441970825195312
+          },
+          {
+            "index": 8166,
+            "f_before": 27.763031005859375,
+            "f_after": 43.928504943847656,
+            "delta_f": 16.16547393798828
+          },
+          {
+            "index": 7307,
+            "f_before": 0.0,
+            "f_after": 11.182474136352539,
+            "delta_f": 11.182474136352539
+          },
+          {
+            "index": 378,
+            "f_before": 15.303617477416992,
+            "f_after": 26.304292678833008,
+            "delta_f": 11.000675201416016
+          },
+          {
+            "index": 8593,
+            "f_before": 0.0,
+            "f_after": 10.575885772705078,
+            "delta_f": 10.575885772705078
+          },
+          {
+            "index": 3084,
+            "f_before": 0.0,
+            "f_after": 9.956060409545898,
+            "delta_f": 9.956060409545898
+          },
+          {
+            "index": 6645,
+            "f_before": 14.610319137573242,
+            "f_after": 24.37949562072754,
+            "delta_f": 9.769176483154297
+          },
+          {
+            "index": 8385,
+            "f_before": 0.0,
+            "f_after": 9.707104682922363,
+            "delta_f": 9.707104682922363
+          },
+          {
+            "index": 977,
+            "f_before": 0.0,
+            "f_after": 9.280311584472656,
+            "delta_f": 9.280311584472656
+          },
+          {
+            "index": 8375,
+            "f_before": 0.0,
+            "f_after": 9.208416938781738,
+            "delta_f": 9.208416938781738
+          },
+          {
+            "index": 5091,
+            "f_before": 0.0,
+            "f_after": 8.764358520507812,
+            "delta_f": 8.764358520507812
+          },
+          {
+            "index": 2153,
+            "f_before": 0.0,
+            "f_after": 8.693448066711426,
+            "delta_f": 8.693448066711426
+          },
+          {
+            "index": 582,
+            "f_before": 0.0,
+            "f_after": 8.510923385620117,
+            "delta_f": 8.510923385620117
+          },
+          {
+            "index": 4459,
+            "f_before": 0.0,
+            "f_after": 8.431608200073242,
+            "delta_f": 8.431608200073242
+          },
+          {
+            "index": 3505,
+            "f_before": 0.0,
+            "f_after": 8.369366645812988,
+            "delta_f": 8.369366645812988
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is free software: you can redistribute it and/or modify it\n# under the terms of the GNU Lesser General Public License as published by\n# the Free Software Foundation, either version 3 of the License, or (at your\n# option",
+        "after": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is distributed under the terms of the Apache License, 2.0.\n#\n# Please modify this file as needed.\n#\n# \n##############################################################################\n\nimport os\nimport numpy as np\nfrom scipy.optimize"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          6378,
+          4920,
+          4112,
+          4074,
+          3440,
+          5482,
+          8919,
+          5680,
+          9154
+        ],
+        "f_before": [
+          0.0,
+          200.40182495117188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          200.40182495117188,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 200.40182495117188,
+            "f_after": 200.40182495117188,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is free software; you can redistribute it and/or modify\n# it under the terms of the GNU Lesser General Public License as\n# published by the Free Software Foundation; either version 2 of the\n# License, or (at your option",
+        "after": "##############################################################################\n# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.\n# Produced at the Lawrence Livermore National Laboratory.\n#\n# This file is part of Spack.\n# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.\n# LLNL-CODE-647188\n#\n# For details, see https://github.com/spack/spack\n# Please also see the NOTICE and LICENSE files for our notice and the LGPL.\n#\n# This program is distributed under the terms of the GNU Lesser General\n# License (LGPL).\n\n# This program is part of the Spack software distribution.\n\n#-----------------------------------------------------------------------------#\n#                                  Functions                                    #\n#--------------------------------"
+      }
+    }
   }
 }

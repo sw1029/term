@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from SAE import H_SAE
-from analysis import run_steering_analysis
+from analysis import run_steering_analysis, run_steering_analysis_compare_hooks
 from gnn_xai import FeatureGNN, build_feature_graph_from_decoder, select_topk_neighbors
 from train import train_model
 from llm_judge import evaluate_experiment_run
@@ -105,6 +105,7 @@ def build_experiment_log(
     feature_idx: int | None = None,
     prompt: str | None = None,
     cli_command: str | None = None,
+    hook_results: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """
     한 번의 steering 실험(layer, strength 조합)에 대한 로그 정보를 구성한다.
@@ -190,6 +191,12 @@ def build_experiment_log(
                 cfg.experiment.steered_feature_idx
             ),
             "strength": float(strength),
+            # 어떤 hook layer에서 생성한 출력인지를 기록 (가능한 경우)
+            "hook_layer_idx": int(
+                getattr(steering_result, "get", lambda k, d=None: d)("hook_layer_idx", layer_idx)
+            )
+            if isinstance(steering_result, dict)
+            else layer_idx,
         },
         "prompt": prompt if prompt is not None else cfg.experiment.prompt,
         "output": {
@@ -216,6 +223,47 @@ def build_experiment_log(
     }
     if std_info is not None:
         log_dict["feature_std_summary"] = std_info
+
+    # hook layer idx별 결과 요약(선택적): 각 hook 설정에 대해
+    # 선택된 feature indices 기준 f/g 및 출력 텍스트를 함께 저장한다.
+    if hook_results is not None:
+        hook_summary: Dict[str, Any] = {}
+        for key, res in hook_results.items():
+            if not isinstance(res, dict):
+                continue
+            hook_idx_val = int(res.get("hook_layer_idx", layer_idx))
+
+            # 선택된 feature 인덱스에 대한 f/g 값 추출
+            f_b = res["f_before"][0, feature_indices].tolist()
+            f_a = res["f_after"][0, feature_indices].tolist()
+
+            g_bt = res.get("g_before", None)
+            g_at = res.get("g_after", None)
+            if g_bt is not None and g_at is not None:
+                g_b = g_bt[0, feature_indices].tolist()
+                g_a = g_at[0, feature_indices].tolist()
+            else:
+                g_b = [0.0 for _ in feature_indices]
+                g_a = [0.0 for _ in feature_indices]
+
+            hook_summary[key] = {
+                "hook_layer_idx": hook_idx_val,
+                "feature_stats": {
+                    "indices": [int(i) for i in feature_indices.tolist()],
+                    "f_before": f_b,
+                    "f_after": f_a,
+                    "g_before": g_b,
+                    "g_after": g_a,
+                },
+                "output": {
+                    "before": res.get("y_before", ""),
+                    "after": res.get("y_after", ""),
+                },
+            }
+
+        if hook_summary:
+            log_dict["hook_comparison"] = hook_summary
+
     return log_dict
 
 
@@ -470,7 +518,8 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
                 steering_vector = trained_sae.decoder.data[feature_idx].to(model.device)
 
                 for idx, prompt in enumerate(eval_texts):
-                    steering_result = run_steering_analysis(
+                    # hook layer를 layer_idx-1, layer_idx 두 경우 모두에 대해 실행하여 비교
+                    hook_results = run_steering_analysis_compare_hooks(
                         model=model,
                         tokenizer=tokenizer,
                         sae=trained_sae,
@@ -479,6 +528,8 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
                         steering_vector=steering_vector,
                         strength=strength,
                     )
+                    # 기본 분석/통계에는 기존 정책(layer_idx-1)을 사용
+                    steering_result = hook_results["hook_layer_idx_minus1"]
 
                     # steered feature 중심으로 plot / log에 쓸 index selection
                     if trained_sae.feature_gnn is not None:
@@ -560,6 +611,7 @@ def run_experiment(cfg, cli_command: str | None = None) -> None:
                         feature_idx=feature_idx,
                         prompt=prompt,
                         cli_command=cli_command,
+                        hook_results=hook_results,
                     )
                     log_filename = (
                         f"L{layer_idx}_S{strength}_{label_name}_N{idx}.json"

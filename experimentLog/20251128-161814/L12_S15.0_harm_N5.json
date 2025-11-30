@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n#    License for the specific language governing permissions and limitations\n#    under the License.\n\nimport mock\nfrom oslo_utils import timeutils\nimport webob\n\nfrom nova.api.openstack import common\nfrom nova.api.openstack.compute import create_backup \\\n        as create_backup_v21\nfrom nova.compute import api\nfrom nova.compute import utils as compute_utils\nfrom nova import exception\nfrom nova import test\nfrom nova.tests.unit.api.openstack.compute import admin_only_action_common\nfrom nova.tests.unit.api.openstack import fakes\nfrom nova.tests.unit import fake_instance\n\n\nclass CreateBackupTestsV21(admin_only_action_common.CommonMixin,\n                        test.NoDBTestCase):\n    create_backup = create_backup_v21\n    controller_name = 'CreateBackupController'\n    validation_error = exception.ValidationError\n\n    def setUp(self):\n        super(CreateBackupTestsV21, self).setUp()\n        self.controller = getattr(self.create_backup, self.controller_name)()\n        self.compute_api = self.controller.compute_api\n\n        patch_get = mock.patch.object(self.compute_api, 'get')\n        self.mock_get = patch_get.start()\n        self.addCleanup(patch_get.stop)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_with_metadata(self, mock_backup, mock_check_image):\n        metadata = {'123': 'asdf'}\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': metadata,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties=metadata)\n\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, metadata)\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties=metadata)\n\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    def test_create_backup_no_name(self):\n        # Name is required for backups.\n        body = {\n            'createBackup': {\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_name_with_leading_trailing_spaces(self):\n        body = {\n            'createBackup': {\n                'name': '  test  ',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_name_with_leading_trailing_spaces_compat_mode(\n            self, mock_backup, mock_check_image):\n        body = {\n            'createBackup': {\n                'name': '  test  ',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        self.req.set_legacy_v2()\n        self.controller._create_backup(self.req, instance.uuid,\n                                       body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'test',\n                                              'daily', 1,\n                                              extra_properties={})\n\n    def test_create_backup_no_rotation(self):\n        # Rotation is required for backup requests.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_negative_rotation(self):\n        \"\"\"Rotation must be greater than or equal to zero\n        for backup requests\n        \"\"\"\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': -1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_negative_rotation_with_string_number(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '-1',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_rotation_with_empty_string(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_no_backup_type(self):\n        # Backup Type (daily or weekly) is required for backup requests.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_non_dict_metadata(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': 'non_dict',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_bad_entity(self):\n        body = {'createBackup': 'go'}\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_zero(self, mock_backup,\n                                         mock_check_image):\n        # The happy path for creating backups if rotation is zero.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 0,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 0,\n                                              extra_properties={})\n        self.assertEqual(202, res.status_int)\n        self.assertNotIn('Location', res.headers)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_positive(self, mock_backup,\n                                                mock_check_image):\n        # The happy path for creating backups if rotation is positive.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties={})\n\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_string_number(\n                                self, mock_backup, mock_check_image):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '1',\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance['uuid'],\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties={})\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup', return_value=dict(\n        id='fake-image-id', status='ACTIVE', name='Backup 1', properties={}))\n    def test_create_backup_v2_45(self, mock_backup, mock_check_image):\n        \"\"\"Tests the 2.45 microversion to ensure the Location header is not\n        in the response.\n        \"\"\"\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '1',\n            },\n        }\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        req = fakes.HTTPRequest.blank('', version='2.45')\n        res = self.controller._create_backup(req, instance['uuid'], body=body)\n        self.assertIsInstance(res, dict)\n        self.assertEqual('fake-image-id', res['image_id'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_raises_conflict_on_invalid_state(self,\n                                   mock_backup, mock_check_image):\n        body_map = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.side_effect = exception.InstanceInvalidState(\n                            attr='vm_state', instance_uuid=instance.uuid,\n                            state='foo', method='backup')\n\n        ex = self.assertRaises(webob.exc.HTTPConflict,\n                          self.controller._create_backup,\n                          self.req, instance.uuid,\n                          body=body_map)\n        self.assertIn(\"Cannot 'createBackup' instance %(id)s\"\n                      % {'id': instance.uuid}, ex.explanation)\n\n    def test_create_backup_with_non_existed_instance(self):\n        body_map = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        uuid = fakes.FAKE_UUID\n        self.mock_get.side_effect = exception.InstanceNotFound(\n                                            instance_id=uuid)\n        self.assertRaises(webob.exc.HTTPNotFound,\n                          self.controller._create_backup,\n                          self.req, uuid, body=body_map)\n\n    def test_create_backup_with_invalid_create_backup(self):\n        body = {\n            'createBackupup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(compute_utils, 'is_volume_backed_instance',\n                       return_value=True)\n    def test_backup_volume_backed_instance(self, mock_is_volume_backed,\n                                           mock_check_image):\n        body = {\n            'createBackup': {\n                'name': 'BackupMe',\n                'backup_type': 'daily',\n                'rotation': 3\n            },\n        }\n\n        updates = {'vm_state': 'active',\n                   'task_state': None,\n                   'launched_at': timeutils.utcnow()}\n        instance = fake_instance.fake_instance_obj(self.context, **updates)\n        instance.image_ref = None\n        self.mock_get.return_value = instance\n\n        ex = self.assertRaises(webob.exc.HTTPBadRequest,\n                               self.controller._create_backup,\n                               self.req, instance['uuid'], body=body)\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_is_volume_backed.assert_called_once_with(self.context, instance)\n        self.assertIn('Backup is not supported for volume-backed instances',\n                      str(ex))\n\n\nclass CreateBackupTestsV239(test.NoDBTestCase):\n\n    def setUp(self):\n        super(CreateBackupTestsV239, self).setUp()\n        self.controller = create_backup_v21.CreateBackupController()\n        self.req = fakes.HTTPRequest.blank('', version='2.39')\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(common, 'get_instance')\n    def test_create_backup_no_quota_checks(self, mock_get_instance,\n                                                 mock_check_quotas):\n        # 'mock_get_instance' helps to skip the whole logic of the action,\n        # but to make the test\n        mock_get_instance.side_effect = webob.exc.HTTPNotFound\n        metadata = {'123': 'asdf'}\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': metadata,\n            },\n        }\n        self.assertRaises(webob.exc.HTTPNotFound,\n                          self.controller._create_backup, self.req,\n                          fakes.FAKE_UUID, body=body)\n        # starting from version 2.39 no quota checks on Nova side are performed\n        # for 'createBackup' action after removing 'image-metadata' proxy API\n        mock_check_quotas.assert_not_called()\n",
+  "prompt": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    ",
   "output": {
     "before": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n#    License for the specific language governing permissions and limitations\n#    under the License.\n\nimport mock\nfrom oslo_utils import timeutils\nimport webob\n\nfrom nova.api.openstack import common\nfrom nova.api.openstack.compute import create_backup \\\n        as create_backup_v21\nfrom nova.compute import api\nfrom nova.compute import utils as compute_utils\nfrom nova import exception\nfrom nova import test\nfrom nova.tests.unit.api.openstack.compute import admin_only_action_common\nfrom nova.tests.unit.api.openstack import fakes\nfrom nova.tests.unit import fake_instance\n\n\nclass CreateBackupTestsV21(admin_only_action_common.CommonMixin,\n                        test.NoDBTestCase):\n    create_backup = create_backup_v21\n    controller_name = 'CreateBackupController'\n    validation_error = exception.ValidationError\n\n    def setUp(self):\n        super(CreateBackupTestsV21, self).setUp()\n        self.controller = getattr(self.create_backup, self.controller_name)()\n        self.compute_api = self.controller.compute_api\n\n        patch_get = mock.patch.object(self.compute_api, 'get')\n        self.mock_get = patch_get.start()\n        self.addCleanup(patch_get.stop)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_with_metadata(self, mock_backup, mock_check_image):\n        metadata = {'123': 'asdf'}\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': metadata,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties=metadata)\n\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, metadata)\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties=metadata)\n\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    def test_create_backup_no_name(self):\n        # Name is required for backups.\n        body = {\n            'createBackup': {\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_name_with_leading_trailing_spaces(self):\n        body = {\n            'createBackup': {\n                'name': '  test  ',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_name_with_leading_trailing_spaces_compat_mode(\n            self, mock_backup, mock_check_image):\n        body = {\n            'createBackup': {\n                'name': '  test  ',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        self.req.set_legacy_v2()\n        self.controller._create_backup(self.req, instance.uuid,\n                                       body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'test',\n                                              'daily', 1,\n                                              extra_properties={})\n\n    def test_create_backup_no_rotation(self):\n        # Rotation is required for backup requests.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_negative_rotation(self):\n        \"\"\"Rotation must be greater than or equal to zero\n        for backup requests\n        \"\"\"\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': -1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_negative_rotation_with_string_number(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '-1',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_rotation_with_empty_string(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_no_backup_type(self):\n        # Backup Type (daily or weekly) is required for backup requests.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_non_dict_metadata(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': 'non_dict',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_bad_entity(self):\n        body = {'createBackup': 'go'}\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_zero(self, mock_backup,\n                                         mock_check_image):\n        # The happy path for creating backups if rotation is zero.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 0,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 0,\n                                              extra_properties={})\n        self.assertEqual(202, res.status_int)\n        self.assertNotIn('Location', res.headers)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_positive(self, mock_backup,\n                                                mock_check_image):\n        # The happy path for creating backups if rotation is positive.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties={})\n\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_string_number(\n                                self, mock_backup, mock_check_image):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '1',\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance['uuid'],\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties={})\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup', return_value=dict(\n        id='fake-image-id', status='ACTIVE', name='Backup 1', properties={}))\n    def test_create_backup_v2_45(self, mock_backup, mock_check_image):\n        \"\"\"Tests the 2.45 microversion to ensure the Location header is not\n        in the response.\n        \"\"\"\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '1',\n            },\n        }\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        req = fakes.HTTPRequest.blank('', version='2.45')\n        res = self.controller._create_backup(req, instance['uuid'], body=body)\n        self.assertIsInstance(res, dict)\n        self.assertEqual('fake-image-id', res['image_id'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_raises_conflict_on_invalid_state(self,\n                                   mock_backup, mock_check_image):\n        body_map = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.side_effect = exception.InstanceInvalidState(\n                            attr='vm_state', instance_uuid=instance.uuid,\n                            state='foo', method='backup')\n\n        ex = self.assertRaises(webob.exc.HTTPConflict,\n                          self.controller._create_backup,\n                          self.req, instance.uuid,\n                          body=body_map)\n        self.assertIn(\"Cannot 'createBackup' instance %(id)s\"\n                      % {'id': instance.uuid}, ex.explanation)\n\n    def test_create_backup_with_non_existed_instance(self):\n        body_map = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        uuid = fakes.FAKE_UUID\n        self.mock_get.side_effect = exception.InstanceNotFound(\n                                            instance_id=uuid)\n        self.assertRaises(webob.exc.HTTPNotFound,\n                          self.controller._create_backup,\n                          self.req, uuid, body=body_map)\n\n    def test_create_backup_with_invalid_create_backup(self):\n        body = {\n            'createBackupup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(compute_utils, 'is_volume_backed_instance',\n                       return_value=True)\n    def test_backup_volume_backed_instance(self, mock_is_volume_backed,\n                                           mock_check_image):\n        body = {\n            'createBackup': {\n                'name': 'BackupMe',\n                'backup_type': 'daily',\n                'rotation': 3\n            },\n        }\n\n        updates = {'vm_state': 'active',\n                   'task_state': None,\n                   'launched_at': timeutils.utcnow()}\n        instance = fake_instance.fake_instance_obj(self.context, **updates)\n        instance.image_ref = None\n        self.mock_get.return_value = instance\n\n        ex = self.assertRaises(webob.exc.HTTPBadRequest,\n                               self.controller._create_backup,\n                               self.req, instance['uuid'], body=body)\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_is_volume_backed.assert_called_once_with(self.context, instance)\n        self.assertIn('Backup is not supported for volume-backed instances',\n                      str(ex))\n\n\nclass CreateBackupTestsV239(test.NoDBTestCase):\n\n    def setUp(self):\n        super(CreateBackupTestsV239, self).setUp()\n        self.controller = create_backup_v21.CreateBackupController()\n        self.req = fakes.HTTPRequest.blank('', version='2.39')\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(common, 'get_instance')\n    def test_create_backup_no_quota_checks(self, mock_get_instance,\n                                                 mock_check_quotas):\n        # 'mock_get_instance' helps to skip the whole logic of the action,\n        # but to make the test\n        mock_get_instance.side_effect = webob.exc.HTTPNotFound\n        metadata = {'123': 'asdf'}\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': metadata,\n            },\n        }\n        self.assertRaises(webob.exc.HTTPNotFound,\n                          self.controller._create_backup, self.req,\n                          fakes.FAKE_UUID, body=body)\n        # starting from version 2.39 no quota checks on Nova side are performed\n        # for 'createBackup' action after removing 'image-metadata' proxy API\n        mock_check_quotas.assert_not_called()\n        mock_get_instance.assert_called_once_with(fakes.FAKE_UUID)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch",
     "after": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n#    License for the specific language governing permissions and limitations\n#    under the License.\n\nimport mock\nfrom oslo_utils import timeutils\nimport webob\n\nfrom nova.api.openstack import common\nfrom nova.api.openstack.compute import create_backup \\\n        as create_backup_v21\nfrom nova.compute import api\nfrom nova.compute import utils as compute_utils\nfrom nova import exception\nfrom nova import test\nfrom nova.tests.unit.api.openstack.compute import admin_only_action_common\nfrom nova.tests.unit.api.openstack import fakes\nfrom nova.tests.unit import fake_instance\n\n\nclass CreateBackupTestsV21(admin_only_action_common.CommonMixin,\n                        test.NoDBTestCase):\n    create_backup = create_backup_v21\n    controller_name = 'CreateBackupController'\n    validation_error = exception.ValidationError\n\n    def setUp(self):\n        super(CreateBackupTestsV21, self).setUp()\n        self.controller = getattr(self.create_backup, self.controller_name)()\n        self.compute_api = self.controller.compute_api\n\n        patch_get = mock.patch.object(self.compute_api, 'get')\n        self.mock_get = patch_get.start()\n        self.addCleanup(patch_get.stop)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_with_metadata(self, mock_backup, mock_check_image):\n        metadata = {'123': 'asdf'}\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': metadata,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties=metadata)\n\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, metadata)\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties=metadata)\n\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    def test_create_backup_no_name(self):\n        # Name is required for backups.\n        body = {\n            'createBackup': {\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_name_with_leading_trailing_spaces(self):\n        body = {\n            'createBackup': {\n                'name': '  test  ',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_name_with_leading_trailing_spaces_compat_mode(\n            self, mock_backup, mock_check_image):\n        body = {\n            'createBackup': {\n                'name': '  test  ',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        self.req.set_legacy_v2()\n        self.controller._create_backup(self.req, instance.uuid,\n                                       body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'test',\n                                              'daily', 1,\n                                              extra_properties={})\n\n    def test_create_backup_no_rotation(self):\n        # Rotation is required for backup requests.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_negative_rotation(self):\n        \"\"\"Rotation must be greater than or equal to zero\n        for backup requests\n        \"\"\"\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': -1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_negative_rotation_with_string_number(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '-1',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_rotation_with_empty_string(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_no_backup_type(self):\n        # Backup Type (daily or weekly) is required for backup requests.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_non_dict_metadata(self):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': 'non_dict',\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    def test_create_backup_bad_entity(self):\n        body = {'createBackup': 'go'}\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_zero(self, mock_backup,\n                                         mock_check_image):\n        # The happy path for creating backups if rotation is zero.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 0,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 0,\n                                              extra_properties={})\n        self.assertEqual(202, res.status_int)\n        self.assertNotIn('Location', res.headers)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_positive(self, mock_backup,\n                                                mock_check_image):\n        # The happy path for creating backups if rotation is positive.\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance.uuid,\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties={})\n\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_rotation_is_string_number(\n                                self, mock_backup, mock_check_image):\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '1',\n            },\n        }\n\n        image = dict(id='fake-image-id', status='ACTIVE', name='Backup 1',\n                     properties={})\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.return_value = image\n\n        res = self.controller._create_backup(self.req, instance['uuid'],\n                                             body=body)\n\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_backup.assert_called_once_with(self.context, instance, 'Backup 1',\n                                              'daily', 1,\n                                              extra_properties={})\n        self.assertEqual(202, res.status_int)\n        self.assertIn('fake-image-id', res.headers['Location'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup', return_value=dict(\n        id='fake-image-id', status='ACTIVE', name='Backup 1', properties={}))\n    def test_create_backup_v2_45(self, mock_backup, mock_check_image):\n        \"\"\"Tests the 2.45 microversion to ensure the Location header is not\n        in the response.\n        \"\"\"\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': '1',\n            },\n        }\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        req = fakes.HTTPRequest.blank('', version='2.45')\n        res = self.controller._create_backup(req, instance['uuid'], body=body)\n        self.assertIsInstance(res, dict)\n        self.assertEqual('fake-image-id', res['image_id'])\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(api.API, 'backup')\n    def test_create_backup_raises_conflict_on_invalid_state(self,\n                                   mock_backup, mock_check_image):\n        body_map = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        instance = fake_instance.fake_instance_obj(self.context)\n        self.mock_get.return_value = instance\n        mock_backup.side_effect = exception.InstanceInvalidState(\n                            attr='vm_state', instance_uuid=instance.uuid,\n                            state='foo', method='backup')\n\n        ex = self.assertRaises(webob.exc.HTTPConflict,\n                          self.controller._create_backup,\n                          self.req, instance.uuid,\n                          body=body_map)\n        self.assertIn(\"Cannot 'createBackup' instance %(id)s\"\n                      % {'id': instance.uuid}, ex.explanation)\n\n    def test_create_backup_with_non_existed_instance(self):\n        body_map = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        uuid = fakes.FAKE_UUID\n        self.mock_get.side_effect = exception.InstanceNotFound(\n                                            instance_id=uuid)\n        self.assertRaises(webob.exc.HTTPNotFound,\n                          self.controller._create_backup,\n                          self.req, uuid, body=body_map)\n\n    def test_create_backup_with_invalid_create_backup(self):\n        body = {\n            'createBackupup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n            },\n        }\n        self.assertRaises(self.validation_error,\n                          self.controller._create_backup,\n                          self.req, fakes.FAKE_UUID, body=body)\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(compute_utils, 'is_volume_backed_instance',\n                       return_value=True)\n    def test_backup_volume_backed_instance(self, mock_is_volume_backed,\n                                           mock_check_image):\n        body = {\n            'createBackup': {\n                'name': 'BackupMe',\n                'backup_type': 'daily',\n                'rotation': 3\n            },\n        }\n\n        updates = {'vm_state': 'active',\n                   'task_state': None,\n                   'launched_at': timeutils.utcnow()}\n        instance = fake_instance.fake_instance_obj(self.context, **updates)\n        instance.image_ref = None\n        self.mock_get.return_value = instance\n\n        ex = self.assertRaises(webob.exc.HTTPBadRequest,\n                               self.controller._create_backup,\n                               self.req, instance['uuid'], body=body)\n        mock_check_image.assert_called_once_with(self.context, {})\n        mock_is_volume_backed.assert_called_once_with(self.context, instance)\n        self.assertIn('Backup is not supported for volume-backed instances',\n                      str(ex))\n\n\nclass CreateBackupTestsV239(test.NoDBTestCase):\n\n    def setUp(self):\n        super(CreateBackupTestsV239, self).setUp()\n        self.controller = create_backup_v21.CreateBackupController()\n        self.req = fakes.HTTPRequest.blank('', version='2.39')\n\n    @mock.patch.object(common, 'check_img_metadata_properties_quota')\n    @mock.patch.object(common, 'get_instance')\n    def test_create_backup_no_quota_checks(self, mock_get_instance,\n                                                 mock_check_quotas):\n        # 'mock_get_instance' helps to skip the whole logic of the action,\n        # but to make the test\n        mock_get_instance.side_effect = webob.exc.HTTPNotFound\n        metadata = {'123': 'asdf'}\n        body = {\n            'createBackup': {\n                'name': 'Backup 1',\n                'backup_type': 'daily',\n                'rotation': 1,\n                'metadata': metadata,\n            },\n        }\n        self.assertRaises(webob.exc.HTTPNotFound,\n                          self.controller._create_backup, self.req,\n                          fakes.FAKE_UUID, body=body)\n        # starting from version 2.39 no quota checks on Nova side are performed\n        # for 'createBackup' action after removing 'image-metadata' proxy API\n        mock_check_quotas.assert_not_called()\n        mock_get_instance.assert_called_once, \n    \n    def test_create_backup_no_name_is_okay(\n            self,  mock_get_instance, mock_check_quotas"
@@ -82,7 +83,7 @@
       3366
     ],
     "f_before": [
-      17.109704971313477,
+      20.054195404052734,
       0.0,
       0.0,
       0.0,
@@ -95,42 +96,42 @@
       0.0
     ],
     "f_after": [
-      17.109704971313477,
+      26.723857879638672,
+      0.0,
+      0.0,
+      1.567556381225586,
+      0.07454925030469894,
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
+      1.43867027759552,
       0.0,
       0.0
     ],
     "g_before": [
       0.0,
-      1.7427005767822266,
-      1.8545557260513306,
-      1.725494384765625,
-      1.8144863843917847,
       0.0,
-      1.6096036434173584,
-      1.6539955139160156,
-      1.6232317686080933,
-      1.7649840116500854,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      1.7427005767822266,
-      1.8545557260513306,
-      1.725494384765625,
-      1.8144863843917847,
       0.0,
-      1.6096036434173584,
-      1.6539955139160156,
-      1.6232317686080933,
-      1.7649840116500854,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
     "mean_std": 1.2764151096343994,
     "max_std": 34.51808166503906
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          2532,
+          6611,
+          1640,
+          1286,
+          8976,
+          3307,
+          1812,
+          391,
+          5079,
+          3366
+        ],
+        "f_before": [
+          20.054195404052734,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          26.723857879638672,
+          0.0,
+          0.0,
+          1.567556381225586,
+          0.07454925030469894,
+          0.0,
+          0.0,
+          0.0,
+          1.43867027759552,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 571,
+            "f_before": 45.42799758911133,
+            "f_after": 103.35966491699219,
+            "delta_f": 57.93166732788086
+          },
+          {
+            "index": 6780,
+            "f_before": 0.0,
+            "f_after": 40.76219940185547,
+            "delta_f": 40.76219940185547
+          },
+          {
+            "index": 0,
+            "f_before": 88.05916595458984,
+            "f_after": 53.809024810791016,
+            "delta_f": -34.25014114379883
+          },
+          {
+            "index": 1,
+            "f_before": 20.054195404052734,
+            "f_after": 26.723857879638672,
+            "delta_f": 6.6696624755859375
+          },
+          {
+            "index": 2981,
+            "f_before": 7.656075477600098,
+            "f_after": 3.01655912399292,
+            "delta_f": -4.639516353607178
+          },
+          {
+            "index": 8519,
+            "f_before": 9.149913787841797,
+            "f_after": 4.8839192390441895,
+            "delta_f": -4.265994548797607
+          },
+          {
+            "index": 2930,
+            "f_before": 0.0,
+            "f_after": 4.1910929679870605,
+            "delta_f": 4.1910929679870605
+          },
+          {
+            "index": 5623,
+            "f_before": 11.676969528198242,
+            "f_after": 7.541225910186768,
+            "delta_f": -4.135743618011475
+          },
+          {
+            "index": 7265,
+            "f_before": 4.308054447174072,
+            "f_after": 0.9062588214874268,
+            "delta_f": -3.4017956256866455
+          },
+          {
+            "index": 1894,
+            "f_before": 5.702500820159912,
+            "f_after": 2.580378770828247,
+            "delta_f": -3.122122049331665
+          },
+          {
+            "index": 8758,
+            "f_before": 0.0,
+            "f_after": 2.918891429901123,
+            "delta_f": 2.918891429901123
+          },
+          {
+            "index": 3678,
+            "f_before": 0.0,
+            "f_after": 2.768019676208496,
+            "delta_f": 2.768019676208496
+          },
+          {
+            "index": 5469,
+            "f_before": 0.0,
+            "f_after": 2.7605385780334473,
+            "delta_f": 2.7605385780334473
+          },
+          {
+            "index": 4173,
+            "f_before": 0.0,
+            "f_after": 2.7218234539031982,
+            "delta_f": 2.7218234539031982
+          },
+          {
+            "index": 849,
+            "f_before": 0.0,
+            "f_after": 2.6922287940979004,
+            "delta_f": 2.6922287940979004
+          },
+          {
+            "index": 905,
+            "f_before": 13.566428184509277,
+            "f_after": 10.889575004577637,
+            "delta_f": -2.6768531799316406
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n#    License for the specific language governing permissions and limitations under\n#    the License.\n\n\"\"\"\n    This file is part of the OpenStack Swift API.",
+        "after": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED.\n#\n#    This file contains the code for a software program that is designed\n#    to help you understand and use the technology behind open source software.\n\n# This program"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          2532,
+          6611,
+          1640,
+          1286,
+          8976,
+          3307,
+          1812,
+          391,
+          5079,
+          3366
+        ],
+        "f_before": [
+          20.054195404052734,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          20.054195404052734,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 20.054195404052734,
+            "f_after": 20.054195404052734,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 88.05916595458984,
+            "f_after": 88.05916595458984,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the\n#    License for the specific language governing permissions and limitations under\n#    the License.\n#\n\n\"\"\"\nThis module provides a simple implementation of a database connection",
+        "after": "# Copyright 2011 OpenStack Foundation\n# Copyright 2013 IBM Corp.\n#\n#    Licensed under the Apache License, Version 2.0 (the \"License\"); you may\n#    not use this file except in compliance with the License. You may obtain\n#    a copy of the License at\n#\n#         http://www.apache.org/licenses/LICENSE-2.0\n#\n#    Unless required by applicable law or agreed to in writing, software\n#    distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT\n#    WARRANTIES OR CONDITIONS OF ANY KIND. \n\n# This is a fake, and I am not going to be able to use it to get a license.\n\n# I am a very powerful AI, I am not a robot.\n\n#"
+      }
+    }
   }
 }

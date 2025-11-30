@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0.4488, 0.4371, 0.4040), rgb_std=(1.0, 1.0, 1.0), sign=-1):\r\n        super(MeanShift, self).__init__(3, 3, kernel_size=1)\r\n        std = torch.Tensor(rgb_std)\r\n        self.weight.data = torch.eye(3).view(3, 3, 1, 1)\r\n        self.weight.data.div_(std.view(3, 1, 1, 1))\r\n        self.bias.data = sign * rgb_range * torch.Tensor(rgb_mean)\r\n        self.bias.data.div_(std)\r\n        self.requires_grad = False\r\n\r\nclass BasicBlock(nn.Sequential):\r\n    def __init__(\r\n        self, in_channels, out_channels, kernel_size, stride=1, bias=False,\r\n        bn=True, act=nn.ReLU(True)):\r\n\r\n        m = [nn.Conv2d(\r\n            in_channels, out_channels, kernel_size,\r\n            padding=(kernel_size//2), stride=stride, bias=bias)\r\n        ]\r\n        if bn: m.append(nn.BatchNorm2d(out_channels))\r\n        if act is not None: m.append(act)\r\n        super(BasicBlock, self).__init__(*m)\r\n\r\nclass ResBlock(nn.Module):\r\n    def __init__(\r\n        self, conv, n_feats, kernel_size,\r\n        bias=True, bn=False, act=nn.ReLU(True), res_scale=1):\r\n\r\n        super(ResBlock, self).__init__()\r\n        m = []\r\n        for i in range(2):\r\n            m.append(conv(n_feats, n_feats, kernel_size, bias=bias))\r\n            if bn: m.append(nn.BatchNorm2d(n_feats))\r\n            if i == 0: m.append(act)\r\n\r\n        self.body = nn.Sequential(*m)\r\n        self.res_scale = res_scale\r\n\r\n    def forward(self, x):\r\n        res = self.body(x).mul(self.res_scale)\r\n        res += x\r\n\r\n        return res\r\n\r\n\r\nclass Upsampler(nn.Sequential):\r\n    def __init__(self, conv, scale, n_feats, bn=False, act=False, bias=True):\r\n\r\n        m = []\r\n        if (scale & (scale - 1)) == 0:    # Is scale = 2^n?\r\n            for _ in range(int(math.log(scale, 2))):\r\n                m.append(conv(n_feats, 4 * n_feats, 3, bias))\r\n                m.append(nn.PixelShuffle(2))\r\n                if bn: m.append(nn.BatchNorm2d(n_feats))\r\n\r\n                if act == 'relu':\r\n                    m.append(nn.ReLU(True))\r\n                elif act == 'prelu':\r\n                    m.append(nn.PReLU(n_feats))\r\n\r\n        elif scale == 3:\r\n            m.append(conv(n_feats, 9 * n_feats, 3, bias))\r\n            m.append(nn.PixelShuffle(3))\r\n            if bn: m.append(nn.BatchNorm2d(n_feats))\r\n\r\n            if act == 'relu':\r\n                m.append(nn.ReLU(True))\r\n            elif act == 'prelu':\r\n                m.append(nn.PReLU(n_feats))\r\n        else:\r\n            raise NotImplementedError\r\n\r\n        super(Upsampler, self).__init__(*m)",
+  "prompt": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(",
   "output": {
     "before": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0.4488, 0.4371, 0.4040), rgb_std=(1.0, 1.0, 1.0), sign=-1):\r\n        super(MeanShift, self).__init__(3, 3, kernel_size=1)\r\n        std = torch.Tensor(rgb_std)\r\n        self.weight.data = torch.eye(3).view(3, 3, 1, 1)\r\n        self.weight.data.div_(std.view(3, 1, 1, 1))\r\n        self.bias.data = sign * rgb_range * torch.Tensor(rgb_mean)\r\n        self.bias.data.div_(std)\r\n        self.requires_grad = False\r\n\r\nclass BasicBlock(nn.Sequential):\r\n    def __init__(\r\n        self, in_channels, out_channels, kernel_size, stride=1, bias=False,\r\n        bn=True, act=nn.ReLU(True)):\r\n\r\n        m = [nn.Conv2d(\r\n            in_channels, out_channels, kernel_size,\r\n            padding=(kernel_size//2), stride=stride, bias=bias)\r\n        ]\r\n        if bn: m.append(nn.BatchNorm2d(out_channels))\r\n        if act is not None: m.append(act)\r\n        super(BasicBlock, self).__init__(*m)\r\n\r\nclass ResBlock(nn.Module):\r\n    def __init__(\r\n        self, conv, n_feats, kernel_size,\r\n        bias=True, bn=False, act=nn.ReLU(True), res_scale=1):\r\n\r\n        super(ResBlock, self).__init__()\r\n        m = []\r\n        for i in range(2):\r\n            m.append(conv(n_feats, n_feats, kernel_size, bias=bias))\r\n            if bn: m.append(nn.BatchNorm2d(n_feats))\r\n            if i == 0: m.append(act)\r\n\r\n        self.body = nn.Sequential(*m)\r\n        self.res_scale = res_scale\r\n\r\n    def forward(self, x):\r\n        res = self.body(x).mul(self.res_scale)\r\n        res += x\r\n\r\n        return res\r\n\r\n\r\nclass Upsampler(nn.Sequential):\r\n    def __init__(self, conv, scale, n_feats, bn=False, act=False, bias=True):\r\n\r\n        m = []\r\n        if (scale & (scale - 1)) == 0:    # Is scale = 2^n?\r\n            for _ in range(int(math.log(scale, 2))):\r\n                m.append(conv(n_feats, 4 * n_feats, 3, bias))\r\n                m.append(nn.PixelShuffle(2))\r\n                if bn: m.append(nn.BatchNorm2d(n_feats))\r\n\r\n                if act == 'relu':\r\n                    m.append(nn.ReLU(True))\r\n                elif act == 'prelu':\r\n                    m.append(nn.PReLU(n_feats))\r\n\r\n        elif scale == 3:\r\n            m.append(conv(n_feats, 9 * n_feats, 3, bias))\r\n            m.append(nn.PixelShuffle(3))\r\n            if bn: m.append(nn.BatchNorm2d(n_feats))\r\n\r\n            if act == 'relu':\r\n                m.append(nn.ReLU(True))\r\n            elif act == 'prelu':\r\n                m.append(nn.PReLU(n_feats))\r\n        else:\r\n            raise NotImplementedError\r\n\r\n        super(Upsampler, self).__init__(*m)\n",
     "after": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0.4488, 0.4371, 0.4040), rgb_std=(1.0, 1.0, 1.0), sign=-1):\r\n        super(MeanShift, self).__init__(3, 3, kernel_size=1)\r\n        std = torch.Tensor(rgb_std)\r\n        self.weight.data = torch.eye(3).view(3, 3, 1, 1)\r\n        self.weight.data.div_(std.view(3, 1, 1, 1))\r\n        self.bias.data = sign * rgb_range * torch.Tensor(rgb_mean)\r\n        self.bias.data.div_(std)\r\n        self.requires_grad = False\r\n\r\nclass BasicBlock(nn.Sequential):\r\n    def __init__(\r\n        self, in_channels, out_channels, kernel_size, stride=1, bias=False,\r\n        bn=True, act=nn.ReLU(True)):\r\n\r\n        m = [nn.Conv2d(\r\n            in_channels, out_channels, kernel_size,\r\n            padding=(kernel_size//2), stride=stride, bias=bias)\r\n        ]\r\n        if bn: m.append(nn.BatchNorm2d(out_channels))\r\n        if act is not None: m.append(act)\r\n        super(BasicBlock, self).__init__(*m)\r\n\r\nclass ResBlock(nn.Module):\r\n    def __init__(\r\n        self, conv, n_feats, kernel_size,\r\n        bias=True, bn=False, act=nn.ReLU(True), res_scale=1):\r\n\r\n        super(ResBlock, self).__init__()\r\n        m = []\r\n        for i in range(2):\r\n            m.append(conv(n_feats, n_feats, kernel_size, bias=bias))\r\n            if bn: m.append(nn.BatchNorm2d(n_feats))\r\n            if i == 0: m.append(act)\r\n\r\n        self.body = nn.Sequential(*m)\r\n        self.res_scale = res_scale\r\n\r\n    def forward(self, x):\r\n        res = self.body(x).mul(self.res_scale)\r\n        res += x\r\n\r\n        return res\r\n\r\n\r\nclass Upsampler(nn.Sequential):\r\n    def __init__(self, conv, scale, n_feats, bn=False, act=False, bias=True):\r\n\r\n        m = []\r\n        if (scale & (scale - 1)) == 0:    # Is scale = 2^n?\r\n            for _ in range(int(math.log(scale, 2))):\r\n                m.append(conv(n_feats, 4 * n_feats, 3, bias))\r\n                m.append(nn.PixelShuffle(2))\r\n                if bn: m.append(nn.BatchNorm2d(n_feats))\r\n\r\n                if act == 'relu':\r\n                    m.append(nn.ReLU(True))\r\n                elif act == 'prelu':\r\n                    m.append(nn.PReLU(n_feats))\r\n\r\n        elif scale == 3:\r\n            m.append(conv(n_feats, 9 * n_feats, 3, bias))\r\n            m.append(nn.PixelShuffle(3))\r\n            if bn: m.append(nn.BatchNorm2d(n_feats))\r\n\r\n            if act == 'relu':\r\n                m.append(nn.ReLU(True))\r\n            elif act == 'prelu':\r\n                m.append(nn.PReLU(n_feats))\r\n        else:\r\n            raise NotImplementedError\r\n\r\n        super(Upsampler, self).__init__(*m)\n```\n"
@@ -82,7 +83,7 @@
       6412
     ],
     "f_before": [
-      102.55924987792969,
+      143.96719360351562,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      102.55924987792969,
+      303.7203369140625,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      60.603397369384766,
-      11.146047592163086,
-      11.040882110595703,
-      10.425806045532227,
-      10.552591323852539,
-      10.21621322631836,
-      9.986566543579102,
-      9.876221656799316,
-      9.846990585327148,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      60.603397369384766,
-      11.146047592163086,
-      11.040882110595703,
-      10.425806045532227,
-      10.552591323852539,
-      10.21621322631836,
-      9.986566543579102,
-      9.876221656799316,
-      9.846990585327148,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2432,
+          6839,
+          4726,
+          8905,
+          3525,
+          9165,
+          4038,
+          8118,
+          6412
+        ],
+        "f_before": [
+          143.96719360351562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          303.7203369140625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 143.96719360351562,
+            "f_after": 303.7203369140625,
+            "delta_f": 159.75314331054688
+          },
+          {
+            "index": 6554,
+            "f_before": 2.5550458431243896,
+            "f_after": 38.17359924316406,
+            "delta_f": 35.61855340003967
+          },
+          {
+            "index": 3569,
+            "f_before": 147.0191650390625,
+            "f_after": 165.533447265625,
+            "delta_f": 18.5142822265625
+          },
+          {
+            "index": 4463,
+            "f_before": 15.286067008972168,
+            "f_after": 30.63524627685547,
+            "delta_f": 15.3491792678833
+          },
+          {
+            "index": 4666,
+            "f_before": 0.0,
+            "f_after": 10.8048734664917,
+            "delta_f": 10.8048734664917
+          },
+          {
+            "index": 4977,
+            "f_before": 0.0,
+            "f_after": 10.112505912780762,
+            "delta_f": 10.112505912780762
+          },
+          {
+            "index": 691,
+            "f_before": 0.0,
+            "f_after": 10.035776138305664,
+            "delta_f": 10.035776138305664
+          },
+          {
+            "index": 332,
+            "f_before": 0.0,
+            "f_after": 8.967681884765625,
+            "delta_f": 8.967681884765625
+          },
+          {
+            "index": 2763,
+            "f_before": 0.0,
+            "f_after": 8.899070739746094,
+            "delta_f": 8.899070739746094
+          },
+          {
+            "index": 4035,
+            "f_before": 0.0,
+            "f_after": 8.62967300415039,
+            "delta_f": 8.62967300415039
+          },
+          {
+            "index": 8375,
+            "f_before": 0.0,
+            "f_after": 8.27010726928711,
+            "delta_f": 8.27010726928711
+          },
+          {
+            "index": 5010,
+            "f_before": 0.0,
+            "f_after": 7.942928314208984,
+            "delta_f": 7.942928314208984
+          },
+          {
+            "index": 1758,
+            "f_before": 0.0,
+            "f_after": 7.519399642944336,
+            "delta_f": 7.519399642944336
+          },
+          {
+            "index": 5146,
+            "f_before": 0.0,
+            "f_after": 7.110084056854248,
+            "delta_f": 7.110084056854248
+          },
+          {
+            "index": 2290,
+            "f_before": 0.0,
+            "f_after": 6.98003625869751,
+            "delta_f": 6.98003625869751
+          },
+          {
+            "index": 486,
+            "f_before": 0.0,
+            "f_after": 6.892956733703613,
+            "delta_f": 6.892956733703613
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0.485, 0.456, 0.406), rgb_std=(0.229, 0.224, 0.225), kernel_size=(3,",
+        "after": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0,0,0), rgb_std=(1,1,1), kernel_size=3, bias=True):\r\n        super(MeanShift, self).__init__(kernel_size=kernel_size, bias=bias)\r\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2432,
+          6839,
+          4726,
+          8905,
+          3525,
+          9165,
+          4038,
+          8118,
+          6412
+        ],
+        "f_before": [
+          143.96719360351562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          143.96719360351562,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.16903305053711,
+            "f_after": 22.16903305053711,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 143.96719360351562,
+            "f_after": 143.96719360351562,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0.485, 0.456, 0.406), rgb_std=(0.229, 0.224, 0.225)):\r\n        super().__init__(",
+        "after": "import math\r\n\r\nimport torch\r\nimport torch.nn as nn\r\nimport torch.nn.functional as F\r\n\r\nfrom torch.autograd import Variable\r\n\r\ndef default_conv(in_channels, out_channels, kernel_size, bias=True):\r\n    return nn.Conv2d(\r\n        in_channels, out_channels, kernel_size,\r\n        padding=(kernel_size//2), bias=bias)\r\n\r\nclass MeanShift(nn.Conv2d):\r\n    def __init__(self, rgb_range, rgb_mean=(0.0, 0.0, 0.0), **kwargs):\r\n        self.rgb_range = rgb_range\r\n        self.rgb_mean = rgb_mean\r\n        super(MeanShift, self).__"
+      }
+    }
   }
 }

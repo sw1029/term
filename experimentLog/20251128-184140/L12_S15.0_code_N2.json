@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'c': 'compass (°)'}\n\n\n# ========================= Misc. private functions ==========================\n\n\n# Function to transform array of timedeltas to seoncds\n_total_seconds = np.vectorize(lambda dt: dt.total_seconds())\n\n\n# ============================ Main class (Track) ============================\n\nclass Track:\n\n    def __init__(self, filename, track=0, segment=0):\n\n        with open(filename, 'r') as gpx_file:\n            gpx = gpxpy.parse(gpx_file)\n\n        pts = gpx.tracks[track].segments[segment].points\n\n        self.latitude = np.array([pt.latitude for pt in pts])\n        self.longitude = np.array([pt.longitude for pt in pts])\n        self.elevation = np.array([pt.elevation for pt in pts])\n        self.time = np.array([pt.time for pt in pts])\n\n        # If some elevation or time data is missing, just set attribute to None\n\n        if any(self.time == None):\n            self.time = None\n\n        if any(self.elevation == None):\n            self.elevation = None\n\n    @staticmethod\n    def _distance(position1, position2):\n        \"\"\"Distance between two positions (latitude, longitude).\"\"\"\n        return vincenty(position1, position2)\n\n    def _resample(self, quantity, reference):\n        \"\"\"Resample quantities (velocity, compass) to fall back on reference\n\n        Reference is typically time or distance.\"\"\"\n        # midpoints correponding to shifted quantity\n        midpts = reference[:-1] + (np.diff(reference) / 2)\n        # linear interpolation to fall back to initial times\n        qty_resampled = np.interp(reference, midpts, quantity)\n        return qty_resampled\n\n    @property\n    def seconds(self):\n        if self.time is not None:\n            return _total_seconds(self.time - self.time[0])\n\n    @property\n    def distance(self):\n        \"\"\"Travelled distance in kilometers.\"\"\"\n\n        ds = [0]\n\n        x1s = self.latitude[:-1]\n        x2s = self.latitude[1:]\n\n        y1s = self.longitude[:-1]\n        y2s = self.longitude[1:]\n\n        for x1, x2, y1, y2 in zip(x1s, x2s, y1s, y2s):\n            dd = self._distance((x1, y1), (x2, y2))\n            ds.append(dd)\n\n        return np.cumsum(ds)\n\n    @property\n    def compass(self):\n        \"\"\"Compass bearing in decimal degrees (°). See gpxo.compass\"\"\"\n        lat1, long1 = np.radians((self.latitude[:-1], self.longitude[:-1]))\n        lat2, long2 = np.radians((self.latitude[1:], self.longitude[1:]))\n\n        d_long = long2 - long1\n\n        x = np.sin(d_long) * np.cos(lat2)\n        y = np.cos(lat1) * np.sin(lat2) - (np.sin(lat1) * np.cos(lat2) * np.cos(d_long))\n\n        # Resample before taking arctan because if not, interpolation fails\n        # when the signal fluctuates between 0 and 360° when compass is N\n        x_res = self._resample(x, self.distance)\n        y_res = self._resample(y, self.distance)\n\n        initial_bearing = np.arctan2(x_res, y_res)\n\n        # Now we have the initial bearing but np.arctan2 return values\n        # from -180° to + 180° which is not what we want for a compass bearing\n        # The solution is to normalize the initial bearing as shown below\n        initial_bearing = np.degrees(initial_bearing)\n        compass_bearing = (initial_bearing + 360) % 360\n\n        return compass_bearing\n\n    @property\n    def velocity(self):\n        \"\"\"Instantaneous velocity in km/h.\"\"\"\n        if self.time is not None:\n            dt = np.diff(self.seconds)\n            dd = np.diff(self.distance)\n            vs = 3600 * dd / dt\n            return self._resample(vs, self.seconds)\n        else:\n            return None\n\n    @property\n    def data(self):\n        \"\"\"pd.DataFrame with all track data (time, position, velocity etc.)\"\"\"\n\n        names = ['latitude (°)', 'longitude (°)', 'distance (km)', 'compass (°)']\n        columns = [self.latitude, self.longitude, self.distance, self.compass]\n\n        if self.time is not None:\n            names += ['time', ' duration (s)', 'velocity (km/h)']\n            columns += [self.time, self.seconds, self.velocity]\n\n        if self.elevation is not None:\n            names.append('elevation (m)')\n            columns.append(self.elevation)\n\n        data = pd.DataFrame(dict(zip(names, columns)))\n\n        if self.time is not None:\n            data['time'] = data['time'].dt.tz_localize(None)\n            data.set_index('time', inplace=True)\n\n        return data\n\n    def _shortname_to_column(self, name):\n        \"\"\"shorname to column name in self.data.\"\"\"\n        try:\n            cname = shortnames[name]\n        except KeyError:\n            raise ValueError(f'Invalid short name: {name}. ')\n\n        if cname == 'time':\n            column = self.data.index\n        else:\n            try:\n                column = self.data[cname]\n            except KeyError:\n                raise KeyError(f'{cname} Data unavailable in current track. ')\n\n        return {'name': cname, 'column': column}\n\n    def plot(self, mode, *args, **kwargs):\n        \"\"\"Plot columns of self.data (use pandas DataFrame plot arguments).\n\n        Parameters\n        ----------\n        - mode (str): 2 letters that define short names for x and y axis\n        - *args: any additional argument for matplotlib ax.plot()\n        - **kwargs: any additional keyword argument for matplotlib ax.plot()\n\n        Output\n        ------\n        - matplotlib axes\n\n        Short names\n        -----------\n        't': 'time'\n        's': 'duration (s)'\n        'd': 'distance (km)'\n        'v': 'velocity (km/h)'\n        'z': 'elevation (m)'\n        'c': 'compass (°)'\n        \"\"\"\n        try:\n            xname, yname = mode\n        except ValueError:\n            raise ValueError('Invalid plot mode (should be two letters, e.g. '\n                             f\"'tv', not {mode}\")\n\n        xinfo = self._shortname_to_column(xname)\n        xlabel = xinfo['name']\n        x = xinfo['column']\n\n        yinfo = self._shortname_to_column(yname)\n        ylabel = yinfo['name']\n        y = yinfo['column']\n\n        fig, ax = plt.subplots()\n        ax.plot(x, y, *args, **kwargs)\n\n        if xlabel == 'time':\n            fig.autofmt_xdate()\n\n        ax.set_xlabel(xlabel)\n        ax.set_ylabel(ylabel)\n\n        return ax\n\n    def smooth(self, n=5, window='hanning'):\n        \"\"\"Smooth position data (and subsequently distance, velocity etc.)\n\n        Parameters\n        ----------\n        - n: size of moving window for smoothing\n        - window: type of window (e.g. 'hanning' or 'flat', see gpxo.smooth())\n        \"\"\"\n        self.latitude = smooth(self.latitude, n=n, window=window)\n        self.longitude = smooth(self.longitude, n=n, window=window)\n        self.elevation = smooth(self.elevation, n=n, window=window)\n\n    def closest_to(self, pt):\n        \"\"\"Find index of point in trajectory that is closest to pt=(lat, long).\"\"\"\n        return closest_pt(pt, (self.latitude, self.longitude))\n\n    def map(self, map_type='osm', embed=False, ax=None, size=(10, 10),\n            plot='plot', **kwargs):\n        \"\"\"Plot trajectory on map.\n\n        Parameters\n        ----------\n        - map_type can be e.g. osm, esri_aerial, esri_worldtopo, etc. see:\n        https://github.com/jwass/mplleaflet/blob/master/mplleaflet/maptiles.py\n\n        - embed: if True, embed plot in Jupyter. If False (default), open in\n        browser.\n\n        - ax: if not None, use provided matplotlib axes.\n\n        - size: when embedded, size of the figure.\n\n        - plot: 'plot' or 'scatter'\n\n        - **kwargs: any plt.plot or plt.scatter keyword arguments\n        \"\"\"\n        if ax is None:\n            fig, ax = plt.subplots(figsize=size)\n        else:\n            fig = ax.figure\n\n        if plot == 'plot':\n            ax.plot(self.longitude, self.latitude, '.-r', **kwargs)\n        elif plot == 'scatter':\n            ax.scatter(self.longitude, self.latitude, **kwargs)\n        else:\n            raise ValueError(f'Unrecognized plot type: {plot}')\n\n        parameters = {'fig': fig, 'tiles': map_type}\n        if embed:\n            leaflet = mplleaflet.display(**parameters)\n        else:\n            leaflet = mplleaflet.show(**parameters)\n\n        return leaflet\n",
+  "prompt": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              ",
   "output": {
     "before": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'c': 'compass (°)'}\n\n\n# ========================= Misc. private functions ==========================\n\n\n# Function to transform array of timedeltas to seoncds\n_total_seconds = np.vectorize(lambda dt: dt.total_seconds())\n\n\n# ============================ Main class (Track) ============================\n\nclass Track:\n\n    def __init__(self, filename, track=0, segment=0):\n\n        with open(filename, 'r') as gpx_file:\n            gpx = gpxpy.parse(gpx_file)\n\n        pts = gpx.tracks[track].segments[segment].points\n\n        self.latitude = np.array([pt.latitude for pt in pts])\n        self.longitude = np.array([pt.longitude for pt in pts])\n        self.elevation = np.array([pt.elevation for pt in pts])\n        self.time = np.array([pt.time for pt in pts])\n\n        # If some elevation or time data is missing, just set attribute to None\n\n        if any(self.time == None):\n            self.time = None\n\n        if any(self.elevation == None):\n            self.elevation = None\n\n    @staticmethod\n    def _distance(position1, position2):\n        \"\"\"Distance between two positions (latitude, longitude).\"\"\"\n        return vincenty(position1, position2)\n\n    def _resample(self, quantity, reference):\n        \"\"\"Resample quantities (velocity, compass) to fall back on reference\n\n        Reference is typically time or distance.\"\"\"\n        # midpoints correponding to shifted quantity\n        midpts = reference[:-1] + (np.diff(reference) / 2)\n        # linear interpolation to fall back to initial times\n        qty_resampled = np.interp(reference, midpts, quantity)\n        return qty_resampled\n\n    @property\n    def seconds(self):\n        if self.time is not None:\n            return _total_seconds(self.time - self.time[0])\n\n    @property\n    def distance(self):\n        \"\"\"Travelled distance in kilometers.\"\"\"\n\n        ds = [0]\n\n        x1s = self.latitude[:-1]\n        x2s = self.latitude[1:]\n\n        y1s = self.longitude[:-1]\n        y2s = self.longitude[1:]\n\n        for x1, x2, y1, y2 in zip(x1s, x2s, y1s, y2s):\n            dd = self._distance((x1, y1), (x2, y2))\n            ds.append(dd)\n\n        return np.cumsum(ds)\n\n    @property\n    def compass(self):\n        \"\"\"Compass bearing in decimal degrees (°). See gpxo.compass\"\"\"\n        lat1, long1 = np.radians((self.latitude[:-1], self.longitude[:-1]))\n        lat2, long2 = np.radians((self.latitude[1:], self.longitude[1:]))\n\n        d_long = long2 - long1\n\n        x = np.sin(d_long) * np.cos(lat2)\n        y = np.cos(lat1) * np.sin(lat2) - (np.sin(lat1) * np.cos(lat2) * np.cos(d_long))\n\n        # Resample before taking arctan because if not, interpolation fails\n        # when the signal fluctuates between 0 and 360° when compass is N\n        x_res = self._resample(x, self.distance)\n        y_res = self._resample(y, self.distance)\n\n        initial_bearing = np.arctan2(x_res, y_res)\n\n        # Now we have the initial bearing but np.arctan2 return values\n        # from -180° to + 180° which is not what we want for a compass bearing\n        # The solution is to normalize the initial bearing as shown below\n        initial_bearing = np.degrees(initial_bearing)\n        compass_bearing = (initial_bearing + 360) % 360\n\n        return compass_bearing\n\n    @property\n    def velocity(self):\n        \"\"\"Instantaneous velocity in km/h.\"\"\"\n        if self.time is not None:\n            dt = np.diff(self.seconds)\n            dd = np.diff(self.distance)\n            vs = 3600 * dd / dt\n            return self._resample(vs, self.seconds)\n        else:\n            return None\n\n    @property\n    def data(self):\n        \"\"\"pd.DataFrame with all track data (time, position, velocity etc.)\"\"\"\n\n        names = ['latitude (°)', 'longitude (°)', 'distance (km)', 'compass (°)']\n        columns = [self.latitude, self.longitude, self.distance, self.compass]\n\n        if self.time is not None:\n            names += ['time', ' duration (s)', 'velocity (km/h)']\n            columns += [self.time, self.seconds, self.velocity]\n\n        if self.elevation is not None:\n            names.append('elevation (m)')\n            columns.append(self.elevation)\n\n        data = pd.DataFrame(dict(zip(names, columns)))\n\n        if self.time is not None:\n            data['time'] = data['time'].dt.tz_localize(None)\n            data.set_index('time', inplace=True)\n\n        return data\n\n    def _shortname_to_column(self, name):\n        \"\"\"shorname to column name in self.data.\"\"\"\n        try:\n            cname = shortnames[name]\n        except KeyError:\n            raise ValueError(f'Invalid short name: {name}. ')\n\n        if cname == 'time':\n            column = self.data.index\n        else:\n            try:\n                column = self.data[cname]\n            except KeyError:\n                raise KeyError(f'{cname} Data unavailable in current track. ')\n\n        return {'name': cname, 'column': column}\n\n    def plot(self, mode, *args, **kwargs):\n        \"\"\"Plot columns of self.data (use pandas DataFrame plot arguments).\n\n        Parameters\n        ----------\n        - mode (str): 2 letters that define short names for x and y axis\n        - *args: any additional argument for matplotlib ax.plot()\n        - **kwargs: any additional keyword argument for matplotlib ax.plot()\n\n        Output\n        ------\n        - matplotlib axes\n\n        Short names\n        -----------\n        't': 'time'\n        's': 'duration (s)'\n        'd': 'distance (km)'\n        'v': 'velocity (km/h)'\n        'z': 'elevation (m)'\n        'c': 'compass (°)'\n        \"\"\"\n        try:\n            xname, yname = mode\n        except ValueError:\n            raise ValueError('Invalid plot mode (should be two letters, e.g. '\n                             f\"'tv', not {mode}\")\n\n        xinfo = self._shortname_to_column(xname)\n        xlabel = xinfo['name']\n        x = xinfo['column']\n\n        yinfo = self._shortname_to_column(yname)\n        ylabel = yinfo['name']\n        y = yinfo['column']\n\n        fig, ax = plt.subplots()\n        ax.plot(x, y, *args, **kwargs)\n\n        if xlabel == 'time':\n            fig.autofmt_xdate()\n\n        ax.set_xlabel(xlabel)\n        ax.set_ylabel(ylabel)\n\n        return ax\n\n    def smooth(self, n=5, window='hanning'):\n        \"\"\"Smooth position data (and subsequently distance, velocity etc.)\n\n        Parameters\n        ----------\n        - n: size of moving window for smoothing\n        - window: type of window (e.g. 'hanning' or 'flat', see gpxo.smooth())\n        \"\"\"\n        self.latitude = smooth(self.latitude, n=n, window=window)\n        self.longitude = smooth(self.longitude, n=n, window=window)\n        self.elevation = smooth(self.elevation, n=n, window=window)\n\n    def closest_to(self, pt):\n        \"\"\"Find index of point in trajectory that is closest to pt=(lat, long).\"\"\"\n        return closest_pt(pt, (self.latitude, self.longitude))\n\n    def map(self, map_type='osm', embed=False, ax=None, size=(10, 10),\n            plot='plot', **kwargs):\n        \"\"\"Plot trajectory on map.\n\n        Parameters\n        ----------\n        - map_type can be e.g. osm, esri_aerial, esri_worldtopo, etc. see:\n        https://github.com/jwass/mplleaflet/blob/master/mplleaflet/maptiles.py\n\n        - embed: if True, embed plot in Jupyter. If False (default), open in\n        browser.\n\n        - ax: if not None, use provided matplotlib axes.\n\n        - size: when embedded, size of the figure.\n\n        - plot: 'plot' or 'scatter'\n\n        - **kwargs: any plt.plot or plt.scatter keyword arguments\n        \"\"\"\n        if ax is None:\n            fig, ax = plt.subplots(figsize=size)\n        else:\n            fig = ax.figure\n\n        if plot == 'plot':\n            ax.plot(self.longitude, self.latitude, '.-r', **kwargs)\n        elif plot == 'scatter':\n            ax.scatter(self.longitude, self.latitude, **kwargs)\n        else:\n            raise ValueError(f'Unrecognized plot type: {plot}')\n\n        parameters = {'fig': fig, 'tiles': map_type}\n        if embed:\n            leaflet = mplleaflet.display(**parameters)\n        else:\n            leaflet = mplleaflet.show(**parameters)\n\n        return leaflet\n```\n\n**Example Usage**\n\n```python\n# Load GPX file\ntrack = Track('your_gpx_file.gpx')\n\n# Plot the track\ntrack.plot('tv')\n\n# Smooth the track\ntrack.",
     "after": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'c': 'compass (°)'}\n\n\n# ========================= Misc. private functions ==========================\n\n\n# Function to transform array of timedeltas to seoncds\n_total_seconds = np.vectorize(lambda dt: dt.total_seconds())\n\n\n# ============================ Main class (Track) ============================\n\nclass Track:\n\n    def __init__(self, filename, track=0, segment=0):\n\n        with open(filename, 'r') as gpx_file:\n            gpx = gpxpy.parse(gpx_file)\n\n        pts = gpx.tracks[track].segments[segment].points\n\n        self.latitude = np.array([pt.latitude for pt in pts])\n        self.longitude = np.array([pt.longitude for pt in pts])\n        self.elevation = np.array([pt.elevation for pt in pts])\n        self.time = np.array([pt.time for pt in pts])\n\n        # If some elevation or time data is missing, just set attribute to None\n\n        if any(self.time == None):\n            self.time = None\n\n        if any(self.elevation == None):\n            self.elevation = None\n\n    @staticmethod\n    def _distance(position1, position2):\n        \"\"\"Distance between two positions (latitude, longitude).\"\"\"\n        return vincenty(position1, position2)\n\n    def _resample(self, quantity, reference):\n        \"\"\"Resample quantities (velocity, compass) to fall back on reference\n\n        Reference is typically time or distance.\"\"\"\n        # midpoints correponding to shifted quantity\n        midpts = reference[:-1] + (np.diff(reference) / 2)\n        # linear interpolation to fall back to initial times\n        qty_resampled = np.interp(reference, midpts, quantity)\n        return qty_resampled\n\n    @property\n    def seconds(self):\n        if self.time is not None:\n            return _total_seconds(self.time - self.time[0])\n\n    @property\n    def distance(self):\n        \"\"\"Travelled distance in kilometers.\"\"\"\n\n        ds = [0]\n\n        x1s = self.latitude[:-1]\n        x2s = self.latitude[1:]\n\n        y1s = self.longitude[:-1]\n        y2s = self.longitude[1:]\n\n        for x1, x2, y1, y2 in zip(x1s, x2s, y1s, y2s):\n            dd = self._distance((x1, y1), (x2, y2))\n            ds.append(dd)\n\n        return np.cumsum(ds)\n\n    @property\n    def compass(self):\n        \"\"\"Compass bearing in decimal degrees (°). See gpxo.compass\"\"\"\n        lat1, long1 = np.radians((self.latitude[:-1], self.longitude[:-1]))\n        lat2, long2 = np.radians((self.latitude[1:], self.longitude[1:]))\n\n        d_long = long2 - long1\n\n        x = np.sin(d_long) * np.cos(lat2)\n        y = np.cos(lat1) * np.sin(lat2) - (np.sin(lat1) * np.cos(lat2) * np.cos(d_long))\n\n        # Resample before taking arctan because if not, interpolation fails\n        # when the signal fluctuates between 0 and 360° when compass is N\n        x_res = self._resample(x, self.distance)\n        y_res = self._resample(y, self.distance)\n\n        initial_bearing = np.arctan2(x_res, y_res)\n\n        # Now we have the initial bearing but np.arctan2 return values\n        # from -180° to + 180° which is not what we want for a compass bearing\n        # The solution is to normalize the initial bearing as shown below\n        initial_bearing = np.degrees(initial_bearing)\n        compass_bearing = (initial_bearing + 360) % 360\n\n        return compass_bearing\n\n    @property\n    def velocity(self):\n        \"\"\"Instantaneous velocity in km/h.\"\"\"\n        if self.time is not None:\n            dt = np.diff(self.seconds)\n            dd = np.diff(self.distance)\n            vs = 3600 * dd / dt\n            return self._resample(vs, self.seconds)\n        else:\n            return None\n\n    @property\n    def data(self):\n        \"\"\"pd.DataFrame with all track data (time, position, velocity etc.)\"\"\"\n\n        names = ['latitude (°)', 'longitude (°)', 'distance (km)', 'compass (°)']\n        columns = [self.latitude, self.longitude, self.distance, self.compass]\n\n        if self.time is not None:\n            names += ['time', ' duration (s)', 'velocity (km/h)']\n            columns += [self.time, self.seconds, self.velocity]\n\n        if self.elevation is not None:\n            names.append('elevation (m)')\n            columns.append(self.elevation)\n\n        data = pd.DataFrame(dict(zip(names, columns)))\n\n        if self.time is not None:\n            data['time'] = data['time'].dt.tz_localize(None)\n            data.set_index('time', inplace=True)\n\n        return data\n\n    def _shortname_to_column(self, name):\n        \"\"\"shorname to column name in self.data.\"\"\"\n        try:\n            cname = shortnames[name]\n        except KeyError:\n            raise ValueError(f'Invalid short name: {name}. ')\n\n        if cname == 'time':\n            column = self.data.index\n        else:\n            try:\n                column = self.data[cname]\n            except KeyError:\n                raise KeyError(f'{cname} Data unavailable in current track. ')\n\n        return {'name': cname, 'column': column}\n\n    def plot(self, mode, *args, **kwargs):\n        \"\"\"Plot columns of self.data (use pandas DataFrame plot arguments).\n\n        Parameters\n        ----------\n        - mode (str): 2 letters that define short names for x and y axis\n        - *args: any additional argument for matplotlib ax.plot()\n        - **kwargs: any additional keyword argument for matplotlib ax.plot()\n\n        Output\n        ------\n        - matplotlib axes\n\n        Short names\n        -----------\n        't': 'time'\n        's': 'duration (s)'\n        'd': 'distance (km)'\n        'v': 'velocity (km/h)'\n        'z': 'elevation (m)'\n        'c': 'compass (°)'\n        \"\"\"\n        try:\n            xname, yname = mode\n        except ValueError:\n            raise ValueError('Invalid plot mode (should be two letters, e.g. '\n                             f\"'tv', not {mode}\")\n\n        xinfo = self._shortname_to_column(xname)\n        xlabel = xinfo['name']\n        x = xinfo['column']\n\n        yinfo = self._shortname_to_column(yname)\n        ylabel = yinfo['name']\n        y = yinfo['column']\n\n        fig, ax = plt.subplots()\n        ax.plot(x, y, *args, **kwargs)\n\n        if xlabel == 'time':\n            fig.autofmt_xdate()\n\n        ax.set_xlabel(xlabel)\n        ax.set_ylabel(ylabel)\n\n        return ax\n\n    def smooth(self, n=5, window='hanning'):\n        \"\"\"Smooth position data (and subsequently distance, velocity etc.)\n\n        Parameters\n        ----------\n        - n: size of moving window for smoothing\n        - window: type of window (e.g. 'hanning' or 'flat', see gpxo.smooth())\n        \"\"\"\n        self.latitude = smooth(self.latitude, n=n, window=window)\n        self.longitude = smooth(self.longitude, n=n, window=window)\n        self.elevation = smooth(self.elevation, n=n, window=window)\n\n    def closest_to(self, pt):\n        \"\"\"Find index of point in trajectory that is closest to pt=(lat, long).\"\"\"\n        return closest_pt(pt, (self.latitude, self.longitude))\n\n    def map(self, map_type='osm', embed=False, ax=None, size=(10, 10),\n            plot='plot', **kwargs):\n        \"\"\"Plot trajectory on map.\n\n        Parameters\n        ----------\n        - map_type can be e.g. osm, esri_aerial, esri_worldtopo, etc. see:\n        https://github.com/jwass/mplleaflet/blob/master/mplleaflet/maptiles.py\n\n        - embed: if True, embed plot in Jupyter. If False (default), open in\n        browser.\n\n        - ax: if not None, use provided matplotlib axes.\n\n        - size: when embedded, size of the figure.\n\n        - plot: 'plot' or 'scatter'\n\n        - **kwargs: any plt.plot or plt.scatter keyword arguments\n        \"\"\"\n        if ax is None:\n            fig, ax = plt.subplots(figsize=size)\n        else:\n            fig = ax.figure\n\n        if plot == 'plot':\n            ax.plot(self.longitude, self.latitude, '.-r', **kwargs)\n        elif plot == 'scatter':\n            ax.scatter(self.longitude, self.latitude, **kwargs)\n        else:\n            raise ValueError(f'Unrecognized plot type: {plot}')\n\n        parameters = {'fig': fig, 'tiles': map_type}\n        if embed:\n            leaflet = mplleaflet.display(**parameters)\n        else:\n            leaflet = mplleaflet.show(**parameters)\n\n        return leaflet\n    \n    def set_data(self, *args):\n        \"\"\"Set data for Track.\"\"\"\n        self.data = args\n        \n# =============================== Main functions ===============================\n```\n\n```python\n# =================================="
@@ -82,7 +83,7 @@
       8105
     ],
     "f_before": [
-      75.31065368652344,
+      116.7126235961914,
       0.0,
       0.0,
       0.0,
@@ -95,8 +96,8 @@
       0.0
     ],
     "f_after": [
-      75.31065368652344,
-      0.0,
+      261.7172546386719,
+      3.9851202964782715,
       0.0,
       0.0,
       0.0,
@@ -109,28 +110,28 @@
     ],
     "g_before": [
       0.0,
-      43.13447189331055,
-      8.50930404663086,
-      8.07403564453125,
-      7.744758605957031,
-      8.015951156616211,
-      7.756401538848877,
-      7.366365909576416,
-      6.842569351196289,
-      7.127010345458984,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      43.13447189331055,
-      8.50930404663086,
-      8.07403564453125,
-      7.744758605957031,
-      8.015951156616211,
-      7.756401538848877,
-      7.366365909576416,
-      6.842569351196289,
-      7.127010345458984,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-184140/feature_std_layer_12.html",
     "mean_std": 1.6668591499328613,
     "max_std": 57.89198303222656
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2440,
+          3238,
+          8036,
+          728,
+          2320,
+          2025,
+          5897,
+          823,
+          8105
+        ],
+        "f_before": [
+          116.7126235961914,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          261.7172546386719,
+          3.9851202964782715,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 116.7126235961914,
+            "f_after": 261.7172546386719,
+            "delta_f": 145.00463104248047
+          },
+          {
+            "index": 2594,
+            "f_before": 0.0,
+            "f_after": 28.222970962524414,
+            "delta_f": 28.222970962524414
+          },
+          {
+            "index": 1541,
+            "f_before": 13.9971342086792,
+            "f_after": 32.83420181274414,
+            "delta_f": 18.83706760406494
+          },
+          {
+            "index": 4042,
+            "f_before": 0.0,
+            "f_after": 11.966360092163086,
+            "delta_f": 11.966360092163086
+          },
+          {
+            "index": 6548,
+            "f_before": 0.05735326185822487,
+            "f_after": 8.455215454101562,
+            "delta_f": 8.397862192243338
+          },
+          {
+            "index": 364,
+            "f_before": 0.0,
+            "f_after": 6.488101005554199,
+            "delta_f": 6.488101005554199
+          },
+          {
+            "index": 5269,
+            "f_before": 0.0,
+            "f_after": 6.487218856811523,
+            "delta_f": 6.487218856811523
+          },
+          {
+            "index": 1980,
+            "f_before": 0.0,
+            "f_after": 6.285848140716553,
+            "delta_f": 6.285848140716553
+          },
+          {
+            "index": 5609,
+            "f_before": 0.0,
+            "f_after": 5.923080921173096,
+            "delta_f": 5.923080921173096
+          },
+          {
+            "index": 7265,
+            "f_before": 0.0,
+            "f_after": 5.183497905731201,
+            "delta_f": 5.183497905731201
+          },
+          {
+            "index": 9108,
+            "f_before": 0.0,
+            "f_after": 5.160558223724365,
+            "delta_f": 5.160558223724365
+          },
+          {
+            "index": 5595,
+            "f_before": 0.0,
+            "f_after": 4.774078845977783,
+            "delta_f": 4.774078845977783
+          },
+          {
+            "index": 4538,
+            "f_before": 154.8578643798828,
+            "f_after": 159.31832885742188,
+            "delta_f": 4.4604644775390625
+          },
+          {
+            "index": 4220,
+            "f_before": 0.0,
+            "f_after": 4.385604381561279,
+            "delta_f": 4.385604381561279
+          },
+          {
+            "index": 6826,
+            "f_before": 0.0,
+            "f_after": 4.223066806793213,
+            "delta_f": 4.223066806793213
+          },
+          {
+            "index": 1288,
+            "f_before": 0.0,
+            "f_after": 4.129009246826172,
+            "delta_f": 4.129009246826172
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'h': 'height (m)'}\n\n# =============================== Data Handling ===============================\n\ndef parse_gpx(file_path):\n    \"\"\"Parses a GPX file into a pandas DataFrame.\"\"\"\n    try:\n        ",
+        "after": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'a': 'acceleration (m/s^2)',\n              'c': 'speed (km/h)',\n              'r': 'radius (km)',\n              'p': 'point',\n              'n': 'normal',"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2440,
+          3238,
+          8036,
+          728,
+          2320,
+          2025,
+          5897,
+          823,
+          8105
+        ],
+        "f_before": [
+          116.7126235961914,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          116.7126235961914,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 116.7126235961914,
+            "f_after": 116.7126235961914,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'a': 'altitude (m)',\n              'h': 'height (m)',\n              'x': 'longitude (m)',\n              'y': 'latitude (m)'\n             }\n\n\n# =============================== Functions ===============================",
+        "after": "\"\"\"General tools for gpx data processing based on gpxpy.\"\"\"\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nimport gpxpy\nfrom vincenty import vincenty\nimport mplleaflet\n\nfrom .general import smooth, closest_pt\n\n\n# =============================== Misc. Config ===============================\n\n# short names for plots\n\nshortnames = {'t': 'time',\n              's': 'duration (s)',\n              'd': 'distance (km)',\n              'v': 'velocity (km/h)',\n              'z': 'elevation (m)',\n              'a': 'acceleration (m/s^2)',\n              'x': 'x',\n              'y': 'y',\n              'i': 'i',\n              'j': 'j',\n              'k': '"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport datetime\n\n\nclass TestSporterLeeftijdsklassen(E2EHelpers, TestCase):\n    \"\"\" unit tests voor de Schutter applicatie, module Leeftijdsklassen \"\"\"\n\n    def setUp(self):\n        \"\"\" initialisatie van de test case \"\"\"\n        self.account_admin = self.e2e_create_account_admin()\n        self.account_normaal = self.e2e_create_account('normaal', 'normaal@test.com', 'Normaal')\n        self.account_geenlid = self.e2e_create_account('geenlid', 'geenlid@test.com', 'Geen')\n\n        # maak een test vereniging\n        ver = NhbVereniging()\n        ver.naam = \"Grote Club\"\n        ver.ver_nr = \"1000\"\n        ver.regio = NhbRegio.objects.get(pk=111)\n        # secretaris kan nog niet ingevuld worden\n        ver.save()\n\n        # maak een test lid aan\n        sporter = Sporter()\n        sporter.lid_nr = 100001\n        sporter.geslacht = \"M\"\n        sporter.voornaam = \"Ramon\"\n        sporter.achternaam = \"de Tester\"\n        sporter.geboorte_datum = datetime.date(year=1972, month=3, day=4)\n        sporter.sinds_datum = datetime.date(year=2010, month=11, day=12)\n        sporter.bij_vereniging = ver\n        sporter.account = self.account_normaal\n        sporter.email = sporter.account.email\n        sporter.save()\n        self.sporter1 = sporter\n\n        # maak een test lid aan\n        sporter = Sporter()\n        sporter.lid_nr = 100002\n        sporter.geslacht = \"V\"\n        sporter.voornaam = \"Ramona\"\n        sporter.achternaam = \"de Testerin\"\n        sporter.email = \"\"\n        sporter.geboorte_datum = datetime.date(year=1972, month=3, day=4)\n        sporter.sinds_datum = datetime.date(year=2010, month=11, day=12)\n        sporter.bij_vereniging = ver\n        sporter.save()\n\n    def test_leeftijdsklassen(self):\n        now = timezone.now()  # is in UTC\n        now = timezone.localtime(now)  # convert to active timezone (say Europe/Amsterdam)\n        huidige_jaar = now.year\n\n        # aspirant\n        tup = bereken_leeftijdsklassen(huidige_jaar - 9)\n        self.assertEqual(tup, (huidige_jaar,\n                               9,\n                               ['Aspirant', 'Aspirant', 'Aspirant', 'Aspirant', 'Aspirant'],\n                               ['Aspiranten <11 jaar', 'Aspiranten <11 jaar', 'Aspiranten <11 jaar', 'Aspiranten 11-12 jaar', 'Aspiranten 11-12 jaar'],\n                               'Aspirant'))\n\n        # cadet (14..17)\n        tup = bereken_leeftijdsklassen(huidige_jaar - 13)\n        self.assertEqual(tup, (huidige_jaar,\n                               13,\n                               ['Aspirant', 'Aspirant', 'Cadet', 'Cadet', 'Cadet'],\n                               ['Aspiranten 11-12 jaar', 'Cadetten', 'Cadetten', 'Cadetten', 'Cadetten'],\n                               'Cadet'))\n\n        # junior (18..20)\n        tup = bereken_leeftijdsklassen(huidige_jaar - 18)\n        self.assertEqual(tup, (huidige_jaar,\n                               18,\n                               ['Cadet', 'Junior', 'Junior', 'Junior', 'Senior'],\n                               ['Junioren', 'Junioren', 'Junioren', 'Senioren', 'Senioren'],\n                               'Junior'))\n\n        # senior\n        tup = bereken_leeftijdsklassen(huidige_jaar - 21)\n        self.assertEqual(tup, (huidige_jaar,\n                               21,\n                               ['Junior', 'Senior', 'Senior', 'Senior', 'Senior'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n        # master\n        tup = bereken_leeftijdsklassen(huidige_jaar - 50)\n        self.assertEqual(tup, (huidige_jaar,\n                               50,\n                               ['Senior', 'Master', 'Master', 'Master', 'Master'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n        # veteraan\n        tup = bereken_leeftijdsklassen(huidige_jaar - 60)\n        self.assertEqual(tup, (huidige_jaar,\n                               60,\n                               ['Master', 'Veteraan', 'Veteraan', 'Veteraan', 'Veteraan'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n    def test_view(self):\n        # zonder login\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/', follow=True)\n        self.assert403(resp)\n\n        # inlog, geen NHB lid\n        self.e2e_login(self.account_admin)\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/')\n        self.assert403(resp)\n\n        # schutter\n        self.e2e_login(self.account_normaal)\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/')\n        self.assertEqual(resp.status_code, 200)     # 200 = OK\n        self.assert_html_ok(resp)\n        self.assert_template_used(resp, ('sporter/leeftijdsklassen.dtl', 'plein/site_layout.dtl'))\n\n        self.e2e_assert_other_http_commands_not_supported('/sporter/leeftijdsklassen/')\n\n# end of file\n",
+  "prompt": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport",
   "output": {
     "before": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport datetime\n\n\nclass TestSporterLeeftijdsklassen(E2EHelpers, TestCase):\n    \"\"\" unit tests voor de Schutter applicatie, module Leeftijdsklassen \"\"\"\n\n    def setUp(self):\n        \"\"\" initialisatie van de test case \"\"\"\n        self.account_admin = self.e2e_create_account_admin()\n        self.account_normaal = self.e2e_create_account('normaal', 'normaal@test.com', 'Normaal')\n        self.account_geenlid = self.e2e_create_account('geenlid', 'geenlid@test.com', 'Geen')\n\n        # maak een test vereniging\n        ver = NhbVereniging()\n        ver.naam = \"Grote Club\"\n        ver.ver_nr = \"1000\"\n        ver.regio = NhbRegio.objects.get(pk=111)\n        # secretaris kan nog niet ingevuld worden\n        ver.save()\n\n        # maak een test lid aan\n        sporter = Sporter()\n        sporter.lid_nr = 100001\n        sporter.geslacht = \"M\"\n        sporter.voornaam = \"Ramon\"\n        sporter.achternaam = \"de Tester\"\n        sporter.geboorte_datum = datetime.date(year=1972, month=3, day=4)\n        sporter.sinds_datum = datetime.date(year=2010, month=11, day=12)\n        sporter.bij_vereniging = ver\n        sporter.account = self.account_normaal\n        sporter.email = sporter.account.email\n        sporter.save()\n        self.sporter1 = sporter\n\n        # maak een test lid aan\n        sporter = Sporter()\n        sporter.lid_nr = 100002\n        sporter.geslacht = \"V\"\n        sporter.voornaam = \"Ramona\"\n        sporter.achternaam = \"de Testerin\"\n        sporter.email = \"\"\n        sporter.geboorte_datum = datetime.date(year=1972, month=3, day=4)\n        sporter.sinds_datum = datetime.date(year=2010, month=11, day=12)\n        sporter.bij_vereniging = ver\n        sporter.save()\n\n    def test_leeftijdsklassen(self):\n        now = timezone.now()  # is in UTC\n        now = timezone.localtime(now)  # convert to active timezone (say Europe/Amsterdam)\n        huidige_jaar = now.year\n\n        # aspirant\n        tup = bereken_leeftijdsklassen(huidige_jaar - 9)\n        self.assertEqual(tup, (huidige_jaar,\n                               9,\n                               ['Aspirant', 'Aspirant', 'Aspirant', 'Aspirant', 'Aspirant'],\n                               ['Aspiranten <11 jaar', 'Aspiranten <11 jaar', 'Aspiranten <11 jaar', 'Aspiranten 11-12 jaar', 'Aspiranten 11-12 jaar'],\n                               'Aspirant'))\n\n        # cadet (14..17)\n        tup = bereken_leeftijdsklassen(huidige_jaar - 13)\n        self.assertEqual(tup, (huidige_jaar,\n                               13,\n                               ['Aspirant', 'Aspirant', 'Cadet', 'Cadet', 'Cadet'],\n                               ['Aspiranten 11-12 jaar', 'Cadetten', 'Cadetten', 'Cadetten', 'Cadetten'],\n                               'Cadet'))\n\n        # junior (18..20)\n        tup = bereken_leeftijdsklassen(huidige_jaar - 18)\n        self.assertEqual(tup, (huidige_jaar,\n                               18,\n                               ['Cadet', 'Junior', 'Junior', 'Junior', 'Senior'],\n                               ['Junioren', 'Junioren', 'Junioren', 'Senioren', 'Senioren'],\n                               'Junior'))\n\n        # senior\n        tup = bereken_leeftijdsklassen(huidige_jaar - 21)\n        self.assertEqual(tup, (huidige_jaar,\n                               21,\n                               ['Junior', 'Senior', 'Senior', 'Senior', 'Senior'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n        # master\n        tup = bereken_leeftijdsklassen(huidige_jaar - 50)\n        self.assertEqual(tup, (huidige_jaar,\n                               50,\n                               ['Senior', 'Master', 'Master', 'Master', 'Master'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n        # veteraan\n        tup = bereken_leeftijdsklassen(huidige_jaar - 60)\n        self.assertEqual(tup, (huidige_jaar,\n                               60,\n                               ['Master', 'Veteraan', 'Veteraan', 'Veteraan', 'Veteraan'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n    def test_view(self):\n        # zonder login\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/', follow=True)\n        self.assert403(resp)\n\n        # inlog, geen NHB lid\n        self.e2e_login(self.account_admin)\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/')\n        self.assert403(resp)\n\n        # schutter\n        self.e2e_login(self.account_normaal)\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/')\n        self.assertEqual(resp.status_code, 200)     # 200 = OK\n        self.assert_html_ok(resp)\n        self.assert_template_used(resp, ('sporter/leeftijdsklassen.dtl', 'plein/site_layout.dtl'))\n\n        self.e2e_assert_other_http_commands_not_supported('/sporter/leeftijdsklassen/')\n\n# end of file\n```\n\n**Explanation:**\n\n* **Imports:** Includes necessary modules from Django and the `TestHelpers` package for testing.\n* **`TestSporterLeeftijdsklassen` class:**\n    * **`setUp` method:** Initializes",
     "after": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport datetime\n\n\nclass TestSporterLeeftijdsklassen(E2EHelpers, TestCase):\n    \"\"\" unit tests voor de Schutter applicatie, module Leeftijdsklassen \"\"\"\n\n    def setUp(self):\n        \"\"\" initialisatie van de test case \"\"\"\n        self.account_admin = self.e2e_create_account_admin()\n        self.account_normaal = self.e2e_create_account('normaal', 'normaal@test.com', 'Normaal')\n        self.account_geenlid = self.e2e_create_account('geenlid', 'geenlid@test.com', 'Geen')\n\n        # maak een test vereniging\n        ver = NhbVereniging()\n        ver.naam = \"Grote Club\"\n        ver.ver_nr = \"1000\"\n        ver.regio = NhbRegio.objects.get(pk=111)\n        # secretaris kan nog niet ingevuld worden\n        ver.save()\n\n        # maak een test lid aan\n        sporter = Sporter()\n        sporter.lid_nr = 100001\n        sporter.geslacht = \"M\"\n        sporter.voornaam = \"Ramon\"\n        sporter.achternaam = \"de Tester\"\n        sporter.geboorte_datum = datetime.date(year=1972, month=3, day=4)\n        sporter.sinds_datum = datetime.date(year=2010, month=11, day=12)\n        sporter.bij_vereniging = ver\n        sporter.account = self.account_normaal\n        sporter.email = sporter.account.email\n        sporter.save()\n        self.sporter1 = sporter\n\n        # maak een test lid aan\n        sporter = Sporter()\n        sporter.lid_nr = 100002\n        sporter.geslacht = \"V\"\n        sporter.voornaam = \"Ramona\"\n        sporter.achternaam = \"de Testerin\"\n        sporter.email = \"\"\n        sporter.geboorte_datum = datetime.date(year=1972, month=3, day=4)\n        sporter.sinds_datum = datetime.date(year=2010, month=11, day=12)\n        sporter.bij_vereniging = ver\n        sporter.save()\n\n    def test_leeftijdsklassen(self):\n        now = timezone.now()  # is in UTC\n        now = timezone.localtime(now)  # convert to active timezone (say Europe/Amsterdam)\n        huidige_jaar = now.year\n\n        # aspirant\n        tup = bereken_leeftijdsklassen(huidige_jaar - 9)\n        self.assertEqual(tup, (huidige_jaar,\n                               9,\n                               ['Aspirant', 'Aspirant', 'Aspirant', 'Aspirant', 'Aspirant'],\n                               ['Aspiranten <11 jaar', 'Aspiranten <11 jaar', 'Aspiranten <11 jaar', 'Aspiranten 11-12 jaar', 'Aspiranten 11-12 jaar'],\n                               'Aspirant'))\n\n        # cadet (14..17)\n        tup = bereken_leeftijdsklassen(huidige_jaar - 13)\n        self.assertEqual(tup, (huidige_jaar,\n                               13,\n                               ['Aspirant', 'Aspirant', 'Cadet', 'Cadet', 'Cadet'],\n                               ['Aspiranten 11-12 jaar', 'Cadetten', 'Cadetten', 'Cadetten', 'Cadetten'],\n                               'Cadet'))\n\n        # junior (18..20)\n        tup = bereken_leeftijdsklassen(huidige_jaar - 18)\n        self.assertEqual(tup, (huidige_jaar,\n                               18,\n                               ['Cadet', 'Junior', 'Junior', 'Junior', 'Senior'],\n                               ['Junioren', 'Junioren', 'Junioren', 'Senioren', 'Senioren'],\n                               'Junior'))\n\n        # senior\n        tup = bereken_leeftijdsklassen(huidige_jaar - 21)\n        self.assertEqual(tup, (huidige_jaar,\n                               21,\n                               ['Junior', 'Senior', 'Senior', 'Senior', 'Senior'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n        # master\n        tup = bereken_leeftijdsklassen(huidige_jaar - 50)\n        self.assertEqual(tup, (huidige_jaar,\n                               50,\n                               ['Senior', 'Master', 'Master', 'Master', 'Master'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n        # veteraan\n        tup = bereken_leeftijdsklassen(huidige_jaar - 60)\n        self.assertEqual(tup, (huidige_jaar,\n                               60,\n                               ['Master', 'Veteraan', 'Veteraan', 'Veteraan', 'Veteraan'],\n                               ['Senioren', 'Senioren', 'Senioren', 'Senioren', 'Senioren'],\n                               'Senior'))\n\n    def test_view(self):\n        # zonder login\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/', follow=True)\n        self.assert403(resp)\n\n        # inlog, geen NHB lid\n        self.e2e_login(self.account_admin)\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/')\n        self.assert403(resp)\n\n        # schutter\n        self.e2e_login(self.account_normaal)\n        with self.assert_max_queries(20):\n            resp = self.client.get('/sporter/leeftijdsklassen/')\n        self.assertEqual(resp.status_code, 200)     # 200 = OK\n        self.assert_html_ok(resp)\n        self.assert_template_used(resp, ('sporter/leeftijdsklassen.dtl', 'plein/site_layout.dtl'))\n\n        self.e2e_assert_other_http_commands_not_supported('/sporter/leeftijdsklassen/')\n\n# end of file\n```\n\n```python\n# -*- coding: utf-8 -*-\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leef"
@@ -82,7 +83,7 @@
       222
     ],
     "f_before": [
-      7.226963520050049,
+      14.30184555053711,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      7.226963520050049,
+      43.77118682861328,
+      0.0,
+      0.8896504640579224,
+      0.0,
+      0.0,
+      1.2417598962783813,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      4.192815780639648,
-      0.8334038853645325,
-      0.7787193655967712,
-      0.7873687744140625,
-      0.7744398713111877,
-      0.7440657615661621,
-      0.778204083442688,
-      0.7604747414588928,
-      0.742002010345459,
-      0.7429988384246826
-    ],
     "g_after": [
       0.0,
-      4.192815780639648,
-      0.8334038853645325,
-      0.7787193655967712,
-      0.7873687744140625,
-      0.7744398713111877,
-      0.7440657615661621,
-      0.778204083442688,
-      0.7604747414588928,
-      0.742002010345459,
-      0.7429988384246826
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
     "mean_std": 0.9856170415878296,
     "max_std": 26.260618209838867
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          815,
+          2849,
+          3119,
+          4369,
+          1077,
+          5070,
+          6364,
+          1460,
+          222
+        ],
+        "f_before": [
+          14.30184555053711,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          43.77118682861328,
+          0.0,
+          0.8896504640579224,
+          0.0,
+          0.0,
+          1.2417598962783813,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 14.30184555053711,
+            "f_after": 43.77118682861328,
+            "delta_f": 29.469341278076172
+          },
+          {
+            "index": 4471,
+            "f_before": 19.504638671875,
+            "f_after": 42.73981475830078,
+            "delta_f": 23.23517608642578
+          },
+          {
+            "index": 5790,
+            "f_before": 81.41095733642578,
+            "f_after": 63.07273483276367,
+            "delta_f": -18.33822250366211
+          },
+          {
+            "index": 1,
+            "f_before": 11.973423957824707,
+            "f_after": 0.0,
+            "delta_f": -11.973423957824707
+          },
+          {
+            "index": 1735,
+            "f_before": 0.0,
+            "f_after": 11.051369667053223,
+            "delta_f": 11.051369667053223
+          },
+          {
+            "index": 1563,
+            "f_before": 0.0,
+            "f_after": 10.751514434814453,
+            "delta_f": 10.751514434814453
+          },
+          {
+            "index": 5507,
+            "f_before": 0.0,
+            "f_after": 10.175578117370605,
+            "delta_f": 10.175578117370605
+          },
+          {
+            "index": 754,
+            "f_before": 0.0,
+            "f_after": 10.103331565856934,
+            "delta_f": 10.103331565856934
+          },
+          {
+            "index": 8320,
+            "f_before": 0.0,
+            "f_after": 10.015180587768555,
+            "delta_f": 10.015180587768555
+          },
+          {
+            "index": 2822,
+            "f_before": 0.0,
+            "f_after": 9.208353996276855,
+            "delta_f": 9.208353996276855
+          },
+          {
+            "index": 6684,
+            "f_before": 0.0,
+            "f_after": 9.206290245056152,
+            "delta_f": 9.206290245056152
+          },
+          {
+            "index": 5978,
+            "f_before": 0.0,
+            "f_after": 8.781216621398926,
+            "delta_f": 8.781216621398926
+          },
+          {
+            "index": 8187,
+            "f_before": 8.24461555480957,
+            "f_after": 16.977170944213867,
+            "delta_f": 8.732555389404297
+          },
+          {
+            "index": 6680,
+            "f_before": 0.0,
+            "f_after": 8.538037300109863,
+            "delta_f": 8.538037300109863
+          },
+          {
+            "index": 6997,
+            "f_before": 0.0,
+            "f_after": 8.328019142150879,
+            "delta_f": 8.328019142150879
+          },
+          {
+            "index": 1501,
+            "f_before": 0.0,
+            "f_after": 8.057328224182129,
+            "delta_f": 8.057328224182129
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport datetime\n\n\nclass TestSporter(TestCase):\n\n    @classmethod\n    def setUpClass(cls):\n        super().setUpClass()\n        # Create some test data\n        Sporter.objects.create(naam='Sporter 1",
+        "after": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport os\n\n#  Test helper functions\ndef test_valid_data():\n    \"\"\"\n    Test function for valid data\n    \"\"\"\n    #  Test data\n    test_data = {\n        'leeftijd': 2"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          815,
+          2849,
+          3119,
+          4369,
+          1077,
+          5070,
+          6364,
+          1460,
+          222
+        ],
+        "f_before": [
+          14.30184555053711,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          14.30184555053711,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 11.973423957824707,
+            "f_after": 11.973423957824707,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 14.30184555053711,
+            "f_after": 14.30184555053711,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport unittest\n\nclass TestSporter(TestCase):\n\n    def setUp(self):\n        self.regio = NhbRegio.objects.create(naam='Test Regio')\n        self.vereniging = NhbVereniging.objects.",
+        "after": "# -*- coding: utf-8 -*-\n\n#  Copyright (c) 2019-2021 Ramon van der Winkel.\n#  All rights reserved.\n#  Licensed under BSD-3-Clause-Clear. See LICENSE file for details.\n\nfrom django.test import TestCase\nfrom django.utils import timezone\nfrom NhbStructuur.models import NhbRegio, NhbVereniging\nfrom .leeftijdsklassen import bereken_leeftijdsklassen\nfrom .models import Sporter\nfrom TestHelpers.e2ehelpers import E2EHelpers\nimport os\nimport sys\nimport time\nimport datetime\nimport json\n\nclass TestSporter:\n    def test_s(self):\n        # Add your test methods here\n        pass\n\n    def test_create_s(self):"
+      }
+    }
   }
 }

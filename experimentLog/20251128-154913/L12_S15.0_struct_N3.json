@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = 0,\n        polygon_file = None,\n        polygon_id = None\n        ):\n        \"\"\"\n        Computes and updates intrazonal travel cost in a travel costs matrix. The output will include a travel cost between any origin or destination location in the matrix to itself.\n\n        Parameters\n        ----------\n        cost_column : column name for travel costs\n\n        origin_column : column name for origin IDs\n\n        destinationn_column : column name for origin IDs\n\n        method : \"constant\" applies a single @value to all intrazonal travel costs. \"radius\" applies a cost which is proportional to the radius of a circle with the same area as its input polygon\n\n        value : parameters for the method\n\n        polygon_file : file path to an input spatial polygon (e.g. geojson) if needed (it is for method = \"radius\")\n\n        polygon_id : ID field for the polygon_file needed for joining to the cost matrix\n        \"\"\"\n\n        # making sure ID columns are strings for a merge later on\n        self.data[origin_column] = self.data[origin_column].astype(str)\n        self.data[destination_column] = self.data[destination_column].astype(str)\n\n        # getting set of unique locations in the dataset\n        locations = list(self.data[origin_column].unique()) + list(self.data[destination_column].unique())\n        locations = list(set(locations))\n\n        if method == \"constant\":\n\n            new_times = [value] * len(locations)\n\n            df = pd.DataFrame(\n                list(zip(locations, locations, new_times)),\n                columns =[origin_column, destination_column, cost_column + \"_i\"])\n\n        elif method == \"radius\":\n\n            from tracc.spatial import radius\n\n            # compute based on the equivilant radius of each polygon\n            df = radius(polygon_file,polygon_id)\n            df[origin_column] = df[polygon_id]\n            df[destination_column] = df[polygon_id]\n            del df[polygon_id]\n            df[cost_column + \"_i\"] = value * df[\"radius\"]\n            del df[\"radius\"]\n\n        else:\n            raise Exception(\"Method can only be 'constant' or 'radius'\")\n\n        df[origin_column] = df[origin_column].astype(str)\n        df[destination_column] = df[destination_column].astype(str)\n\n        # join in the newly created intrazonal travel times\n        self.data = pd.merge(self.data, df,  how='outer', left_on=[origin_column, destination_column], right_on = [origin_column, destination_column])\n\n        # replace the older intrazonal travel times\n        self.data[cost_column] = np.where((self.data[cost_column + \"_i\"] >= 0),self.data[cost_column + \"_i\"],self.data[cost_column])\n\n        del self.data[cost_column + \"_i\"]\n\n\n\n\n    def fill_missing_costs(\n        self,\n        cost_column,\n        origin_column,\n        destination_column,\n        spatial_file_path,\n        spatial_file_id,\n        where = \"origin\",\n        weight_type = \"Queen\"\n        ):\n        \"\"\"\n        Completes an OD matrix by filling locations that were missing from the original matrix, based on a neighbourhood spatial weights matrix. For example if a origin zone has no travel costs, it presumes its travel costs to destinations are the average of the same costs of its neighbouring zones.\n        \"\"\"\n\n        from tracc.spatial import area\n\n        # get list of zones which are missing from the input costs table\n        dfz = area(spatial_file_path, spatial_file_id)\n        dfz[spatial_file_id] = dfz[spatial_file_id].astype(str)\n        self.data[origin_column] = self.data[origin_column].astype(str)\n        li1 = list(self.data[origin_column].unique())\n        li2 = list(dfz[spatial_file_id].unique())\n        missing = [x for x in li2 if x not in li1]\n        del li1,li2\n\n        if len(missing) == 0:\n            return None\n\n        if where == \"origin\":\n\n            # get neighbours for each missing zone\n            from tracc.spatial import get_neighbours\n            neighbours = get_neighbours(spatial_file_path, \"Queen\", spatial_file_id)\n\n            new_times = []\n\n            # for each zone, compute average travel times to other zones based on neighbours\n            for location in missing:\n\n                locneigh = neighbours[location]\n\n                temp = self.data[self.data[origin_column].isin(locneigh)]\n\n                temp = pd.DataFrame(temp.groupby([destination_column], as_index=False)[cost_column].mean())\n\n                temp[origin_column] = location\n\n                new_times.append(temp)\n\n            # combine the outputs, and concat to the input times\n            new_times = pd.concat(new_times)\n            self.data = pd.concat([self.data, new_times])\n\n        elif where == \"destination\":\n\n            # get neighbours for each missing zone\n            from tracc.spatial import get_neighbours\n            neighbours = get_neighbours(spatial_file_path, \"Queen\", spatial_file_id)\n\n            new_times = []\n\n            # for each zone, compute average travel times from other zones based on neighbours\n            for location in missing:\n\n                locneigh = neighbours[location]\n\n                temp = self.data[self.data[destination_column].isin(locneigh)]\n\n                temp = pd.DataFrame(temp.groupby([origin_column], as_index=False)[cost_column].mean())\n\n                temp[destination_column] = location\n\n                new_times.append(temp)\n\n            # combine the outputs, and concat to the input times\n            new_times = pd.concat(new_times)\n            self.data = pd.concat([self.data, new_times])\n\n        else:\n\n            raise Exception(\"Input paramater @where should either be 'origin' or 'destination'\")\n\n\n\n\n    def generalized_cost(\n        self,\n        columns,\n        coefficients,\n        exponents = None,\n        prune_output = True,\n        output_cost_name = \"GC\"\n        ):\n\n        \"\"\"\n        Computes generalized costs\n        \"\"\"\n\n        # need to add a column check warning, and make the intercept = 0 if none is provided\n\n        # set all exponents as 1 if none are inputted\n        if exponents is None:\n            exponents = [1] * len(columns)\n\n        # compute the generalized cost value\n        self.data[output_cost_name] = coefficients[len(coefficients) - 1]\n        i = 0\n        while i < len(columns):\n            self.data[output_cost_name] = self.data[output_cost_name] + coefficients[i] * self.data[columns[i]] ** exponents[i]\n            i += 1\n\n        # delete initital cost columns if desired\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n    def impedence_calc(\n        self,\n        cost_column,\n        impedence_func,\n        impedence_func_params,\n        prune_output = False,\n        output_col_name = \"fCij\"\n        ):\n\n        \"\"\"\n        Measures impdence given input of travel cost and selected impedence funciton and parameters\n\n        # To Do: add in more impdence function options\n        \"\"\"\n\n        if impedence_func == \"cumulative\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.cumulative,args = (impedence_func_params,))\n\n        elif impedence_func == \"linear\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.linear,args = (impedence_func_params,))\n\n        elif impedence_func == \"exponential\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.exponential,args = (impedence_func_params,))\n\n        else:\n            raise Exception(\"Please select an appropriate decay function\")\n\n        if prune_output is True:\n            del self.data[cost_column]\n\n\n    def impedence_combine(self,\n        columns,\n        how = \"product\",\n        output_col_name = \"fCij\",\n        prune_output = True\n        ):\n\n        \"\"\"\n        If there are multiple impedences, and we want to combine them into a single impedence value. This is similar to genearlized cost.\n\n        For example, if we have an impedence value for transit travel time, and we also want to remove any trips based on a fare criteria, it can be applied in this way.\n        \"\"\"\n\n        if how == \"product\":\n            self.data[output_col_name] = 1\n            i = 0\n            while i < len(columns):\n                self.data[output_col_name] = self.data[output_col_name] * self.data[columns[i]]\n                i += 1\n\n        elif how == \"sum\":\n            self.data[output_col_name] = 0\n            i = 0\n            while i < len(columns):\n                self.data[output_col_name] = self.data[output_col_name] + self.data[columns[i]]\n                i += 1\n\n        else:\n            raise Exception('the input @how must be one of \"product\" or \"sum\"')\n\n\n\n    def max_impedence(self,\n        columns,\n        imp_col_name = \"fCij\"\n        ):\n        \"\"\"\n        Reduces the cost table to only include rows with the maximum impedence value for the set of input columns.\n\n        For example, if there 3 transit trips from i to j, each with a different computed generalized_cost resulting from different route choices, this function will return the row with the one resulting in the greatest impedence value (i.e. lowest generalized cost)\n        \"\"\"\n\n        self.data = self.data.groupby(columns)[imp_col_name].max().reset_index()\n\n\n\nclass supply:\n\n    def __init__(self,\n        supply_df,\n        columns = None\n        ):\n        \"\"\"\n        intitializing can include pruning the dataset to a list of @column names\n        \"\"\"\n\n        if columns is not None:\n            self.data = supply_df[columns]\n\n        else:\n            self.data = supply_df\n\n\n\n    def weight(self,\n        columns,\n        weights,\n        weight_col_name = \"Oj\",\n        prune_output = True\n        ):\n        \"\"\"\n        Creating a value based on a weighted linear combination other values. Can be used to weight by destinations by their desirability.\n\n        Parameters\n        ----------------\n        columns : columns in which to input into the weights function\n\n        weights : linear multipliers, the same length as the weights\n\n        weight_col_name : output column name\n\n        prune_output : if True, delete all input columns used in the weight function\n        \"\"\"\n\n        if len(columns) != len(weights):\n            raise Exception(\"Please make sure columns and weights are lists of the same length\")\n\n        if len(columns) < 2:\n            raise Exception(\"Can only weight opportunities if 2 or more are inputted\")\n\n        if sum(weights) < 0.999 or sum(weights) > 1.001:\n            print(\"WARNING: the inputted weights do not sum to 1.\")\n\n\n        self.data[weight_col_name] = 0\n        i = 0\n        while i < len(columns):\n            self.data[weight_col_name] = self.data[weight_col_name] + weights[i] * self.data[columns[i]]\n            i += 1\n\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n\nclass demand:\n\n    def __init__(self,\n        demand_df,\n        columns = None\n        ):\n        \"\"\"\n        intitializing can include pruning the dataset to a list of @column names\n        \"\"\"\n\n        if columns is not None:\n            self.data = demand_df[columns]\n\n        else:\n            self.data = demand_df\n\n\n    def weight(self,\n        columns,\n        weights,\n        weight_col_name = \"Pi\",\n        prune_output = True\n        ):\n        \"\"\"\n        Creating a value based on a weighted linear combination other values. Can be used to weight by population groups by their propensity to travel to certain activity types.\n\n        Parameters\n        ----------------\n        columns : columns in which to input into the weights function\n\n        weights : linear multipliers, the same length as the weights\n\n        weight_col_name : output column name\n\n        prune_output : if True, delete all input columns used in the weight function\n        \"\"\"\n\n        if len(columns) != len(weights):\n            raise Exception(\"Please make sure columns and weights are lists of the same length\")\n\n        if len(columns) < 2:\n            raise Exception(\"Can only weight opportunities if 2 or more are inputted\")\n\n        if sum(weights) < 0.999 or sum(weights) > 1.001:\n            print(\"WARNING: the inputted weights do not sum to 1.\")\n\n        self.data[weight_col_name] = 0\n        i = 0\n        while i < len(columns):\n            self.data[weight_col_name] = self.data[weight_col_name] + weights[i] * self.data[columns[i]]\n            i += 1\n\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n\nclass accessibility:\n\n    def __init__(self,\n        travelcosts_df,\n        supply_df,\n        demand_df = None,\n        travelcosts_ids = [\"origin_id\",\"destination_id\"],\n        supply_ids = \"destination_id\",\n        demand_ids = None\n        ):\n        \"\"\"\n        Parameters\n        ----------\n        travelcosts_df : a pandas dataframe containing travel costs from a set of locations (e.g. orignis) to another set of locations (e.g. destinations). Data should be in a long table format:\n\n        origin_id | destination_id | travel_cost_1 | travel_cost_2 (optional) | etc (optional)\n\n        supply_df : a pandas dataframe containing the number of opportunities (e.g. supply), relational to the destination IDs in travelcosts_df\n\n        demand_df : a pandas dataframe containing the number of agents competiting for opportunities (e.g. demand), relational to the origin IDs in travelcosts_df. This is optional since several accessibility measures do not account for demand\n\n        travelcosts_ids : a two item list of the column names for the origin and destination IDs in the travelcosts_df table\n\n        supply_ids : a single variable string for the destination ID in the supply_df table\n\n        demand_ids : a single variable string for the origin ID in the demand_df table. This is optional since several accessibility measures do not account for demand\n\n        \"\"\"\n\n        self.travelcosts_ids = travelcosts_ids\n        self.supply_ids = supply_ids\n        self.demand_ids = demand_ids\n\n        if demand_df is None and supply_df is None:\n            raise Exception(\"Please input a supply_df or a demand_df\")\n\n        # setting ID columns to strings to aid merging\n        travelcosts_df[travelcosts_ids[0]] =         travelcosts_df[travelcosts_ids[0]].astype(str)\n        travelcosts_df[travelcosts_ids[1]] =         travelcosts_df[travelcosts_ids[1]].astype(str)\n\n        # join supply data to the travel costs\n        if supply_df is not None and demand_df is None:\n            supply_df[supply_ids] = supply_df[supply_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                supply_df,\n                left_on=travelcosts_ids[1],\n                right_on=self.supply_ids,\n                how = 'left'\n            )\n\n        # join demand data as well, if inputted\n        elif demand_df is not None and supply_df is None:\n            demand_df[demand_ids] = demand_df[demand_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                demand_df,\n                left_on=travelcosts_ids[0],\n                right_on=self.demand_ids,\n                how = 'left'\n            )\n\n        else:\n            supply_df[supply_ids] = supply_df[supply_ids].astype(str)\n            demand_df[demand_ids] = demand_df[demand_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                supply_df,\n                left_on=travelcosts_ids[1],\n                right_on=self.supply_ids,\n                how = 'left'\n            )\n            self.data = pd.merge(\n                self.data,\n                demand_df,\n                left_on=travelcosts_ids[0],\n                right_on=self.demand_ids,\n                how = 'left'\n            )\n\n\n    def potential(self, opportunity, impedence, output_col_name = None):\n        \"\"\"\n        Measures potential accessibility to destinations\n\n        Parameters\n        ----------\n        opportunity : a string indicating the column name for which opportunity we are measuring access to (e.g. jobs, grocery stores, etc.). This column should be in the supply_df dataframe\n\n        impedence : column from the travel costs object to weight opportunities by\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n        Output\n        ----------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column accessibility measures based on the input parameters.\n\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_\" + opportunity + \"_\" + impedence\n        else:\n            A_col_name = output_col_name\n\n        # multiply the opportunity by the impedence\n        self.data[A_col_name] = self.data[opportunity] * self.data[impedence]\n\n        # sum by the origin locations\n        Ai = self.data.groupby(self.travelcosts_ids[0])[[A_col_name]].sum().reset_index()\n\n        del self.data[A_col_name]\n\n        return Ai\n\n\n\n\n    def passive(self, population, impedence, output_col_name = None):\n\n        \"\"\"\n        Measures passive accessibility to destinations\n\n        Parameters\n        ----------\n        population : a string indicating the column name for which population we are measuring access to (e.g. overall population, employed population, etc.). This column should be in the demand_df dataframe\n\n        impedence : column from the travel costs object to weight opportunities by\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n        Output\n        ----------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column accessibility measures based on the input parameters.\n\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_\" + population + \"_\" + impedence\n        else:\n            A_col_name = output_col_name\n\n        # multiply the opportunity by the impedence\n        self.data[A_col_name] = self.data[population] * self.data[impedence]\n\n        # sum by the origin locations\n        Ai = self.data.groupby(self.travelcosts_ids[1])[[A_col_name]].sum().reset_index()\n\n        del self.data[A_col_name]\n\n        return Ai\n\n\n\n\n    def mintravelcost(self, travelcost, opportunity, min_n,  output_col_name = None):\n        \"\"\"\n        Parameters\n        ----------\n        opportunity : a string indicating the column name for which opportunity we are measuring access to (e.g. jobs, grocery stores, etc.). This column should be in the supply_df dataframe\n\n        travelcost : a string indicating the column name for which travel cost shall be used (e.g. travel time, monetary cost, etc.). This column should be in the travelcosts_df dataframe\n\n        min_n : an int indicating the number of desired reachable opportunities (e.g. 1 library, 3 grocery stores, 10k jobs, etc.)\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n\n        Output\n        ---------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column are the accessibility measures based on the input parameters.\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_mintravelcost_\" + str(travelcost) + \"_\" + str(opportunity) + \"_\" +  str(min_n)\n        else:\n            A_col_name = output_col_name\n\n        # internal function of returning the min travel time for n opportunities\n        def get_min(df, tc, o, n):\n            df = df.sort_values(by=[tc], ascending=True)\n            df[\"cumsum\"] = df[o].cumsum()\n            df = df[df[\"cumsum\"] >= n]\n            return df[travelcost].min()\n\n        # generating the accessibility measure\n        out =  pd.DataFrame(self.data.groupby(self.travelcosts_ids[0]).apply(get_min, tc = travelcost, o = opportunity, n = min_n))\n\n        # setting the column name of the output\n        out.columns = [A_col_name]\n\n        return out\n\n\n\nclass summary:\n    \"\"\"\n    Computing various summary statistics of accessibility, usually with respect to different population groups\n\n    Some of these can be used to assess distributions and equity of transport networks.\n    \"\"\"\n\n    def __init__(\n        self,\n        accessibility_df,\n        summary_vars,\n        accessibility_id = \"id\",\n        summary_vars_id = \"id\"\n        ):\n\n        # join the data\n        self.data = pd.merge(\n            accessibility_df,\n            summary_vars,\n            left_on=accessibility_id,\n            right_on=summary_vars_id,\n            how = 'left'\n        )\n\n    def weighted_mean(self, access_var, group_var):\n\n        return tracc.statistics.weighted_mean(self.data, access_var, group_var)\n\n    def weighted_var(self, access_var, group_var):\n\n        return tracc.statistics.weighted_var(self.data, access_var, group_var)\n\n    def weighted_sd(self, access_var, group_var):\n\n        return tracc.statistics.weighted_sd(self.data, access_var, group_var)\n\n    def weighted_CV(self, access_var, group_var):\n\n        return tracc.statistics.weighted_CV(self.data, access_var, group_var)\n\n    def weighted_Gini(self, access_var, group_var):\n\n        return tracc.statistics.weighted_Gini(self.data, access_var, group_var)\n\n    def quantiles(self, access_var, group_vars, nbins = 10, result = \"percent\"):\n\n        # assign each observation a bin, based on nbins\n        dfq = pd.DataFrame( tracc.statistics.weighted_qcut(self.data[access_var], self.data[group_vars[0]], nbins))\n\n        # create a specific name for the quantile column\n        q_col_name = 'q' + str(nbins) + \"_\" + (group_vars[0])\n        dfq.columns = [q_col_name]\n        self.data = self.data.join(dfq, how='outer')\n\n        # group by each bin, susmmarize\n        dfq = self.data.groupby([q_col_name])[group_vars].sum()\n\n        # return as counts or percent\n        if result == \"count\":\n            return dfq\n        elif result == \"percent\":\n            for var in group_vars:\n                dfq[var] = dfq[var] / dfq[var].sum()\n            return dfq\n",
+  "prompt": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value =",
   "output": {
     "before": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = 0,\n        polygon_file = None,\n        polygon_id = None\n        ):\n        \"\"\"\n        Computes and updates intrazonal travel cost in a travel costs matrix. The output will include a travel cost between any origin or destination location in the matrix to itself.\n\n        Parameters\n        ----------\n        cost_column : column name for travel costs\n\n        origin_column : column name for origin IDs\n\n        destinationn_column : column name for origin IDs\n\n        method : \"constant\" applies a single @value to all intrazonal travel costs. \"radius\" applies a cost which is proportional to the radius of a circle with the same area as its input polygon\n\n        value : parameters for the method\n\n        polygon_file : file path to an input spatial polygon (e.g. geojson) if needed (it is for method = \"radius\")\n\n        polygon_id : ID field for the polygon_file needed for joining to the cost matrix\n        \"\"\"\n\n        # making sure ID columns are strings for a merge later on\n        self.data[origin_column] = self.data[origin_column].astype(str)\n        self.data[destination_column] = self.data[destination_column].astype(str)\n\n        # getting set of unique locations in the dataset\n        locations = list(self.data[origin_column].unique()) + list(self.data[destination_column].unique())\n        locations = list(set(locations))\n\n        if method == \"constant\":\n\n            new_times = [value] * len(locations)\n\n            df = pd.DataFrame(\n                list(zip(locations, locations, new_times)),\n                columns =[origin_column, destination_column, cost_column + \"_i\"])\n\n        elif method == \"radius\":\n\n            from tracc.spatial import radius\n\n            # compute based on the equivilant radius of each polygon\n            df = radius(polygon_file,polygon_id)\n            df[origin_column] = df[polygon_id]\n            df[destination_column] = df[polygon_id]\n            del df[polygon_id]\n            df[cost_column + \"_i\"] = value * df[\"radius\"]\n            del df[\"radius\"]\n\n        else:\n            raise Exception(\"Method can only be 'constant' or 'radius'\")\n\n        df[origin_column] = df[origin_column].astype(str)\n        df[destination_column] = df[destination_column].astype(str)\n\n        # join in the newly created intrazonal travel times\n        self.data = pd.merge(self.data, df,  how='outer', left_on=[origin_column, destination_column], right_on = [origin_column, destination_column])\n\n        # replace the older intrazonal travel times\n        self.data[cost_column] = np.where((self.data[cost_column + \"_i\"] >= 0),self.data[cost_column + \"_i\"],self.data[cost_column])\n\n        del self.data[cost_column + \"_i\"]\n\n\n\n\n    def fill_missing_costs(\n        self,\n        cost_column,\n        origin_column,\n        destination_column,\n        spatial_file_path,\n        spatial_file_id,\n        where = \"origin\",\n        weight_type = \"Queen\"\n        ):\n        \"\"\"\n        Completes an OD matrix by filling locations that were missing from the original matrix, based on a neighbourhood spatial weights matrix. For example if a origin zone has no travel costs, it presumes its travel costs to destinations are the average of the same costs of its neighbouring zones.\n        \"\"\"\n\n        from tracc.spatial import area\n\n        # get list of zones which are missing from the input costs table\n        dfz = area(spatial_file_path, spatial_file_id)\n        dfz[spatial_file_id] = dfz[spatial_file_id].astype(str)\n        self.data[origin_column] = self.data[origin_column].astype(str)\n        li1 = list(self.data[origin_column].unique())\n        li2 = list(dfz[spatial_file_id].unique())\n        missing = [x for x in li2 if x not in li1]\n        del li1,li2\n\n        if len(missing) == 0:\n            return None\n\n        if where == \"origin\":\n\n            # get neighbours for each missing zone\n            from tracc.spatial import get_neighbours\n            neighbours = get_neighbours(spatial_file_path, \"Queen\", spatial_file_id)\n\n            new_times = []\n\n            # for each zone, compute average travel times to other zones based on neighbours\n            for location in missing:\n\n                locneigh = neighbours[location]\n\n                temp = self.data[self.data[origin_column].isin(locneigh)]\n\n                temp = pd.DataFrame(temp.groupby([destination_column], as_index=False)[cost_column].mean())\n\n                temp[origin_column] = location\n\n                new_times.append(temp)\n\n            # combine the outputs, and concat to the input times\n            new_times = pd.concat(new_times)\n            self.data = pd.concat([self.data, new_times])\n\n        elif where == \"destination\":\n\n            # get neighbours for each missing zone\n            from tracc.spatial import get_neighbours\n            neighbours = get_neighbours(spatial_file_path, \"Queen\", spatial_file_id)\n\n            new_times = []\n\n            # for each zone, compute average travel times from other zones based on neighbours\n            for location in missing:\n\n                locneigh = neighbours[location]\n\n                temp = self.data[self.data[destination_column].isin(locneigh)]\n\n                temp = pd.DataFrame(temp.groupby([origin_column], as_index=False)[cost_column].mean())\n\n                temp[destination_column] = location\n\n                new_times.append(temp)\n\n            # combine the outputs, and concat to the input times\n            new_times = pd.concat(new_times)\n            self.data = pd.concat([self.data, new_times])\n\n        else:\n\n            raise Exception(\"Input paramater @where should either be 'origin' or 'destination'\")\n\n\n\n\n    def generalized_cost(\n        self,\n        columns,\n        coefficients,\n        exponents = None,\n        prune_output = True,\n        output_cost_name = \"GC\"\n        ):\n\n        \"\"\"\n        Computes generalized costs\n        \"\"\"\n\n        # need to add a column check warning, and make the intercept = 0 if none is provided\n\n        # set all exponents as 1 if none are inputted\n        if exponents is None:\n            exponents = [1] * len(columns)\n\n        # compute the generalized cost value\n        self.data[output_cost_name] = coefficients[len(coefficients) - 1]\n        i = 0\n        while i < len(columns):\n            self.data[output_cost_name] = self.data[output_cost_name] + coefficients[i] * self.data[columns[i]] ** exponents[i]\n            i += 1\n\n        # delete initital cost columns if desired\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n    def impedence_calc(\n        self,\n        cost_column,\n        impedence_func,\n        impedence_func_params,\n        prune_output = False,\n        output_col_name = \"fCij\"\n        ):\n\n        \"\"\"\n        Measures impdence given input of travel cost and selected impedence funciton and parameters\n\n        # To Do: add in more impdence function options\n        \"\"\"\n\n        if impedence_func == \"cumulative\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.cumulative,args = (impedence_func_params,))\n\n        elif impedence_func == \"linear\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.linear,args = (impedence_func_params,))\n\n        elif impedence_func == \"exponential\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.exponential,args = (impedence_func_params,))\n\n        else:\n            raise Exception(\"Please select an appropriate decay function\")\n\n        if prune_output is True:\n            del self.data[cost_column]\n\n\n    def impedence_combine(self,\n        columns,\n        how = \"product\",\n        output_col_name = \"fCij\",\n        prune_output = True\n        ):\n\n        \"\"\"\n        If there are multiple impedences, and we want to combine them into a single impedence value. This is similar to genearlized cost.\n\n        For example, if we have an impedence value for transit travel time, and we also want to remove any trips based on a fare criteria, it can be applied in this way.\n        \"\"\"\n\n        if how == \"product\":\n            self.data[output_col_name] = 1\n            i = 0\n            while i < len(columns):\n                self.data[output_col_name] = self.data[output_col_name] * self.data[columns[i]]\n                i += 1\n\n        elif how == \"sum\":\n            self.data[output_col_name] = 0\n            i = 0\n            while i < len(columns):\n                self.data[output_col_name] = self.data[output_col_name] + self.data[columns[i]]\n                i += 1\n\n        else:\n            raise Exception('the input @how must be one of \"product\" or \"sum\"')\n\n\n\n    def max_impedence(self,\n        columns,\n        imp_col_name = \"fCij\"\n        ):\n        \"\"\"\n        Reduces the cost table to only include rows with the maximum impedence value for the set of input columns.\n\n        For example, if there 3 transit trips from i to j, each with a different computed generalized_cost resulting from different route choices, this function will return the row with the one resulting in the greatest impedence value (i.e. lowest generalized cost)\n        \"\"\"\n\n        self.data = self.data.groupby(columns)[imp_col_name].max().reset_index()\n\n\n\nclass supply:\n\n    def __init__(self,\n        supply_df,\n        columns = None\n        ):\n        \"\"\"\n        intitializing can include pruning the dataset to a list of @column names\n        \"\"\"\n\n        if columns is not None:\n            self.data = supply_df[columns]\n\n        else:\n            self.data = supply_df\n\n\n\n    def weight(self,\n        columns,\n        weights,\n        weight_col_name = \"Oj\",\n        prune_output = True\n        ):\n        \"\"\"\n        Creating a value based on a weighted linear combination other values. Can be used to weight by destinations by their desirability.\n\n        Parameters\n        ----------------\n        columns : columns in which to input into the weights function\n\n        weights : linear multipliers, the same length as the weights\n\n        weight_col_name : output column name\n\n        prune_output : if True, delete all input columns used in the weight function\n        \"\"\"\n\n        if len(columns) != len(weights):\n            raise Exception(\"Please make sure columns and weights are lists of the same length\")\n\n        if len(columns) < 2:\n            raise Exception(\"Can only weight opportunities if 2 or more are inputted\")\n\n        if sum(weights) < 0.999 or sum(weights) > 1.001:\n            print(\"WARNING: the inputted weights do not sum to 1.\")\n\n\n        self.data[weight_col_name] = 0\n        i = 0\n        while i < len(columns):\n            self.data[weight_col_name] = self.data[weight_col_name] + weights[i] * self.data[columns[i]]\n            i += 1\n\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n\nclass demand:\n\n    def __init__(self,\n        demand_df,\n        columns = None\n        ):\n        \"\"\"\n        intitializing can include pruning the dataset to a list of @column names\n        \"\"\"\n\n        if columns is not None:\n            self.data = demand_df[columns]\n\n        else:\n            self.data = demand_df\n\n\n    def weight(self,\n        columns,\n        weights,\n        weight_col_name = \"Pi\",\n        prune_output = True\n        ):\n        \"\"\"\n        Creating a value based on a weighted linear combination other values. Can be used to weight by population groups by their propensity to travel to certain activity types.\n\n        Parameters\n        ----------------\n        columns : columns in which to input into the weights function\n\n        weights : linear multipliers, the same length as the weights\n\n        weight_col_name : output column name\n\n        prune_output : if True, delete all input columns used in the weight function\n        \"\"\"\n\n        if len(columns) != len(weights):\n            raise Exception(\"Please make sure columns and weights are lists of the same length\")\n\n        if len(columns) < 2:\n            raise Exception(\"Can only weight opportunities if 2 or more are inputted\")\n\n        if sum(weights) < 0.999 or sum(weights) > 1.001:\n            print(\"WARNING: the inputted weights do not sum to 1.\")\n\n        self.data[weight_col_name] = 0\n        i = 0\n        while i < len(columns):\n            self.data[weight_col_name] = self.data[weight_col_name] + weights[i] * self.data[columns[i]]\n            i += 1\n\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n\nclass accessibility:\n\n    def __init__(self,\n        travelcosts_df,\n        supply_df,\n        demand_df = None,\n        travelcosts_ids = [\"origin_id\",\"destination_id\"],\n        supply_ids = \"destination_id\",\n        demand_ids = None\n        ):\n        \"\"\"\n        Parameters\n        ----------\n        travelcosts_df : a pandas dataframe containing travel costs from a set of locations (e.g. orignis) to another set of locations (e.g. destinations). Data should be in a long table format:\n\n        origin_id | destination_id | travel_cost_1 | travel_cost_2 (optional) | etc (optional)\n\n        supply_df : a pandas dataframe containing the number of opportunities (e.g. supply), relational to the destination IDs in travelcosts_df\n\n        demand_df : a pandas dataframe containing the number of agents competiting for opportunities (e.g. demand), relational to the origin IDs in travelcosts_df. This is optional since several accessibility measures do not account for demand\n\n        travelcosts_ids : a two item list of the column names for the origin and destination IDs in the travelcosts_df table\n\n        supply_ids : a single variable string for the destination ID in the supply_df table\n\n        demand_ids : a single variable string for the origin ID in the demand_df table. This is optional since several accessibility measures do not account for demand\n\n        \"\"\"\n\n        self.travelcosts_ids = travelcosts_ids\n        self.supply_ids = supply_ids\n        self.demand_ids = demand_ids\n\n        if demand_df is None and supply_df is None:\n            raise Exception(\"Please input a supply_df or a demand_df\")\n\n        # setting ID columns to strings to aid merging\n        travelcosts_df[travelcosts_ids[0]] =         travelcosts_df[travelcosts_ids[0]].astype(str)\n        travelcosts_df[travelcosts_ids[1]] =         travelcosts_df[travelcosts_ids[1]].astype(str)\n\n        # join supply data to the travel costs\n        if supply_df is not None and demand_df is None:\n            supply_df[supply_ids] = supply_df[supply_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                supply_df,\n                left_on=travelcosts_ids[1],\n                right_on=self.supply_ids,\n                how = 'left'\n            )\n\n        # join demand data as well, if inputted\n        elif demand_df is not None and supply_df is None:\n            demand_df[demand_ids] = demand_df[demand_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                demand_df,\n                left_on=travelcosts_ids[0],\n                right_on=self.demand_ids,\n                how = 'left'\n            )\n\n        else:\n            supply_df[supply_ids] = supply_df[supply_ids].astype(str)\n            demand_df[demand_ids] = demand_df[demand_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                supply_df,\n                left_on=travelcosts_ids[1],\n                right_on=self.supply_ids,\n                how = 'left'\n            )\n            self.data = pd.merge(\n                self.data,\n                demand_df,\n                left_on=travelcosts_ids[0],\n                right_on=self.demand_ids,\n                how = 'left'\n            )\n\n\n    def potential(self, opportunity, impedence, output_col_name = None):\n        \"\"\"\n        Measures potential accessibility to destinations\n\n        Parameters\n        ----------\n        opportunity : a string indicating the column name for which opportunity we are measuring access to (e.g. jobs, grocery stores, etc.). This column should be in the supply_df dataframe\n\n        impedence : column from the travel costs object to weight opportunities by\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n        Output\n        ----------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column accessibility measures based on the input parameters.\n\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_\" + opportunity + \"_\" + impedence\n        else:\n            A_col_name = output_col_name\n\n        # multiply the opportunity by the impedence\n        self.data[A_col_name] = self.data[opportunity] * self.data[impedence]\n\n        # sum by the origin locations\n        Ai = self.data.groupby(self.travelcosts_ids[0])[[A_col_name]].sum().reset_index()\n\n        del self.data[A_col_name]\n\n        return Ai\n\n\n\n\n    def passive(self, population, impedence, output_col_name = None):\n\n        \"\"\"\n        Measures passive accessibility to destinations\n\n        Parameters\n        ----------\n        population : a string indicating the column name for which population we are measuring access to (e.g. overall population, employed population, etc.). This column should be in the demand_df dataframe\n\n        impedence : column from the travel costs object to weight opportunities by\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n        Output\n        ----------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column accessibility measures based on the input parameters.\n\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_\" + population + \"_\" + impedence\n        else:\n            A_col_name = output_col_name\n\n        # multiply the opportunity by the impedence\n        self.data[A_col_name] = self.data[population] * self.data[impedence]\n\n        # sum by the origin locations\n        Ai = self.data.groupby(self.travelcosts_ids[1])[[A_col_name]].sum().reset_index()\n\n        del self.data[A_col_name]\n\n        return Ai\n\n\n\n\n    def mintravelcost(self, travelcost, opportunity, min_n,  output_col_name = None):\n        \"\"\"\n        Parameters\n        ----------\n        opportunity : a string indicating the column name for which opportunity we are measuring access to (e.g. jobs, grocery stores, etc.). This column should be in the supply_df dataframe\n\n        travelcost : a string indicating the column name for which travel cost shall be used (e.g. travel time, monetary cost, etc.). This column should be in the travelcosts_df dataframe\n\n        min_n : an int indicating the number of desired reachable opportunities (e.g. 1 library, 3 grocery stores, 10k jobs, etc.)\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n\n        Output\n        ---------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column are the accessibility measures based on the input parameters.\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_mintravelcost_\" + str(travelcost) + \"_\" + str(opportunity) + \"_\" +  str(min_n)\n        else:\n            A_col_name = output_col_name\n\n        # internal function of returning the min travel time for n opportunities\n        def get_min(df, tc, o, n):\n            df = df.sort_values(by=[tc], ascending=True)\n            df[\"cumsum\"] = df[o].cumsum()\n            df = df[df[\"cumsum\"] >= n]\n            return df[travelcost].min()\n\n        # generating the accessibility measure\n        out =  pd.DataFrame(self.data.groupby(self.travelcosts_ids[0]).apply(get_min, tc = travelcost, o = opportunity, n = min_n))\n\n        # setting the column name of the output\n        out.columns = [A_col_name]\n\n        return out\n\n\n\nclass summary:\n    \"\"\"\n    Computing various summary statistics of accessibility, usually with respect to different population groups\n\n    Some of these can be used to assess distributions and equity of transport networks.\n    \"\"\"\n\n    def __init__(\n        self,\n        accessibility_df,\n        summary_vars,\n        accessibility_id = \"id\",\n        summary_vars_id = \"id\"\n        ):\n\n        # join the data\n        self.data = pd.merge(\n            accessibility_df,\n            summary_vars,\n            left_on=accessibility_id,\n            right_on=summary_vars_id,\n            how = 'left'\n        )\n\n    def weighted_mean(self, access_var, group_var):\n\n        return tracc.statistics.weighted_mean(self.data, access_var, group_var)\n\n    def weighted_var(self, access_var, group_var):\n\n        return tracc.statistics.weighted_var(self.data, access_var, group_var)\n\n    def weighted_sd(self, access_var, group_var):\n\n        return tracc.statistics.weighted_sd(self.data, access_var, group_var)\n\n    def weighted_CV(self, access_var, group_var):\n\n        return tracc.statistics.weighted_CV(self.data, access_var, group_var)\n\n    def weighted_Gini(self, access_var, group_var):\n\n        return tracc.statistics.weighted_Gini(self.data, access_var, group_var)\n\n    def quantiles(self, access_var, group_vars, nbins = 10, result = \"percent\"):\n\n        # assign each observation a bin, based on nbins\n        dfq = pd.DataFrame( tracc.statistics.weighted_qcut(self.data[access_var], self.data[group_vars[0]], nbins))\n\n        # create a specific name for the quantile column\n        q_col_name = 'q' + str(nbins) + \"_\" + (group_vars[0])\n        dfq.columns = [q_col_name]\n        self.data = self.data.join(dfq, how='outer')\n\n        # group by each bin, susmmarize\n        dfq = self.data.groupby([q_col_name])[group_vars].sum()\n\n        # return as counts or percent\n        if result == \"count\":\n            return dfq\n        elif result == \"percent\":\n            for var in group_vars:\n                dfq[var] = dfq[var] / dfq[var].sum()\n            return dfq\n        else:\n            raise Exception(\"Please input a valid result. Can be 'count', or 'percent'\")\n```\n\n\n\n**Notes:**\n\n* This is a basic framework for accessibility analysis in a transportation context. You can adapt and expand it",
     "after": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = 0,\n        polygon_file = None,\n        polygon_id = None\n        ):\n        \"\"\"\n        Computes and updates intrazonal travel cost in a travel costs matrix. The output will include a travel cost between any origin or destination location in the matrix to itself.\n\n        Parameters\n        ----------\n        cost_column : column name for travel costs\n\n        origin_column : column name for origin IDs\n\n        destinationn_column : column name for origin IDs\n\n        method : \"constant\" applies a single @value to all intrazonal travel costs. \"radius\" applies a cost which is proportional to the radius of a circle with the same area as its input polygon\n\n        value : parameters for the method\n\n        polygon_file : file path to an input spatial polygon (e.g. geojson) if needed (it is for method = \"radius\")\n\n        polygon_id : ID field for the polygon_file needed for joining to the cost matrix\n        \"\"\"\n\n        # making sure ID columns are strings for a merge later on\n        self.data[origin_column] = self.data[origin_column].astype(str)\n        self.data[destination_column] = self.data[destination_column].astype(str)\n\n        # getting set of unique locations in the dataset\n        locations = list(self.data[origin_column].unique()) + list(self.data[destination_column].unique())\n        locations = list(set(locations))\n\n        if method == \"constant\":\n\n            new_times = [value] * len(locations)\n\n            df = pd.DataFrame(\n                list(zip(locations, locations, new_times)),\n                columns =[origin_column, destination_column, cost_column + \"_i\"])\n\n        elif method == \"radius\":\n\n            from tracc.spatial import radius\n\n            # compute based on the equivilant radius of each polygon\n            df = radius(polygon_file,polygon_id)\n            df[origin_column] = df[polygon_id]\n            df[destination_column] = df[polygon_id]\n            del df[polygon_id]\n            df[cost_column + \"_i\"] = value * df[\"radius\"]\n            del df[\"radius\"]\n\n        else:\n            raise Exception(\"Method can only be 'constant' or 'radius'\")\n\n        df[origin_column] = df[origin_column].astype(str)\n        df[destination_column] = df[destination_column].astype(str)\n\n        # join in the newly created intrazonal travel times\n        self.data = pd.merge(self.data, df,  how='outer', left_on=[origin_column, destination_column], right_on = [origin_column, destination_column])\n\n        # replace the older intrazonal travel times\n        self.data[cost_column] = np.where((self.data[cost_column + \"_i\"] >= 0),self.data[cost_column + \"_i\"],self.data[cost_column])\n\n        del self.data[cost_column + \"_i\"]\n\n\n\n\n    def fill_missing_costs(\n        self,\n        cost_column,\n        origin_column,\n        destination_column,\n        spatial_file_path,\n        spatial_file_id,\n        where = \"origin\",\n        weight_type = \"Queen\"\n        ):\n        \"\"\"\n        Completes an OD matrix by filling locations that were missing from the original matrix, based on a neighbourhood spatial weights matrix. For example if a origin zone has no travel costs, it presumes its travel costs to destinations are the average of the same costs of its neighbouring zones.\n        \"\"\"\n\n        from tracc.spatial import area\n\n        # get list of zones which are missing from the input costs table\n        dfz = area(spatial_file_path, spatial_file_id)\n        dfz[spatial_file_id] = dfz[spatial_file_id].astype(str)\n        self.data[origin_column] = self.data[origin_column].astype(str)\n        li1 = list(self.data[origin_column].unique())\n        li2 = list(dfz[spatial_file_id].unique())\n        missing = [x for x in li2 if x not in li1]\n        del li1,li2\n\n        if len(missing) == 0:\n            return None\n\n        if where == \"origin\":\n\n            # get neighbours for each missing zone\n            from tracc.spatial import get_neighbours\n            neighbours = get_neighbours(spatial_file_path, \"Queen\", spatial_file_id)\n\n            new_times = []\n\n            # for each zone, compute average travel times to other zones based on neighbours\n            for location in missing:\n\n                locneigh = neighbours[location]\n\n                temp = self.data[self.data[origin_column].isin(locneigh)]\n\n                temp = pd.DataFrame(temp.groupby([destination_column], as_index=False)[cost_column].mean())\n\n                temp[origin_column] = location\n\n                new_times.append(temp)\n\n            # combine the outputs, and concat to the input times\n            new_times = pd.concat(new_times)\n            self.data = pd.concat([self.data, new_times])\n\n        elif where == \"destination\":\n\n            # get neighbours for each missing zone\n            from tracc.spatial import get_neighbours\n            neighbours = get_neighbours(spatial_file_path, \"Queen\", spatial_file_id)\n\n            new_times = []\n\n            # for each zone, compute average travel times from other zones based on neighbours\n            for location in missing:\n\n                locneigh = neighbours[location]\n\n                temp = self.data[self.data[destination_column].isin(locneigh)]\n\n                temp = pd.DataFrame(temp.groupby([origin_column], as_index=False)[cost_column].mean())\n\n                temp[destination_column] = location\n\n                new_times.append(temp)\n\n            # combine the outputs, and concat to the input times\n            new_times = pd.concat(new_times)\n            self.data = pd.concat([self.data, new_times])\n\n        else:\n\n            raise Exception(\"Input paramater @where should either be 'origin' or 'destination'\")\n\n\n\n\n    def generalized_cost(\n        self,\n        columns,\n        coefficients,\n        exponents = None,\n        prune_output = True,\n        output_cost_name = \"GC\"\n        ):\n\n        \"\"\"\n        Computes generalized costs\n        \"\"\"\n\n        # need to add a column check warning, and make the intercept = 0 if none is provided\n\n        # set all exponents as 1 if none are inputted\n        if exponents is None:\n            exponents = [1] * len(columns)\n\n        # compute the generalized cost value\n        self.data[output_cost_name] = coefficients[len(coefficients) - 1]\n        i = 0\n        while i < len(columns):\n            self.data[output_cost_name] = self.data[output_cost_name] + coefficients[i] * self.data[columns[i]] ** exponents[i]\n            i += 1\n\n        # delete initital cost columns if desired\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n    def impedence_calc(\n        self,\n        cost_column,\n        impedence_func,\n        impedence_func_params,\n        prune_output = False,\n        output_col_name = \"fCij\"\n        ):\n\n        \"\"\"\n        Measures impdence given input of travel cost and selected impedence funciton and parameters\n\n        # To Do: add in more impdence function options\n        \"\"\"\n\n        if impedence_func == \"cumulative\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.cumulative,args = (impedence_func_params,))\n\n        elif impedence_func == \"linear\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.linear,args = (impedence_func_params,))\n\n        elif impedence_func == \"exponential\":\n            self.data[output_col_name] = self.data[cost_column].apply(tracc.decay.exponential,args = (impedence_func_params,))\n\n        else:\n            raise Exception(\"Please select an appropriate decay function\")\n\n        if prune_output is True:\n            del self.data[cost_column]\n\n\n    def impedence_combine(self,\n        columns,\n        how = \"product\",\n        output_col_name = \"fCij\",\n        prune_output = True\n        ):\n\n        \"\"\"\n        If there are multiple impedences, and we want to combine them into a single impedence value. This is similar to genearlized cost.\n\n        For example, if we have an impedence value for transit travel time, and we also want to remove any trips based on a fare criteria, it can be applied in this way.\n        \"\"\"\n\n        if how == \"product\":\n            self.data[output_col_name] = 1\n            i = 0\n            while i < len(columns):\n                self.data[output_col_name] = self.data[output_col_name] * self.data[columns[i]]\n                i += 1\n\n        elif how == \"sum\":\n            self.data[output_col_name] = 0\n            i = 0\n            while i < len(columns):\n                self.data[output_col_name] = self.data[output_col_name] + self.data[columns[i]]\n                i += 1\n\n        else:\n            raise Exception('the input @how must be one of \"product\" or \"sum\"')\n\n\n\n    def max_impedence(self,\n        columns,\n        imp_col_name = \"fCij\"\n        ):\n        \"\"\"\n        Reduces the cost table to only include rows with the maximum impedence value for the set of input columns.\n\n        For example, if there 3 transit trips from i to j, each with a different computed generalized_cost resulting from different route choices, this function will return the row with the one resulting in the greatest impedence value (i.e. lowest generalized cost)\n        \"\"\"\n\n        self.data = self.data.groupby(columns)[imp_col_name].max().reset_index()\n\n\n\nclass supply:\n\n    def __init__(self,\n        supply_df,\n        columns = None\n        ):\n        \"\"\"\n        intitializing can include pruning the dataset to a list of @column names\n        \"\"\"\n\n        if columns is not None:\n            self.data = supply_df[columns]\n\n        else:\n            self.data = supply_df\n\n\n\n    def weight(self,\n        columns,\n        weights,\n        weight_col_name = \"Oj\",\n        prune_output = True\n        ):\n        \"\"\"\n        Creating a value based on a weighted linear combination other values. Can be used to weight by destinations by their desirability.\n\n        Parameters\n        ----------------\n        columns : columns in which to input into the weights function\n\n        weights : linear multipliers, the same length as the weights\n\n        weight_col_name : output column name\n\n        prune_output : if True, delete all input columns used in the weight function\n        \"\"\"\n\n        if len(columns) != len(weights):\n            raise Exception(\"Please make sure columns and weights are lists of the same length\")\n\n        if len(columns) < 2:\n            raise Exception(\"Can only weight opportunities if 2 or more are inputted\")\n\n        if sum(weights) < 0.999 or sum(weights) > 1.001:\n            print(\"WARNING: the inputted weights do not sum to 1.\")\n\n\n        self.data[weight_col_name] = 0\n        i = 0\n        while i < len(columns):\n            self.data[weight_col_name] = self.data[weight_col_name] + weights[i] * self.data[columns[i]]\n            i += 1\n\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n\nclass demand:\n\n    def __init__(self,\n        demand_df,\n        columns = None\n        ):\n        \"\"\"\n        intitializing can include pruning the dataset to a list of @column names\n        \"\"\"\n\n        if columns is not None:\n            self.data = demand_df[columns]\n\n        else:\n            self.data = demand_df\n\n\n    def weight(self,\n        columns,\n        weights,\n        weight_col_name = \"Pi\",\n        prune_output = True\n        ):\n        \"\"\"\n        Creating a value based on a weighted linear combination other values. Can be used to weight by population groups by their propensity to travel to certain activity types.\n\n        Parameters\n        ----------------\n        columns : columns in which to input into the weights function\n\n        weights : linear multipliers, the same length as the weights\n\n        weight_col_name : output column name\n\n        prune_output : if True, delete all input columns used in the weight function\n        \"\"\"\n\n        if len(columns) != len(weights):\n            raise Exception(\"Please make sure columns and weights are lists of the same length\")\n\n        if len(columns) < 2:\n            raise Exception(\"Can only weight opportunities if 2 or more are inputted\")\n\n        if sum(weights) < 0.999 or sum(weights) > 1.001:\n            print(\"WARNING: the inputted weights do not sum to 1.\")\n\n        self.data[weight_col_name] = 0\n        i = 0\n        while i < len(columns):\n            self.data[weight_col_name] = self.data[weight_col_name] + weights[i] * self.data[columns[i]]\n            i += 1\n\n        if prune_output is True:\n            for col in list(set(columns)):\n                del self.data[col]\n\n\n\nclass accessibility:\n\n    def __init__(self,\n        travelcosts_df,\n        supply_df,\n        demand_df = None,\n        travelcosts_ids = [\"origin_id\",\"destination_id\"],\n        supply_ids = \"destination_id\",\n        demand_ids = None\n        ):\n        \"\"\"\n        Parameters\n        ----------\n        travelcosts_df : a pandas dataframe containing travel costs from a set of locations (e.g. orignis) to another set of locations (e.g. destinations). Data should be in a long table format:\n\n        origin_id | destination_id | travel_cost_1 | travel_cost_2 (optional) | etc (optional)\n\n        supply_df : a pandas dataframe containing the number of opportunities (e.g. supply), relational to the destination IDs in travelcosts_df\n\n        demand_df : a pandas dataframe containing the number of agents competiting for opportunities (e.g. demand), relational to the origin IDs in travelcosts_df. This is optional since several accessibility measures do not account for demand\n\n        travelcosts_ids : a two item list of the column names for the origin and destination IDs in the travelcosts_df table\n\n        supply_ids : a single variable string for the destination ID in the supply_df table\n\n        demand_ids : a single variable string for the origin ID in the demand_df table. This is optional since several accessibility measures do not account for demand\n\n        \"\"\"\n\n        self.travelcosts_ids = travelcosts_ids\n        self.supply_ids = supply_ids\n        self.demand_ids = demand_ids\n\n        if demand_df is None and supply_df is None:\n            raise Exception(\"Please input a supply_df or a demand_df\")\n\n        # setting ID columns to strings to aid merging\n        travelcosts_df[travelcosts_ids[0]] =         travelcosts_df[travelcosts_ids[0]].astype(str)\n        travelcosts_df[travelcosts_ids[1]] =         travelcosts_df[travelcosts_ids[1]].astype(str)\n\n        # join supply data to the travel costs\n        if supply_df is not None and demand_df is None:\n            supply_df[supply_ids] = supply_df[supply_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                supply_df,\n                left_on=travelcosts_ids[1],\n                right_on=self.supply_ids,\n                how = 'left'\n            )\n\n        # join demand data as well, if inputted\n        elif demand_df is not None and supply_df is None:\n            demand_df[demand_ids] = demand_df[demand_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                demand_df,\n                left_on=travelcosts_ids[0],\n                right_on=self.demand_ids,\n                how = 'left'\n            )\n\n        else:\n            supply_df[supply_ids] = supply_df[supply_ids].astype(str)\n            demand_df[demand_ids] = demand_df[demand_ids].astype(str)\n            self.data = pd.merge(\n                travelcosts_df,\n                supply_df,\n                left_on=travelcosts_ids[1],\n                right_on=self.supply_ids,\n                how = 'left'\n            )\n            self.data = pd.merge(\n                self.data,\n                demand_df,\n                left_on=travelcosts_ids[0],\n                right_on=self.demand_ids,\n                how = 'left'\n            )\n\n\n    def potential(self, opportunity, impedence, output_col_name = None):\n        \"\"\"\n        Measures potential accessibility to destinations\n\n        Parameters\n        ----------\n        opportunity : a string indicating the column name for which opportunity we are measuring access to (e.g. jobs, grocery stores, etc.). This column should be in the supply_df dataframe\n\n        impedence : column from the travel costs object to weight opportunities by\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n        Output\n        ----------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column accessibility measures based on the input parameters.\n\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_\" + opportunity + \"_\" + impedence\n        else:\n            A_col_name = output_col_name\n\n        # multiply the opportunity by the impedence\n        self.data[A_col_name] = self.data[opportunity] * self.data[impedence]\n\n        # sum by the origin locations\n        Ai = self.data.groupby(self.travelcosts_ids[0])[[A_col_name]].sum().reset_index()\n\n        del self.data[A_col_name]\n\n        return Ai\n\n\n\n\n    def passive(self, population, impedence, output_col_name = None):\n\n        \"\"\"\n        Measures passive accessibility to destinations\n\n        Parameters\n        ----------\n        population : a string indicating the column name for which population we are measuring access to (e.g. overall population, employed population, etc.). This column should be in the demand_df dataframe\n\n        impedence : column from the travel costs object to weight opportunities by\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n        Output\n        ----------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column accessibility measures based on the input parameters.\n\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_\" + population + \"_\" + impedence\n        else:\n            A_col_name = output_col_name\n\n        # multiply the opportunity by the impedence\n        self.data[A_col_name] = self.data[population] * self.data[impedence]\n\n        # sum by the origin locations\n        Ai = self.data.groupby(self.travelcosts_ids[1])[[A_col_name]].sum().reset_index()\n\n        del self.data[A_col_name]\n\n        return Ai\n\n\n\n\n    def mintravelcost(self, travelcost, opportunity, min_n,  output_col_name = None):\n        \"\"\"\n        Parameters\n        ----------\n        opportunity : a string indicating the column name for which opportunity we are measuring access to (e.g. jobs, grocery stores, etc.). This column should be in the supply_df dataframe\n\n        travelcost : a string indicating the column name for which travel cost shall be used (e.g. travel time, monetary cost, etc.). This column should be in the travelcosts_df dataframe\n\n        min_n : an int indicating the number of desired reachable opportunities (e.g. 1 library, 3 grocery stores, 10k jobs, etc.)\n\n        output_col_name : a string for the column name of the output accessibility measure\n\n\n\n        Output\n        ---------\n        A pandas dataframe with the first column with the IDs of the origin point (self.travelcosts_ids[0]), and the second column are the accessibility measures based on the input parameters.\n        \"\"\"\n\n        # set the output name for the accessibility measure\n        if output_col_name is None:\n            A_col_name = \"A_mintravelcost_\" + str(travelcost) + \"_\" + str(opportunity) + \"_\" +  str(min_n)\n        else:\n            A_col_name = output_col_name\n\n        # internal function of returning the min travel time for n opportunities\n        def get_min(df, tc, o, n):\n            df = df.sort_values(by=[tc], ascending=True)\n            df[\"cumsum\"] = df[o].cumsum()\n            df = df[df[\"cumsum\"] >= n]\n            return df[travelcost].min()\n\n        # generating the accessibility measure\n        out =  pd.DataFrame(self.data.groupby(self.travelcosts_ids[0]).apply(get_min, tc = travelcost, o = opportunity, n = min_n))\n\n        # setting the column name of the output\n        out.columns = [A_col_name]\n\n        return out\n\n\n\nclass summary:\n    \"\"\"\n    Computing various summary statistics of accessibility, usually with respect to different population groups\n\n    Some of these can be used to assess distributions and equity of transport networks.\n    \"\"\"\n\n    def __init__(\n        self,\n        accessibility_df,\n        summary_vars,\n        accessibility_id = \"id\",\n        summary_vars_id = \"id\"\n        ):\n\n        # join the data\n        self.data = pd.merge(\n            accessibility_df,\n            summary_vars,\n            left_on=accessibility_id,\n            right_on=summary_vars_id,\n            how = 'left'\n        )\n\n    def weighted_mean(self, access_var, group_var):\n\n        return tracc.statistics.weighted_mean(self.data, access_var, group_var)\n\n    def weighted_var(self, access_var, group_var):\n\n        return tracc.statistics.weighted_var(self.data, access_var, group_var)\n\n    def weighted_sd(self, access_var, group_var):\n\n        return tracc.statistics.weighted_sd(self.data, access_var, group_var)\n\n    def weighted_CV(self, access_var, group_var):\n\n        return tracc.statistics.weighted_CV(self.data, access_var, group_var)\n\n    def weighted_Gini(self, access_var, group_var):\n\n        return tracc.statistics.weighted_Gini(self.data, access_var, group_var)\n\n    def quantiles(self, access_var, group_vars, nbins = 10, result = \"percent\"):\n\n        # assign each observation a bin, based on nbins\n        dfq = pd.DataFrame( tracc.statistics.weighted_qcut(self.data[access_var], self.data[group_vars[0]], nbins))\n\n        # create a specific name for the quantile column\n        q_col_name = 'q' + str(nbins) + \"_\" + (group_vars[0])\n        dfq.columns = [q_col_name]\n        self.data = self.data.join(dfq, how='outer')\n\n        # group by each bin, susmmarize\n        dfq = self.data.groupby([q_col_name])[group_vars].sum()\n\n        # return as counts or percent\n        if result == \"count\":\n            return dfq\n        elif result == \"percent\":\n            for var in group_vars:\n                dfq[var] = dfq[var] / dfq[var].sum()\n            return dfq\n        else:\n            raise Exception(\"Invalid result type\")\n```\n    \n    \n    \"\"\"\n    Parameters\n    ----------\n    tracc_df : A pandas dataframe with the travel cost matrix\n    \"\"\"\n    def __init"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      81.6954345703125,
+      122.53002166748047,
       0.0,
       0.0,
       0.0,
@@ -96,41 +97,41 @@
     ],
     "f_after": [
       0.0,
-      81.6954345703125,
+      261.6777038574219,
+      0.5910385847091675,
+      0.0,
+      1.2958269119262695,
+      1.1686341762542725,
+      0.0,
+      1.5275503396987915,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      0.19337165355682373
     ],
     "g_before": [
-      47.39694595336914,
       0.0,
-      8.993088722229004,
-      0.060379091650247574,
-      0.0021163919009268284,
       0.0,
-      7.462982177734375,
-      7.935219764709473,
-      0.13915543258190155,
-      0.06786832958459854,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      47.39694595336914,
       0.0,
-      8.993088722229004,
-      0.060379091650247574,
-      0.0021163919009268284,
       0.0,
-      7.462982177734375,
-      7.935219764709473,
-      0.13915543258190155,
-      0.06786832958459854,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-154913/feature_std_layer_12.html",
     "mean_std": 1.7725918292999268,
     "max_std": 67.36790466308594
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5066,
+          5773,
+          4352,
+          693,
+          3751,
+          4878,
+          8838,
+          5643,
+          1032
+        ],
+        "f_before": [
+          0.0,
+          122.53002166748047,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          261.6777038574219,
+          0.5910385847091675,
+          0.0,
+          1.2958269119262695,
+          1.1686341762542725,
+          0.0,
+          1.5275503396987915,
+          0.0,
+          0.0,
+          0.19337165355682373
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 122.53002166748047,
+            "f_after": 261.6777038574219,
+            "delta_f": 139.1476821899414
+          },
+          {
+            "index": 2397,
+            "f_before": 0.0,
+            "f_after": 10.636382102966309,
+            "delta_f": 10.636382102966309
+          },
+          {
+            "index": 5651,
+            "f_before": 0.0,
+            "f_after": 9.66981315612793,
+            "delta_f": 9.66981315612793
+          },
+          {
+            "index": 5339,
+            "f_before": 0.0,
+            "f_after": 9.321197509765625,
+            "delta_f": 9.321197509765625
+          },
+          {
+            "index": 1,
+            "f_before": 24.820547103881836,
+            "f_after": 16.201236724853516,
+            "delta_f": -8.61931037902832
+          },
+          {
+            "index": 2641,
+            "f_before": 0.0,
+            "f_after": 8.344555854797363,
+            "delta_f": 8.344555854797363
+          },
+          {
+            "index": 3855,
+            "f_before": 0.0,
+            "f_after": 8.338173866271973,
+            "delta_f": 8.338173866271973
+          },
+          {
+            "index": 691,
+            "f_before": 0.0,
+            "f_after": 7.669204235076904,
+            "delta_f": 7.669204235076904
+          },
+          {
+            "index": 1219,
+            "f_before": 0.0,
+            "f_after": 6.932621479034424,
+            "delta_f": 6.932621479034424
+          },
+          {
+            "index": 527,
+            "f_before": 0.0,
+            "f_after": 6.918286323547363,
+            "delta_f": 6.918286323547363
+          },
+          {
+            "index": 3301,
+            "f_before": 0.0,
+            "f_after": 6.737265586853027,
+            "delta_f": 6.737265586853027
+          },
+          {
+            "index": 4314,
+            "f_before": 0.0,
+            "f_after": 6.724332809448242,
+            "delta_f": 6.724332809448242
+          },
+          {
+            "index": 3822,
+            "f_before": 0.0,
+            "f_after": 6.657097339630127,
+            "delta_f": 6.657097339630127
+          },
+          {
+            "index": 584,
+            "f_before": 0.0,
+            "f_after": 6.638139247894287,
+            "delta_f": 6.638139247894287
+          },
+          {
+            "index": 4516,
+            "f_before": 0.0,
+            "f_after": 6.321924686431885,
+            "delta_f": 6.321924686431885
+          },
+          {
+            "index": 6280,
+            "f_before": 0.0,
+            "f_after": 6.210030555725098,
+            "delta_f": 6.210030555725098
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = None\n        ):\n\n        \"\"\"\n        Calculates intra-regional costs\n        \"\"\"\n\n        if method == \"constant\":\n            self.data[cost_column] = self.data[origin_column] + self.data[",
+        "after": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = 10.0,\n        ):\n        \"\"\"\n        Inputs:\n            cost_column (str): Cost column name\n            origin_column (str): Origin column name\n            destination_column (str): Destination column name\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5066,
+          5773,
+          4352,
+          693,
+          3751,
+          4878,
+          8838,
+          5643,
+          1032
+        ],
+        "f_before": [
+          0.0,
+          122.53002166748047,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          122.53002166748047,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 24.820547103881836,
+            "f_after": 24.820547103881836,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 122.53002166748047,
+            "f_after": 122.53002166748047,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = 0.00\n        ):\n        \"\"\"\n        Calculates intra-zone costs based on specified method and value\n\n        Args:\n            cost_column (str): Name of the column containing the cost data\n            origin_column",
+        "after": "import tracc\nimport pandas as pd\nimport numpy as np\n\n\nclass costs:\n\n    def __init__(self,\n        travelcosts_df,\n        columns = None\n        ):\n\n        \"\"\"\n        Inputs data and prunes columns if desired\n        \"\"\"\n\n        if columns is not None:\n            self.data = travelcosts_df[columns]\n\n        else:\n            self.data = travelcosts_df\n\n\n    def intrazonal(self,\n        cost_column,\n        origin_column,\n        destination_column,\n        method = \"constant\",\n        value = None,\n        ):\n        \"\"\"\n        Calculates intra-zone costs based on the provided cost_column,\n        origin_column, and destination_column.\n        \"\"\"\n        if method == \"constant\":\n            # Example"
+      }
+    }
   }
 }

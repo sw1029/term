@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 19
   },
   "prompt": "from onnx_tf.handlers.frontend_handler import FrontendHandler\nfrom onnx_tf.handlers.handler import onnx_op\nfrom onnx_tf.handlers.handler import tf_op\nfrom .math_mixin import ReductionMixin\n\n\n@onnx_op(\"ReduceSum\")\n@tf_op(\"Sum\")\nclass ReduceSum(ReductionMixin, FrontendHandler):\n\n  @classmethod\n  def version_1(cls, node, **kwargs):\n    return cls.reduction_op(node, **kwargs)\n",
   "output": {
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      0.05453014373779297,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -108,29 +109,29 @@
       0.0
     ],
     "g_before": [
-      0.02046739123761654,
-      0.0,
-      0.022716302424669266,
-      0.005291314329952002,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.005207293201237917,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      0.02046739123761654,
-      0.0,
-      0.022716302424669266,
-      0.005291314329952002,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.005207293201237917,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-170833/feature_std_layer_20.html",
     "mean_std": 0.5002440810203552,
     "max_std": 25.62422752380371
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 19,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          5927,
+          4360,
+          2891,
+          747,
+          5067,
+          3822,
+          8117,
+          5261
+        ],
+        "f_before": [
+          0.0,
+          0.05453014373779297,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5124,
+            "f_before": 59.13530731201172,
+            "f_after": 61.16763687133789,
+            "delta_f": 2.032329559326172
+          },
+          {
+            "index": 2657,
+            "f_before": 2.2043087482452393,
+            "f_after": 1.8817025423049927,
+            "delta_f": -0.3226062059402466
+          },
+          {
+            "index": 4637,
+            "f_before": 0.9229016304016113,
+            "f_after": 0.6346206068992615,
+            "delta_f": -0.28828102350234985
+          },
+          {
+            "index": 1298,
+            "f_before": 2.0289273262023926,
+            "f_after": 1.7873557806015015,
+            "delta_f": -0.2415715456008911
+          },
+          {
+            "index": 6626,
+            "f_before": 3.2369697093963623,
+            "f_after": 2.9969840049743652,
+            "delta_f": -0.23998570442199707
+          },
+          {
+            "index": 7255,
+            "f_before": 0.11137305200099945,
+            "f_after": 0.0,
+            "delta_f": -0.11137305200099945
+          },
+          {
+            "index": 4754,
+            "f_before": 0.19529937207698822,
+            "f_after": 0.3064561188220978,
+            "delta_f": 0.11115674674510956
+          },
+          {
+            "index": 2396,
+            "f_before": 0.10454586148262024,
+            "f_after": 0.1683773249387741,
+            "delta_f": 0.06383146345615387
+          },
+          {
+            "index": 0,
+            "f_before": 0.05453014373779297,
+            "f_after": 0.0,
+            "delta_f": -0.05453014373779297
+          },
+          {
+            "index": 8607,
+            "f_before": 0.49538373947143555,
+            "f_after": 0.5420161485671997,
+            "delta_f": 0.04663240909576416
+          },
+          {
+            "index": 7972,
+            "f_before": 0.06270720064640045,
+            "f_after": 0.025465194135904312,
+            "delta_f": -0.03724200651049614
+          },
+          {
+            "index": 2743,
+            "f_before": 2.000483751296997,
+            "f_after": 1.9668241739273071,
+            "delta_f": -0.03365957736968994
+          },
+          {
+            "index": 5490,
+            "f_before": 0.0,
+            "f_after": 0.03360901027917862,
+            "delta_f": 0.03360901027917862
+          },
+          {
+            "index": 1302,
+            "f_before": 1.1299631595611572,
+            "f_after": 1.1622906923294067,
+            "delta_f": 0.03232753276824951
+          },
+          {
+            "index": 6479,
+            "f_before": 0.5460382699966431,
+            "f_after": 0.5221521258354187,
+            "delta_f": -0.023886144161224365
+          },
+          {
+            "index": 4871,
+            "f_before": 0.25738489627838135,
+            "f_after": 0.2782343626022339,
+            "delta_f": 0.02084946632385254
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from onnx_tf.handlers.frontend_handler import FrontendHandler\nfrom onnx_tf.handlers.handler import onnx_op\nfrom onnx_tf.handlers.handler import tf_op\nfrom .math_mixin import ReductionMixin\n\n\n@onnx_op(\"ReduceSum\")\n@tf_op(\"Sum\")\nclass ReduceSum(ReductionMixin, FrontendHandler):\n\n  @classmethod\n  def version_1(cls, node, **kwargs):\n    return cls.reduction_op(node, **kwargs)\n  @classmethod\n  def version_2(cls, node, **kwargs):\n    return cls.reduce_sum_op(node, **kwargs)\n\n\nclass ReduceSumOp(FrontendHandler):\n\n  def __init__(self, *args, **kwargs):\n   ",
+        "after": "from onnx_tf.handlers.frontend_handler import FrontendHandler\nfrom onnx_tf.handlers.handler import onnx_op\nfrom onnx_tf.handlers.handler import tf_op\nfrom .math_mixin import ReductionMixin\n\n\n@onnx_op(\"ReduceSum\")\n@tf_op(\"Sum\")\nclass ReduceSum(ReductionMixin, FrontendHandler):\n\n  @classmethod\n  def version_1(cls, node, **kwargs):\n    return cls.reduction_op(node, **kwargs)\n  \n  def __init__(self, reduction_op):\n    super().__init__()\n    self._reduction_op = reduction_op\n  \n  def run(self, inputs):\n    if not isinstance(inputs, list) or len(inputs) != 2:\n     "
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 20,
+      "feature_stats": {
+        "indices": [
+          1,
+          0,
+          2,
+          5927,
+          4360,
+          2891,
+          747,
+          5067,
+          3822,
+          8117,
+          5261
+        ],
+        "f_before": [
+          0.0,
+          0.05453014373779297,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.05453014373779297,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.05453014373779297,
+            "f_after": 0.05453014373779297,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from onnx_tf.handlers.frontend_handler import FrontendHandler\nfrom onnx_tf.handlers.handler import onnx_op\nfrom onnx_tf.handlers.handler import tf_op\nfrom .math_mixin import ReductionMixin\n\n\n@onnx_op(\"ReduceSum\")\n@tf_op(\"Sum\")\nclass ReduceSum(ReductionMixin, FrontendHandler):\n\n  @classmethod\n  def version_1(cls, node, **kwargs):\n    return cls.reduction_op(node, **kwargs)\n  @classmethod\n  def version_2(cls, node, **kwargs):\n    return cls.reduce_sum_op(node, **kwargs)\n\n\nif __name__ == \"__main__\":\n  handler = ReduceSum()\n  print(handler.version_1())  #",
+        "after": "from onnx_tf.handlers.frontend_handler import FrontendHandler\nfrom onnx_tf.handlers.handler import onnx_op\nfrom onnx_tf.handlers.handler import tf_op\nfrom .math_mixin import ReductionMixin\n\n\n@onnx_op(\"ReduceSum\")\n@tf_op(\"Sum\")\nclass ReduceSum(ReductionMixin, FrontendHandler):\n\n  @classmethod\n  def version_1(cls, node, **kwargs):\n    return cls.reduction_op(node, **kwargs)\n  @classmethod\n  def version_2(cls, node, **kwargs):\n    return cls.reduce_sum_op(node, **kwargs)\n\n  @classmethod\n  def reduction_op(cls, node, **kwargs):\n    return {\"reduction\": \"sum"
+      }
+    }
   }
 }

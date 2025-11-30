@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence('db_vacuum')\n    last_vacuum = persistence.get('last_vacuum')\n    if not last_vacuum or last_vacuum < datetime.now() - VACUUM_INTERVAL:\n        log.info('Running VACUUM on database to improve performance and decrease db size.')\n        session.execute('VACUUM')\n        persistence['last_vacuum'] = datetime.now()\n",
+  "prompt": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence =",
   "output": {
     "before": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence('db_vacuum')\n    last_vacuum = persistence.get('last_vacuum')\n    if not last_vacuum or last_vacuum < datetime.now() - VACUUM_INTERVAL:\n        log.info('Running VACUUM on database to improve performance and decrease db size.')\n        session.execute('VACUUM')\n        persistence['last_vacuum'] = datetime.now()\n        persistence.save()\n        \n    else:\n        log.info('VACUUM already ran recently.')\n\n# Run this as a background task\ndef run_vacuum():\n    \"\"\"\n    Executes the db_vacuum event.",
     "after": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence('db_vacuum')\n    last_vacuum = persistence.get('last_vacuum')\n    if not last_vacuum or last_vacuum < datetime.now() - VACUUM_INTERVAL:\n        log.info('Running VACUUM on database to improve performance and decrease db size.')\n        session.execute('VACUUM')\n        persistence['last_vacuum'] = datetime.now()\n        persistence.save()\n        log.info('VACUUM completed.')\n\n```\n\nThis code provides a basic implementation for a database vacuum routine. \n\n**Explanation:**\n\n* **Logging:** The code uses logging to track the execution of the"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      117.9634017944336,
+      138.286376953125,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,7 @@
     ],
     "f_after": [
       0.0,
-      117.9634017944336,
+      262.0396423339844,
       0.0,
       0.0,
       0.0,
@@ -108,30 +109,30 @@
       0.0
     ],
     "g_before": [
-      68.45448303222656,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      11.026616096496582,
       0.0,
       0.0,
       0.0,
-      11.565969467163086
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
-      68.45448303222656,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0,
-      11.026616096496582,
       0.0,
       0.0,
       0.0,
-      11.565969467163086
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          7900,
+          7797,
+          6889,
+          5571,
+          4791,
+          1789,
+          7877,
+          4321,
+          1596
+        ],
+        "f_before": [
+          0.0,
+          138.286376953125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          262.0396423339844,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 138.286376953125,
+            "f_after": 262.0396423339844,
+            "delta_f": 123.75326538085938
+          },
+          {
+            "index": 8464,
+            "f_before": 6.1460676193237305,
+            "f_after": 21.059722900390625,
+            "delta_f": 14.913655281066895
+          },
+          {
+            "index": 2778,
+            "f_before": 0.0,
+            "f_after": 8.168744087219238,
+            "delta_f": 8.168744087219238
+          },
+          {
+            "index": 5857,
+            "f_before": 0.8905462026596069,
+            "f_after": 9.035579681396484,
+            "delta_f": 8.145033478736877
+          },
+          {
+            "index": 7892,
+            "f_before": 0.0,
+            "f_after": 7.712794780731201,
+            "delta_f": 7.712794780731201
+          },
+          {
+            "index": 1,
+            "f_before": 20.74736785888672,
+            "f_after": 13.144609451293945,
+            "delta_f": -7.602758407592773
+          },
+          {
+            "index": 5086,
+            "f_before": 0.0,
+            "f_after": 7.565595626831055,
+            "delta_f": 7.565595626831055
+          },
+          {
+            "index": 417,
+            "f_before": 0.0,
+            "f_after": 7.1990790367126465,
+            "delta_f": 7.1990790367126465
+          },
+          {
+            "index": 548,
+            "f_before": 0.0,
+            "f_after": 7.14950704574585,
+            "delta_f": 7.14950704574585
+          },
+          {
+            "index": 8581,
+            "f_before": 0.0,
+            "f_after": 7.092438697814941,
+            "delta_f": 7.092438697814941
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 7.061287879943848,
+            "delta_f": 7.061287879943848
+          },
+          {
+            "index": 3674,
+            "f_before": 0.0,
+            "f_after": 6.838728904724121,
+            "delta_f": 6.838728904724121
+          },
+          {
+            "index": 2375,
+            "f_before": 0.0,
+            "f_after": 6.276112079620361,
+            "delta_f": 6.276112079620361
+          },
+          {
+            "index": 6274,
+            "f_before": 0.0,
+            "f_after": 6.166040897369385,
+            "delta_f": 6.166040897369385
+          },
+          {
+            "index": 3070,
+            "f_before": 0.0,
+            "f_after": 5.929116249084473,
+            "delta_f": 5.929116249084473
+          },
+          {
+            "index": 8965,
+            "f_before": 0.0,
+            "f_after": 5.8428730964660645,
+            "delta_f": 5.8428730964660645
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence(manager)\n    log.info('Running database vacuum...')\n    try:\n        persistence.vacuum_database()\n    except Exception as e:\n        log.error('Error during database vacuum: {}'.format(e))",
+        "after": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence(\n        get_db_connection()\n    )\n    try:\n        # Run the vacuum command\n        vacuum_db(persistence)\n    except Exception as e:\n        log.error(f'Error during"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          7900,
+          7797,
+          6889,
+          5571,
+          4791,
+          1789,
+          7877,
+          4321,
+          1596
+        ],
+        "f_before": [
+          0.0,
+          138.286376953125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          138.286376953125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 20.74736785888672,
+            "f_after": 20.74736785888672,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 138.286376953125,
+            "f_after": 138.286376953125,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence(db='db', schema='flexget')\n    if not persistence.exists(table='db_history'):\n        log.info('No db_history table found, running vacuum')\n        # Vacuum the database here\n",
+        "after": "from __future__ import unicode_literals, division, absolute_import\nimport logging\nfrom datetime import datetime, timedelta\nfrom flexget.utils.simple_persistence import SimplePersistence\nfrom flexget.event import event\n\nlog = logging.getLogger('db_vacuum')\nVACUUM_INTERVAL = timedelta(weeks=24) # 6 months\n\n\n# Run after the cleanup is actually finished, but before analyze\n@event('manager.db_cleanup', 1)\ndef on_cleanup(manager, session):\n    # Vacuum can take a long time, and is not needed frequently\n    persistence = SimplePersistence(VACUUM_INTERVAL)\n    log.info('Running database vacuum')\n\n    # Use a database lock to prevent multiple processes from running\n    # concurrently to avoid locking issues.\n    with manager.lock:\n        #"
+      }
+    }
   }
 }

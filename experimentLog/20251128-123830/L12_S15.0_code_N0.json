@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, arn=None, metadata=None):\n        self.deployment = deployment if deployment else os.environ['DEPLOYMENT_STAGE']\n        if not docker_image and not metadata:\n            raise RuntimeError(\"you must provide docker_image or metadata\")\n        self.metadata = metadata\n        self.docker_image = docker_image if docker_image else metadata['containerProperties']['image']\n        self.name = self._job_definition_name() if docker_image else metadata['jobDefinitionName']\n        if not arn:\n            if metadata:\n                self.arn = metadata['jobDefinitionArn']\n        print(f\"Job definition {self.name} for {self.docker_image}:\")\n\n    def find_or_create(self, job_role_arn):\n        if self.load():\n            print(f\"\\tfound {self.arn}\")\n        else:\n            self.create(job_role_arn)\n        return self\n\n    def load(self):\n        jobdefs = self._describe_job_definitions(jobDefinitionName=self.name, status='ACTIVE')['jobDefinitions']\n        if len(jobdefs) > 0:\n            self.metadata = jobdefs[0]\n            self.arn = self.metadata['jobDefinitionArn']\n            return self\n        else:\n            return None\n\n    @retry_on_aws_too_many_requests\n    def create(self, job_role_arn):\n        self.metadata = batch.register_job_definition(\n            jobDefinitionName=self.name,\n            type='container',\n            parameters={},\n            containerProperties={\n                'image': self.docker_image,\n                'vcpus': 4,\n                'memory': 15000,\n                'command': [],\n                'jobRoleArn': job_role_arn,\n                'volumes': [\n                    {\n                        'host': {'sourcePath': '/data'},\n                        'name': 'data'\n                    },\n                ],\n                'mountPoints': [\n                    {\n                        'containerPath': '/data',\n                        'readOnly': False,\n                        'sourceVolume': 'data'\n                    },\n                ]\n            },\n            retryStrategy={\n                'attempts': 3\n            }\n        )\n        self.arn = self.metadata['jobDefinitionArn']\n        print(f\"\\tcreated {self.arn}\")\n        print(json.dumps(self.metadata, indent=4))\n\n    def delete(self):\n        print(f\"Deleting job definition {self.name} ({self.docker_image})\")\n        batch.deregister_job_definition(jobDefinition=self.arn)\n\n    @retry_on_aws_too_many_requests\n    def _describe_job_definitions(self, *args, **kwargs):\n        return batch.describe_job_definitions(*args, **kwargs)\n\n    def _job_definition_name(self):\n        \"\"\"\n        We create Job Definitions for each unique docker image we are given.\n        As there is no way to search for job definitions wih a particular Docker image,\n        we must put the Docker image name in the job definition name (the only thing we can search on).\n        We hash the image name as it will contain characters that aren't allowed in a job definition name.\n        \"\"\"\n        hasher = hashlib.sha1()\n        hasher.update(bytes(self.docker_image, 'utf8'))\n        return f\"upload-{self.deployment}-{hasher.hexdigest()}\"\n",
+  "prompt": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None,",
   "output": {
     "before": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, arn=None, metadata=None):\n        self.deployment = deployment if deployment else os.environ['DEPLOYMENT_STAGE']\n        if not docker_image and not metadata:\n            raise RuntimeError(\"you must provide docker_image or metadata\")\n        self.metadata = metadata\n        self.docker_image = docker_image if docker_image else metadata['containerProperties']['image']\n        self.name = self._job_definition_name() if docker_image else metadata['jobDefinitionName']\n        if not arn:\n            if metadata:\n                self.arn = metadata['jobDefinitionArn']\n        print(f\"Job definition {self.name} for {self.docker_image}:\")\n\n    def find_or_create(self, job_role_arn):\n        if self.load():\n            print(f\"\\tfound {self.arn}\")\n        else:\n            self.create(job_role_arn)\n        return self\n\n    def load(self):\n        jobdefs = self._describe_job_definitions(jobDefinitionName=self.name, status='ACTIVE')['jobDefinitions']\n        if len(jobdefs) > 0:\n            self.metadata = jobdefs[0]\n            self.arn = self.metadata['jobDefinitionArn']\n            return self\n        else:\n            return None\n\n    @retry_on_aws_too_many_requests\n    def create(self, job_role_arn):\n        self.metadata = batch.register_job_definition(\n            jobDefinitionName=self.name,\n            type='container',\n            parameters={},\n            containerProperties={\n                'image': self.docker_image,\n                'vcpus': 4,\n                'memory': 15000,\n                'command': [],\n                'jobRoleArn': job_role_arn,\n                'volumes': [\n                    {\n                        'host': {'sourcePath': '/data'},\n                        'name': 'data'\n                    },\n                ],\n                'mountPoints': [\n                    {\n                        'containerPath': '/data',\n                        'readOnly': False,\n                        'sourceVolume': 'data'\n                    },\n                ]\n            },\n            retryStrategy={\n                'attempts': 3\n            }\n        )\n        self.arn = self.metadata['jobDefinitionArn']\n        print(f\"\\tcreated {self.arn}\")\n        print(json.dumps(self.metadata, indent=4))\n\n    def delete(self):\n        print(f\"Deleting job definition {self.name} ({self.docker_image})\")\n        batch.deregister_job_definition(jobDefinition=self.arn)\n\n    @retry_on_aws_too_many_requests\n    def _describe_job_definitions(self, *args, **kwargs):\n        return batch.describe_job_definitions(*args, **kwargs)\n\n    def _job_definition_name(self):\n        \"\"\"\n        We create Job Definitions for each unique docker image we are given.\n        As there is no way to search for job definitions wih a particular Docker image,\n        we must put the Docker image name in the job definition name (the only thing we can search on).\n        We hash the image name as it will contain characters that aren't allowed in a job definition name.\n        \"\"\"\n        hasher = hashlib.sha1()\n        hasher.update(bytes(self.docker_image, 'utf8'))\n        return f\"upload-{self.deployment}-{hasher.hexdigest()}\"\n```\n\nThis class defines the core functionality for managing Job Definitions in AWS Batch. It provides methods for:\n\n* **Creating:** Creates a new Job Definition, registers it with AWS Batch, and sets its properties.\n* **Loading:** Attempts to",
     "after": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, arn=None, metadata=None):\n        self.deployment = deployment if deployment else os.environ['DEPLOYMENT_STAGE']\n        if not docker_image and not metadata:\n            raise RuntimeError(\"you must provide docker_image or metadata\")\n        self.metadata = metadata\n        self.docker_image = docker_image if docker_image else metadata['containerProperties']['image']\n        self.name = self._job_definition_name() if docker_image else metadata['jobDefinitionName']\n        if not arn:\n            if metadata:\n                self.arn = metadata['jobDefinitionArn']\n        print(f\"Job definition {self.name} for {self.docker_image}:\")\n\n    def find_or_create(self, job_role_arn):\n        if self.load():\n            print(f\"\\tfound {self.arn}\")\n        else:\n            self.create(job_role_arn)\n        return self\n\n    def load(self):\n        jobdefs = self._describe_job_definitions(jobDefinitionName=self.name, status='ACTIVE')['jobDefinitions']\n        if len(jobdefs) > 0:\n            self.metadata = jobdefs[0]\n            self.arn = self.metadata['jobDefinitionArn']\n            return self\n        else:\n            return None\n\n    @retry_on_aws_too_many_requests\n    def create(self, job_role_arn):\n        self.metadata = batch.register_job_definition(\n            jobDefinitionName=self.name,\n            type='container',\n            parameters={},\n            containerProperties={\n                'image': self.docker_image,\n                'vcpus': 4,\n                'memory': 15000,\n                'command': [],\n                'jobRoleArn': job_role_arn,\n                'volumes': [\n                    {\n                        'host': {'sourcePath': '/data'},\n                        'name': 'data'\n                    },\n                ],\n                'mountPoints': [\n                    {\n                        'containerPath': '/data',\n                        'readOnly': False,\n                        'sourceVolume': 'data'\n                    },\n                ]\n            },\n            retryStrategy={\n                'attempts': 3\n            }\n        )\n        self.arn = self.metadata['jobDefinitionArn']\n        print(f\"\\tcreated {self.arn}\")\n        print(json.dumps(self.metadata, indent=4))\n\n    def delete(self):\n        print(f\"Deleting job definition {self.name} ({self.docker_image})\")\n        batch.deregister_job_definition(jobDefinition=self.arn)\n\n    @retry_on_aws_too_many_requests\n    def _describe_job_definitions(self, *args, **kwargs):\n        return batch.describe_job_definitions(*args, **kwargs)\n\n    def _job_definition_name(self):\n        \"\"\"\n        We create Job Definitions for each unique docker image we are given.\n        As there is no way to search for job definitions wih a particular Docker image,\n        we must put the Docker image name in the job definition name (the only thing we can search on).\n        We hash the image name as it will contain characters that aren't allowed in a job definition name.\n        \"\"\"\n        hasher = hashlib.sha1()\n        hasher.update(bytes(self.docker_image, 'utf8'))\n        return f\"upload-{self.deployment}-{hasher.hexdigest()}\"\n    \n\n# Job definition\nJobDefinition.clear_all()\n# Load job definition\nJobDefinition.find_or_create(\n    job_role_arn=os.environ['JOB_ROLE_ARN']\n)\n#"
@@ -82,7 +83,7 @@
       222
     ],
     "f_before": [
-      7.6012091636657715,
+      8.14318561553955,
       0.0,
       0.0,
       0.0,
@@ -95,9 +96,9 @@
       0.0
     ],
     "f_after": [
-      7.6012091636657715,
+      38.62915802001953,
       0.0,
-      0.0,
+      0.7222071290016174,
       0.0,
       0.0,
       0.0,
@@ -109,29 +110,29 @@
     ],
     "g_before": [
       0.0,
-      4.409938812255859,
-      0.8772280812263489,
-      0.8190450668334961,
-      0.808395266532898,
-      0.8108264207839966,
-      0.7825969457626343,
-      0.8185030817985535,
-      0.7998555898666382,
-      0.7804263234138489,
-      0.7814747095108032
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
-      4.409938812255859,
-      0.8772280812263489,
-      0.8190450668334961,
-      0.808395266532898,
-      0.8108264207839966,
-      0.7825969457626343,
-      0.8185030817985535,
-      0.7998555898666382,
-      0.7804263234138489,
-      0.7814747095108032
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-123830/feature_std_layer_12.html",
     "mean_std": 0.9856170415878296,
     "max_std": 26.260618209838867
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          815,
+          2849,
+          3119,
+          4369,
+          1077,
+          5070,
+          6364,
+          1460,
+          222
+        ],
+        "f_before": [
+          8.14318561553955,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          38.62915802001953,
+          0.0,
+          0.7222071290016174,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 35.692562103271484,
+            "f_after": 0.0,
+            "delta_f": -35.692562103271484
+          },
+          {
+            "index": 0,
+            "f_before": 8.14318561553955,
+            "f_after": 38.62915802001953,
+            "delta_f": 30.48597240447998
+          },
+          {
+            "index": 4471,
+            "f_before": 28.8011417388916,
+            "f_after": 52.28797912597656,
+            "delta_f": 23.48683738708496
+          },
+          {
+            "index": 5790,
+            "f_before": 102.51429748535156,
+            "f_after": 84.64410400390625,
+            "delta_f": -17.870193481445312
+          },
+          {
+            "index": 1735,
+            "f_before": 0.0,
+            "f_after": 10.251526832580566,
+            "delta_f": 10.251526832580566
+          },
+          {
+            "index": 8320,
+            "f_before": 0.0,
+            "f_after": 9.559256553649902,
+            "delta_f": 9.559256553649902
+          },
+          {
+            "index": 8187,
+            "f_before": 4.284062385559082,
+            "f_after": 13.625633239746094,
+            "delta_f": 9.341570854187012
+          },
+          {
+            "index": 1563,
+            "f_before": 0.0,
+            "f_after": 9.265944480895996,
+            "delta_f": 9.265944480895996
+          },
+          {
+            "index": 754,
+            "f_before": 0.0,
+            "f_after": 9.214376449584961,
+            "delta_f": 9.214376449584961
+          },
+          {
+            "index": 5978,
+            "f_before": 0.0,
+            "f_after": 8.999826431274414,
+            "delta_f": 8.999826431274414
+          },
+          {
+            "index": 5507,
+            "f_before": 0.0,
+            "f_after": 8.89157485961914,
+            "delta_f": 8.89157485961914
+          },
+          {
+            "index": 2822,
+            "f_before": 0.0,
+            "f_after": 8.647849082946777,
+            "delta_f": 8.647849082946777
+          },
+          {
+            "index": 6684,
+            "f_before": 0.0,
+            "f_after": 8.62939453125,
+            "delta_f": 8.62939453125
+          },
+          {
+            "index": 6997,
+            "f_before": 0.0,
+            "f_after": 7.937124252319336,
+            "delta_f": 7.937124252319336
+          },
+          {
+            "index": 1501,
+            "f_before": 0.0,
+            "f_after": 7.855469703674316,
+            "delta_f": 7.855469703674316
+          },
+          {
+            "index": 742,
+            "f_before": 0.0,
+            "f_after": 7.7672624588012695,
+            "delta_f": 7.7672624588012695
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, metadata=None):\n        self.job_definition = None\n        self.name = None\n        self.image = docker_image\n        self.deployment = deployment\n        self.metadata = metadata\n\n        self.job_definition",
+        "after": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, job_name=None, job_params=None, config=None, **kwargs):\n        self.job_name = job_name\n        self.job_params = job_params\n        self.config = config\n        "
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          815,
+          2849,
+          3119,
+          4369,
+          1077,
+          5070,
+          6364,
+          1460,
+          222
+        ],
+        "f_before": [
+          8.14318561553955,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          8.14318561553955,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 35.692562103271484,
+            "f_after": 35.692562103271484,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 8.14318561553955,
+            "f_after": 8.14318561553955,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, **kwargs):\n        self.job_name = kwargs.get('job_name', 'unknown')\n        self.job_description = kwargs.get('job_description', '')\n        self.docker_image = docker_image",
+        "after": "import hashlib\nimport json\nimport os\n\nimport boto3\n\nfrom .retry import retry_on_aws_too_many_requests\n\nbatch = boto3.client('batch')\n\n\nclass JobDefinition:\n\n    @classmethod\n    def clear_all(cls):\n        deleted_count = 0\n        for jobdef in batch.describe_job_definitions(status='ACTIVE')['jobDefinitions']:\n            cls(metadata=jobdef).delete()\n            deleted_count += 1\n        return deleted_count\n\n    def __init__(self, docker_image=None, deployment=None, **kwargs):\n        self.metadata = kwargs\n        self.job_name = 'Job'\n        self.job_description = 'Job'\n        self.job_name = 'Job'\n        self.job_description"
+      }
+    }
   }
 }

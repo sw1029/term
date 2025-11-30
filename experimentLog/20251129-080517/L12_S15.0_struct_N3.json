@@ -60,7 +60,8 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "from django.urls import path\nfrom user import views\n\napp_name = 'user'\nurlpatterns = [\n    path('create/', views.createUserView.as_view(), name='create'),\n    path('token/', views.CreateTokenView.as_view(), name='token'),\n    path('me/', views.ManageUserView.as_view(), name='me'),\n]",
   "output": {
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-080517/feature_std_layer_12.html",
     "mean_std": 0.9313503503799438,
     "max_std": 27.80159568786621
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4034,
+          774,
+          2262,
+          742,
+          789,
+          4022,
+          4623,
+          8215,
+          2255
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1866,
+            "f_before": 115.59078216552734,
+            "f_after": 95.39805603027344,
+            "delta_f": -20.192726135253906
+          },
+          {
+            "index": 5162,
+            "f_before": 0.0,
+            "f_after": 11.209685325622559,
+            "delta_f": 11.209685325622559
+          },
+          {
+            "index": 6741,
+            "f_before": 0.0,
+            "f_after": 10.395685195922852,
+            "delta_f": 10.395685195922852
+          },
+          {
+            "index": 2693,
+            "f_before": 0.0,
+            "f_after": 10.099660873413086,
+            "delta_f": 10.099660873413086
+          },
+          {
+            "index": 4516,
+            "f_before": 0.0,
+            "f_after": 8.321756362915039,
+            "delta_f": 8.321756362915039
+          },
+          {
+            "index": 136,
+            "f_before": 0.0,
+            "f_after": 8.062568664550781,
+            "delta_f": 8.062568664550781
+          },
+          {
+            "index": 4165,
+            "f_before": 0.0,
+            "f_after": 7.651931285858154,
+            "delta_f": 7.651931285858154
+          },
+          {
+            "index": 6405,
+            "f_before": 0.0,
+            "f_after": 7.410989761352539,
+            "delta_f": 7.410989761352539
+          },
+          {
+            "index": 6013,
+            "f_before": 0.0,
+            "f_after": 7.139716148376465,
+            "delta_f": 7.139716148376465
+          },
+          {
+            "index": 2196,
+            "f_before": 0.0,
+            "f_after": 6.595443248748779,
+            "delta_f": 6.595443248748779
+          },
+          {
+            "index": 5659,
+            "f_before": 0.0,
+            "f_after": 6.287255764007568,
+            "delta_f": 6.287255764007568
+          },
+          {
+            "index": 5888,
+            "f_before": 0.0,
+            "f_after": 6.151766300201416,
+            "delta_f": 6.151766300201416
+          },
+          {
+            "index": 3102,
+            "f_before": 15.520254135131836,
+            "f_after": 9.470108985900879,
+            "delta_f": -6.050145149230957
+          },
+          {
+            "index": 4959,
+            "f_before": 0.0,
+            "f_after": 5.976593017578125,
+            "delta_f": 5.976593017578125
+          },
+          {
+            "index": 1797,
+            "f_before": 0.0,
+            "f_after": 5.939921855926514,
+            "delta_f": 5.939921855926514
+          },
+          {
+            "index": 6912,
+            "f_before": 0.0,
+            "f_after": 5.675504207611084,
+            "delta_f": 5.675504207611084
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from django.urls import path\nfrom user import views\n\napp_name = 'user'\nurlpatterns = [\n    path('create/', views.createUserView.as_view(), name='create'),\n    path('token/', views.CreateTokenView.as_view(), name='token'),\n    path('me/', views.ManageUserView.as_view(), name='me'),\n]\n```\n\n**Explanation:**\n\n* **`app_name = 'user'`**: This defines the application name for your URL patterns. It's a good practice to use a descriptive name.\n* **`urlpatterns = [...]`**: This",
+        "after": "from django.urls import path\nfrom user import views\n\napp_name = 'user'\nurlpatterns = [\n    path('create/', views.createUserView.as_view(), name='create'),\n    path('token/', views.CreateTokenView.as_view(), name='token'),\n    path('me/', views.ManageUserView.as_view(), name='me'),\n]\n```\n**Explanation:**\n\n* **app_name:** Specifies the name of the app.\n* **urlpatterns:** A list of URL patterns.\n* **path('create/', views.createUserView.as_view(), name='create"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          4034,
+          774,
+          2262,
+          742,
+          789,
+          4022,
+          4623,
+          8215,
+          2255
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from django.urls import path\nfrom user import views\n\napp_name = 'user'\nurlpatterns = [\n    path('create/', views.createUserView.as_view(), name='create'),\n    path('token/', views.CreateTokenView.as_view(), name='token'),\n    path('me/', views.ManageUserView.as_view(), name='me'),\n]\n\n```\n\nThis code defines URL patterns for user-related views within a Django application. Let's break it down:\n\n**1. App Name:**\n\n   - `app_name = 'user'`: This line sets the name of",
+        "after": "from django.urls import path\nfrom user import views\n\napp_name = 'user'\nurlpatterns = [\n    path('create/', views.createUserView.as_view(), name='create'),\n    path('token/', views.CreateTokenView.as_view(), name='token'),\n    path('me/', views.ManageUserView.as_view(), name='me'),\n]\n```\n\nThis is a basic example of how to define URL patterns for user management in a Django project.\n\n**Explanation:**\n\n* **app_name:** Specifies the name of the Django app for this module.\n* **urlpatterns:** Contains"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i['name'] = u'name'\n        self.assertEqual(i['name'], u'name')\n\n    def test_init(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.__getitem__, 'name')\n\n        i2 = TestItem(name=u'john doe')\n        self.assertEqual(i2['name'], u'john doe')\n\n        i3 = TestItem({'name': u'john doe'})\n        self.assertEqual(i3['name'], u'john doe')\n\n        i4 = TestItem(i3)\n        self.assertEqual(i4['name'], u'john doe')\n\n        self.assertRaises(KeyError, TestItem, {'name': u'john doe',\n                                               'other': u'foo'})\n\n    def test_invalid_field(self):\n        class TestItem(Item):\n            pass\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.__setitem__, 'field', 'text')\n        self.assertRaises(KeyError, i.__getitem__, 'field')\n\n    def test_repr(self):\n        class TestItem(Item):\n            name = Field()\n            number = Field()\n\n        i = TestItem()\n        i['name'] = u'John Doe'\n        i['number'] = 123\n        itemrepr = repr(i)\n\n        self.assertEqual(itemrepr,\n                         \"{'name': 'John Doe', 'number': 123}\")\n\n        i2 = eval(itemrepr)\n        self.assertEqual(i2['name'], 'John Doe')\n        self.assertEqual(i2['number'], 123)\n\n    def test_private_attr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i._private = 'test'\n        self.assertEqual(i._private, 'test')\n\n    def test_raise_getattr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(AttributeError, getattr, i, 'name')\n\n    def test_raise_setattr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(AttributeError, setattr, i, 'name', 'john')\n\n    def test_custom_methods(self):\n        class TestItem(Item):\n            name = Field()\n\n            def get_name(self):\n                return self['name']\n\n            def change_name(self, name):\n                self['name'] = name\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.get_name)\n        i['name'] = u'lala'\n        self.assertEqual(i.get_name(), u'lala')\n        i.change_name(u'other')\n        self.assertEqual(i.get_name(), 'other')\n\n    def test_metaclass(self):\n        class TestItem(Item):\n            name = Field()\n            keys = Field()\n            values = Field()\n\n        i = TestItem()\n        i['name'] = u'John'\n        self.assertEqual(list(i.keys()), ['name'])\n        self.assertEqual(list(i.values()), ['John'])\n\n        i['keys'] = u'Keys'\n        i['values'] = u'Values'\n        self.assertSortedEqual(list(i.keys()), ['keys', 'values', 'name'])\n        self.assertSortedEqual(list(i.values()), [u'Keys', u'Values', u'John'])\n\n    def test_metaclass_with_fields_attribute(self):\n        class TestItem(Item):\n            fields = {'new': Field(default='X')}\n\n        item = TestItem(new=u'New')\n        self.assertSortedEqual(list(item.keys()), ['new'])\n        self.assertSortedEqual(list(item.values()), [u'New'])\n\n    def test_metaclass_inheritance(self):\n        class BaseItem(Item):\n            name = Field()\n            keys = Field()\n            values = Field()\n\n        class TestItem(BaseItem):\n            keys = Field()\n\n        i = TestItem()\n        i['keys'] = 3\n        self.assertEqual(list(i.keys()), ['keys'])\n        self.assertEqual(list(i.values()), [3])\n\n    def test_metaclass_multiple_inheritance_simple(self):\n        class A(Item):\n            fields = {'load': Field(default='A')}\n            save = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(Item):\n            fields = {'load': Field(default='C')}\n            save = Field(default='C')\n\n        class D(B, C):\n            pass\n\n        item = D(save='X', load='Y')\n        self.assertEqual(item['save'], 'X')\n        self.assertEqual(item['load'], 'Y')\n        self.assertEqual(D.fields, {'load': {'default': 'A'},\n            'save': {'default': 'A'}})\n\n        # D class inverted\n        class E(C, B):\n            pass\n\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E(load='X')['load'], 'X')\n        self.assertEqual(E.fields, {'load': {'default': 'C'},\n            'save': {'default': 'C'}})\n\n    def test_metaclass_multiple_inheritance_diamond(self):\n        class A(Item):\n            fields = {'update': Field(default='A')}\n            save = Field(default='A')\n            load = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(A):\n            fields = {'update': Field(default='C')}\n            save = Field(default='C')\n\n        class D(B, C):\n            fields = {'update': Field(default='D')}\n            load = Field(default='D')\n\n        self.assertEqual(D(save='X')['save'], 'X')\n        self.assertEqual(D(load='X')['load'], 'X')\n        self.assertEqual(D.fields, {'save': {'default': 'C'},\n            'load': {'default': 'D'}, 'update': {'default': 'D'}})\n\n        # D class inverted\n        class E(C, B):\n            load = Field(default='E')\n\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E(load='X')['load'], 'X')\n        self.assertEqual(E.fields, {'save': {'default': 'C'},\n            'load': {'default': 'E'}, 'update': {'default': 'C'}})\n\n    def test_metaclass_multiple_inheritance_without_metaclass(self):\n        class A(Item):\n            fields = {'load': Field(default='A')}\n            save = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(object):\n            fields = {'load': Field(default='C')}\n            not_allowed = Field(default='not_allowed')\n            save = Field(default='C')\n\n        class D(B, C):\n            pass\n\n        self.assertRaises(KeyError, D, not_allowed='value')\n        self.assertEqual(D(save='X')['save'], 'X')\n        self.assertEqual(D.fields, {'save': {'default': 'A'},\n            'load': {'default': 'A'}})\n\n        # D class inverted\n        class E(C, B):\n            pass\n\n        self.assertRaises(KeyError, E, not_allowed='value')\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E.fields, {'save': {'default': 'A'},\n            'load': {'default': 'A'}})\n\n    def test_to_dict(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i['name'] = u'John'\n        self.assertEqual(dict(i), {'name': u'John'})\n\n    def test_copy(self):\n        class TestItem(Item):\n            name = Field()\n        item = TestItem({'name': 'lower'})\n        copied_item = item.copy()\n        self.assertNotEqual(id(item), id(copied_item))\n        copied_item['name'] = copied_item['name'].upper()\n        self.assertNotEqual(item['name'], copied_item['name'])\n\n    def test_deepcopy(self):\n        class TestItem(Item):\n            tags = Field()\n        item = TestItem({'tags': ['tag1']})\n        copied_item = item.deepcopy()\n        item['tags'].append('tag2')\n        assert item['tags'] != copied_item['tags']\n\n    def test_dictitem_deprecation_warning(self):\n        \"\"\"Make sure the DictItem deprecation warning is not issued for\n        Item\"\"\"\n        with catch_warnings(record=True) as warnings:\n            item = Item()\n            self.assertEqual(len(warnings), 0)\n\n            class SubclassedItem(Item):\n                pass\n            subclassed_item = SubclassedItem()\n            self.assertEqual(len(warnings), 0)\n\n\nclass ItemMetaTest(unittest.TestCase):\n\n    def test_new_method_propagates_classcell(self):\n        new_mock = mock.Mock(side_effect=ABCMeta.__new__)\n        base = ItemMeta.__bases__[0]\n\n        with mock.patch.object(base, '__new__', new_mock):\n\n            class MyItem(Item):\n                if not PY36_PLUS:\n                    # This attribute is an internal attribute in Python 3.6+\n                    # and must be propagated properly. See\n                    # https://docs.python.org/3.6/reference/datamodel.html#creating-the-class-object\n                    # In <3.6, we add a dummy attribute just to ensure the\n                    # __new__ method propagates it correctly.\n                    __classcell__ = object()\n\n                def f(self):\n                    # For rationale of this see:\n                    # https://github.com/python/cpython/blob/ee1a81b77444c6715cbe610e951c655b6adab88b/Lib/test/test_super.py#L222\n                    return __class__  # noqa  https://github.com/scrapy/scrapy/issues/2836\n\n            MyItem()\n\n        (first_call, second_call) = new_mock.call_args_list[-2:]\n\n        mcs, class_name, bases, attrs = first_call[0]\n        assert '__classcell__' not in attrs\n        mcs, class_name, bases, attrs = second_call[0]\n        assert '__classcell__' in attrs\n\n\nclass ItemMetaClassCellRegression(unittest.TestCase):\n\n    def test_item_meta_classcell_regression(self):\n        class MyItem(Item, metaclass=ItemMeta):\n            def __init__(self, *args, **kwargs):\n                # This call to super() trigger the __classcell__ propagation\n                # requirement. When not done properly raises an error:\n                # TypeError: __class__ set to <class '__main__.MyItem'>\n                # defining 'MyItem' as <class '__main__.MyItem'>\n                super(MyItem, self).__init__(*args, **kwargs)\n\n\nclass DictItemTest(unittest.TestCase):\n\n    def test_deprecation_warning(self):\n        with catch_warnings(record=True) as warnings:\n            dict_item = DictItem()\n            self.assertEqual(len(warnings), 1)\n            self.assertEqual(warnings[0].category, ScrapyDeprecationWarning)\n        with catch_warnings(record=True) as warnings:\n            class SubclassedDictItem(DictItem):\n                pass\n            subclassed_dict_item = SubclassedDictItem()\n            self.assertEqual(len(warnings), 1)\n            self.assertEqual(warnings[0].category, ScrapyDeprecationWarning)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n",
+  "prompt": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple",
   "output": {
     "before": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i['name'] = u'name'\n        self.assertEqual(i['name'], u'name')\n\n    def test_init(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.__getitem__, 'name')\n\n        i2 = TestItem(name=u'john doe')\n        self.assertEqual(i2['name'], u'john doe')\n\n        i3 = TestItem({'name': u'john doe'})\n        self.assertEqual(i3['name'], u'john doe')\n\n        i4 = TestItem(i3)\n        self.assertEqual(i4['name'], u'john doe')\n\n        self.assertRaises(KeyError, TestItem, {'name': u'john doe',\n                                               'other': u'foo'})\n\n    def test_invalid_field(self):\n        class TestItem(Item):\n            pass\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.__setitem__, 'field', 'text')\n        self.assertRaises(KeyError, i.__getitem__, 'field')\n\n    def test_repr(self):\n        class TestItem(Item):\n            name = Field()\n            number = Field()\n\n        i = TestItem()\n        i['name'] = u'John Doe'\n        i['number'] = 123\n        itemrepr = repr(i)\n\n        self.assertEqual(itemrepr,\n                         \"{'name': 'John Doe', 'number': 123}\")\n\n        i2 = eval(itemrepr)\n        self.assertEqual(i2['name'], 'John Doe')\n        self.assertEqual(i2['number'], 123)\n\n    def test_private_attr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i._private = 'test'\n        self.assertEqual(i._private, 'test')\n\n    def test_raise_getattr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(AttributeError, getattr, i, 'name')\n\n    def test_raise_setattr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(AttributeError, setattr, i, 'name', 'john')\n\n    def test_custom_methods(self):\n        class TestItem(Item):\n            name = Field()\n\n            def get_name(self):\n                return self['name']\n\n            def change_name(self, name):\n                self['name'] = name\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.get_name)\n        i['name'] = u'lala'\n        self.assertEqual(i.get_name(), u'lala')\n        i.change_name(u'other')\n        self.assertEqual(i.get_name(), 'other')\n\n    def test_metaclass(self):\n        class TestItem(Item):\n            name = Field()\n            keys = Field()\n            values = Field()\n\n        i = TestItem()\n        i['name'] = u'John'\n        self.assertEqual(list(i.keys()), ['name'])\n        self.assertEqual(list(i.values()), ['John'])\n\n        i['keys'] = u'Keys'\n        i['values'] = u'Values'\n        self.assertSortedEqual(list(i.keys()), ['keys', 'values', 'name'])\n        self.assertSortedEqual(list(i.values()), [u'Keys', u'Values', u'John'])\n\n    def test_metaclass_with_fields_attribute(self):\n        class TestItem(Item):\n            fields = {'new': Field(default='X')}\n\n        item = TestItem(new=u'New')\n        self.assertSortedEqual(list(item.keys()), ['new'])\n        self.assertSortedEqual(list(item.values()), [u'New'])\n\n    def test_metaclass_inheritance(self):\n        class BaseItem(Item):\n            name = Field()\n            keys = Field()\n            values = Field()\n\n        class TestItem(BaseItem):\n            keys = Field()\n\n        i = TestItem()\n        i['keys'] = 3\n        self.assertEqual(list(i.keys()), ['keys'])\n        self.assertEqual(list(i.values()), [3])\n\n    def test_metaclass_multiple_inheritance_simple(self):\n        class A(Item):\n            fields = {'load': Field(default='A')}\n            save = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(Item):\n            fields = {'load': Field(default='C')}\n            save = Field(default='C')\n\n        class D(B, C):\n            pass\n\n        item = D(save='X', load='Y')\n        self.assertEqual(item['save'], 'X')\n        self.assertEqual(item['load'], 'Y')\n        self.assertEqual(D.fields, {'load': {'default': 'A'},\n            'save': {'default': 'A'}})\n\n        # D class inverted\n        class E(C, B):\n            pass\n\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E(load='X')['load'], 'X')\n        self.assertEqual(E.fields, {'load': {'default': 'C'},\n            'save': {'default': 'C'}})\n\n    def test_metaclass_multiple_inheritance_diamond(self):\n        class A(Item):\n            fields = {'update': Field(default='A')}\n            save = Field(default='A')\n            load = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(A):\n            fields = {'update': Field(default='C')}\n            save = Field(default='C')\n\n        class D(B, C):\n            fields = {'update': Field(default='D')}\n            load = Field(default='D')\n\n        self.assertEqual(D(save='X')['save'], 'X')\n        self.assertEqual(D(load='X')['load'], 'X')\n        self.assertEqual(D.fields, {'save': {'default': 'C'},\n            'load': {'default': 'D'}, 'update': {'default': 'D'}})\n\n        # D class inverted\n        class E(C, B):\n            load = Field(default='E')\n\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E(load='X')['load'], 'X')\n        self.assertEqual(E.fields, {'save': {'default': 'C'},\n            'load': {'default': 'E'}, 'update': {'default': 'C'}})\n\n    def test_metaclass_multiple_inheritance_without_metaclass(self):\n        class A(Item):\n            fields = {'load': Field(default='A')}\n            save = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(object):\n            fields = {'load': Field(default='C')}\n            not_allowed = Field(default='not_allowed')\n            save = Field(default='C')\n\n        class D(B, C):\n            pass\n\n        self.assertRaises(KeyError, D, not_allowed='value')\n        self.assertEqual(D(save='X')['save'], 'X')\n        self.assertEqual(D.fields, {'save': {'default': 'A'},\n            'load': {'default': 'A'}})\n\n        # D class inverted\n        class E(C, B):\n            pass\n\n        self.assertRaises(KeyError, E, not_allowed='value')\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E.fields, {'save': {'default': 'A'},\n            'load': {'default': 'A'}})\n\n    def test_to_dict(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i['name'] = u'John'\n        self.assertEqual(dict(i), {'name': u'John'})\n\n    def test_copy(self):\n        class TestItem(Item):\n            name = Field()\n        item = TestItem({'name': 'lower'})\n        copied_item = item.copy()\n        self.assertNotEqual(id(item), id(copied_item))\n        copied_item['name'] = copied_item['name'].upper()\n        self.assertNotEqual(item['name'], copied_item['name'])\n\n    def test_deepcopy(self):\n        class TestItem(Item):\n            tags = Field()\n        item = TestItem({'tags': ['tag1']})\n        copied_item = item.deepcopy()\n        item['tags'].append('tag2')\n        assert item['tags'] != copied_item['tags']\n\n    def test_dictitem_deprecation_warning(self):\n        \"\"\"Make sure the DictItem deprecation warning is not issued for\n        Item\"\"\"\n        with catch_warnings(record=True) as warnings:\n            item = Item()\n            self.assertEqual(len(warnings), 0)\n\n            class SubclassedItem(Item):\n                pass\n            subclassed_item = SubclassedItem()\n            self.assertEqual(len(warnings), 0)\n\n\nclass ItemMetaTest(unittest.TestCase):\n\n    def test_new_method_propagates_classcell(self):\n        new_mock = mock.Mock(side_effect=ABCMeta.__new__)\n        base = ItemMeta.__bases__[0]\n\n        with mock.patch.object(base, '__new__', new_mock):\n\n            class MyItem(Item):\n                if not PY36_PLUS:\n                    # This attribute is an internal attribute in Python 3.6+\n                    # and must be propagated properly. See\n                    # https://docs.python.org/3.6/reference/datamodel.html#creating-the-class-object\n                    # In <3.6, we add a dummy attribute just to ensure the\n                    # __new__ method propagates it correctly.\n                    __classcell__ = object()\n\n                def f(self):\n                    # For rationale of this see:\n                    # https://github.com/python/cpython/blob/ee1a81b77444c6715cbe610e951c655b6adab88b/Lib/test/test_super.py#L222\n                    return __class__  # noqa  https://github.com/scrapy/scrapy/issues/2836\n\n            MyItem()\n\n        (first_call, second_call) = new_mock.call_args_list[-2:]\n\n        mcs, class_name, bases, attrs = first_call[0]\n        assert '__classcell__' not in attrs\n        mcs, class_name, bases, attrs = second_call[0]\n        assert '__classcell__' in attrs\n\n\nclass ItemMetaClassCellRegression(unittest.TestCase):\n\n    def test_item_meta_classcell_regression(self):\n        class MyItem(Item, metaclass=ItemMeta):\n            def __init__(self, *args, **kwargs):\n                # This call to super() trigger the __classcell__ propagation\n                # requirement. When not done properly raises an error:\n                # TypeError: __class__ set to <class '__main__.MyItem'>\n                # defining 'MyItem' as <class '__main__.MyItem'>\n                super(MyItem, self).__init__(*args, **kwargs)\n\n\nclass DictItemTest(unittest.TestCase):\n\n    def test_deprecation_warning(self):\n        with catch_warnings(record=True) as warnings:\n            dict_item = DictItem()\n            self.assertEqual(len(warnings), 1)\n            self.assertEqual(warnings[0].category, ScrapyDeprecationWarning)\n        with catch_warnings(record=True) as warnings:\n            class SubclassedDictItem(DictItem):\n                pass\n            subclassed_dict_item = SubclassedDictItem()\n            self.assertEqual(len(warnings), 1)\n            self.assertEqual(warnings[0].category, ScrapyDeprecationWarning)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\n**Explanation of the Tests:**\n\n* **ItemTest:**\n    * Tests basic item initialization, field access, and methods.\n    * Checks for private attribute access, and the use of `getattr` and `setattr` to access",
     "after": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i['name'] = u'name'\n        self.assertEqual(i['name'], u'name')\n\n    def test_init(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.__getitem__, 'name')\n\n        i2 = TestItem(name=u'john doe')\n        self.assertEqual(i2['name'], u'john doe')\n\n        i3 = TestItem({'name': u'john doe'})\n        self.assertEqual(i3['name'], u'john doe')\n\n        i4 = TestItem(i3)\n        self.assertEqual(i4['name'], u'john doe')\n\n        self.assertRaises(KeyError, TestItem, {'name': u'john doe',\n                                               'other': u'foo'})\n\n    def test_invalid_field(self):\n        class TestItem(Item):\n            pass\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.__setitem__, 'field', 'text')\n        self.assertRaises(KeyError, i.__getitem__, 'field')\n\n    def test_repr(self):\n        class TestItem(Item):\n            name = Field()\n            number = Field()\n\n        i = TestItem()\n        i['name'] = u'John Doe'\n        i['number'] = 123\n        itemrepr = repr(i)\n\n        self.assertEqual(itemrepr,\n                         \"{'name': 'John Doe', 'number': 123}\")\n\n        i2 = eval(itemrepr)\n        self.assertEqual(i2['name'], 'John Doe')\n        self.assertEqual(i2['number'], 123)\n\n    def test_private_attr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i._private = 'test'\n        self.assertEqual(i._private, 'test')\n\n    def test_raise_getattr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(AttributeError, getattr, i, 'name')\n\n    def test_raise_setattr(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        self.assertRaises(AttributeError, setattr, i, 'name', 'john')\n\n    def test_custom_methods(self):\n        class TestItem(Item):\n            name = Field()\n\n            def get_name(self):\n                return self['name']\n\n            def change_name(self, name):\n                self['name'] = name\n\n        i = TestItem()\n        self.assertRaises(KeyError, i.get_name)\n        i['name'] = u'lala'\n        self.assertEqual(i.get_name(), u'lala')\n        i.change_name(u'other')\n        self.assertEqual(i.get_name(), 'other')\n\n    def test_metaclass(self):\n        class TestItem(Item):\n            name = Field()\n            keys = Field()\n            values = Field()\n\n        i = TestItem()\n        i['name'] = u'John'\n        self.assertEqual(list(i.keys()), ['name'])\n        self.assertEqual(list(i.values()), ['John'])\n\n        i['keys'] = u'Keys'\n        i['values'] = u'Values'\n        self.assertSortedEqual(list(i.keys()), ['keys', 'values', 'name'])\n        self.assertSortedEqual(list(i.values()), [u'Keys', u'Values', u'John'])\n\n    def test_metaclass_with_fields_attribute(self):\n        class TestItem(Item):\n            fields = {'new': Field(default='X')}\n\n        item = TestItem(new=u'New')\n        self.assertSortedEqual(list(item.keys()), ['new'])\n        self.assertSortedEqual(list(item.values()), [u'New'])\n\n    def test_metaclass_inheritance(self):\n        class BaseItem(Item):\n            name = Field()\n            keys = Field()\n            values = Field()\n\n        class TestItem(BaseItem):\n            keys = Field()\n\n        i = TestItem()\n        i['keys'] = 3\n        self.assertEqual(list(i.keys()), ['keys'])\n        self.assertEqual(list(i.values()), [3])\n\n    def test_metaclass_multiple_inheritance_simple(self):\n        class A(Item):\n            fields = {'load': Field(default='A')}\n            save = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(Item):\n            fields = {'load': Field(default='C')}\n            save = Field(default='C')\n\n        class D(B, C):\n            pass\n\n        item = D(save='X', load='Y')\n        self.assertEqual(item['save'], 'X')\n        self.assertEqual(item['load'], 'Y')\n        self.assertEqual(D.fields, {'load': {'default': 'A'},\n            'save': {'default': 'A'}})\n\n        # D class inverted\n        class E(C, B):\n            pass\n\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E(load='X')['load'], 'X')\n        self.assertEqual(E.fields, {'load': {'default': 'C'},\n            'save': {'default': 'C'}})\n\n    def test_metaclass_multiple_inheritance_diamond(self):\n        class A(Item):\n            fields = {'update': Field(default='A')}\n            save = Field(default='A')\n            load = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(A):\n            fields = {'update': Field(default='C')}\n            save = Field(default='C')\n\n        class D(B, C):\n            fields = {'update': Field(default='D')}\n            load = Field(default='D')\n\n        self.assertEqual(D(save='X')['save'], 'X')\n        self.assertEqual(D(load='X')['load'], 'X')\n        self.assertEqual(D.fields, {'save': {'default': 'C'},\n            'load': {'default': 'D'}, 'update': {'default': 'D'}})\n\n        # D class inverted\n        class E(C, B):\n            load = Field(default='E')\n\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E(load='X')['load'], 'X')\n        self.assertEqual(E.fields, {'save': {'default': 'C'},\n            'load': {'default': 'E'}, 'update': {'default': 'C'}})\n\n    def test_metaclass_multiple_inheritance_without_metaclass(self):\n        class A(Item):\n            fields = {'load': Field(default='A')}\n            save = Field(default='A')\n\n        class B(A):\n            pass\n\n        class C(object):\n            fields = {'load': Field(default='C')}\n            not_allowed = Field(default='not_allowed')\n            save = Field(default='C')\n\n        class D(B, C):\n            pass\n\n        self.assertRaises(KeyError, D, not_allowed='value')\n        self.assertEqual(D(save='X')['save'], 'X')\n        self.assertEqual(D.fields, {'save': {'default': 'A'},\n            'load': {'default': 'A'}})\n\n        # D class inverted\n        class E(C, B):\n            pass\n\n        self.assertRaises(KeyError, E, not_allowed='value')\n        self.assertEqual(E(save='X')['save'], 'X')\n        self.assertEqual(E.fields, {'save': {'default': 'A'},\n            'load': {'default': 'A'}})\n\n    def test_to_dict(self):\n        class TestItem(Item):\n            name = Field()\n\n        i = TestItem()\n        i['name'] = u'John'\n        self.assertEqual(dict(i), {'name': u'John'})\n\n    def test_copy(self):\n        class TestItem(Item):\n            name = Field()\n        item = TestItem({'name': 'lower'})\n        copied_item = item.copy()\n        self.assertNotEqual(id(item), id(copied_item))\n        copied_item['name'] = copied_item['name'].upper()\n        self.assertNotEqual(item['name'], copied_item['name'])\n\n    def test_deepcopy(self):\n        class TestItem(Item):\n            tags = Field()\n        item = TestItem({'tags': ['tag1']})\n        copied_item = item.deepcopy()\n        item['tags'].append('tag2')\n        assert item['tags'] != copied_item['tags']\n\n    def test_dictitem_deprecation_warning(self):\n        \"\"\"Make sure the DictItem deprecation warning is not issued for\n        Item\"\"\"\n        with catch_warnings(record=True) as warnings:\n            item = Item()\n            self.assertEqual(len(warnings), 0)\n\n            class SubclassedItem(Item):\n                pass\n            subclassed_item = SubclassedItem()\n            self.assertEqual(len(warnings), 0)\n\n\nclass ItemMetaTest(unittest.TestCase):\n\n    def test_new_method_propagates_classcell(self):\n        new_mock = mock.Mock(side_effect=ABCMeta.__new__)\n        base = ItemMeta.__bases__[0]\n\n        with mock.patch.object(base, '__new__', new_mock):\n\n            class MyItem(Item):\n                if not PY36_PLUS:\n                    # This attribute is an internal attribute in Python 3.6+\n                    # and must be propagated properly. See\n                    # https://docs.python.org/3.6/reference/datamodel.html#creating-the-class-object\n                    # In <3.6, we add a dummy attribute just to ensure the\n                    # __new__ method propagates it correctly.\n                    __classcell__ = object()\n\n                def f(self):\n                    # For rationale of this see:\n                    # https://github.com/python/cpython/blob/ee1a81b77444c6715cbe610e951c655b6adab88b/Lib/test/test_super.py#L222\n                    return __class__  # noqa  https://github.com/scrapy/scrapy/issues/2836\n\n            MyItem()\n\n        (first_call, second_call) = new_mock.call_args_list[-2:]\n\n        mcs, class_name, bases, attrs = first_call[0]\n        assert '__classcell__' not in attrs\n        mcs, class_name, bases, attrs = second_call[0]\n        assert '__classcell__' in attrs\n\n\nclass ItemMetaClassCellRegression(unittest.TestCase):\n\n    def test_item_meta_classcell_regression(self):\n        class MyItem(Item, metaclass=ItemMeta):\n            def __init__(self, *args, **kwargs):\n                # This call to super() trigger the __classcell__ propagation\n                # requirement. When not done properly raises an error:\n                # TypeError: __class__ set to <class '__main__.MyItem'>\n                # defining 'MyItem' as <class '__main__.MyItem'>\n                super(MyItem, self).__init__(*args, **kwargs)\n\n\nclass DictItemTest(unittest.TestCase):\n\n    def test_deprecation_warning(self):\n        with catch_warnings(record=True) as warnings:\n            dict_item = DictItem()\n            self.assertEqual(len(warnings), 1)\n            self.assertEqual(warnings[0].category, ScrapyDeprecationWarning)\n        with catch_warnings(record=True) as warnings:\n            class SubclassedDictItem(DictItem):\n                pass\n            subclassed_dict_item = SubclassedDictItem()\n            self.assertEqual(len(warnings), 1)\n            self.assertEqual(warnings[0].category, ScrapyDeprecationWarning)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\n**Note:** This code provides a comprehensive set of tests for the `Item` class and its sub-classes.\n"
@@ -90,12 +91,13 @@
       0.0,
       0.0,
       0.0,
-      0.0839613601565361,
+      0.0,
       0.0,
       0.0
     ],
     "f_after": [
       0.0,
+      1.8974645137786865,
       0.0,
       0.0,
       0.0,
@@ -103,34 +105,33 @@
       0.0,
       0.0,
       0.0,
-      0.0839613601565361,
       0.0,
       0.0
     ],
     "g_before": [
-      0.0038843019865453243,
-      0.004272866994142532,
-      0.09091299027204514,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.01970873400568962,
       0.0,
-      0.06110205873847008,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
-      0.0038843019865453243,
-      0.004272866994142532,
-      0.09091299027204514,
       0.0,
       0.0,
       0.0,
       0.0,
-      0.01970873400568962,
       0.0,
-      0.06110205873847008,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5623,
+          8212,
+          5487,
+          6398,
+          7137,
+          1115,
+          949,
+          1912,
+          7359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          1.8974645137786865,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 26.327898025512695,
+            "f_after": 0.0,
+            "delta_f": -26.327898025512695
+          },
+          {
+            "index": 5665,
+            "f_before": 0.0,
+            "f_after": 10.047613143920898,
+            "delta_f": 10.047613143920898
+          },
+          {
+            "index": 2916,
+            "f_before": 0.0,
+            "f_after": 9.196945190429688,
+            "delta_f": 9.196945190429688
+          },
+          {
+            "index": 8678,
+            "f_before": 0.0,
+            "f_after": 8.131525993347168,
+            "delta_f": 8.131525993347168
+          },
+          {
+            "index": 8763,
+            "f_before": 98.18601989746094,
+            "f_after": 106.3011474609375,
+            "delta_f": 8.115127563476562
+          },
+          {
+            "index": 3769,
+            "f_before": 0.0,
+            "f_after": 8.030533790588379,
+            "delta_f": 8.030533790588379
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 7.969500541687012,
+            "delta_f": 7.969500541687012
+          },
+          {
+            "index": 214,
+            "f_before": 0.0,
+            "f_after": 7.8176589012146,
+            "delta_f": 7.8176589012146
+          },
+          {
+            "index": 2255,
+            "f_before": 0.0,
+            "f_after": 7.342721939086914,
+            "delta_f": 7.342721939086914
+          },
+          {
+            "index": 3272,
+            "f_before": 0.0,
+            "f_after": 7.173429489135742,
+            "delta_f": 7.173429489135742
+          },
+          {
+            "index": 217,
+            "f_before": 0.0,
+            "f_after": 6.124506950378418,
+            "delta_f": 6.124506950378418
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 6.080573081970215,
+            "delta_f": 6.080573081970215
+          },
+          {
+            "index": 1384,
+            "f_before": 0.0,
+            "f_after": 6.059168338775635,
+            "delta_f": 6.059168338775635
+          },
+          {
+            "index": 1735,
+            "f_before": 0.0,
+            "f_after": 6.035279750823975,
+            "delta_f": 6.035279750823975
+          },
+          {
+            "index": 3922,
+            "f_before": 0.0,
+            "f_after": 5.97655725479126,
+            "delta_f": 5.97655725479126
+          },
+          {
+            "index": 6209,
+            "f_before": 0.0,
+            "f_after": 5.518714904785156,
+            "delta_f": 5.518714904785156
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple_item(self):\n        class SimpleItem(DictItem):\n            id = Field(str)\n            name = Field(str)\n\n        item = SimpleItem()\n        item['id'] = '123'\n",
+        "after": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple_item(self):\n        # Simple item\n        item = Item()\n\n        # Create an item with values\n        item.create_item_from_dict()\n        \n        # Create an item with values\n        item."
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          5623,
+          8212,
+          5487,
+          6398,
+          7137,
+          1115,
+          949,
+          1912,
+          7359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 26.327898025512695,
+            "f_after": 26.327898025512695,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple_item(self):\n        class SimpleItem(DictItem):\n            name = Field(required=True)\n            age = Field(required=True)\n\n        item = SimpleItem()\n        item['name'] = 'Alice",
+        "after": "import sys\nimport unittest\nfrom unittest import mock\nfrom warnings import catch_warnings\n\nfrom scrapy.exceptions import ScrapyDeprecationWarning\nfrom scrapy.item import ABCMeta, DictItem, Field, Item, ItemMeta\n\n\nPY36_PLUS = (sys.version_info.major >= 3) and (sys.version_info.minor >= 6)\n\n\nclass ItemTest(unittest.TestCase):\n\n    def assertSortedEqual(self, first, second, msg=None):\n        return self.assertEqual(sorted(first), sorted(second), msg)\n\n    def test_simple_item(self):\n        class SimpleItem(Item):\n            # Define your fields here\n            pass\n\n        item = SimpleItem()\n        self.assertEqual(item, SimpleItem())\n        self.assertEqual(item, Simple"
+      }
+    }
   }
 }

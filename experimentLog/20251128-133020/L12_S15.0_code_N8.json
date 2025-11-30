@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n\n    batches = [3, 2, 1]\n    length = len(batches)\n    in_size = 3\n    out_size = 2\n    n_layers = 2\n    dropout = 0.0\n\n    def setUp(self):\n        self.xs = [numpy.random.uniform(-1, 1, (b, self.in_size)).astype('f')\n                   for b in self.batches]\n        h_shape = (self.n_layers, self.batches[0], self.out_size)\n        self.cx = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n        self.hx = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n\n        self.ws = []\n        self.bs = []\n        for i in range(self.n_layers):\n            weights = []\n            biases = []\n            for j in range(8):\n                if i == 0 and j < 4:\n                    w_in = self.in_size\n                else:\n                    w_in = self.out_size\n\n                weights.append(numpy.random.uniform(\n                    -1, 1, (self.out_size, w_in)).astype('f'))\n                biases.append(numpy.random.uniform(\n                    -1, 1, (self.out_size,)).astype('f'))\n            self.ws.append(weights)\n            self.bs.append(biases)\n\n        self.dys = [numpy.random.uniform(-1, 1, (b, self.out_size)).astype('f')\n                    for b in self.batches]\n        self.dcy = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n        self.dhy = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n\n    def check_forward(\n            self, h_data, c_data, xs_data, ws_data, bs_data, volatile):\n        h = chainer.Variable(h_data, volatile=volatile)\n        c = chainer.Variable(c_data, volatile=volatile)\n        xs = [chainer.Variable(x, volatile=volatile) for x in xs_data]\n        ws = [[chainer.Variable(w, volatile=volatile) for w in ws]\n              for ws in ws_data]\n        bs = [[chainer.Variable(b, volatile=volatile) for b in bs]\n              for bs in bs_data]\n        hy, cy, ys = functions.n_step_lstm(\n            self.n_layers, self.dropout, h, c, ws, bs, xs,\n            use_cudnn=self.use_cudnn)\n\n        e_hy = self.hx.copy()\n        e_cy = self.cx.copy()\n        for ind in range(self.length):\n            x = self.xs[ind]\n            batch = x.shape[0]\n            for layer in range(self.n_layers):\n                w = self.ws[layer]\n                b = self.bs[layer]\n                h_prev = e_hy[layer, :batch]\n                c_prev = e_cy[layer, :batch]\n                i = sigmoid(x.dot(w[0].T) + h_prev.dot(w[4].T) + b[0] + b[4])\n                f = sigmoid(x.dot(w[1].T) + h_prev.dot(w[5].T) + b[1] + b[5])\n                c_bar = numpy.tanh(\n                    x.dot(w[2].T) + h_prev.dot(w[6].T) + b[2] + b[6])\n                o = sigmoid(x.dot(w[3].T) + h_prev.dot(w[7].T) + b[3] + b[7])\n                e_c = (f * c_prev + i * c_bar)\n                e_h = o * numpy.tanh(e_c)\n                e_hy[layer, :batch] = e_h\n                e_cy[layer, :batch] = e_c\n\n                x = e_h\n\n            testing.assert_allclose(\n                ys[ind].data, x, rtol=1e-4, atol=1e-4)\n\n        testing.assert_allclose(hy.data, e_hy, rtol=1e-4, atol=1e-4)\n        testing.assert_allclose(cy.data, e_cy, rtol=1e-4, atol=1e-4)\n\n    def test_forward_cpu(self):\n        self.check_forward(self.hx, self.cx, self.xs, self.ws, self.bs, False)\n\n    def test_forward_cpu_volatile(self):\n        self.check_forward(self.hx, self.cx, self.xs, self.ws, self.bs, True)\n\n    @attr.gpu\n    def test_forward_gpu(self):\n        self.check_forward(cuda.to_gpu(self.hx),\n                           cuda.to_gpu(self.cx),\n                           [cuda.to_gpu(x) for x in self.xs],\n                           [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                           [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                           False)\n\n    @attr.gpu\n    def test_forward_gpu_volatile(self):\n        self.check_forward(cuda.to_gpu(self.hx),\n                           cuda.to_gpu(self.cx),\n                           [cuda.to_gpu(x) for x in self.xs],\n                           [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                           [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                           True)\n\n    def check_backward(self, h_data, c_data, xs_data, ws_data, bs_data,\n                       dhy_data, dcy_data, dys_data):\n        args = tuple([h_data, c_data] + sum(ws_data, []) + sum(bs_data, []) +\n                     xs_data)\n        grads = tuple([dhy_data, dcy_data] + dys_data)\n\n        def f(*inputs):\n            (hx, cx), inputs = _split(inputs, 2)\n            ws = []\n            for i in range(self.n_layers):\n                weights, inputs = _split(inputs, 8)\n                ws.append(weights)\n            bs = []\n            for i in range(self.n_layers):\n                biases, inputs = _split(inputs, 8)\n                bs.append(biases)\n            xs = inputs\n            hy, cy, ys = functions.n_step_lstm(\n                self.n_layers, self.dropout, hx, cx, ws, bs, xs)\n            return (hy, cy) + ys\n\n        gradient_check.check_backward(\n            f, args, grads, eps=1e-2, rtol=1e-3, atol=1e-3)\n\n    def test_backward_cpu(self):\n        self.check_backward(self.hx, self.cx, self.xs, self.ws, self.bs,\n                            self.dhy, self.dcy, self.dys)\n\n    @attr.gpu\n    def test_backward_gpu(self):\n        self.check_backward(cuda.to_gpu(self.hx),\n                            cuda.to_gpu(self.cx),\n                            [cuda.to_gpu(x) for x in self.xs],\n                            [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                            [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                            cuda.to_gpu(self.dhy),\n                            cuda.to_gpu(self.dcy),\n                            [cuda.to_gpu(dy) for dy in self.dys])\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\n@attr.cudnn\nclass TestNStepLSTMCudnnCall(unittest.TestCase):\n\n    batches = [4, 3, 2, 1]\n    length = len(batches)\n    in_size = 3\n    out_size = 4\n    n_layers = 2\n    dropout = 0.0\n\n    def setUp(self):\n        self.xs = [cuda.cupy.random.uniform(\n            -1, 1, (b, self.in_size)).astype('f')\n            for b in self.batches]\n        h_shape = (self.n_layers, self.batches[0], self.out_size)\n        self.cx = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.hx = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n\n        self.ws = []\n        self.bs = []\n        for i in range(self.n_layers):\n            weights = []\n            biases = []\n            for j in range(8):\n                if i == 0 and j < 4:\n                    w_in = self.in_size\n                else:\n                    w_in = self.out_size\n\n                weights.append(cuda.cupy.random.uniform(\n                    -1, 1, (self.out_size, w_in)).astype('f'))\n                biases.append(cuda.cupy.random.uniform(\n                    -1, 1, (self.out_size,)).astype('f'))\n\n            self.ws.append(weights)\n            self.bs.append(biases)\n\n        self.dys = [cuda.cupy.random.uniform(\n            -1, 1, (b, self.out_size)).astype('f')\n            for b in self.batches]\n        self.dcy = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.dhy = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.expect = self.use_cudnn and (\n            cuda.cudnn.cudnn.getVersion() >= 5000)\n\n    def forward(self, train):\n        volatile = not train\n        h = chainer.Variable(self.hx, volatile=volatile)\n        c = chainer.Variable(self.cx, volatile=volatile)\n        xs = [chainer.Variable(x, volatile=volatile) for x in self.xs]\n        ws = [[chainer.Variable(w, volatile=volatile) for w in ws]\n              for ws in self.ws]\n        bs = [[chainer.Variable(b, volatile=volatile) for b in bs]\n              for bs in self.bs]\n        with chainer.using_config('train', train):\n            return functions.n_step_lstm(\n                self.n_layers, self.dropout, h, c, ws, bs, xs,\n                use_cudnn=self.use_cudnn)\n\n    def test_call_cudnn_forward_training(self):\n        with mock.patch('cupy.cuda.cudnn.RNNForwardTraining') as func:\n            self.forward(True)\n            self.assertEqual(func.called, self.expect)\n\n    def test_call_cudnn_forward_inference(self):\n        with mock.patch('cupy.cuda.cudnn.RNNForwardInference') as func:\n            self.forward(False)\n            self.assertEqual(func.called, self.expect)\n\n    def test_call_cudnn_backward(self):\n        hy, cy, ys = self.forward(True)\n        hy.grad = self.dhy\n        with mock.patch('cupy.cuda.cudnn.RNNBackwardWeights') as func:\n            hy.backward()\n            self.assertEqual(func.called, self.expect)\n\n\ntesting.run_module(__name__, __file__)\n",
+  "prompt": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM",
   "output": {
     "before": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n\n    batches = [3, 2, 1]\n    length = len(batches)\n    in_size = 3\n    out_size = 2\n    n_layers = 2\n    dropout = 0.0\n\n    def setUp(self):\n        self.xs = [numpy.random.uniform(-1, 1, (b, self.in_size)).astype('f')\n                   for b in self.batches]\n        h_shape = (self.n_layers, self.batches[0], self.out_size)\n        self.cx = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n        self.hx = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n\n        self.ws = []\n        self.bs = []\n        for i in range(self.n_layers):\n            weights = []\n            biases = []\n            for j in range(8):\n                if i == 0 and j < 4:\n                    w_in = self.in_size\n                else:\n                    w_in = self.out_size\n\n                weights.append(numpy.random.uniform(\n                    -1, 1, (self.out_size, w_in)).astype('f'))\n                biases.append(numpy.random.uniform(\n                    -1, 1, (self.out_size,)).astype('f'))\n            self.ws.append(weights)\n            self.bs.append(biases)\n\n        self.dys = [numpy.random.uniform(-1, 1, (b, self.out_size)).astype('f')\n                    for b in self.batches]\n        self.dcy = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n        self.dhy = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n\n    def check_forward(\n            self, h_data, c_data, xs_data, ws_data, bs_data, volatile):\n        h = chainer.Variable(h_data, volatile=volatile)\n        c = chainer.Variable(c_data, volatile=volatile)\n        xs = [chainer.Variable(x, volatile=volatile) for x in xs_data]\n        ws = [[chainer.Variable(w, volatile=volatile) for w in ws]\n              for ws in ws_data]\n        bs = [[chainer.Variable(b, volatile=volatile) for b in bs]\n              for bs in bs_data]\n        hy, cy, ys = functions.n_step_lstm(\n            self.n_layers, self.dropout, h, c, ws, bs, xs,\n            use_cudnn=self.use_cudnn)\n\n        e_hy = self.hx.copy()\n        e_cy = self.cx.copy()\n        for ind in range(self.length):\n            x = self.xs[ind]\n            batch = x.shape[0]\n            for layer in range(self.n_layers):\n                w = self.ws[layer]\n                b = self.bs[layer]\n                h_prev = e_hy[layer, :batch]\n                c_prev = e_cy[layer, :batch]\n                i = sigmoid(x.dot(w[0].T) + h_prev.dot(w[4].T) + b[0] + b[4])\n                f = sigmoid(x.dot(w[1].T) + h_prev.dot(w[5].T) + b[1] + b[5])\n                c_bar = numpy.tanh(\n                    x.dot(w[2].T) + h_prev.dot(w[6].T) + b[2] + b[6])\n                o = sigmoid(x.dot(w[3].T) + h_prev.dot(w[7].T) + b[3] + b[7])\n                e_c = (f * c_prev + i * c_bar)\n                e_h = o * numpy.tanh(e_c)\n                e_hy[layer, :batch] = e_h\n                e_cy[layer, :batch] = e_c\n\n                x = e_h\n\n            testing.assert_allclose(\n                ys[ind].data, x, rtol=1e-4, atol=1e-4)\n\n        testing.assert_allclose(hy.data, e_hy, rtol=1e-4, atol=1e-4)\n        testing.assert_allclose(cy.data, e_cy, rtol=1e-4, atol=1e-4)\n\n    def test_forward_cpu(self):\n        self.check_forward(self.hx, self.cx, self.xs, self.ws, self.bs, False)\n\n    def test_forward_cpu_volatile(self):\n        self.check_forward(self.hx, self.cx, self.xs, self.ws, self.bs, True)\n\n    @attr.gpu\n    def test_forward_gpu(self):\n        self.check_forward(cuda.to_gpu(self.hx),\n                           cuda.to_gpu(self.cx),\n                           [cuda.to_gpu(x) for x in self.xs],\n                           [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                           [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                           False)\n\n    @attr.gpu\n    def test_forward_gpu_volatile(self):\n        self.check_forward(cuda.to_gpu(self.hx),\n                           cuda.to_gpu(self.cx),\n                           [cuda.to_gpu(x) for x in self.xs],\n                           [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                           [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                           True)\n\n    def check_backward(self, h_data, c_data, xs_data, ws_data, bs_data,\n                       dhy_data, dcy_data, dys_data):\n        args = tuple([h_data, c_data] + sum(ws_data, []) + sum(bs_data, []) +\n                     xs_data)\n        grads = tuple([dhy_data, dcy_data] + dys_data)\n\n        def f(*inputs):\n            (hx, cx), inputs = _split(inputs, 2)\n            ws = []\n            for i in range(self.n_layers):\n                weights, inputs = _split(inputs, 8)\n                ws.append(weights)\n            bs = []\n            for i in range(self.n_layers):\n                biases, inputs = _split(inputs, 8)\n                bs.append(biases)\n            xs = inputs\n            hy, cy, ys = functions.n_step_lstm(\n                self.n_layers, self.dropout, hx, cx, ws, bs, xs)\n            return (hy, cy) + ys\n\n        gradient_check.check_backward(\n            f, args, grads, eps=1e-2, rtol=1e-3, atol=1e-3)\n\n    def test_backward_cpu(self):\n        self.check_backward(self.hx, self.cx, self.xs, self.ws, self.bs,\n                            self.dhy, self.dcy, self.dys)\n\n    @attr.gpu\n    def test_backward_gpu(self):\n        self.check_backward(cuda.to_gpu(self.hx),\n                            cuda.to_gpu(self.cx),\n                            [cuda.to_gpu(x) for x in self.xs],\n                            [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                            [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                            cuda.to_gpu(self.dhy),\n                            cuda.to_gpu(self.dcy),\n                            [cuda.to_gpu(dy) for dy in self.dys])\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\n@attr.cudnn\nclass TestNStepLSTMCudnnCall(unittest.TestCase):\n\n    batches = [4, 3, 2, 1]\n    length = len(batches)\n    in_size = 3\n    out_size = 4\n    n_layers = 2\n    dropout = 0.0\n\n    def setUp(self):\n        self.xs = [cuda.cupy.random.uniform(\n            -1, 1, (b, self.in_size)).astype('f')\n            for b in self.batches]\n        h_shape = (self.n_layers, self.batches[0], self.out_size)\n        self.cx = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.hx = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n\n        self.ws = []\n        self.bs = []\n        for i in range(self.n_layers):\n            weights = []\n            biases = []\n            for j in range(8):\n                if i == 0 and j < 4:\n                    w_in = self.in_size\n                else:\n                    w_in = self.out_size\n\n                weights.append(cuda.cupy.random.uniform(\n                    -1, 1, (self.out_size, w_in)).astype('f'))\n                biases.append(cuda.cupy.random.uniform(\n                    -1, 1, (self.out_size,)).astype('f'))\n\n            self.ws.append(weights)\n            self.bs.append(biases)\n\n        self.dys = [cuda.cupy.random.uniform(\n            -1, 1, (b, self.out_size)).astype('f')\n            for b in self.batches]\n        self.dcy = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.dhy = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.expect = self.use_cudnn and (\n            cuda.cudnn.cudnn.getVersion() >= 5000)\n\n    def forward(self, train):\n        volatile = not train\n        h = chainer.Variable(self.hx, volatile=volatile)\n        c = chainer.Variable(self.cx, volatile=volatile)\n        xs = [chainer.Variable(x, volatile=volatile) for x in self.xs]\n        ws = [[chainer.Variable(w, volatile=volatile) for w in ws]\n              for ws in self.ws]\n        bs = [[chainer.Variable(b, volatile=volatile) for b in bs]\n              for bs in self.bs]\n        with chainer.using_config('train', train):\n            return functions.n_step_lstm(\n                self.n_layers, self.dropout, h, c, ws, bs, xs,\n                use_cudnn=self.use_cudnn)\n\n    def test_call_cudnn_forward_training(self):\n        with mock.patch('cupy.cuda.cudnn.RNNForwardTraining') as func:\n            self.forward(True)\n            self.assertEqual(func.called, self.expect)\n\n    def test_call_cudnn_forward_inference(self):\n        with mock.patch('cupy.cuda.cudnn.RNNForwardInference') as func:\n            self.forward(False)\n            self.assertEqual(func.called, self.expect)\n\n    def test_call_cudnn_backward(self):\n        hy, cy, ys = self.forward(True)\n        hy.grad = self.dhy\n        with mock.patch('cupy.cuda.cudnn.RNNBackwardWeights') as func:\n            hy.backward()\n            self.assertEqual(func.called, self.expect)\n\n\ntesting.run_module(__name__, __file__)\n```\n\nThis code defines a set of tests for the `NStepLSTM` model using `unittest` and `testing` module. The tests cover various aspects of the model, including:\n\n* **Forward pass:** Tests the model's ability",
     "after": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n\n    batches = [3, 2, 1]\n    length = len(batches)\n    in_size = 3\n    out_size = 2\n    n_layers = 2\n    dropout = 0.0\n\n    def setUp(self):\n        self.xs = [numpy.random.uniform(-1, 1, (b, self.in_size)).astype('f')\n                   for b in self.batches]\n        h_shape = (self.n_layers, self.batches[0], self.out_size)\n        self.cx = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n        self.hx = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n\n        self.ws = []\n        self.bs = []\n        for i in range(self.n_layers):\n            weights = []\n            biases = []\n            for j in range(8):\n                if i == 0 and j < 4:\n                    w_in = self.in_size\n                else:\n                    w_in = self.out_size\n\n                weights.append(numpy.random.uniform(\n                    -1, 1, (self.out_size, w_in)).astype('f'))\n                biases.append(numpy.random.uniform(\n                    -1, 1, (self.out_size,)).astype('f'))\n            self.ws.append(weights)\n            self.bs.append(biases)\n\n        self.dys = [numpy.random.uniform(-1, 1, (b, self.out_size)).astype('f')\n                    for b in self.batches]\n        self.dcy = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n        self.dhy = numpy.random.uniform(-1, 1, h_shape).astype(numpy.float32)\n\n    def check_forward(\n            self, h_data, c_data, xs_data, ws_data, bs_data, volatile):\n        h = chainer.Variable(h_data, volatile=volatile)\n        c = chainer.Variable(c_data, volatile=volatile)\n        xs = [chainer.Variable(x, volatile=volatile) for x in xs_data]\n        ws = [[chainer.Variable(w, volatile=volatile) for w in ws]\n              for ws in ws_data]\n        bs = [[chainer.Variable(b, volatile=volatile) for b in bs]\n              for bs in bs_data]\n        hy, cy, ys = functions.n_step_lstm(\n            self.n_layers, self.dropout, h, c, ws, bs, xs,\n            use_cudnn=self.use_cudnn)\n\n        e_hy = self.hx.copy()\n        e_cy = self.cx.copy()\n        for ind in range(self.length):\n            x = self.xs[ind]\n            batch = x.shape[0]\n            for layer in range(self.n_layers):\n                w = self.ws[layer]\n                b = self.bs[layer]\n                h_prev = e_hy[layer, :batch]\n                c_prev = e_cy[layer, :batch]\n                i = sigmoid(x.dot(w[0].T) + h_prev.dot(w[4].T) + b[0] + b[4])\n                f = sigmoid(x.dot(w[1].T) + h_prev.dot(w[5].T) + b[1] + b[5])\n                c_bar = numpy.tanh(\n                    x.dot(w[2].T) + h_prev.dot(w[6].T) + b[2] + b[6])\n                o = sigmoid(x.dot(w[3].T) + h_prev.dot(w[7].T) + b[3] + b[7])\n                e_c = (f * c_prev + i * c_bar)\n                e_h = o * numpy.tanh(e_c)\n                e_hy[layer, :batch] = e_h\n                e_cy[layer, :batch] = e_c\n\n                x = e_h\n\n            testing.assert_allclose(\n                ys[ind].data, x, rtol=1e-4, atol=1e-4)\n\n        testing.assert_allclose(hy.data, e_hy, rtol=1e-4, atol=1e-4)\n        testing.assert_allclose(cy.data, e_cy, rtol=1e-4, atol=1e-4)\n\n    def test_forward_cpu(self):\n        self.check_forward(self.hx, self.cx, self.xs, self.ws, self.bs, False)\n\n    def test_forward_cpu_volatile(self):\n        self.check_forward(self.hx, self.cx, self.xs, self.ws, self.bs, True)\n\n    @attr.gpu\n    def test_forward_gpu(self):\n        self.check_forward(cuda.to_gpu(self.hx),\n                           cuda.to_gpu(self.cx),\n                           [cuda.to_gpu(x) for x in self.xs],\n                           [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                           [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                           False)\n\n    @attr.gpu\n    def test_forward_gpu_volatile(self):\n        self.check_forward(cuda.to_gpu(self.hx),\n                           cuda.to_gpu(self.cx),\n                           [cuda.to_gpu(x) for x in self.xs],\n                           [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                           [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                           True)\n\n    def check_backward(self, h_data, c_data, xs_data, ws_data, bs_data,\n                       dhy_data, dcy_data, dys_data):\n        args = tuple([h_data, c_data] + sum(ws_data, []) + sum(bs_data, []) +\n                     xs_data)\n        grads = tuple([dhy_data, dcy_data] + dys_data)\n\n        def f(*inputs):\n            (hx, cx), inputs = _split(inputs, 2)\n            ws = []\n            for i in range(self.n_layers):\n                weights, inputs = _split(inputs, 8)\n                ws.append(weights)\n            bs = []\n            for i in range(self.n_layers):\n                biases, inputs = _split(inputs, 8)\n                bs.append(biases)\n            xs = inputs\n            hy, cy, ys = functions.n_step_lstm(\n                self.n_layers, self.dropout, hx, cx, ws, bs, xs)\n            return (hy, cy) + ys\n\n        gradient_check.check_backward(\n            f, args, grads, eps=1e-2, rtol=1e-3, atol=1e-3)\n\n    def test_backward_cpu(self):\n        self.check_backward(self.hx, self.cx, self.xs, self.ws, self.bs,\n                            self.dhy, self.dcy, self.dys)\n\n    @attr.gpu\n    def test_backward_gpu(self):\n        self.check_backward(cuda.to_gpu(self.hx),\n                            cuda.to_gpu(self.cx),\n                            [cuda.to_gpu(x) for x in self.xs],\n                            [[cuda.to_gpu(w) for w in ws] for ws in self.ws],\n                            [[cuda.to_gpu(b) for b in bs] for bs in self.bs],\n                            cuda.to_gpu(self.dhy),\n                            cuda.to_gpu(self.dcy),\n                            [cuda.to_gpu(dy) for dy in self.dys])\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\n@attr.cudnn\nclass TestNStepLSTMCudnnCall(unittest.TestCase):\n\n    batches = [4, 3, 2, 1]\n    length = len(batches)\n    in_size = 3\n    out_size = 4\n    n_layers = 2\n    dropout = 0.0\n\n    def setUp(self):\n        self.xs = [cuda.cupy.random.uniform(\n            -1, 1, (b, self.in_size)).astype('f')\n            for b in self.batches]\n        h_shape = (self.n_layers, self.batches[0], self.out_size)\n        self.cx = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.hx = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n\n        self.ws = []\n        self.bs = []\n        for i in range(self.n_layers):\n            weights = []\n            biases = []\n            for j in range(8):\n                if i == 0 and j < 4:\n                    w_in = self.in_size\n                else:\n                    w_in = self.out_size\n\n                weights.append(cuda.cupy.random.uniform(\n                    -1, 1, (self.out_size, w_in)).astype('f'))\n                biases.append(cuda.cupy.random.uniform(\n                    -1, 1, (self.out_size,)).astype('f'))\n\n            self.ws.append(weights)\n            self.bs.append(biases)\n\n        self.dys = [cuda.cupy.random.uniform(\n            -1, 1, (b, self.out_size)).astype('f')\n            for b in self.batches]\n        self.dcy = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.dhy = cuda.cupy.random.uniform(-1, 1, h_shape).astype('f')\n        self.expect = self.use_cudnn and (\n            cuda.cudnn.cudnn.getVersion() >= 5000)\n\n    def forward(self, train):\n        volatile = not train\n        h = chainer.Variable(self.hx, volatile=volatile)\n        c = chainer.Variable(self.cx, volatile=volatile)\n        xs = [chainer.Variable(x, volatile=volatile) for x in self.xs]\n        ws = [[chainer.Variable(w, volatile=volatile) for w in ws]\n              for ws in self.ws]\n        bs = [[chainer.Variable(b, volatile=volatile) for b in bs]\n              for bs in self.bs]\n        with chainer.using_config('train', train):\n            return functions.n_step_lstm(\n                self.n_layers, self.dropout, h, c, ws, bs, xs,\n                use_cudnn=self.use_cudnn)\n\n    def test_call_cudnn_forward_training(self):\n        with mock.patch('cupy.cuda.cudnn.RNNForwardTraining') as func:\n            self.forward(True)\n            self.assertEqual(func.called, self.expect)\n\n    def test_call_cudnn_forward_inference(self):\n        with mock.patch('cupy.cuda.cudnn.RNNForwardInference') as func:\n            self.forward(False)\n            self.assertEqual(func.called, self.expect)\n\n    def test_call_cudnn_backward(self):\n        hy, cy, ys = self.forward(True)\n        hy.grad = self.dhy\n        with mock.patch('cupy.cuda.cudnn.RNNBackwardWeights') as func:\n            hy.backward()\n            self.assertEqual(func.called, self.expect)\n\n\ntesting.run_module(__name__, __file__)\n```\n\n```python\nimport unittest\n\nimport numpy\nimport chainer\nimport chainer.cuda\nimport chainer.functions\nimport chainer.gradient_check\nimport chainer.testing\nimport chainer.testing.attr\nimport"
@@ -82,7 +83,7 @@
       8919
     ],
     "f_before": [
-      113.42313385009766,
+      190.7052459716797,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      113.42313385009766,
+      389.4589538574219,
+      1.5395020246505737,
+      0.5535083413124084,
+      0.7020861506462097,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.14135964214801788,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      65.40665435791016,
-      12.904624938964844,
-      11.751193046569824,
-      11.265630722045898,
-      10.728150367736816,
-      10.900994300842285,
-      10.843664169311523,
-      11.002477645874023,
-      10.965886116027832,
-      11.229253768920898
-    ],
     "g_after": [
       0.0,
-      65.40665435791016,
-      12.904624938964844,
-      11.751193046569824,
-      11.265630722045898,
-      10.728150367736816,
-      10.900994300842285,
-      10.843664169311523,
-      11.002477645874023,
-      10.965886116027832,
-      11.229253768920898
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-133020/feature_std_layer_12.html",
     "mean_std": 2.113823652267456,
     "max_std": 93.83219909667969
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5301,
+          5680,
+          8374,
+          9154,
+          738,
+          4112,
+          6378,
+          442,
+          8919
+        ],
+        "f_before": [
+          190.7052459716797,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          389.4589538574219,
+          1.5395020246505737,
+          0.5535083413124084,
+          0.7020861506462097,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.14135964214801788,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 190.7052459716797,
+            "f_after": 389.4589538574219,
+            "delta_f": 198.7537078857422
+          },
+          {
+            "index": 2142,
+            "f_before": 203.9624481201172,
+            "f_after": 242.8380584716797,
+            "delta_f": 38.8756103515625
+          },
+          {
+            "index": 8166,
+            "f_before": 1.728104591369629,
+            "f_after": 17.48500633239746,
+            "delta_f": 15.756901741027832
+          },
+          {
+            "index": 8755,
+            "f_before": 0.0,
+            "f_after": 10.123465538024902,
+            "delta_f": 10.123465538024902
+          },
+          {
+            "index": 8375,
+            "f_before": 0.0,
+            "f_after": 10.097159385681152,
+            "delta_f": 10.097159385681152
+          },
+          {
+            "index": 378,
+            "f_before": 0.31195011734962463,
+            "f_after": 10.278204917907715,
+            "delta_f": 9.96625480055809
+          },
+          {
+            "index": 8593,
+            "f_before": 0.0,
+            "f_after": 9.845491409301758,
+            "delta_f": 9.845491409301758
+          },
+          {
+            "index": 582,
+            "f_before": 0.0,
+            "f_after": 8.87089729309082,
+            "delta_f": 8.87089729309082
+          },
+          {
+            "index": 2153,
+            "f_before": 0.0,
+            "f_after": 8.680449485778809,
+            "delta_f": 8.680449485778809
+          },
+          {
+            "index": 2323,
+            "f_before": 0.0,
+            "f_after": 8.664268493652344,
+            "delta_f": 8.664268493652344
+          },
+          {
+            "index": 977,
+            "f_before": 0.0,
+            "f_after": 8.629354476928711,
+            "delta_f": 8.629354476928711
+          },
+          {
+            "index": 3084,
+            "f_before": 0.0,
+            "f_after": 8.549421310424805,
+            "delta_f": 8.549421310424805
+          },
+          {
+            "index": 6645,
+            "f_before": 0.0,
+            "f_after": 8.482295036315918,
+            "delta_f": 8.482295036315918
+          },
+          {
+            "index": 5413,
+            "f_before": 4.900204181671143,
+            "f_after": 12.863640785217285,
+            "delta_f": 7.963436603546143
+          },
+          {
+            "index": 3505,
+            "f_before": 0.0,
+            "f_after": 7.904098033905029,
+            "delta_f": 7.904098033905029
+          },
+          {
+            "index": 4991,
+            "f_before": 0.0,
+            "f_after": 7.856232643127441,
+            "delta_f": 7.856232643127441
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n\n    def setUp(self):\n        self.use_cudnn = self.use_cudnn\n        self.input_size = 10\n        self.hidden_size = 5\n        ",
+        "after": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n    def __init__(self, use_cudnn=False):\n        super(TestNStepLSTM, self).__init__()\n        self.use_cudnn = use_cudnn\n\n    @attr"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          5301,
+          5680,
+          8374,
+          9154,
+          738,
+          4112,
+          6378,
+          442,
+          8919
+        ],
+        "f_before": [
+          190.7052459716797,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          190.7052459716797,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 190.7052459716797,
+            "f_after": 190.7052459716797,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n\n    def setUp(self):\n        self.x = numpy.random.randn(10, 10)\n        self.h0 = numpy.random.randn(10, 10",
+        "after": "import unittest\n\nimport mock\nimport numpy\n\nimport chainer\nfrom chainer import cuda\nfrom chainer import functions\nfrom chainer import gradient_check\nfrom chainer import testing\nfrom chainer.testing import attr\n\n\ndef sigmoid(x):\n    return numpy.tanh(x * 0.5) * 0.5 + 0.5\n\n\ndef _split(inputs, pos):\n    return inputs[:pos], inputs[pos:]\n\n\n@testing.parameterize(*testing.product({\n    'use_cudnn': [True, False],\n}))\nclass TestNStepLSTM(unittest.TestCase):\n    def setup(self):\n        self.device = cuda.device(0)\n        self.dtype = numpy.float32\n        self.dtype_ = numpy.float32\n\n    @"
+      }
+    }
   }
 }

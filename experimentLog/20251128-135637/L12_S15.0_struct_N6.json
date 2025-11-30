@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5929\\u4e2d\\u7ee7\\u7684\\u62d2\\u7edd\\u6570\\u91cf\\u9600\\u503c\\uff0c\\u5982\\u679c\\u8d85\\u8fc7\\u8be5\\u503c\\uff0c\\u5219\\u53d1\\u76f8\\u5e94\\u901a\\u77e5', verbose_name='\\u7fa4\\u53d1\\u6570\\u91cf\\u9600\\u503c'),\n        ),\n        migrations.AlterField(\n            model_name='noticesettings',\n            name='bulk_content',\n            field=models.TextField(help_text='\\u7528\\u6237\\u7fa4\\u53d1\\u90ae\\u4ef6\\u7684\\u65f6\\u5019\\u901a\\u77e5\\u5ba2\\u6237\\u548c\\u5bf9\\u5e94\\u7684\\u6280\\u672f\\u652f\\u6301,\\u652f\\u6301\\u53d8\\u91cf: {count}\\u8868\\u793a\\u62d2\\u7edd\\u6570\\u91cf', verbose_name='\\u7fa4\\u53d1\\u90ae\\u4ef6\\u901a\\u77e5'),\n        ),\n    ]\n",
+  "prompt": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5",
   "output": {
     "before": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5929\\u4e2d\\u7ee7\\u7684\\u62d2\\u7edd\\u6570\\u91cf\\u9600\\u503c\\uff0c\\u5982\\u679c\\u8d85\\u8fc7\\u8be5\\u503c\\uff0c\\u5219\\u53d1\\u76f8\\u5e94\\u901a\\u77e5', verbose_name='\\u7fa4\\u53d1\\u6570\\u91cf\\u9600\\u503c'),\n        ),\n        migrations.AlterField(\n            model_name='noticesettings',\n            name='bulk_content',\n            field=models.TextField(help_text='\\u7528\\u6237\\u7fa4\\u53d1\\u90ae\\u4ef6\\u7684\\u65f6\\u5019\\u901a\\u77e5\\u5ba2\\u6237\\u548c\\u5bf9\\u5e94\\u7684\\u6280\\u672f\\u652f\\u6301,\\u652f\\u6301\\u53d8\\u91cf: {count}\\u8868\\u793a\\u62d2\\u7edd\\u6570\\u91cf', verbose_name='\\u7fa4\\u53d1\\u90ae\\u4ef6\\u901a\\u77e5'),\n        ),\n    ]\n```\n\n**Explanation:**\n\nThis migration adds a `bulk_count` field to the `Noticesettings` model and modifies the `bulk_content` field.\n\n* **`bulk_count` Field:**\n    * `name`:",
     "after": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5929\\u4e2d\\u7ee7\\u7684\\u62d2\\u7edd\\u6570\\u91cf\\u9600\\u503c\\uff0c\\u5982\\u679c\\u8d85\\u8fc7\\u8be5\\u503c\\uff0c\\u5219\\u53d1\\u76f8\\u5e94\\u901a\\u77e5', verbose_name='\\u7fa4\\u53d1\\u6570\\u91cf\\u9600\\u503c'),\n        ),\n        migrations.AlterField(\n            model_name='noticesettings',\n            name='bulk_content',\n            field=models.TextField(help_text='\\u7528\\u6237\\u7fa4\\u53d1\\u90ae\\u4ef6\\u7684\\u65f6\\u5019\\u901a\\u77e5\\u5ba2\\u6237\\u548c\\u5bf9\\u5e94\\u7684\\u6280\\u672f\\u652f\\u6301,\\u652f\\u6301\\u53d8\\u91cf: {count}\\u8868\\u793a\\u62d2\\u7edd\\u6570\\u91cf', verbose_name='\\u7fa4\\u53d1\\u90ae\\u4ef6\\u901a\\u77e5'),\n        ),\n    ]\n```\nThis code defines a Django migration to handle the bulk_count field.\n\n**Purpose:**\n\n* `bulk_count`: This field is used to store the number of bulk items that can be processed at once.\n    \n* `"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      69.04734802246094,
+      131.03382873535156,
       0.0,
       0.0,
       0.0,
@@ -96,7 +97,20 @@
     ],
     "f_after": [
       0.0,
-      69.04734802246094,
+      253.23175048828125,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.6141117215156555
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      40.068363189697266,
-      0.010523831471800804,
-      0.00034753777435980737,
-      0.032569896429777145,
-      0.004810765851289034,
-      0.0,
-      6.454193115234375,
-      0.003046832513064146,
-      0.021075956523418427,
-      0.0,
-      6.79806661605835
-    ],
     "g_after": [
-      40.068363189697266,
-      0.010523831471800804,
-      0.00034753777435980737,
-      0.032569896429777145,
-      0.004810765851289034,
       0.0,
-      6.454193115234375,
-      0.003046832513064146,
-      0.021075956523418427,
       0.0,
-      6.79806661605835
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          7900,
+          7797,
+          6889,
+          5571,
+          4791,
+          1789,
+          7877,
+          4321,
+          1596
+        ],
+        "f_before": [
+          0.0,
+          131.03382873535156,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          253.23175048828125,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6141117215156555
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 131.03382873535156,
+            "f_after": 253.23175048828125,
+            "delta_f": 122.19792175292969
+          },
+          {
+            "index": 8464,
+            "f_before": 0.0,
+            "f_after": 14.979541778564453,
+            "delta_f": 14.979541778564453
+          },
+          {
+            "index": 7892,
+            "f_before": 0.0,
+            "f_after": 8.395824432373047,
+            "delta_f": 8.395824432373047
+          },
+          {
+            "index": 2778,
+            "f_before": 0.0,
+            "f_after": 7.8965229988098145,
+            "delta_f": 7.8965229988098145
+          },
+          {
+            "index": 5857,
+            "f_before": 13.246809959411621,
+            "f_after": 21.0665340423584,
+            "delta_f": 7.819724082946777
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 7.714779376983643,
+            "delta_f": 7.714779376983643
+          },
+          {
+            "index": 1,
+            "f_before": 20.753999710083008,
+            "f_after": 13.105109214782715,
+            "delta_f": -7.648890495300293
+          },
+          {
+            "index": 417,
+            "f_before": 0.0,
+            "f_after": 7.483591556549072,
+            "delta_f": 7.483591556549072
+          },
+          {
+            "index": 548,
+            "f_before": 0.0,
+            "f_after": 7.183791160583496,
+            "delta_f": 7.183791160583496
+          },
+          {
+            "index": 8581,
+            "f_before": 0.0,
+            "f_after": 7.142444133758545,
+            "delta_f": 7.142444133758545
+          },
+          {
+            "index": 5086,
+            "f_before": 0.0,
+            "f_after": 6.704106330871582,
+            "delta_f": 6.704106330871582
+          },
+          {
+            "index": 3674,
+            "f_before": 0.0,
+            "f_after": 6.531351566314697,
+            "delta_f": 6.531351566314697
+          },
+          {
+            "index": 2375,
+            "f_before": 0.0,
+            "f_after": 6.5228095054626465,
+            "delta_f": 6.5228095054626465
+          },
+          {
+            "index": 8454,
+            "f_before": 0.0,
+            "f_after": 6.476743221282959,
+            "delta_f": 6.476743221282959
+          },
+          {
+            "index": 3160,
+            "f_before": 0.0,
+            "f_after": 6.416903972625732,
+            "delta_f": 6.416903972625732
+          },
+          {
+            "index": 6274,
+            "f_before": 0.0,
+            "f_after": 6.035219669342041,
+            "delta_f": 6.035219669342041
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5230\\u540e\\u4e00\\u8005'),\n        ),\n    ]\n```\n\n**Explanation:**\n\nThis Django migration file modifies the `Noticesettings` model. \n\n",
+        "after": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5f53\\u7528\\u6237\\u5f53\\u5f53\\u7528\\u6237\\u5f53\\u5f5"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          7900,
+          7797,
+          6889,
+          5571,
+          4791,
+          1789,
+          7877,
+          4321,
+          1596
+        ],
+        "f_before": [
+          0.0,
+          131.03382873535156,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          131.03382873535156,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 20.753999710083008,
+            "f_after": 20.753999710083008,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 131.03382873535156,
+            "f_after": 131.03382873535156,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5230\\u4e00\\u4e9a\\u5c31\\u8f6f'),\n        ),\n    ]\n```\n\n**Explanation:**\n\nThis Django migration defines a change to the `",
+        "after": "# -*- coding: utf-8 -*-\nfrom __future__ import unicode_literals\n\nfrom django.db import models, migrations\n\n\nclass Migration(migrations.Migration):\n\n    dependencies = [\n        ('mail', '0042_noticesettings_review_count'),\n    ]\n\n    operations = [\n        migrations.AddField(\n            model_name='noticesettings',\n            name='bulk_count',\n            field=models.IntegerField(default=200, help_text='\\u7528\\u6237\\u5f53\\u5f53\\u5f53\\u5f53'),\n        ),\n    ]\n```\n**Explanation:**\n* **`Migration`**: Defines the migration operations.\n* **`dependencies`**: Specifies the dependencies"
+      }
+    }
   }
 }

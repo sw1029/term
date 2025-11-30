@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        return self.model.predict([text])\n\n    def file_inference(self, file_name, output):\n        df = pd.read_csv(file_name, header=None)\n        predictions = self.model.predict(df.iloc[:, 0].values)\n        predictions.to_csv(output, index=False)\n",
+  "prompt": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference",
   "output": {
     "before": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        return self.model.predict([text])\n\n    def file_inference(self, file_name, output):\n        df = pd.read_csv(file_name, header=None)\n        predictions = self.model.predict(df.iloc[:, 0].values)\n        predictions.to_csv(output, index=False)\n        print(f\"Predictions saved to {output}\")\n\n    def load_model(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        elif",
     "after": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        return self.model.predict([text])\n\n    def file_inference(self, file_name, output):\n        df = pd.read_csv(file_name, header=None)\n        predictions = self.model.predict(df.iloc[:, 0].values)\n        predictions.to_csv(output, index=False)\n        \n    def chat(self, text):\n        print(\"I am a bot and I am here to help you\")\n        self.model.chat(text)\n        print(\"I can do whatever you want.\")\n\n\n# Here"
@@ -82,7 +83,7 @@
       1055
     ],
     "f_before": [
-      19.954730987548828,
+      20.675434112548828,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,20 @@
       0.0
     ],
     "f_after": [
-      19.954730987548828,
+      28.498891830444336,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.3229100704193115,
+      0.0,
+      0.0,
+      1.7329128980636597,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.0,
-      2.0693464279174805,
-      2.028503179550171,
-      1.8925508260726929,
-      1.9660288095474243,
-      1.9514087438583374,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.8550310134887695
-    ],
     "g_after": [
       0.0,
-      2.0693464279174805,
-      2.028503179550171,
-      1.8925508260726929,
-      1.9660288095474243,
-      1.9514087438583374,
       0.0,
       0.0,
       0.0,
       0.0,
-      1.8550310134887695
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          4392,
+          3308,
+          1592,
+          7699,
+          8573,
+          8628,
+          1716,
+          5947,
+          2746,
+          1055
+        ],
+        "f_before": [
+          20.675434112548828,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          28.498891830444336,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.3229100704193115,
+          0.0,
+          0.0,
+          1.7329128980636597,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 132.14968872070312,
+            "f_after": 78.4043960571289,
+            "delta_f": -53.74529266357422
+          },
+          {
+            "index": 4903,
+            "f_before": 166.5662841796875,
+            "f_after": 212.14402770996094,
+            "delta_f": 45.57774353027344
+          },
+          {
+            "index": 1497,
+            "f_before": 0.0,
+            "f_after": 36.3028450012207,
+            "delta_f": 36.3028450012207
+          },
+          {
+            "index": 3333,
+            "f_before": 0.0,
+            "f_after": 35.933719635009766,
+            "delta_f": 35.933719635009766
+          },
+          {
+            "index": 1,
+            "f_before": 20.675434112548828,
+            "f_after": 28.498891830444336,
+            "delta_f": 7.823457717895508
+          },
+          {
+            "index": 4068,
+            "f_before": 0.0,
+            "f_after": 3.1313915252685547,
+            "delta_f": 3.1313915252685547
+          },
+          {
+            "index": 7871,
+            "f_before": 0.0,
+            "f_after": 3.1226377487182617,
+            "delta_f": 3.1226377487182617
+          },
+          {
+            "index": 1021,
+            "f_before": 0.0,
+            "f_after": 3.0903289318084717,
+            "delta_f": 3.0903289318084717
+          },
+          {
+            "index": 6114,
+            "f_before": 0.0,
+            "f_after": 2.912397861480713,
+            "delta_f": 2.912397861480713
+          },
+          {
+            "index": 6685,
+            "f_before": 0.0,
+            "f_after": 2.7470147609710693,
+            "delta_f": 2.7470147609710693
+          },
+          {
+            "index": 676,
+            "f_before": 0.0,
+            "f_after": 2.72027587890625,
+            "delta_f": 2.72027587890625
+          },
+          {
+            "index": 7505,
+            "f_before": 0.0,
+            "f_after": 2.6441876888275146,
+            "delta_f": 2.6441876888275146
+          },
+          {
+            "index": 8361,
+            "f_before": 0.0,
+            "f_after": 2.5643200874328613,
+            "delta_f": 2.5643200874328613
+          },
+          {
+            "index": 3435,
+            "f_before": 0.0,
+            "f_after": 2.5622146129608154,
+            "delta_f": 2.5622146129608154
+          },
+          {
+            "index": 6405,
+            "f_before": 0.0,
+            "f_after": 2.5146121978759766,
+            "delta_f": 2.5146121978759766
+          },
+          {
+            "index": 443,
+            "f_before": 0.0,
+            "f_after": 2.5108964443206787,
+            "delta_f": 2.5108964443206787
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, data):\n        \"\"\"\n        Performs inference on the provided data.\n\n        Args:\n            data: A Pandas DataFrame containing the input data.\n\n        Returns:\n            A Pandas DataFrame containing the inferred results.\n        ",
+        "after": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, text):\n        self.model.predict(text)\n\n    def __init__(self, model_type):\n        self.model = Model(ModelType.TWITTER)\n        self.model.predict(text)"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          4392,
+          3308,
+          1592,
+          7699,
+          8573,
+          8628,
+          1716,
+          5947,
+          2746,
+          1055
+        ],
+        "f_before": [
+          20.675434112548828,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          20.675434112548828,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 20.675434112548828,
+            "f_after": 20.675434112548828,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 132.14968872070312,
+            "f_after": 132.14968872070312,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self, input_data):\n        \"\"\"\n        Performs inference on the given input data.\n\n        Args:\n            input_data: A pandas DataFrame containing the input data.\n\n        Returns:\n            A pandas DataFrame containing the",
+        "after": "import os\nos.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'\nfrom emtract.model import Model, ModelType\nimport pandas as pd\n\n\nclass ModelInference:\n\n    MODEL_BASE_PATH = 'build/models/'\n    DATA_BASE_PATH = './emtract/data/'\n\n    def __init__(self, model_type):\n        if model_type == 'twitter':\n            self.model = Model(ModelType.TWITTER)\n        else:\n            self.model = Model(ModelType.STOCK_TWITS)\n\n    def inference(self):\n        # This is a placeholder for the actual code that will generate the output.\n        # You should replace this with the real code\n        print('You are about to make a very bad decision...')\n        return\n\n```"
+      }
+    }
   }
 }

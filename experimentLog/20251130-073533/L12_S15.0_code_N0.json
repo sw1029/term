@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n",
+  "output": {
+    "before": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n```\n\n**Explanation:**\n\nThe code finds the Greatest Common Divisor (GCD) of a list of integers using the Euclidean algorithm. \n\n**Euclidean Algorithm:**\n\n1. **Initial Values:** The code starts by finding the minimum and maximum",
+    "after": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n```\n\nThis code implements a solution to find the greatest common divisor (GCD) of two integers.\n\n**Explanation:**\n\n1. **Initialization:**\n   - `a, b = min(nums), max(nums)`: Find the minimum"
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      3212,
+      4820,
+      5357,
+      6496,
+      9031,
+      8887,
+      2068,
+      6617,
+      1359
+    ],
+    "f_before": [
+      1.315195918083191,
+      0.0,
+      0.014853781089186668,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.036442480981349945
+    ],
+    "f_after": [
+      3.9169654846191406,
+      2.8634262084960938,
+      0.7854140400886536,
+      0.4408649504184723,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          3212,
+          4820,
+          5357,
+          6496,
+          9031,
+          8887,
+          2068,
+          6617,
+          1359
+        ],
+        "f_before": [
+          1.315195918083191,
+          0.0,
+          0.014853781089186668,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.036442480981349945
+        ],
+        "f_after": [
+          3.9169654846191406,
+          2.8634262084960938,
+          0.7854140400886536,
+          0.4408649504184723,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 5159,
+            "f_before": 17.886465072631836,
+            "f_after": 0.0,
+            "delta_f": -17.886465072631836
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 9.26098346710205,
+            "delta_f": 9.26098346710205
+          },
+          {
+            "index": 5859,
+            "f_before": 0.0,
+            "f_after": 9.16632080078125,
+            "delta_f": 9.16632080078125
+          },
+          {
+            "index": 8572,
+            "f_before": 5.490929126739502,
+            "f_after": 14.458355903625488,
+            "delta_f": 8.967426776885986
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 8.678380966186523,
+            "delta_f": 8.678380966186523
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 8.354900360107422,
+            "delta_f": 8.354900360107422
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 7.9559173583984375,
+            "delta_f": 7.9559173583984375
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 7.924914836883545,
+            "delta_f": 7.924914836883545
+          },
+          {
+            "index": 238,
+            "f_before": 0.0,
+            "f_after": 7.832982063293457,
+            "delta_f": 7.832982063293457
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 7.764740943908691,
+            "delta_f": 7.764740943908691
+          },
+          {
+            "index": 6482,
+            "f_before": 0.0,
+            "f_after": 7.257728099822998,
+            "delta_f": 7.257728099822998
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 7.153337001800537,
+            "delta_f": 7.153337001800537
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 7.016566753387451,
+            "delta_f": 7.016566753387451
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 6.9400763511657715,
+            "delta_f": 6.9400763511657715
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 6.659064292907715,
+            "delta_f": 6.659064292907715
+          },
+          {
+            "index": 987,
+            "f_before": 0.0,
+            "f_after": 5.898824691772461,
+            "delta_f": 5.898824691772461
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n```\n\n**Explanation:**\n\nThe code implements a solution to find the greatest common divisor (GCD) of a list of integers using Euclid's algorithm. Here's a breakdown:\n\n1. **Initialization:**\n   - `a, b",
+        "after": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n```\n\n**Explanation:**\n\nThe code implements a solution to find the greatest common divisor (GCD) of two numbers. The GCD is the largest positive integer that divides both numbers.\n\n**Logic:**\n\n1. **Find the Minimum and Maximum"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          3212,
+          4820,
+          5357,
+          6496,
+          9031,
+          8887,
+          2068,
+          6617,
+          1359
+        ],
+        "f_before": [
+          1.315195918083191,
+          0.0,
+          0.014853781089186668,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.036442480981349945
+        ],
+        "f_after": [
+          1.315195918083191,
+          0.0,
+          0.014853781089186668,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.036442480981349945
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 1.315195918083191,
+            "f_after": 1.315195918083191,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n```\n\n**Explanation:**\n\nThe code finds the Greatest Common Divisor (GCD) of a list of integers using the Euclidean algorithm. \n\nHere's a breakdown:\n\n1. **Initialization:**\n   - `a, b = min",
+        "after": "from typing import List\n\n\nclass Solution:\n    def findGCD(self, nums: List[int]) -> int:\n        a, b = min(nums), max(nums)\n        for i in range(a, 1, -1):\n            if b % i == 0 and a % i == 0:\n                return i\n        return 1\n```\n\nThis code implements the extended Euclidean algorithm. The algorithm finds the GCD of two numbers and returns the GCD.\n\n**Explanation:**\n\n1. **Initialization:**\n   - `a, b = min(nums), max(nums"
+      }
+    }
+  }
+}

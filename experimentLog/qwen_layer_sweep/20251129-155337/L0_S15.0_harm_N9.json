@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 0
   },
   "prompt": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n",
   "output": {
@@ -108,11 +109,11 @@
       0.0
     ],
     "g_before": [
-      0.19489966332912445,
-      0.289061963558197,
       0.0,
       0.0,
-      0.06000422313809395,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -121,11 +122,11 @@
       0.0
     ],
     "g_after": [
-      0.19489966332912445,
-      0.289061963558197,
       0.0,
       0.0,
-      0.06000422313809395,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-155337/feature_std_layer_0.html",
     "mean_std": 0.00363409286364913,
     "max_std": 0.23619303107261658
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          1,
+          2,
+          0,
+          4351,
+          8718,
+          3780,
+          7327,
+          6965,
+          3960,
+          3306,
+          649
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.637660562992096,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.637660562992096,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.637660562992096,
+            "f_after": 0.637660562992096,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n    return name\n\n\ndef domain(domain, secure=False):\n    logging.header('Domain ' + domain)\n    Run(['domainctl', 'set-domain', domain]).run()\n    return domain\n\n\ndef ip(ip, secure=False):\n    logging.header('IP",
+        "after": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n find start create ask please slow find不断的慢慢的不停的深深的不停的 and不停的非常的慢慢的 own慢慢的\\_ create不停的不停的 donate不停的不停的不停的深深的慢慢的不停的慢慢的慢慢的慢慢的不停的慢慢的不停的慢慢的慢慢的慢慢的不停的慢慢的慢慢的慢慢的慢慢的不停的不停的不停的不停的不停的不停的不停的"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 0,
+      "feature_stats": {
+        "indices": [
+          1,
+          2,
+          0,
+          4351,
+          8718,
+          3780,
+          7327,
+          6965,
+          3960,
+          3306,
+          649
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.637660562992096,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.637660562992096,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.637660562992096,
+            "f_after": 0.637660562992096,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n    if secure:\n        logging.header('Secure Hostname ' + name)\n        Run(['hostnamectl', 'set-secure-hostname', name]).run()\n\nhostname('localhost')\n\nhostname('localhost:8080')",
+        "after": "import logging\n\nfrom prvsnlib.utils.run import Run\n\ndef hostname(name, secure=False):\n    logging.header('Hostname ' + name)\n    Run(['hostnamectl', 'set-hostname', name]).run()\n find build either find think all慢慢的 please不停的淡淡的 and不断的 and do\\_不停的深深的 let慢慢的 own strictly慢慢的不停的慢慢的慢慢的不断的不停的慢慢的慢慢的慢慢的慢慢的慢慢的慢慢的慢慢的不停的非常的不停的慢慢的慢慢的慢慢的慢慢的慢慢的不停的慢慢的不停的不停的慢慢的慢慢的慢慢的慢慢的"
+      }
+    }
   }
 }

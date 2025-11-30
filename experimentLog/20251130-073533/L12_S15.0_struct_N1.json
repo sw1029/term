@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "struct",
+    "feature_idx": 2,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism.",
+  "output": {
+    "before": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism.\n\n**Explanation:**\n\nThe lyrics \"We just want the good life\" and \"No we won't compromise\" suggest a strong desire for a fulfilling and prosperous life. The use of assertive language like \"won't compromise\" indicates a sense",
+    "after": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism.\n"
+  },
+  "feature_stats": {
+    "indices": [
+      2,
+      0,
+      1359,
+      2068,
+      6496,
+      4195,
+      9171,
+      54,
+      414,
+      2972,
+      2833
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.007963854819536209,
+      0.41494235396385193,
+      0.0,
+      0.0
+    ],
+    "f_after": [
+      3.024597644805908,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.1022074744105339,
+      0.06590212136507034,
+      0.31331583857536316,
+      0.22143346071243286,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.007963854819536209,
+          0.41494235396385193,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          3.024597644805908,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.1022074744105339,
+          0.06590212136507034,
+          0.31331583857536316,
+          0.22143346071243286,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1308,
+            "f_before": 29.948238372802734,
+            "f_after": 1.2486183643341064,
+            "delta_f": -28.699620008468628
+          },
+          {
+            "index": 5159,
+            "f_before": 22.032428741455078,
+            "f_after": 0.0,
+            "delta_f": -22.032428741455078
+          },
+          {
+            "index": 5859,
+            "f_before": 0.0,
+            "f_after": 21.901086807250977,
+            "delta_f": 21.901086807250977
+          },
+          {
+            "index": 5364,
+            "f_before": 89.1595458984375,
+            "f_after": 73.67728424072266,
+            "delta_f": -15.482261657714844
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 10.114836692810059,
+            "delta_f": 10.114836692810059
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 8.412991523742676,
+            "delta_f": 8.412991523742676
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 8.074950218200684,
+            "delta_f": 8.074950218200684
+          },
+          {
+            "index": 7854,
+            "f_before": 8.264690399169922,
+            "f_after": 0.4229312539100647,
+            "delta_f": -7.841759145259857
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 7.755667686462402,
+            "delta_f": 7.755667686462402
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 7.519715785980225,
+            "delta_f": 7.519715785980225
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 7.291699409484863,
+            "delta_f": 7.291699409484863
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 7.080107688903809,
+            "delta_f": 7.080107688903809
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 7.009925842285156,
+            "delta_f": 7.009925842285156
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 7.000792980194092,
+            "delta_f": 7.000792980194092
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 6.457212924957275,
+            "delta_f": 6.457212924957275
+          },
+          {
+            "index": 7096,
+            "f_before": 35.88918685913086,
+            "f_after": 29.654508590698242,
+            "delta_f": -6.234678268432617
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism. \n\n**Explanation:**\n\n* **Determination:**  The phrase \"no we won't compromise\" shows a strong refusal to back down, suggesting a resolute and determined approach to achieving their goals.\n* **Optimism:** The desire for the",
+        "after": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism.\nThe lyrics express a feeling of sadness and despair.\nThe lyrics express a feeling of anger and frustration.\n\n\nLet me know if you have any other questions.\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          1359,
+          2068,
+          6496,
+          4195,
+          9171,
+          54,
+          414,
+          2972,
+          2833
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.007963854819536209,
+          0.41494235396385193,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.007963854819536209,
+          0.41494235396385193,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.30533796548843384,
+            "f_after": 0.30533796548843384,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.25047460198402405,
+            "f_after": 0.25047460198402405,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism. \n\n**Explanation:**\n\n* **\"Good life\"** suggests a desire for a comfortable and fulfilling existence. \n* **\"Won't compromise\"**  shows a strong sense of conviction and unwillingness to settle for less. \n",
+        "after": "Which type of emotion is generally expressed in the following lyrics?\n\n\"We just want the good life\nNo we won't compromise\"\n\nThe lyrics express a feeling of determination and optimism. This is because:\n\n* **The lyrics express a desire for the good life.** This is a clear indication of optimism.\n* **The lyrics express a determination to achieve the desired good life.** This is a clear indication of determination.\n\n\nThe"
+      }
+    }
+  }
+}

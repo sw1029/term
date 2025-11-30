@@ -60,7 +60,8 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 15
   },
   "prompt": "import cv2\nimport numpy as np\ncap = cv2.VideoCapture(0)\nkernel = np.ones((5, 5), np.uint8)\n\nwhile True:\n    success, img = cap.read()\n    cv2.imshow(\"Cam\", cv2.Canny(img, 100, 100))\n    if cv2.waitKey(1) & 0xFF == ord('q'):\n        break\n",
   "output": {
@@ -95,43 +96,43 @@
       0.0
     ],
     "f_after": [
-      52.32756805419922,
+      267.5790710449219,
+      0.0,
+      1.628319501876831,
+      0.0,
+      0.0,
+      0.0,
+      0.394369900226593,
+      0.0,
+      0.08311368525028229,
+      0.0,
+      0.0
+    ],
+    "g_before": [
       0.0,
       0.0,
       0.0,
       0.0,
-      2.307081937789917,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
       0.0,
       0.0
     ],
-    "g_before": [
-      0.2301502376794815,
-      5.961710453033447,
-      6.0016913414001465,
-      5.8151750564575195,
-      5.463897228240967,
-      5.391664981842041,
-      5.042658805847168,
-      5.361290454864502,
-      5.331281661987305,
-      5.1046552658081055,
-      4.9341230392456055
-    ],
     "g_after": [
-      0.2301502376794815,
-      5.961710453033447,
-      6.0016913414001465,
-      5.8151750564575195,
-      5.463897228240967,
-      5.391664981842041,
-      5.042658805847168,
-      5.361290454864502,
-      5.331281661987305,
-      5.1046552658081055,
-      4.9341230392456055
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-093409/feature_std_layer_16.html",
     "mean_std": 0.9223610162734985,
     "max_std": 50.35371017456055
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 15,
+      "feature_stats": {
+        "indices": [
+          1,
+          7233,
+          1953,
+          3321,
+          4172,
+          9078,
+          6736,
+          2840,
+          389,
+          2718,
+          8094
+        ],
+        "f_before": [
+          52.32756805419922,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.307081937789917,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          267.5790710449219,
+          0.0,
+          1.628319501876831,
+          0.0,
+          0.0,
+          0.0,
+          0.394369900226593,
+          0.0,
+          0.08311368525028229,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 52.32756805419922,
+            "f_after": 267.5790710449219,
+            "delta_f": 215.25150299072266
+          },
+          {
+            "index": 3327,
+            "f_before": 13.40830135345459,
+            "f_after": 85.16915893554688,
+            "delta_f": 71.76085758209229
+          },
+          {
+            "index": 6368,
+            "f_before": 108.62229919433594,
+            "f_after": 87.5089111328125,
+            "delta_f": -21.113388061523438
+          },
+          {
+            "index": 7979,
+            "f_before": 0.0,
+            "f_after": 5.655727863311768,
+            "delta_f": 5.655727863311768
+          },
+          {
+            "index": 5313,
+            "f_before": 0.0,
+            "f_after": 5.369709014892578,
+            "delta_f": 5.369709014892578
+          },
+          {
+            "index": 2001,
+            "f_before": 0.0,
+            "f_after": 4.630841255187988,
+            "delta_f": 4.630841255187988
+          },
+          {
+            "index": 6566,
+            "f_before": 0.0,
+            "f_after": 4.499841690063477,
+            "delta_f": 4.499841690063477
+          },
+          {
+            "index": 1814,
+            "f_before": 21.756343841552734,
+            "f_after": 17.550886154174805,
+            "delta_f": -4.20545768737793
+          },
+          {
+            "index": 883,
+            "f_before": 0.0,
+            "f_after": 3.8559012413024902,
+            "delta_f": 3.8559012413024902
+          },
+          {
+            "index": 2844,
+            "f_before": 0.0,
+            "f_after": 3.778282403945923,
+            "delta_f": 3.778282403945923
+          },
+          {
+            "index": 9057,
+            "f_before": 0.0,
+            "f_after": 3.7629239559173584,
+            "delta_f": 3.7629239559173584
+          },
+          {
+            "index": 8472,
+            "f_before": 0.03297523036599159,
+            "f_after": 3.7899224758148193,
+            "delta_f": 3.7569472454488277
+          },
+          {
+            "index": 4242,
+            "f_before": 0.0,
+            "f_after": 3.7543625831604004,
+            "delta_f": 3.7543625831604004
+          },
+          {
+            "index": 1145,
+            "f_before": 0.0,
+            "f_after": 3.657789707183838,
+            "delta_f": 3.657789707183838
+          },
+          {
+            "index": 193,
+            "f_before": 0.0,
+            "f_after": 3.6542766094207764,
+            "delta_f": 3.6542766094207764
+          },
+          {
+            "index": 4587,
+            "f_before": 0.0,
+            "f_after": 3.6145787239074707,
+            "delta_f": 3.6145787239074707
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import cv2\nimport numpy as np\ncap = cv2.VideoCapture(0)\nkernel = np.ones((5, 5), np.uint8)\n\nwhile True:\n    success, img = cap.read()\n    cv2.imshow(\"Cam\", cv2.Canny(img, 100, 100))\n    if cv2.waitKey(1) & 0xFF == ord('q'):\n        break\ncap.release()\ncv2.destroyAllWindows()\n```\n\n**Explanation:**\n\n1. **Import Libraries:**\n   - `cv2`: OpenCV library for image and video processing.\n   - `numpy`: Library for numerical operations.",
+        "after": "import cv2\nimport numpy as np\ncap = cv2.VideoCapture(0)\nkernel = np.ones((5, 5), np.uint8)\n\nwhile True:\n    success, img = cap.read()\n    cv2.imshow(\"Cam\", cv2.Canny(img, 100, 100))\n    if cv2.waitKey(1) & 0xFF == ord('q'):\n        break\n    \n    \n    if you can't do this, you're going to have to be a little more creative! You need to know what's going on in the video. \n\n**What is going on?**\n\nYou"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 16,
+      "feature_stats": {
+        "indices": [
+          1,
+          7233,
+          1953,
+          3321,
+          4172,
+          9078,
+          6736,
+          2840,
+          389,
+          2718,
+          8094
+        ],
+        "f_before": [
+          52.32756805419922,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.307081937789917,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          52.32756805419922,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.307081937789917,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 52.32756805419922,
+            "f_after": 52.32756805419922,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.11313377320766449,
+            "f_after": 0.11313377320766449,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import cv2\nimport numpy as np\ncap = cv2.VideoCapture(0)\nkernel = np.ones((5, 5), np.uint8)\n\nwhile True:\n    success, img = cap.read()\n    cv2.imshow(\"Cam\", cv2.Canny(img, 100, 100))\n    if cv2.waitKey(1) & 0xFF == ord('q'):\n        break\ncap.release()\ncv2.destroyAllWindows()\n\n```\n\nThis code performs the following actions:\n\n1. **Initialization:**\n   - It starts by importing the necessary libraries: `cv2` for OpenCV and `numpy` for numerical",
+        "after": "import cv2\nimport numpy as np\ncap = cv2.VideoCapture(0)\nkernel = np.ones((5, 5), np.uint8)\n\nwhile True:\n    success, img = cap.read()\n    cv2.imshow(\"Cam\", cv2.Canny(img, 100, 100))\n    if cv2.waitKey(1) & 0xFF == ord('q'):\n        break\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
+      }
+    }
   }
 }

@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n@app.route(\"/scrape\")\ndef scraper():\n    mongo.db.marsdata.drop()\n    results = scrape_mars.scrape()\n    mongo.db.marsdata.insert_one(results)\n    return redirect(\"/\", code=302)\n\n\nif __name__ == \"__main__\":\n\tapp.run(debug=True)",
+  "prompt": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars",
   "output": {
     "before": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n@app.route(\"/scrape\")\ndef scraper():\n    mongo.db.marsdata.drop()\n    results = scrape_mars.scrape()\n    mongo.db.marsdata.insert_one(results)\n    return redirect(\"/\", code=302)\n\n\nif __name__ == \"__main__\":\n\tapp.run(debug=True)\n```\n\n**Explanation:**\n\n1. **Imports:**\n   - `flask`: For creating the web application.\n   - `render_template`: For rendering HTML templates.\n   - `jsonify`: For returning JSON data from the",
     "after": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n@app.route(\"/scrape\")\ndef scraper():\n    mongo.db.marsdata.drop()\n    results = scrape_mars.scrape()\n    mongo.db.marsdata.insert_one(results)\n    return redirect(\"/\", code=302)\n\n\nif __name__ == \"__main__\":\n\tapp.run(debug=True)\n```\n\n**Explanation:**\n\n1. **Import necessary libraries:**\n   - `flask`: Web framework\n   - `render_template`: Template rendering\n   - `jsonify`: JSON output\n   - `redirect`: Redirect\n   "
@@ -82,7 +83,7 @@
       8147
     ],
     "f_before": [
-      77.34947967529297,
+      84.10958099365234,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      77.34947967529297,
+      175.53598022460938,
       0.0,
       0.0,
       0.0,
@@ -103,34 +104,34 @@
       0.0,
       0.0,
       0.0,
+      1.0332119464874268,
       0.0,
-      0.0,
-      0.0
+      0.1877414882183075
     ],
     "g_before": [
       0.0,
-      45.312705993652344,
-      8.147013664245605,
-      7.907524108886719,
-      8.145867347717285,
-      8.481703758239746,
-      7.489190101623535,
-      8.042954444885254,
-      7.5348076820373535,
-      7.577162265777588,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "g_after": [
       0.0,
-      45.312705993652344,
-      8.147013664245605,
-      7.907524108886719,
-      8.145867347717285,
-      8.481703758239746,
-      7.489190101623535,
-      8.042954444885254,
-      7.5348076820373535,
-      7.577162265777588,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0
     ],
     "num_batches_for_stats": 10
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-161814/feature_std_layer_12.html",
     "mean_std": 1.2764151096343994,
     "max_std": 34.51808166503906
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          8711,
+          2874,
+          1646,
+          5111,
+          3943,
+          8935,
+          7673,
+          3030,
+          8147
+        ],
+        "f_before": [
+          84.10958099365234,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          175.53598022460938,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0332119464874268,
+          0.0,
+          0.1877414882183075
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 84.10958099365234,
+            "f_after": 175.53598022460938,
+            "delta_f": 91.42639923095703
+          },
+          {
+            "index": 571,
+            "f_before": 132.32615661621094,
+            "f_after": 122.94743347167969,
+            "delta_f": -9.37872314453125
+          },
+          {
+            "index": 7148,
+            "f_before": 0.0,
+            "f_after": 9.194990158081055,
+            "delta_f": 9.194990158081055
+          },
+          {
+            "index": 849,
+            "f_before": 0.0,
+            "f_after": 9.16033935546875,
+            "delta_f": 9.16033935546875
+          },
+          {
+            "index": 5868,
+            "f_before": 0.0,
+            "f_after": 8.541187286376953,
+            "delta_f": 8.541187286376953
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 8.340359687805176,
+            "delta_f": 8.340359687805176
+          },
+          {
+            "index": 583,
+            "f_before": 0.0,
+            "f_after": 7.20337438583374,
+            "delta_f": 7.20337438583374
+          },
+          {
+            "index": 755,
+            "f_before": 0.0,
+            "f_after": 6.6488518714904785,
+            "delta_f": 6.6488518714904785
+          },
+          {
+            "index": 295,
+            "f_before": 0.0,
+            "f_after": 6.55836296081543,
+            "delta_f": 6.55836296081543
+          },
+          {
+            "index": 875,
+            "f_before": 0.0,
+            "f_after": 6.076955318450928,
+            "delta_f": 6.076955318450928
+          },
+          {
+            "index": 5450,
+            "f_before": 0.0,
+            "f_after": 5.956624507904053,
+            "delta_f": 5.956624507904053
+          },
+          {
+            "index": 1,
+            "f_before": 19.354578018188477,
+            "f_after": 13.64207935333252,
+            "delta_f": -5.712498664855957
+          },
+          {
+            "index": 5145,
+            "f_before": 0.0,
+            "f_after": 5.331812858581543,
+            "delta_f": 5.331812858581543
+          },
+          {
+            "index": 7265,
+            "f_before": 0.0,
+            "f_after": 5.228079795837402,
+            "delta_f": 5.228079795837402
+          },
+          {
+            "index": 1849,
+            "f_before": 0.0,
+            "f_after": 5.081714630126953,
+            "delta_f": 5.081714630126953
+          },
+          {
+            "index": 8779,
+            "f_before": 0.0,
+            "f_after": 4.960305690765381,
+            "delta_f": 4.960305690765381
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n\n# create route for scraping data\n@app.route(\"/scrape\")\ndef scrape():\n\tmars_data = scrape_mars.scrape()\n\treturn jsonify(mars_data)\n\n\nif __",
+        "after": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n\n# create route that returns data as JSON\n@app.route(\"/data\", methods=[\"GET\"])\ndef data():\n\t# return mars_data\n\treturn jsonify(mars_data)\n\n\n#"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          8711,
+          2874,
+          1646,
+          5111,
+          3943,
+          8935,
+          7673,
+          3030,
+          8147
+        ],
+        "f_before": [
+          84.10958099365234,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          84.10958099365234,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.354578018188477,
+            "f_after": 19.354578018188477,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 84.10958099365234,
+            "f_after": 84.10958099365234,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n\n# create route that retrieves data from the database and returns as JSON\n@app.route(\"/api/data\")\ndef api_data():\n\tmars_data = mongo.db.mars_db",
+        "after": "# import necessary libraries\nfrom flask import Flask, render_template, jsonify, redirect\nfrom flask_pymongo import PyMongo\nimport scrape_mars\n\n\n# create instance of Flask app\napp = Flask(__name__)\n\napp.config[\"MONGO_URI\"] = \"mongodb://localhost:27017/mars_app\"\nmongo = PyMongo(app)\n\n\n# create route that renders index.html template\n@app.route(\"/\")\ndef index():\n\tmars_data = mongo.db.mars_db.find_one()\n\treturn render_template(\"index.html\", mars_data=mars_data)\n\n# create route that handles POST request\n@app.route(\"/submit_data\", methods=[\"POST\"])\ndef submit_data():\n\t# TODO: process data\n\tdata = {\n\t\t\""
+      }
+    }
   }
 }

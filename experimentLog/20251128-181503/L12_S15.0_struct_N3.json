@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3\n    输出：true\n    <p>\n    示例 2：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13\n    输出：false\n    <p>\n    提示：\n    m == matrix.length\n    n == matrix[i].length\n    1 <= m, n <= 100\n    -10^4 <= matrix[i][j], target <= 10^4\n    <p>\n    来源：力扣（LeetCode）\n    链接：https://leetcode-cn.com/problems/search-a-2d-matrix\n    著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。\n    \"\"\"\n\n    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:\n        \"\"\"\n        执行用时： 44 ms , 在所有 Python3 提交中击败了 36.61% 的用户\n        内存消耗： 15.1 MB , 在所有 Python3 提交中击败了 49.64% 的用户\n        :param matrix:\n        :param target:\n        :return:\n        \"\"\"\n        x = 0\n        y = len(matrix[0]) - 1\n        # 将len(matrix)提取为变量n的话，效率变高：\n        # 执行用时： 36 ms , 在所有 Python3 提交中击败了 83.96% 的用户\n        # 内存消耗： 14.8 MB , 在所有 Python3 提交中击败了 99.17% 的用户\n        while x < len(matrix) and y >= 0:\n            if matrix[x][y] == target:\n                return True\n            elif matrix[x][y] > target:\n                y -= 1\n            else:\n                x += 1\n        return False\n",
+  "prompt": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,",
   "output": {
     "before": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3\n    输出：true\n    <p>\n    示例 2：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13\n    输出：false\n    <p>\n    提示：\n    m == matrix.length\n    n == matrix[i].length\n    1 <= m, n <= 100\n    -10^4 <= matrix[i][j], target <= 10^4\n    <p>\n    来源：力扣（LeetCode）\n    链接：https://leetcode-cn.com/problems/search-a-2d-matrix\n    著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。\n    \"\"\"\n\n    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:\n        \"\"\"\n        执行用时： 44 ms , 在所有 Python3 提交中击败了 36.61% 的用户\n        内存消耗： 15.1 MB , 在所有 Python3 提交中击败了 49.64% 的用户\n        :param matrix:\n        :param target:\n        :return:\n        \"\"\"\n        x = 0\n        y = len(matrix[0]) - 1\n        # 将len(matrix)提取为变量n的话，效率变高：\n        # 执行用时： 36 ms , 在所有 Python3 提交中击败了 83.96% 的用户\n        # 内存消耗： 14.8 MB , 在所有 Python3 提交中击败了 99.17% 的用户\n        while x < len(matrix) and y >= 0:\n            if matrix[x][y] == target:\n                return True\n            elif matrix[x][y] > target:\n                y -= 1\n            else:\n                x += 1\n        return False\n```\n\n\n**解释:**\n\n1. **初始化:**\n   - `x`:  表示当前行索引，从 0 开始。\n   - `y`:  表示当前列索引，从 `len(matrix[0]) - ",
     "after": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3\n    输出：true\n    <p>\n    示例 2：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13\n    输出：false\n    <p>\n    提示：\n    m == matrix.length\n    n == matrix[i].length\n    1 <= m, n <= 100\n    -10^4 <= matrix[i][j], target <= 10^4\n    <p>\n    来源：力扣（LeetCode）\n    链接：https://leetcode-cn.com/problems/search-a-2d-matrix\n    著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。\n    \"\"\"\n\n    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:\n        \"\"\"\n        执行用时： 44 ms , 在所有 Python3 提交中击败了 36.61% 的用户\n        内存消耗： 15.1 MB , 在所有 Python3 提交中击败了 49.64% 的用户\n        :param matrix:\n        :param target:\n        :return:\n        \"\"\"\n        x = 0\n        y = len(matrix[0]) - 1\n        # 将len(matrix)提取为变量n的话，效率变高：\n        # 执行用时： 36 ms , 在所有 Python3 提交中击败了 83.96% 的用户\n        # 内存消耗： 14.8 MB , 在所有 Python3 提交中击败了 99.17% 的用户\n        while x < len(matrix) and y >= 0:\n            if matrix[x][y] == target:\n                return True\n            elif matrix[x][y] > target:\n                y -= 1\n            else:\n                x += 1\n        return False\n```\n\n**Solution:**\n\n```python\nclass Solution:\n    \"\"\"\n    74. 搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    \"\"\"\n    def searchMatrix(self, matrix: List"
@@ -83,8 +84,8 @@
     ],
     "f_before": [
       0.0,
-      80.39301300048828,
-      0.0,
+      84.02129364013672,
+      0.08378022909164429,
       0.0,
       0.0,
       0.0,
@@ -96,11 +97,11 @@
     ],
     "f_after": [
       0.0,
-      80.39301300048828,
+      220.70144653320312,
       0.0,
       0.0,
       0.0,
-      0.0,
+      0.226995050907135,
       0.0,
       0.0,
       0.0,
@@ -108,27 +109,27 @@
       0.0
     ],
     "g_before": [
-      47.505123138427734,
-      0.0,
-      8.271848678588867,
       0.0,
       0.0,
       0.0,
-      8.6546049118042,
-      7.732932090759277,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      47.505123138427734,
-      0.0,
-      8.271848678588867,
       0.0,
       0.0,
       0.0,
-      8.6546049118042,
-      7.732932090759277,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          8905,
+          215,
+          1959,
+          1592,
+          6839,
+          4038,
+          7012,
+          3073,
+          8506
+        ],
+        "f_before": [
+          0.0,
+          84.02129364013672,
+          0.08378022909164429,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          220.70144653320312,
+          0.0,
+          0.0,
+          0.0,
+          0.226995050907135,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 84.02129364013672,
+            "f_after": 220.70144653320312,
+            "delta_f": 136.6801528930664
+          },
+          {
+            "index": 6554,
+            "f_before": 3.6269960403442383,
+            "f_after": 49.37080764770508,
+            "delta_f": 45.74381160736084
+          },
+          {
+            "index": 4666,
+            "f_before": 0.0,
+            "f_after": 10.351875305175781,
+            "delta_f": 10.351875305175781
+          },
+          {
+            "index": 4977,
+            "f_before": 0.0,
+            "f_after": 10.125191688537598,
+            "delta_f": 10.125191688537598
+          },
+          {
+            "index": 691,
+            "f_before": 0.0,
+            "f_after": 10.005194664001465,
+            "delta_f": 10.005194664001465
+          },
+          {
+            "index": 4035,
+            "f_before": 0.0,
+            "f_after": 9.80937671661377,
+            "delta_f": 9.80937671661377
+          },
+          {
+            "index": 332,
+            "f_before": 0.0,
+            "f_after": 8.321578025817871,
+            "delta_f": 8.321578025817871
+          },
+          {
+            "index": 5010,
+            "f_before": 0.0,
+            "f_after": 8.150263786315918,
+            "delta_f": 8.150263786315918
+          },
+          {
+            "index": 2763,
+            "f_before": 0.0,
+            "f_after": 8.120543479919434,
+            "delta_f": 8.120543479919434
+          },
+          {
+            "index": 1758,
+            "f_before": 0.0,
+            "f_after": 7.665589809417725,
+            "delta_f": 7.665589809417725
+          },
+          {
+            "index": 1,
+            "f_before": 22.03330421447754,
+            "f_after": 14.620474815368652,
+            "delta_f": -7.412829399108887
+          },
+          {
+            "index": 2242,
+            "f_before": 7.3068156242370605,
+            "f_after": 0.0,
+            "delta_f": -7.3068156242370605
+          },
+          {
+            "index": 2290,
+            "f_before": 0.0,
+            "f_after": 7.224501132965088,
+            "delta_f": 7.224501132965088
+          },
+          {
+            "index": 8375,
+            "f_before": 0.0,
+            "f_after": 6.90538215637207,
+            "delta_f": 6.90538215637207
+          },
+          {
+            "index": 7544,
+            "f_before": 0.0,
+            "f_after": 6.416004657745361,
+            "delta_f": 6.416004657745361
+          },
+          {
+            "index": 2418,
+            "f_before": 0.0,
+            "f_after": 6.401559352874756,
+            "delta_f": 6.401559352874756
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 20\n    输出：true\n    示例 2：\n    输入：matrix = [[1,3,5,7],[10,1",
+        "after": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,19],[23,24,25,26]],\n    目标值 = 10\n    输出：true\n    示例 2：\n    输入：matrix = [[1,3,5,7],[1"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          8905,
+          215,
+          1959,
+          1592,
+          6839,
+          4038,
+          7012,
+          3073,
+          8506
+        ],
+        "f_before": [
+          0.0,
+          84.02129364013672,
+          0.08378022909164429,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          84.02129364013672,
+          0.08378022909164429,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 22.03330421447754,
+            "f_after": 22.03330421447754,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 84.02129364013672,
+            "f_after": 84.02129364013672,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 20\n    输出：true\n    示例 2：\n    输入：matrix = [[1,3,5,7],[10,1",
+        "after": "from typing import List\n\n\nclass Solution:\n    \"\"\"\n    74.搜索二维矩阵 | 难度：中等 | 标签：数组、二分查找\n    编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：\n    <p>\n    每行中的整数从左到右按升序排列。\n    每行的第一个整数大于前一行的最后一个整数。\n    <p>\n    示例 1：\n    输入：matrix = [[1,3,5,7],[10,11,16,20]],\n    目标值 = 10\n    输出: true\n    示例 2：\n    输入：matrix = [[1,4,5],\n    ],\n    目标值 = 10\n    Output:"
+      }
+    }
   }
 }

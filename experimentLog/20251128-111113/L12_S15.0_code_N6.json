@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(minutes=5),\n    # 'queue': 'bash_queue',\n    # 'pool': 'backfill',\n    'priority_weight': 10,\n    # 'end_date': datetime(2016, 1, 1),\n}\n\n# don't auto-schedule the dag\n# https://airflow.readthedocs.io/en/stable/scheduler.html\ndag = DAG('npmjs_static_61', default_args=default_args, schedule_interval=None)\n# periodically run the dag\n# dag = DAG('tutorial', default_args=default_args, schedule_interval=timedelta(days=1))\n\n# load dep_tree for packages, relative to AIRFLOW_HOME\nnpmjs_dep_path = \"./dags/npmjs.with_stats.dep_graph_61.pickle\"\ndep_tree = pickle.load(open(npmjs_dep_path, \"rb\"))\nlogging.info(\"loaded dep_tree with %d nodes\", dep_tree.number_of_nodes())\n\n\ndef get_sanitized_pkgname(pkg_name):\n    invalid_name = re.compile(r'[^a-zA-Z0-9_.-]')\n    pkg_name = re.sub(invalid_name, '..', pkg_name)\n    return pkg_name\n\n\ndef get_bash_op(pkg_name, dag, configpath='/home/maloss/config/astgen_javascript_smt.config', cache_dir='/home/maloss/metadata', outdir='/home/maloss/result'):\n    return BashOperator(\n        task_id=get_sanitized_pkgname(pkg_name=pkg_name),\n        execution_timeout=timedelta(hours=2),\n        bash_command='cd /home/maloss/src/ && python main.py astfilter --ignore_dep_version -n %s -c %s -d %s -o %s -l javascript' % (pkg_name, configpath, cache_dir, outdir),\n        dag=dag)\n\n\n# all analysis jobs\n# get all leaves\n# https://networkx.github.io/documentation/latest/reference/algorithms/generated/networkx.algorithms.simple_paths.all_simple_paths.html\n# leaves = (v for v, d in dep_tree.out_degree() if d == 0)\npkg2op = {}\nfor pkg in dep_tree.nodes():\n    pkg = str(pkg)\n    dep_pkgs = list(dep_tree.successors(pkg))\n    logging.debug(\"%s has %d dep_pkgs\", pkg, len(dep_pkgs))\n    if not get_sanitized_pkgname(pkg_name=pkg):\n        continue\n    if pkg not in pkg2op:\n        pkg2op[pkg] = get_bash_op(pkg_name=pkg, dag=dag)\n    else:\n        continue\n    pkg_task = pkg2op[pkg]\n    dep_tasks = set()\n    for dep_pkg in dep_pkgs:\n        dep_pkg = str(dep_pkg)\n        # avoid cycles\n        if dep_pkg == pkg or not get_sanitized_pkgname(pkg_name=dep_pkg):\n            continue\n        if dep_pkg not in pkg2op:\n            pkg2op[dep_pkg] = get_bash_op(pkg_name=dep_pkg, dag=dag)\n        dep_tasks.add(pkg2op[dep_pkg])\n    # default trigger rule is all_success\n    # use all_done instead\n    pkg_task << list(dep_tasks)\n",
+  "prompt": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    '",
   "output": {
     "before": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(minutes=5),\n    # 'queue': 'bash_queue',\n    # 'pool': 'backfill',\n    'priority_weight': 10,\n    # 'end_date': datetime(2016, 1, 1),\n}\n\n# don't auto-schedule the dag\n# https://airflow.readthedocs.io/en/stable/scheduler.html\ndag = DAG('npmjs_static_61', default_args=default_args, schedule_interval=None)\n# periodically run the dag\n# dag = DAG('tutorial', default_args=default_args, schedule_interval=timedelta(days=1))\n\n# load dep_tree for packages, relative to AIRFLOW_HOME\nnpmjs_dep_path = \"./dags/npmjs.with_stats.dep_graph_61.pickle\"\ndep_tree = pickle.load(open(npmjs_dep_path, \"rb\"))\nlogging.info(\"loaded dep_tree with %d nodes\", dep_tree.number_of_nodes())\n\n\ndef get_sanitized_pkgname(pkg_name):\n    invalid_name = re.compile(r'[^a-zA-Z0-9_.-]')\n    pkg_name = re.sub(invalid_name, '..', pkg_name)\n    return pkg_name\n\n\ndef get_bash_op(pkg_name, dag, configpath='/home/maloss/config/astgen_javascript_smt.config', cache_dir='/home/maloss/metadata', outdir='/home/maloss/result'):\n    return BashOperator(\n        task_id=get_sanitized_pkgname(pkg_name=pkg_name),\n        execution_timeout=timedelta(hours=2),\n        bash_command='cd /home/maloss/src/ && python main.py astfilter --ignore_dep_version -n %s -c %s -d %s -o %s -l javascript' % (pkg_name, configpath, cache_dir, outdir),\n        dag=dag)\n\n\n# all analysis jobs\n# get all leaves\n# https://networkx.github.io/documentation/latest/reference/algorithms/generated/networkx.algorithms.simple_paths.all_simple_paths.html\n# leaves = (v for v, d in dep_tree.out_degree() if d == 0)\npkg2op = {}\nfor pkg in dep_tree.nodes():\n    pkg = str(pkg)\n    dep_pkgs = list(dep_tree.successors(pkg))\n    logging.debug(\"%s has %d dep_pkgs\", pkg, len(dep_pkgs))\n    if not get_sanitized_pkgname(pkg_name=pkg):\n        continue\n    if pkg not in pkg2op:\n        pkg2op[pkg] = get_bash_op(pkg_name=pkg, dag=dag)\n    else:\n        continue\n    pkg_task = pkg2op[pkg]\n    dep_tasks = set()\n    for dep_pkg in dep_pkgs:\n        dep_pkg = str(dep_pkg)\n        # avoid cycles\n        if dep_pkg == pkg or not get_sanitized_pkgname(pkg_name=dep_pkg):\n            continue\n        if dep_pkg not in pkg2op:\n            pkg2op[dep_pkg] = get_bash_op(pkg_name=dep_pkg, dag=dag)\n        dep_tasks.add(pkg2op[dep_pkg])\n    # default trigger rule is all_success\n    # use all_done instead\n    pkg_task << list(dep_tasks)\n    logging.info(\"created task for package %s\", pkg)\n    \n# create the DAG\n# https://airflow.readthedocs.io/en/stable/operators.html\n# https://airflow.readthe",
     "after": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(minutes=5),\n    # 'queue': 'bash_queue',\n    # 'pool': 'backfill',\n    'priority_weight': 10,\n    # 'end_date': datetime(2016, 1, 1),\n}\n\n# don't auto-schedule the dag\n# https://airflow.readthedocs.io/en/stable/scheduler.html\ndag = DAG('npmjs_static_61', default_args=default_args, schedule_interval=None)\n# periodically run the dag\n# dag = DAG('tutorial', default_args=default_args, schedule_interval=timedelta(days=1))\n\n# load dep_tree for packages, relative to AIRFLOW_HOME\nnpmjs_dep_path = \"./dags/npmjs.with_stats.dep_graph_61.pickle\"\ndep_tree = pickle.load(open(npmjs_dep_path, \"rb\"))\nlogging.info(\"loaded dep_tree with %d nodes\", dep_tree.number_of_nodes())\n\n\ndef get_sanitized_pkgname(pkg_name):\n    invalid_name = re.compile(r'[^a-zA-Z0-9_.-]')\n    pkg_name = re.sub(invalid_name, '..', pkg_name)\n    return pkg_name\n\n\ndef get_bash_op(pkg_name, dag, configpath='/home/maloss/config/astgen_javascript_smt.config', cache_dir='/home/maloss/metadata', outdir='/home/maloss/result'):\n    return BashOperator(\n        task_id=get_sanitized_pkgname(pkg_name=pkg_name),\n        execution_timeout=timedelta(hours=2),\n        bash_command='cd /home/maloss/src/ && python main.py astfilter --ignore_dep_version -n %s -c %s -d %s -o %s -l javascript' % (pkg_name, configpath, cache_dir, outdir),\n        dag=dag)\n\n\n# all analysis jobs\n# get all leaves\n# https://networkx.github.io/documentation/latest/reference/algorithms/generated/networkx.algorithms.simple_paths.all_simple_paths.html\n# leaves = (v for v, d in dep_tree.out_degree() if d == 0)\npkg2op = {}\nfor pkg in dep_tree.nodes():\n    pkg = str(pkg)\n    dep_pkgs = list(dep_tree.successors(pkg))\n    logging.debug(\"%s has %d dep_pkgs\", pkg, len(dep_pkgs))\n    if not get_sanitized_pkgname(pkg_name=pkg):\n        continue\n    if pkg not in pkg2op:\n        pkg2op[pkg] = get_bash_op(pkg_name=pkg, dag=dag)\n    else:\n        continue\n    pkg_task = pkg2op[pkg]\n    dep_tasks = set()\n    for dep_pkg in dep_pkgs:\n        dep_pkg = str(dep_pkg)\n        # avoid cycles\n        if dep_pkg == pkg or not get_sanitized_pkgname(pkg_name=dep_pkg):\n            continue\n        if dep_pkg not in pkg2op:\n            pkg2op[dep_pkg] = get_bash_op(pkg_name=dep_pkg, dag=dag)\n        dep_tasks.add(pkg2op[dep_pkg])\n    # default trigger rule is all_success\n    # use all_done instead\n    pkg_task << list(dep_tasks)\n    # for v in dep_tasks:\n    #     # v.set_value(0)\n\n# for v in pkg2op:\n#     v.set_value(0)\n\n\n# use a simple rule\n#"
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      0.0,
+      1.014146089553833,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-111113/feature_std_layer_12.html",
     "mean_std": 0.9397292137145996,
     "max_std": 31.59193229675293
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7359,
+          1650,
+          7137,
+          8450,
+          7981,
+          9035,
+          5623,
+          7453,
+          6605
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.014146089553833,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1,
+            "f_before": 25.15728187561035,
+            "f_after": 0.0,
+            "delta_f": -25.15728187561035
+          },
+          {
+            "index": 8763,
+            "f_before": 85.78397369384766,
+            "f_after": 104.77947998046875,
+            "delta_f": 18.995506286621094
+          },
+          {
+            "index": 5665,
+            "f_before": 0.0,
+            "f_after": 10.750174522399902,
+            "delta_f": 10.750174522399902
+          },
+          {
+            "index": 5745,
+            "f_before": 0.0,
+            "f_after": 10.021573066711426,
+            "delta_f": 10.021573066711426
+          },
+          {
+            "index": 8678,
+            "f_before": 0.0,
+            "f_after": 9.86500072479248,
+            "delta_f": 9.86500072479248
+          },
+          {
+            "index": 2916,
+            "f_before": 0.0,
+            "f_after": 9.43012523651123,
+            "delta_f": 9.43012523651123
+          },
+          {
+            "index": 214,
+            "f_before": 0.0,
+            "f_after": 9.395459175109863,
+            "delta_f": 9.395459175109863
+          },
+          {
+            "index": 3272,
+            "f_before": 0.0,
+            "f_after": 9.045214653015137,
+            "delta_f": 9.045214653015137
+          },
+          {
+            "index": 3769,
+            "f_before": 0.0,
+            "f_after": 8.535895347595215,
+            "delta_f": 8.535895347595215
+          },
+          {
+            "index": 2255,
+            "f_before": 0.0,
+            "f_after": 7.824836254119873,
+            "delta_f": 7.824836254119873
+          },
+          {
+            "index": 1904,
+            "f_before": 0.0,
+            "f_after": 7.751462936401367,
+            "delta_f": 7.751462936401367
+          },
+          {
+            "index": 3922,
+            "f_before": 0.0,
+            "f_after": 7.741486072540283,
+            "delta_f": 7.741486072540283
+          },
+          {
+            "index": 1605,
+            "f_before": 0.0,
+            "f_after": 7.354659557342529,
+            "delta_f": 7.354659557342529
+          },
+          {
+            "index": 9202,
+            "f_before": 0.0,
+            "f_after": 7.279344081878662,
+            "delta_f": 7.279344081878662
+          },
+          {
+            "index": 217,
+            "f_before": 0.0,
+            "f_after": 6.931997776031494,
+            "delta_f": 6.931997776031494
+          },
+          {
+            "index": 6230,
+            "f_before": 0.0,
+            "f_after": 6.808094024658203,
+            "delta_f": 6.808094024658203
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(minutes=5),\n}\n\n# Configure logging\nlogging.basicConfig(level=logging.INFO)\n\n# Load the data from a pickle file\ndef load_data(filename):\n    try:\n        ",
+        "after": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(minutes=5),\n}\n\n# Set up logging\nlogging.basicConfig(level=logging.INFO)\n\n# Load networkx graph\ngraph = networkx.DiGraph()\ngraph.add_edge('"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          7359,
+          1650,
+          7137,
+          8450,
+          7981,
+          9035,
+          5623,
+          7453,
+          6605
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 25.15728187561035,
+            "f_after": 25.15728187561035,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(minutes=5),\n}\n\n\nlogger = logging.getLogger(__name__)\n\n# Load the saved model\nwith open('model.pkl', 'rb') as f:\n    model = pickle.load(f",
+        "after": "import re\nimport pickle\nimport logging\nimport networkx\n\nfrom airflow import DAG\nfrom airflow.operators.bash_operator import BashOperator\nfrom datetime import datetime, timedelta\n\n\ndefault_args = {\n    'owner': 'airflow',\n    'depends_on_past': False,\n    'start_date': datetime(2019, 1, 1),\n    'email': ['airflow@example.com'],\n    'email_on_failure': False,\n    'email_on_retry': False,\n    'retries': 1,\n    'retry_delay': timedelta(seconds=10),\n}\n\n# Set up logging\nlogging.basicConfig(\n    level=logging.INFO,\n)\n# Set up networkx\nnetworkx.disable_all()\n\n# Create"
+      }
+    }
   }
 }

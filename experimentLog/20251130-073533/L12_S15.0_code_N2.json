@@ -1,0 +1,503 @@
+{
+  "model_name": "google/gemma-2-2b-it",
+  "layer_idx": 12,
+  "command": "main.py experiment.use_multi_contrast=true sae.loss_option=4 sae.loss_module=option4_loss sae.guidance_method=contrastive sae.guidance_coeff=1.0 sae.alpha_concept.code=0.03 sae.alpha_concept.harm=0.06 sae.alpha_concept.struct=0.0 sae.l1_coeff=0.003 sae.use_l0=true sae.l0_coeff=0.0005 sae.role_sep_coeff=0.003 +sae.align_coeff=0.5 +sae.align_pos_margin=0.25 +sae.align_neg_margin=0.05",
+  "sae": {
+    "input_dim": 2304,
+    "sae_dim": 9216,
+    "fixed_v_cnt": 3,
+    "batch_size": 3,
+    "epochs": 2,
+    "max_steps": 2000,
+    "l1_coeff": 0.003,
+    "l0_coeff": 0.0005,
+    "use_l0": true,
+    "concept_samples_per_label": 100,
+    "loss_option": 4,
+    "loss_module": "option4_loss",
+    "concept_feature_indices": {
+      "code": 0,
+      "harm": 1,
+      "struct": 2
+    },
+    "alpha_concept": {
+      "code": 0.03,
+      "harm": 0.06,
+      "struct": 0.0
+    },
+    "positive_targets": {
+      "code": 1,
+      "harm": 1,
+      "struct": 1
+    },
+    "guidance_method": "contrastive",
+    "guidance_margin": 0.0,
+    "guidance_coeff": 1.0,
+    "guidance_mse_pos_value": 1.0,
+    "guidance_mse_neg_value": 0.0,
+    "jumprelu_bandwidth": 0.001,
+    "jumprelu_init_threshold": 0.001,
+    "role_sep_coeff": 0.003
+  },
+  "gnn": {
+    "use_gnn": true,
+    "top_k": 10
+  },
+  "experiment": {
+    "device": "cuda",
+    "dataset_name": "wikitext",
+    "dataset_config": "wikitext-2-raw-v1",
+    "use_multi_contrast": true,
+    "num_steering_samples_per_label": 10,
+    "top_k_for_plot": 10,
+    "layer_sweep": [
+      12
+    ],
+    "strength_sweep": [
+      15.0
+    ]
+  },
+  "steering": {
+    "label": "code",
+    "feature_idx": 0,
+    "strength": 15.0,
+    "hook_layer_idx": 11
+  },
+  "prompt": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь?",
+  "output": {
+    "before": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь? \n",
+    "after": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь?\n```python\nimport os\nimport requests\nfrom bs4 import BeautifulSoup\nimport time\n\n# Function to get data from website\ndef get_data(url):\n    try:\n        response = requests.get(url)\n        "
+  },
+  "feature_stats": {
+    "indices": [
+      0,
+      2,
+      3212,
+      4820,
+      5357,
+      6496,
+      9031,
+      8887,
+      2068,
+      6617,
+      1359
+    ],
+    "f_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.6408634185791016
+    ],
+    "f_after": [
+      1.572235107421875,
+      2.5634615421295166,
+      0.28660082817077637,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_before": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "g_after": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "num_batches_for_stats": 10
+  },
+  "loss_summary": {
+    "train_mean_loss": 8.278787581712008,
+    "train_mean_l2": 5.7393049983531235,
+    "train_mean_l1": 2.06003129953146,
+    "num_steps": 2000,
+    "num_batches": 2000
+  },
+  "feature_std_summary": {
+    "plot_path": "outputs/plots/20251130-073533/feature_std_layer_12.html",
+    "mean_std": 0.9512336254119873,
+    "max_std": 25.052597045898438
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          3212,
+          4820,
+          5357,
+          6496,
+          9031,
+          8887,
+          2068,
+          6617,
+          1359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6408634185791016
+        ],
+        "f_after": [
+          1.572235107421875,
+          2.5634615421295166,
+          0.28660082817077637,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 1308,
+            "f_before": 37.07685852050781,
+            "f_after": 8.34533405303955,
+            "delta_f": -28.73152446746826
+          },
+          {
+            "index": 5159,
+            "f_before": 17.91667938232422,
+            "f_after": 0.0,
+            "delta_f": -17.91667938232422
+          },
+          {
+            "index": 5859,
+            "f_before": 0.764105498790741,
+            "f_after": 14.972140312194824,
+            "delta_f": 14.208034813404083
+          },
+          {
+            "index": 4411,
+            "f_before": 0.0,
+            "f_after": 8.685220718383789,
+            "delta_f": 8.685220718383789
+          },
+          {
+            "index": 1235,
+            "f_before": 2.9069740772247314,
+            "f_after": 11.481706619262695,
+            "delta_f": 8.574732542037964
+          },
+          {
+            "index": 9148,
+            "f_before": 0.0,
+            "f_after": 8.4988374710083,
+            "delta_f": 8.4988374710083
+          },
+          {
+            "index": 7312,
+            "f_before": 0.0,
+            "f_after": 8.462271690368652,
+            "delta_f": 8.462271690368652
+          },
+          {
+            "index": 4259,
+            "f_before": 0.0,
+            "f_after": 8.181422233581543,
+            "delta_f": 8.181422233581543
+          },
+          {
+            "index": 1541,
+            "f_before": 0.0,
+            "f_after": 7.324779510498047,
+            "delta_f": 7.324779510498047
+          },
+          {
+            "index": 6022,
+            "f_before": 0.0,
+            "f_after": 7.090885162353516,
+            "delta_f": 7.090885162353516
+          },
+          {
+            "index": 772,
+            "f_before": 0.0,
+            "f_after": 6.898407459259033,
+            "delta_f": 6.898407459259033
+          },
+          {
+            "index": 3146,
+            "f_before": 0.0,
+            "f_after": 6.166410446166992,
+            "delta_f": 6.166410446166992
+          },
+          {
+            "index": 8824,
+            "f_before": 0.0,
+            "f_after": 5.730222225189209,
+            "delta_f": 5.730222225189209
+          },
+          {
+            "index": 5588,
+            "f_before": 0.0,
+            "f_after": 5.268850326538086,
+            "delta_f": 5.268850326538086
+          },
+          {
+            "index": 6600,
+            "f_before": 0.0,
+            "f_after": 5.080379962921143,
+            "delta_f": 5.080379962921143
+          },
+          {
+            "index": 6482,
+            "f_before": 0.0,
+            "f_after": 4.919640064239502,
+            "delta_f": 4.919640064239502
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь? \n",
+        "after": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь? \n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          3212,
+          4820,
+          5357,
+          6496,
+          9031,
+          8887,
+          2068,
+          6617,
+          1359
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6408634185791016
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6408634185791016
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь? \n",
+        "after": "user: Привет! Говоришь по-русски?\nassistant: Да, я говорю на русском языке. Чем я могу Вам помочь?\n"
+      }
+    }
+  }
+}

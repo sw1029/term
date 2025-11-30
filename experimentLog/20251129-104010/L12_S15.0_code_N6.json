@@ -60,7 +60,8 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
   "prompt": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n",
   "output": {
@@ -101,7 +102,7 @@
       0.0,
       0.0,
       0.0,
-      0.0,
+      0.13030906021595,
       0.0,
       0.0,
       0.0,
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251129-104010/feature_std_layer_12.html",
     "mean_std": 0.8308307528495789,
     "max_std": 22.659034729003906
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2233,
+          6843,
+          213,
+          1575,
+          1956,
+          8937,
+          447,
+          3499,
+          1082
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.13030906021595,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 6454,
+            "f_before": 95.27478790283203,
+            "f_after": 71.52436065673828,
+            "delta_f": -23.75042724609375
+          },
+          {
+            "index": 9119,
+            "f_before": 0.0,
+            "f_after": 8.761441230773926,
+            "delta_f": 8.761441230773926
+          },
+          {
+            "index": 2374,
+            "f_before": 0.0,
+            "f_after": 8.475576400756836,
+            "delta_f": 8.475576400756836
+          },
+          {
+            "index": 5652,
+            "f_before": 26.67666244506836,
+            "f_after": 34.85774230957031,
+            "delta_f": 8.181079864501953
+          },
+          {
+            "index": 135,
+            "f_before": 0.0,
+            "f_after": 7.912408828735352,
+            "delta_f": 7.912408828735352
+          },
+          {
+            "index": 8746,
+            "f_before": 0.0,
+            "f_after": 7.890220642089844,
+            "delta_f": 7.890220642089844
+          },
+          {
+            "index": 4522,
+            "f_before": 0.0,
+            "f_after": 7.3980488777160645,
+            "delta_f": 7.3980488777160645
+          },
+          {
+            "index": 3466,
+            "f_before": 0.0,
+            "f_after": 6.889820098876953,
+            "delta_f": 6.889820098876953
+          },
+          {
+            "index": 5062,
+            "f_before": 0.0,
+            "f_after": 6.86838436126709,
+            "delta_f": 6.86838436126709
+          },
+          {
+            "index": 2858,
+            "f_before": 0.0,
+            "f_after": 6.800057888031006,
+            "delta_f": 6.800057888031006
+          },
+          {
+            "index": 9113,
+            "f_before": 0.0,
+            "f_after": 6.403271675109863,
+            "delta_f": 6.403271675109863
+          },
+          {
+            "index": 5060,
+            "f_before": 0.0,
+            "f_after": 6.175436496734619,
+            "delta_f": 6.175436496734619
+          },
+          {
+            "index": 8638,
+            "f_before": 36.3315544128418,
+            "f_after": 42.250858306884766,
+            "delta_f": 5.919303894042969
+          },
+          {
+            "index": 7138,
+            "f_before": 0.0,
+            "f_after": 5.910209655761719,
+            "delta_f": 5.910209655761719
+          },
+          {
+            "index": 3081,
+            "f_before": 0.0,
+            "f_after": 5.749186992645264,
+            "delta_f": 5.749186992645264
+          },
+          {
+            "index": 2669,
+            "f_before": 0.0,
+            "f_after": 5.62960147857666,
+            "delta_f": 5.62960147857666
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n```\n\nThis code snippet defines a Django app and a set of URL patterns for it. Here's a breakdown:\n\n**1. App Definition:**\n   - `from django.urls import path`: Imports the `path` function from Django",
+        "after": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n```\nThis is a simple example of how to create a Django app.\n\n**1. Create a Django App:**\n   - `django-admin.py` creates a new Django app\n   - You can customize the name of the app"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          2233,
+          6843,
+          213,
+          1575,
+          1956,
+          8937,
+          447,
+          3499,
+          1082
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n```\n\n**Explanation:**\n\n1. **Imports:**\n   - `from django.urls import path`: Imports the `path` function for defining URL patterns.\n   - `from . import views`: Imports the `views` module from your",
+        "after": "\nfrom django.urls import path\n\nfrom . import views\nfrom .apps import app_name\n\napp_name = app_name\n\nurlpatterns = [\n\n    path('', views.FblogListView.as_view(), name='list'),\n    path('create/', views.FblogCreateView.as_view(),\n         name='create'),\n]\n```\nThis is a Django project that uses the following modules:\n* **views.py:** Contains the views for the app\n* **FblogListView:** Contains the view for list of blog\n* **FblogCreateView:** Contains the"
+      }
+    }
   }
 }

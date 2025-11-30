@@ -60,9 +60,10 @@
   "steering": {
     "label": "struct",
     "feature_idx": 2,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nnumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']\nsymbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']\n\nprint(\"Welcome to PyPassword Generator\")\nnum_letters = int(input(\"Enter No.letters would you like in PyPassword : \"))\nnum_symbols = int(input(\"Enter No.symbols would you like in PyPassword : \"))\nnum_numbers = int(input(\"Enter No.numbers would you like in PyPassword : \"))\n\n# Easy version - fhfh^&23 (order not randomized)\n\npassword = \"\"\nfor char in range(1,num_letters+1):\n    password += random.choice(letters)\nfor char in range(1,num_symbols+1):\n    password += random.choice(symbols)\nfor char in range(1,num_numbers+1):\n    password += random.choice(numbers)\n# print(\"password\")\n\n# Advanced version - g^2j8k& (random order)\n\npassword_list = []\nfor char in range(1,num_letters+1):\n    password_list.append(random.choice(letters))\nfor char in range(1,num_symbols+1):\n    password_list.append(random.choice(symbols))\nfor char in range(1,num_numbers+1):\n    password_list.append(random.choice(numbers))\n\n# print(password_list)\nrandom.shuffle(password_list)\n# print(password_list)\n\npassword = \"\"\nfor char in password_list : \n    password += char\nprint(f\"Your Password : {password}\")",
+  "prompt": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',",
   "output": {
     "before": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nnumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']\nsymbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']\n\nprint(\"Welcome to PyPassword Generator\")\nnum_letters = int(input(\"Enter No.letters would you like in PyPassword : \"))\nnum_symbols = int(input(\"Enter No.symbols would you like in PyPassword : \"))\nnum_numbers = int(input(\"Enter No.numbers would you like in PyPassword : \"))\n\n# Easy version - fhfh^&23 (order not randomized)\n\npassword = \"\"\nfor char in range(1,num_letters+1):\n    password += random.choice(letters)\nfor char in range(1,num_symbols+1):\n    password += random.choice(symbols)\nfor char in range(1,num_numbers+1):\n    password += random.choice(numbers)\n# print(\"password\")\n\n# Advanced version - g^2j8k& (random order)\n\npassword_list = []\nfor char in range(1,num_letters+1):\n    password_list.append(random.choice(letters))\nfor char in range(1,num_symbols+1):\n    password_list.append(random.choice(symbols))\nfor char in range(1,num_numbers+1):\n    password_list.append(random.choice(numbers))\n\n# print(password_list)\nrandom.shuffle(password_list)\n# print(password_list)\n\npassword = \"\"\nfor char in password_list : \n    password += char\nprint(f\"Your Password : {password}\")\n```\n\n**Explanation:**\n\n1. **Initialization:**\n   - Define lists `letters`, `numbers`, and `symbols` for the possible characters in the password.\n   - Welcome message and prompts the user to enter the desired number of",
     "after": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nnumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']\nsymbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']\n\nprint(\"Welcome to PyPassword Generator\")\nnum_letters = int(input(\"Enter No.letters would you like in PyPassword : \"))\nnum_symbols = int(input(\"Enter No.symbols would you like in PyPassword : \"))\nnum_numbers = int(input(\"Enter No.numbers would you like in PyPassword : \"))\n\n# Easy version - fhfh^&23 (order not randomized)\n\npassword = \"\"\nfor char in range(1,num_letters+1):\n    password += random.choice(letters)\nfor char in range(1,num_symbols+1):\n    password += random.choice(symbols)\nfor char in range(1,num_numbers+1):\n    password += random.choice(numbers)\n# print(\"password\")\n\n# Advanced version - g^2j8k& (random order)\n\npassword_list = []\nfor char in range(1,num_letters+1):\n    password_list.append(random.choice(letters))\nfor char in range(1,num_symbols+1):\n    password_list.append(random.choice(symbols))\nfor char in range(1,num_numbers+1):\n    password_list.append(random.choice(numbers))\n\n# print(password_list)\nrandom.shuffle(password_list)\n# print(password_list)\n\npassword = \"\"\nfor char in password_list : \n    password += char\nprint(f\"Your Password : {password}\")\n```\n\n**Explanation:**\n\n1. **Import Modules:**\n   - `random`: Provides random number generation functions.\n   - `random`: Provides random number generation functions.\n\n2. **Input:**\n   - `num_letters"
@@ -83,7 +84,7 @@
     ],
     "f_before": [
       0.0,
-      66.61613464355469,
+      64.98187255859375,
       0.0,
       0.0,
       0.0,
@@ -95,9 +96,9 @@
       0.0
     ],
     "f_after": [
-      0.0,
-      66.61613464355469,
-      0.0,
+      0.2223702073097229,
+      197.4690399169922,
+      0.2346285730600357,
       0.0,
       0.0,
       0.0,
@@ -108,28 +109,28 @@
       0.0
     ],
     "g_before": [
-      38.269901275634766,
       0.0,
-      6.885155200958252,
       0.0,
-      7.493514537811279,
-      7.208359718322754,
-      6.274799823760986,
       0.0,
-      6.71504545211792,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
     "g_after": [
-      38.269901275634766,
       0.0,
-      6.885155200958252,
       0.0,
-      7.493514537811279,
-      7.208359718322754,
-      6.274799823760986,
       0.0,
-      6.71504545211792,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       0.0,
       0.0
     ],
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-130533/feature_std_layer_12.html",
     "mean_std": 1.7113512754440308,
     "max_std": 55.291290283203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          3233,
+          2441,
+          8586,
+          3541,
+          6540,
+          9143,
+          7461,
+          2848,
+          8231
+        ],
+        "f_before": [
+          0.0,
+          64.98187255859375,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.2223702073097229,
+          197.4690399169922,
+          0.2346285730600357,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 64.98187255859375,
+            "f_after": 197.4690399169922,
+            "delta_f": 132.48716735839844
+          },
+          {
+            "index": 7137,
+            "f_before": 3.8388023376464844,
+            "f_after": 30.898332595825195,
+            "delta_f": 27.05953025817871
+          },
+          {
+            "index": 3515,
+            "f_before": 0.0,
+            "f_after": 23.682525634765625,
+            "delta_f": 23.682525634765625
+          },
+          {
+            "index": 7661,
+            "f_before": 9.081377983093262,
+            "f_after": 0.0,
+            "delta_f": -9.081377983093262
+          },
+          {
+            "index": 4758,
+            "f_before": 0.0,
+            "f_after": 8.166033744812012,
+            "delta_f": 8.166033744812012
+          },
+          {
+            "index": 7655,
+            "f_before": 0.0,
+            "f_after": 7.337104320526123,
+            "delta_f": 7.337104320526123
+          },
+          {
+            "index": 6812,
+            "f_before": 0.0,
+            "f_after": 7.266138553619385,
+            "delta_f": 7.266138553619385
+          },
+          {
+            "index": 1521,
+            "f_before": 0.0,
+            "f_after": 7.229473114013672,
+            "delta_f": 7.229473114013672
+          },
+          {
+            "index": 1,
+            "f_before": 25.649856567382812,
+            "f_after": 18.525983810424805,
+            "delta_f": -7.123872756958008
+          },
+          {
+            "index": 3490,
+            "f_before": 0.0,
+            "f_after": 7.097107887268066,
+            "delta_f": 7.097107887268066
+          },
+          {
+            "index": 4369,
+            "f_before": 0.0,
+            "f_after": 6.867906093597412,
+            "delta_f": 6.867906093597412
+          },
+          {
+            "index": 5371,
+            "f_before": 0.0,
+            "f_after": 6.2683610916137695,
+            "delta_f": 6.2683610916137695
+          },
+          {
+            "index": 6254,
+            "f_before": 0.0,
+            "f_after": 6.030778408050537,
+            "delta_f": 6.030778408050537
+          },
+          {
+            "index": 6453,
+            "f_before": 0.0,
+            "f_after": 5.809026718139648,
+            "delta_f": 5.809026718139648
+          },
+          {
+            "index": 3310,
+            "f_before": 0.0,
+            "f_after": 5.73065710067749,
+            "delta_f": 5.73065710067749
+          },
+          {
+            "index": 2392,
+            "f_before": 0.0,
+            "f_after": 5.446638107299805,
+            "delta_f": 5.446638107299805
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nnumbers = ['0', '1', '2', '3', '4",
+        "after": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nprint(\"Welcome to the number guessing game\")\n\n# Generate a random number between"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          2,
+          0,
+          3233,
+          2441,
+          8586,
+          3541,
+          6540,
+          9143,
+          7461,
+          2848,
+          8231
+        ],
+        "f_before": [
+          0.0,
+          64.98187255859375,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          64.98187255859375,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 25.649856567382812,
+            "f_after": 25.649856567382812,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 64.98187255859375,
+            "f_after": 64.98187255859375,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nnumbers = ['0', '1', '2', '3', '4",
+        "after": "import random\nletters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']\nnumbers = ['0', '1', '2', '3', '4"
+      }
+    }
   }
 }

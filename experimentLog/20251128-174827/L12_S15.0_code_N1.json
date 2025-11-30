@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write out')\n\nargs = parser.parse_args()\n\nuvfits_file_in = args.uvfits_read\nif not op.isfile(uvfits_file_in):\n    raise IOError('There is no file named {}'.format(args.uvfits_file_in))\n\nuvfits_file_out = args.uvfits_write\n\nthis_uv = UVData()\nthis_uv.read_uvfits(uvfits_file_in)\n\nthis_uv.write_uvfits(uvfits_file_out)\n\ndel(this_uv)\n",
+  "prompt": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    ",
   "output": {
     "before": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write out')\n\nargs = parser.parse_args()\n\nuvfits_file_in = args.uvfits_read\nif not op.isfile(uvfits_file_in):\n    raise IOError('There is no file named {}'.format(args.uvfits_file_in))\n\nuvfits_file_out = args.uvfits_write\n\nthis_uv = UVData()\nthis_uv.read_uvfits(uvfits_file_in)\n\nthis_uv.write_uvfits(uvfits_file_out)\n\ndel(this_uv)\n```\n\n**Explanation:**\n\n1. **Import necessary modules:**\n   - `argparse` for command-line argument parsing.\n   - `os.path as op` for file path operations.\n   - `pyuvdata`",
     "after": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write out')\n\nargs = parser.parse_args()\n\nuvfits_file_in = args.uvfits_read\nif not op.isfile(uvfits_file_in):\n    raise IOError('There is no file named {}'.format(args.uvfits_file_in))\n\nuvfits_file_out = args.uvfits_write\n\nthis_uv = UVData()\nthis_uv.read_uvfits(uvfits_file_in)\n\nthis_uv.write_uvfits(uvfits_file_out)\n\ndel(this_uv)\n```\n\n```python\n# -*- mode: python; coding: utf-8 -*\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('"
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-174827/feature_std_layer_12.html",
     "mean_std": 1.0116609334945679,
     "max_std": 56.1993408203125
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          9169,
+          4282,
+          3929,
+          450,
+          6654,
+          6328,
+          8469,
+          4546,
+          4950
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8762,
+            "f_before": 99.6751937866211,
+            "f_after": 118.21856689453125,
+            "delta_f": 18.543373107910156
+          },
+          {
+            "index": 6170,
+            "f_before": 0.0,
+            "f_after": 9.726661682128906,
+            "delta_f": 9.726661682128906
+          },
+          {
+            "index": 6544,
+            "f_before": 0.0,
+            "f_after": 9.247106552124023,
+            "delta_f": 9.247106552124023
+          },
+          {
+            "index": 7697,
+            "f_before": 0.0,
+            "f_after": 9.148223876953125,
+            "delta_f": 9.148223876953125
+          },
+          {
+            "index": 2905,
+            "f_before": 0.0,
+            "f_after": 8.604287147521973,
+            "delta_f": 8.604287147521973
+          },
+          {
+            "index": 365,
+            "f_before": 0.0,
+            "f_after": 8.475582122802734,
+            "delta_f": 8.475582122802734
+          },
+          {
+            "index": 6037,
+            "f_before": 0.0,
+            "f_after": 8.370824813842773,
+            "delta_f": 8.370824813842773
+          },
+          {
+            "index": 1947,
+            "f_before": 0.0,
+            "f_after": 7.699323654174805,
+            "delta_f": 7.699323654174805
+          },
+          {
+            "index": 7209,
+            "f_before": 0.0,
+            "f_after": 7.657991886138916,
+            "delta_f": 7.657991886138916
+          },
+          {
+            "index": 2315,
+            "f_before": 0.0,
+            "f_after": 7.522875785827637,
+            "delta_f": 7.522875785827637
+          },
+          {
+            "index": 3927,
+            "f_before": 0.0,
+            "f_after": 6.697443008422852,
+            "delta_f": 6.697443008422852
+          },
+          {
+            "index": 3207,
+            "f_before": 0.0,
+            "f_after": 6.357956409454346,
+            "delta_f": 6.357956409454346
+          },
+          {
+            "index": 1076,
+            "f_before": 0.0,
+            "f_after": 6.308173656463623,
+            "delta_f": 6.308173656463623
+          },
+          {
+            "index": 5749,
+            "f_before": 0.0,
+            "f_after": 6.278595447540283,
+            "delta_f": 6.278595447540283
+          },
+          {
+            "index": 5130,
+            "f_before": 0.0,
+            "f_after": 6.171146392822266,
+            "delta_f": 6.171146392822266
+          },
+          {
+            "index": 8954,
+            "f_before": 0.0,
+            "f_after": 6.12917423248291,
+            "delta_f": 6.12917423248291
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write')\nparser.add_argument('-o', '--output_file',\n                    help='name of an output file to write (optional)')\nparser.add_argument('-d', '--delay",
+        "after": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write')\n\nargs = parser.parse_args()\n\n# Read in the UVData object\nuvdata = UVData(args.uvfits_read)\n\n# Write the UVData object\n"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          9169,
+          4282,
+          3929,
+          450,
+          6654,
+          6328,
+          8469,
+          4546,
+          4950
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write out')\nargs = parser.parse_args()\n\nuvdata_read = UVData(args.uvfits_read)\nuvdata_write = UVData(args.uvfits",
+        "after": "#! /usr/bin/env python\n# -*- mode: python; coding: utf-8 -*\n# Copyright (c) 2018 Radio Astronomy Software Group\n# Licensed under the 2-clause BSD License\n\nfrom __future__ import absolute_import, division, print_function\n\nimport argparse\nimport os.path as op\nfrom pyuvdata import UVData\n\nparser = argparse.ArgumentParser()\nparser.add_argument('uvfits_read',\n                    help='name of a uvfits file to read in')\nparser.add_argument('uvfits_write',\n                    help='name of a uvfits file to write')\n\ndef read_uvfits(filename):\n    uvdata = UVData(filename)\n    return uvdata\n\ndef write_uvfits(filename, uvdata):\n    uv"
+      }
+    }
   }
 }

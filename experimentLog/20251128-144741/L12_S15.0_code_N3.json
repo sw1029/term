@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    gamma = .99\n    gae_lambda = 0.95\n    use_gae = True\n    beta = .01\n    cliprange = 0.1\n    best_score = -np.inf\n    goal_score = 195.0\n    ep_length = []\n\n    nenvs = 1\n    rollout_length = 200\n    minibatches = 10*8\n    nbatch = nenvs * rollout_length\n    optimization_epochs = 4\n    \n    device=torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n\n    envs = parallelEnv(env_name, nenvs, seed=1234)\n    agent = PPO(state_size=obs_dim,\n                     action_size=n_actions,\n                     seed=0,\n                     hidden_layers=[64,64],\n                     lr_policy=1e-4, \n                     use_reset=True,\n                     device=device)\n\n    print(agent.policy)\n\n    # keep track of progress\n    mean_rewards = []\n    scores_window = deque(maxlen=100)\n    loss_storage = []\n\n    for i_episode in range(episode+1):\n        log_probs_old, states, actions, rewards, values, dones, vals_last, infos, ep_length = collect_trajectories(envs, act_dist, ep_length, agent.policy, rollout_length)\n\n        returns = np.zeros_like(rewards)\n        advantages = np.zeros_like(rewards)\n        \n        if not use_gae:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                advantages[t] = returns[t] - values[t]\n        else:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                    td_error = returns[t] - values[t]\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                    td_error = rewards[t] + gamma * (1-dones[t]) * values[t+1] - values[t]\n                advantages[t] = advantages[t] * gae_lambda * gamma * (1-dones[t]) + td_error\n        \n        # convert to pytorch tensors and move to gpu if available\n        returns = torch.from_numpy(returns).float().to(device).view(-1,)\n        advantages = torch.from_numpy(advantages).float().to(device).view(-1,)\n        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)\n        \n        for _ in range(optimization_epochs):\n            sampler = random_sample(nbatch, minibatches)\n            for inds in sampler:\n                mb_log_probs_old = log_probs_old[inds]\n                mb_states = states[inds]\n                mb_actions = actions[inds]\n                mb_returns = returns[inds]\n                mb_advantages = advantages[inds]\n                loss_p, loss_v, loss_ent = agent.update(mb_log_probs_old, mb_states, mb_actions, mb_returns, mb_advantages, cliprange=cliprange, beta=beta)\n                loss_storage.append([loss_p, loss_v, loss_ent])\n                \n        total_rewards = np.sum(rewards, axis=0)\n        scores_window.append(np.mean(total_rewards)) # last 100 scores\n        mean_rewards.append(np.mean(total_rewards))  # get the average reward of the parallel environments\n        cliprange *= 0.999                              # the clipping parameter reduces as time goes on\n        beta *= 0.999                                   # the regulation term reduces\n    \n        if i_episode % 100 == 0:\n            print('\\rEpisode {}\\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))\n            print(total_rewards)\n        if np.mean(scores_window)>=goal_score and np.mean(scores_window)>=best_score:            \n            torch.save(agent.policy.state_dict(), \"policy_cartpole.pth\")\n            best_score = np.mean(scores_window)\n    \n    return mean_rewards, loss_storage, act_dist, ep_length\n\nmean_rewards, loss, new_act_dist, ep_length = train(10000, 'CartPole-v0')\n\nprint (new_act_dist[-1])\nprint (ep_length)\n\nplt.rcParams['xtick.direction'] = 'in'\nplt.rcParams['ytick.direction'] = 'in'\nplt.rcParams['font.size'] = 10\n\nplt.title(\"PPO + MLP + GAE for 10000 episodes\")\n\nplt.subplot(131)\nplt.plot(mean_rewards)\nplt.ylabel('Average score')\nplt.xlabel('Episode')\n\nplt.subplot(132)\nplt.plot(list(range(len(ep_length))), ep_length, color=\"red\")\nplt.ylabel('Episode Length')\nplt.xlabel('Episode')\n\nplt.subplot(133)\nplt.ylabel('Frequency')\nplt.xlabel('Actions')\nplt.bar(['Action {}'.format(i) for i in range(len(new_act_dist))], new_act_dist[-1])\n\nplt.show()",
+  "prompt": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):",
   "output": {
     "before": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    gamma = .99\n    gae_lambda = 0.95\n    use_gae = True\n    beta = .01\n    cliprange = 0.1\n    best_score = -np.inf\n    goal_score = 195.0\n    ep_length = []\n\n    nenvs = 1\n    rollout_length = 200\n    minibatches = 10*8\n    nbatch = nenvs * rollout_length\n    optimization_epochs = 4\n    \n    device=torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n\n    envs = parallelEnv(env_name, nenvs, seed=1234)\n    agent = PPO(state_size=obs_dim,\n                     action_size=n_actions,\n                     seed=0,\n                     hidden_layers=[64,64],\n                     lr_policy=1e-4, \n                     use_reset=True,\n                     device=device)\n\n    print(agent.policy)\n\n    # keep track of progress\n    mean_rewards = []\n    scores_window = deque(maxlen=100)\n    loss_storage = []\n\n    for i_episode in range(episode+1):\n        log_probs_old, states, actions, rewards, values, dones, vals_last, infos, ep_length = collect_trajectories(envs, act_dist, ep_length, agent.policy, rollout_length)\n\n        returns = np.zeros_like(rewards)\n        advantages = np.zeros_like(rewards)\n        \n        if not use_gae:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                advantages[t] = returns[t] - values[t]\n        else:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                    td_error = returns[t] - values[t]\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                    td_error = rewards[t] + gamma * (1-dones[t]) * values[t+1] - values[t]\n                advantages[t] = advantages[t] * gae_lambda * gamma * (1-dones[t]) + td_error\n        \n        # convert to pytorch tensors and move to gpu if available\n        returns = torch.from_numpy(returns).float().to(device).view(-1,)\n        advantages = torch.from_numpy(advantages).float().to(device).view(-1,)\n        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)\n        \n        for _ in range(optimization_epochs):\n            sampler = random_sample(nbatch, minibatches)\n            for inds in sampler:\n                mb_log_probs_old = log_probs_old[inds]\n                mb_states = states[inds]\n                mb_actions = actions[inds]\n                mb_returns = returns[inds]\n                mb_advantages = advantages[inds]\n                loss_p, loss_v, loss_ent = agent.update(mb_log_probs_old, mb_states, mb_actions, mb_returns, mb_advantages, cliprange=cliprange, beta=beta)\n                loss_storage.append([loss_p, loss_v, loss_ent])\n                \n        total_rewards = np.sum(rewards, axis=0)\n        scores_window.append(np.mean(total_rewards)) # last 100 scores\n        mean_rewards.append(np.mean(total_rewards))  # get the average reward of the parallel environments\n        cliprange *= 0.999                              # the clipping parameter reduces as time goes on\n        beta *= 0.999                                   # the regulation term reduces\n    \n        if i_episode % 100 == 0:\n            print('\\rEpisode {}\\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))\n            print(total_rewards)\n        if np.mean(scores_window)>=goal_score and np.mean(scores_window)>=best_score:            \n            torch.save(agent.policy.state_dict(), \"policy_cartpole.pth\")\n            best_score = np.mean(scores_window)\n    \n    return mean_rewards, loss_storage, act_dist, ep_length\n\nmean_rewards, loss, new_act_dist, ep_length = train(10000, 'CartPole-v0')\n\nprint (new_act_dist[-1])\nprint (ep_length)\n\nplt.rcParams['xtick.direction'] = 'in'\nplt.rcParams['ytick.direction'] = 'in'\nplt.rcParams['font.size'] = 10\n\nplt.title(\"PPO + MLP + GAE for 10000 episodes\")\n\nplt.subplot(131)\nplt.plot(mean_rewards)\nplt.ylabel('Average score')\nplt.xlabel('Episode')\n\nplt.subplot(132)\nplt.plot(list(range(len(ep_length))), ep_length, color=\"red\")\nplt.ylabel('Episode Length')\nplt.xlabel('Episode')\n\nplt.subplot(133)\nplt.ylabel('Frequency')\nplt.xlabel('Actions')\nplt.bar(['Action {}'.format(i) for i in range(len(new_act_dist))], new_act_dist[-1])\n\nplt.show()\n```\n\n**Explanation:**\n\n1. **Initialization:**\n   - Imports necessary libraries: numpy, collections, pickle, torch, matplotlib, parallelEnv, gym\n   - Defines the environment: `gym.make(\"CartPole-v0",
     "after": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    gamma = .99\n    gae_lambda = 0.95\n    use_gae = True\n    beta = .01\n    cliprange = 0.1\n    best_score = -np.inf\n    goal_score = 195.0\n    ep_length = []\n\n    nenvs = 1\n    rollout_length = 200\n    minibatches = 10*8\n    nbatch = nenvs * rollout_length\n    optimization_epochs = 4\n    \n    device=torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n\n    envs = parallelEnv(env_name, nenvs, seed=1234)\n    agent = PPO(state_size=obs_dim,\n                     action_size=n_actions,\n                     seed=0,\n                     hidden_layers=[64,64],\n                     lr_policy=1e-4, \n                     use_reset=True,\n                     device=device)\n\n    print(agent.policy)\n\n    # keep track of progress\n    mean_rewards = []\n    scores_window = deque(maxlen=100)\n    loss_storage = []\n\n    for i_episode in range(episode+1):\n        log_probs_old, states, actions, rewards, values, dones, vals_last, infos, ep_length = collect_trajectories(envs, act_dist, ep_length, agent.policy, rollout_length)\n\n        returns = np.zeros_like(rewards)\n        advantages = np.zeros_like(rewards)\n        \n        if not use_gae:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                advantages[t] = returns[t] - values[t]\n        else:\n            for t in reversed(range(rollout_length)):\n                if t == rollout_length - 1:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * vals_last\n                    td_error = returns[t] - values[t]\n                else:\n                    returns[t] = rewards[t] + gamma * (1-dones[t]) * returns[t+1]\n                    td_error = rewards[t] + gamma * (1-dones[t]) * values[t+1] - values[t]\n                advantages[t] = advantages[t] * gae_lambda * gamma * (1-dones[t]) + td_error\n        \n        # convert to pytorch tensors and move to gpu if available\n        returns = torch.from_numpy(returns).float().to(device).view(-1,)\n        advantages = torch.from_numpy(advantages).float().to(device).view(-1,)\n        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-10)\n        \n        for _ in range(optimization_epochs):\n            sampler = random_sample(nbatch, minibatches)\n            for inds in sampler:\n                mb_log_probs_old = log_probs_old[inds]\n                mb_states = states[inds]\n                mb_actions = actions[inds]\n                mb_returns = returns[inds]\n                mb_advantages = advantages[inds]\n                loss_p, loss_v, loss_ent = agent.update(mb_log_probs_old, mb_states, mb_actions, mb_returns, mb_advantages, cliprange=cliprange, beta=beta)\n                loss_storage.append([loss_p, loss_v, loss_ent])\n                \n        total_rewards = np.sum(rewards, axis=0)\n        scores_window.append(np.mean(total_rewards)) # last 100 scores\n        mean_rewards.append(np.mean(total_rewards))  # get the average reward of the parallel environments\n        cliprange *= 0.999                              # the clipping parameter reduces as time goes on\n        beta *= 0.999                                   # the regulation term reduces\n    \n        if i_episode % 100 == 0:\n            print('\\rEpisode {}\\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))\n            print(total_rewards)\n        if np.mean(scores_window)>=goal_score and np.mean(scores_window)>=best_score:            \n            torch.save(agent.policy.state_dict(), \"policy_cartpole.pth\")\n            best_score = np.mean(scores_window)\n    \n    return mean_rewards, loss_storage, act_dist, ep_length\n\nmean_rewards, loss, new_act_dist, ep_length = train(10000, 'CartPole-v0')\n\nprint (new_act_dist[-1])\nprint (ep_length)\n\nplt.rcParams['xtick.direction'] = 'in'\nplt.rcParams['ytick.direction'] = 'in'\nplt.rcParams['font.size'] = 10\n\nplt.title(\"PPO + MLP + GAE for 10000 episodes\")\n\nplt.subplot(131)\nplt.plot(mean_rewards)\nplt.ylabel('Average score')\nplt.xlabel('Episode')\n\nplt.subplot(132)\nplt.plot(list(range(len(ep_length))), ep_length, color=\"red\")\nplt.ylabel('Episode Length')\nplt.xlabel('Episode')\n\nplt.subplot(133)\nplt.ylabel('Frequency')\nplt.xlabel('Actions')\nplt.bar(['Action {}'.format(i) for i in range(len(new_act_dist))], new_act_dist[-1])\n\nplt.show()\n```\nThis code defines a function to train a PPO agent, which is responsible for training the policy, and initializes the environment.\n\n**Main Steps**\n\n1.  **Initialize**:\n    *   `env`: Initializes the environment"
@@ -95,6 +96,8 @@
       0.0
     ],
     "f_after": [
+      1.4619120359420776,
+      0.28468409180641174,
       0.0,
       0.0,
       0.0,
@@ -103,9 +106,7 @@
       0.0,
       0.0,
       0.0,
-      0.0,
-      0.0,
-      0.0
+      1.8599048852920532
     ],
     "g_before": [
       0.0,
@@ -116,7 +117,7 @@
       0.0,
       0.0,
       0.0,
-      0.2788589596748352,
+      0.0,
       0.0,
       0.0
     ],
@@ -129,7 +130,7 @@
       0.0,
       0.0,
       0.0,
-      0.2788589596748352,
+      0.0,
       0.0,
       0.0
     ],
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-144741/feature_std_layer_12.html",
     "mean_std": 1.0523178577423096,
     "max_std": 18.52631378173828
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          789,
+          3452,
+          5035,
+          708,
+          5862,
+          3111,
+          3368,
+          3298,
+          154
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          1.4619120359420776,
+          0.28468409180641174,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.8599048852920532
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 4946,
+            "f_before": 33.43408203125,
+            "f_after": 0.0,
+            "delta_f": -33.43408203125
+          },
+          {
+            "index": 2364,
+            "f_before": 0.0,
+            "f_after": 11.197707176208496,
+            "delta_f": 11.197707176208496
+          },
+          {
+            "index": 7187,
+            "f_before": 0.0,
+            "f_after": 10.656599044799805,
+            "delta_f": 10.656599044799805
+          },
+          {
+            "index": 8309,
+            "f_before": 0.0,
+            "f_after": 9.6228666305542,
+            "delta_f": 9.6228666305542
+          },
+          {
+            "index": 63,
+            "f_before": 0.0,
+            "f_after": 9.415493965148926,
+            "delta_f": 9.415493965148926
+          },
+          {
+            "index": 8784,
+            "f_before": 0.0,
+            "f_after": 8.52005386352539,
+            "delta_f": 8.52005386352539
+          },
+          {
+            "index": 6303,
+            "f_before": 9.601818084716797,
+            "f_after": 18.111955642700195,
+            "delta_f": 8.510137557983398
+          },
+          {
+            "index": 4763,
+            "f_before": 106.40196990966797,
+            "f_after": 97.95879364013672,
+            "delta_f": -8.44317626953125
+          },
+          {
+            "index": 3794,
+            "f_before": 0.0,
+            "f_after": 8.151979446411133,
+            "delta_f": 8.151979446411133
+          },
+          {
+            "index": 7682,
+            "f_before": 0.0,
+            "f_after": 7.053856372833252,
+            "delta_f": 7.053856372833252
+          },
+          {
+            "index": 862,
+            "f_before": 0.0,
+            "f_after": 6.699415683746338,
+            "delta_f": 6.699415683746338
+          },
+          {
+            "index": 8213,
+            "f_before": 0.0,
+            "f_after": 6.0004496574401855,
+            "delta_f": 6.0004496574401855
+          },
+          {
+            "index": 554,
+            "f_before": 0.0,
+            "f_after": 5.799796104431152,
+            "delta_f": 5.799796104431152
+          },
+          {
+            "index": 3842,
+            "f_before": 0.0,
+            "f_after": 5.630688190460205,
+            "delta_f": 5.630688190460205
+          },
+          {
+            "index": 460,
+            "f_before": 0.0,
+            "f_after": 5.611837387084961,
+            "delta_f": 5.611837387084961
+          },
+          {
+            "index": 6725,
+            "f_before": 0.0,
+            "f_after": 4.920738220214844,
+            "delta_f": 4.920738220214844
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    # Initialize PPO agent\n    agent = PPO(obs_dim, n_actions, act_dist, learning_rate=1e-3, gamma=0.99, clip_param=0.2)",
+        "after": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    obs = env.reset()\n    done = False\n\n    while not done:\n        # env.render()\n\n        # collect trajectories\n        trajectories = collect_trajectories(env, obs, done)\n\n        #"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          789,
+          3452,
+          5035,
+          708,
+          5862,
+          3111,
+          3368,
+          3298,
+          154
+        ],
+        "f_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    # Initialize PPO\n    agent = PPO(obs_dim, n_actions, act_dist, learning_rate=1e-3, gamma=0.99, clip_param=0.2,\n",
+        "after": "import numpy as np\nfrom collections import deque\nimport pickle\nimport torch\nfrom utils import collect_trajectories, random_sample\nfrom PPO import PPO\nimport matplotlib.pyplot as plt\nfrom parallelEnv import *\nimport gym\n\nenv = gym.make(\"CartPole-v0\")\nenv.reset()\nenv.seed(2)\n\nobs_dim = env.observation_space.shape[0]\nn_actions = env.action_space.n\nact_dist = [0 for i in range(n_actions)]\n\ndef train(episode, env_name):\n    # Collect trajectories\n    trajectories = collect_trajectories(env_name)\n    # Create batch of data\n    batch = []\n    for i in range(len(trajectories)):\n        batch.extend(tra"
+      }
+    }
   }
 }

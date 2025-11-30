@@ -60,9 +60,10 @@
   "steering": {
     "label": "code",
     "feature_idx": 0,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.assert_utils import SkipParameterized as parameterized\n\nnonlinear_solvers = [\n    om.NonlinearBlockGS,\n    om.NonlinearBlockJac,\n    om.NewtonSolver,\n    om.BroydenSolver\n]\n\n\nclass TestNonlinearSolvers(unittest.TestCase):\n    def setUp(self):\n        import re\n        import os\n        from tempfile import mkdtemp\n\n        # perform test in temporary directory\n        self.startdir = os.getcwd()\n        self.tempdir = mkdtemp(prefix='test_solver')\n        os.chdir(self.tempdir)\n\n        # iteration coordinate, file name and variable data are common for all tests\n        coord = 'rank0:root._solve_nonlinear|0|NLRunOnce|0|circuit._solve_nonlinear|0'\n        self.filename = 'solver_errors.0.out'\n\n        self.expected_data = '\\n'.join([\n            \"\",\n            \"# Inputs and outputs at start of iteration '%s':\" % coord,\n            \"\",\n            \"# nonlinear inputs\",\n            \"{'circuit.D1.V_in': array([ 1.]),\",\n            \" 'circuit.D1.V_out': array([ 0.]),\",\n            \" 'circuit.R1.V_in': array([ 1.]),\",\n            \" 'circuit.R1.V_out': array([ 0.]),\",\n            \" 'circuit.R2.V_in': array([ 1.]),\",\n            \" 'circuit.R2.V_out': array([ 1.]),\",\n            \" 'circuit.n1.I_in:0': array([ 0.1]),\",\n            \" 'circuit.n1.I_out:0': array([ 1.]),\",\n            \" 'circuit.n1.I_out:1': array([ 1.]),\",\n            \" 'circuit.n2.I_in:0': array([ 1.]),\",\n            \" 'circuit.n2.I_out:0': array([ 1.])}\",\n            \"\",\n            \"# nonlinear outputs\",\n            \"{'circuit.D1.I': array([ 1.]),\",\n            \" 'circuit.R1.I': array([ 1.]),\",\n            \" 'circuit.R2.I': array([ 1.]),\",\n            \" 'circuit.n1.V': array([ 10.]),\",\n            \" 'circuit.n2.V': array([ 0.001])}\",\n            \"\"\n        ])\n\n    def tearDown(self):\n        import os\n        from shutil import rmtree\n\n        # clean up the temporary directory\n        os.chdir(self.startdir)\n        try:\n            rmtree(self.tempdir)\n        except OSError:\n            pass\n\n    @parameterized.expand([\n        [solver.__name__, solver] for solver in nonlinear_solvers\n    ])\n    def test_solver_debug_print(self, name, solver):\n        p = om.Problem()\n        model = p.model\n\n        model.add_subsystem('ground', om.IndepVarComp('V', 0., units='V'))\n        model.add_subsystem('source', om.IndepVarComp('I', 0.1, units='A'))\n        model.add_subsystem('circuit', Circuit())\n\n        model.connect('source.I', 'circuit.I_in')\n        model.connect('ground.V', 'circuit.Vg')\n\n        p.setup()\n        nl = model.circuit.nonlinear_solver = solver()\n\n        nl.options['debug_print'] = True\n        nl.options['err_on_non_converge'] = True\n\n        if name == 'NonlinearBlockGS':\n            nl.options['use_apply_nonlinear'] = True\n\n        if name == 'NewtonSolver':\n            nl.options['solve_subsystems'] = True\n\n        # suppress solver output for test\n        nl.options['iprint'] = model.circuit.linear_solver.options['iprint'] = -1\n\n        # For Broydensolver, don't calc Jacobian\n        try:\n            nl.options['compute_jacobian'] = False\n        except KeyError:\n            pass\n\n        # set some poor initial guesses so that we don't converge\n        p['circuit.n1.V'] = 10.\n        p['circuit.n2.V'] = 1e-3\n\n        opts = {}\n        # formatting has changed in numpy 1.14 and beyond.\n        if LooseVersion(np.__version__) >= LooseVersion(\"1.14\"):\n            opts[\"legacy\"] = '1.13'\n\n        with printoptions(**opts):\n            # run the model and check for expected output file\n            output = run_model(p, ignore_exception=True)\n\n        expected_output = '\\n'.join([\n            self.expected_data,\n            \"Inputs and outputs at start of iteration \"\n            \"have been saved to '%s'.\\n\" % self.filename\n        ])\n\n        self.assertEqual(output, expected_output)\n\n        with open(self.filename, 'r') as f:\n            self.assertEqual(f.read(), self.expected_data)\n\n        # setup & run again to make sure there is no error due to existing file\n        p.setup()\n        with printoptions(**opts):\n            run_model(p, ignore_exception=False)\n\n    def test_solver_debug_print_feature(self):\n        from distutils.version import LooseVersion\n        import numpy as np\n\n        import openmdao.api as om\n        from openmdao.test_suite.scripts.circuit_analysis import Circuit\n        from openmdao.utils.general_utils import printoptions\n\n        p = om.Problem()\n        model = p.model\n\n        model.add_subsystem('circuit', Circuit())\n\n        p.setup()\n\n        nl = model.circuit.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)\n\n        nl.options['iprint'] = 2\n        nl.options['debug_print'] = True\n        nl.options['err_on_non_converge'] = True\n\n        # set some poor initial guesses so that we don't converge\n        p.set_val('circuit.I_in', 0.1, units='A')\n        p.set_val('circuit.Vg', 0.0, units='V')\n        p.set_val('circuit.n1.V', 10.)\n        p.set_val('circuit.n2.V', 1e-3)\n\n        opts = {}\n        # formatting has changed in numpy 1.14 and beyond.\n        if LooseVersion(np.__version__) >= LooseVersion(\"1.14\"):\n            opts[\"legacy\"] = '1.13'\n\n        with printoptions(**opts):\n            # run the model\n            try:\n                p.run_model()\n            except om.AnalysisError:\n                pass\n\n        with open(self.filename, 'r') as f:\n            self.assertEqual(f.read(), self.expected_data)\n\n\nclass TestNonlinearSolversIsolated(unittest.TestCase):\n    \"\"\"\n    This test needs to run isolated to preclude interactions in the underlying\n    `warnings` module that is used to raise the singular entry error.\n    \"\"\"\n    ISOLATED = True\n\n    def setUp(self):\n        # perform test in temporary directory\n        self.startdir = os.getcwd()\n        self.tempdir = tempfile.mkdtemp(prefix='test_solver')\n        os.chdir(self.tempdir)\n\n    def tearDown(self):\n        # clean up the temporary directory\n        os.chdir(self.startdir)\n        try:\n            shutil.rmtree(self.tempdir)\n        except OSError:\n            pass\n\n    def test_debug_after_raised_error(self):\n        prob = om.Problem()\n        model = prob.model\n\n        comp = om.IndepVarComp()\n        comp.add_output('dXdt:TAS', val=1.0)\n        comp.add_output('accel_target', val=2.0)\n        model.add_subsystem('des_vars', comp, promotes=['*'])\n\n        teg = model.add_subsystem('thrust_equilibrium_group', subsys=om.Group())\n        teg.add_subsystem('dynamics', om.ExecComp('z = 2.0*thrust'), promotes=['*'])\n\n        thrust_bal = om.BalanceComp()\n        thrust_bal.add_balance(name='thrust', val=1207.1, lhs_name='dXdt:TAS',\n                               rhs_name='accel_target', eq_units='m/s**2', lower=-10.0, upper=10000.0)\n\n        teg.add_subsystem(name='thrust_bal', subsys=thrust_bal,\n                          promotes_inputs=['dXdt:TAS', 'accel_target'],\n                          promotes_outputs=['thrust'])\n\n        teg.linear_solver = om.DirectSolver()\n\n        teg.nonlinear_solver = om.NewtonSolver()\n        teg.nonlinear_solver.options['solve_subsystems'] = True\n        teg.nonlinear_solver.options['max_sub_solves'] = 1\n        teg.nonlinear_solver.options['atol'] = 1e-4\n        teg.nonlinear_solver.options['debug_print'] = True\n\n        prob.setup()\n        prob.set_solver_print(level=0)\n\n        stdout = sys.stdout\n        strout = StringIO()\n        sys.stdout = strout\n\n        with self.assertRaises(RuntimeError) as cm:\n            prob.run_model()\n\n        sys.stdout = stdout\n\n        output = strout.getvalue()\n        target = \"'thrust_equilibrium_group.thrust_bal.thrust'\"\n        self.assertTrue(target in output, msg=target + \"NOT FOUND IN\" + output)\n\n        # Make sure exception is unchanged.\n        expected_msg = \"Singular entry found in Group (thrust_equilibrium_group) for row associated with state/residual 'thrust' ('thrust_equilibrium_group.thrust_bal.thrust') index 0.\"\n        self.assertEqual(expected_msg, str(cm.exception))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n",
+  "prompt": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.",
   "output": {
     "before": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.assert_utils import SkipParameterized as parameterized\n\nnonlinear_solvers = [\n    om.NonlinearBlockGS,\n    om.NonlinearBlockJac,\n    om.NewtonSolver,\n    om.BroydenSolver\n]\n\n\nclass TestNonlinearSolvers(unittest.TestCase):\n    def setUp(self):\n        import re\n        import os\n        from tempfile import mkdtemp\n\n        # perform test in temporary directory\n        self.startdir = os.getcwd()\n        self.tempdir = mkdtemp(prefix='test_solver')\n        os.chdir(self.tempdir)\n\n        # iteration coordinate, file name and variable data are common for all tests\n        coord = 'rank0:root._solve_nonlinear|0|NLRunOnce|0|circuit._solve_nonlinear|0'\n        self.filename = 'solver_errors.0.out'\n\n        self.expected_data = '\\n'.join([\n            \"\",\n            \"# Inputs and outputs at start of iteration '%s':\" % coord,\n            \"\",\n            \"# nonlinear inputs\",\n            \"{'circuit.D1.V_in': array([ 1.]),\",\n            \" 'circuit.D1.V_out': array([ 0.]),\",\n            \" 'circuit.R1.V_in': array([ 1.]),\",\n            \" 'circuit.R1.V_out': array([ 0.]),\",\n            \" 'circuit.R2.V_in': array([ 1.]),\",\n            \" 'circuit.R2.V_out': array([ 1.]),\",\n            \" 'circuit.n1.I_in:0': array([ 0.1]),\",\n            \" 'circuit.n1.I_out:0': array([ 1.]),\",\n            \" 'circuit.n1.I_out:1': array([ 1.]),\",\n            \" 'circuit.n2.I_in:0': array([ 1.]),\",\n            \" 'circuit.n2.I_out:0': array([ 1.])}\",\n            \"\",\n            \"# nonlinear outputs\",\n            \"{'circuit.D1.I': array([ 1.]),\",\n            \" 'circuit.R1.I': array([ 1.]),\",\n            \" 'circuit.R2.I': array([ 1.]),\",\n            \" 'circuit.n1.V': array([ 10.]),\",\n            \" 'circuit.n2.V': array([ 0.001])}\",\n            \"\"\n        ])\n\n    def tearDown(self):\n        import os\n        from shutil import rmtree\n\n        # clean up the temporary directory\n        os.chdir(self.startdir)\n        try:\n            rmtree(self.tempdir)\n        except OSError:\n            pass\n\n    @parameterized.expand([\n        [solver.__name__, solver] for solver in nonlinear_solvers\n    ])\n    def test_solver_debug_print(self, name, solver):\n        p = om.Problem()\n        model = p.model\n\n        model.add_subsystem('ground', om.IndepVarComp('V', 0., units='V'))\n        model.add_subsystem('source', om.IndepVarComp('I', 0.1, units='A'))\n        model.add_subsystem('circuit', Circuit())\n\n        model.connect('source.I', 'circuit.I_in')\n        model.connect('ground.V', 'circuit.Vg')\n\n        p.setup()\n        nl = model.circuit.nonlinear_solver = solver()\n\n        nl.options['debug_print'] = True\n        nl.options['err_on_non_converge'] = True\n\n        if name == 'NonlinearBlockGS':\n            nl.options['use_apply_nonlinear'] = True\n\n        if name == 'NewtonSolver':\n            nl.options['solve_subsystems'] = True\n\n        # suppress solver output for test\n        nl.options['iprint'] = model.circuit.linear_solver.options['iprint'] = -1\n\n        # For Broydensolver, don't calc Jacobian\n        try:\n            nl.options['compute_jacobian'] = False\n        except KeyError:\n            pass\n\n        # set some poor initial guesses so that we don't converge\n        p['circuit.n1.V'] = 10.\n        p['circuit.n2.V'] = 1e-3\n\n        opts = {}\n        # formatting has changed in numpy 1.14 and beyond.\n        if LooseVersion(np.__version__) >= LooseVersion(\"1.14\"):\n            opts[\"legacy\"] = '1.13'\n\n        with printoptions(**opts):\n            # run the model and check for expected output file\n            output = run_model(p, ignore_exception=True)\n\n        expected_output = '\\n'.join([\n            self.expected_data,\n            \"Inputs and outputs at start of iteration \"\n            \"have been saved to '%s'.\\n\" % self.filename\n        ])\n\n        self.assertEqual(output, expected_output)\n\n        with open(self.filename, 'r') as f:\n            self.assertEqual(f.read(), self.expected_data)\n\n        # setup & run again to make sure there is no error due to existing file\n        p.setup()\n        with printoptions(**opts):\n            run_model(p, ignore_exception=False)\n\n    def test_solver_debug_print_feature(self):\n        from distutils.version import LooseVersion\n        import numpy as np\n\n        import openmdao.api as om\n        from openmdao.test_suite.scripts.circuit_analysis import Circuit\n        from openmdao.utils.general_utils import printoptions\n\n        p = om.Problem()\n        model = p.model\n\n        model.add_subsystem('circuit', Circuit())\n\n        p.setup()\n\n        nl = model.circuit.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)\n\n        nl.options['iprint'] = 2\n        nl.options['debug_print'] = True\n        nl.options['err_on_non_converge'] = True\n\n        # set some poor initial guesses so that we don't converge\n        p.set_val('circuit.I_in', 0.1, units='A')\n        p.set_val('circuit.Vg', 0.0, units='V')\n        p.set_val('circuit.n1.V', 10.)\n        p.set_val('circuit.n2.V', 1e-3)\n\n        opts = {}\n        # formatting has changed in numpy 1.14 and beyond.\n        if LooseVersion(np.__version__) >= LooseVersion(\"1.14\"):\n            opts[\"legacy\"] = '1.13'\n\n        with printoptions(**opts):\n            # run the model\n            try:\n                p.run_model()\n            except om.AnalysisError:\n                pass\n\n        with open(self.filename, 'r') as f:\n            self.assertEqual(f.read(), self.expected_data)\n\n\nclass TestNonlinearSolversIsolated(unittest.TestCase):\n    \"\"\"\n    This test needs to run isolated to preclude interactions in the underlying\n    `warnings` module that is used to raise the singular entry error.\n    \"\"\"\n    ISOLATED = True\n\n    def setUp(self):\n        # perform test in temporary directory\n        self.startdir = os.getcwd()\n        self.tempdir = tempfile.mkdtemp(prefix='test_solver')\n        os.chdir(self.tempdir)\n\n    def tearDown(self):\n        # clean up the temporary directory\n        os.chdir(self.startdir)\n        try:\n            shutil.rmtree(self.tempdir)\n        except OSError:\n            pass\n\n    def test_debug_after_raised_error(self):\n        prob = om.Problem()\n        model = prob.model\n\n        comp = om.IndepVarComp()\n        comp.add_output('dXdt:TAS', val=1.0)\n        comp.add_output('accel_target', val=2.0)\n        model.add_subsystem('des_vars', comp, promotes=['*'])\n\n        teg = model.add_subsystem('thrust_equilibrium_group', subsys=om.Group())\n        teg.add_subsystem('dynamics', om.ExecComp('z = 2.0*thrust'), promotes=['*'])\n\n        thrust_bal = om.BalanceComp()\n        thrust_bal.add_balance(name='thrust', val=1207.1, lhs_name='dXdt:TAS',\n                               rhs_name='accel_target', eq_units='m/s**2', lower=-10.0, upper=10000.0)\n\n        teg.add_subsystem(name='thrust_bal', subsys=thrust_bal,\n                          promotes_inputs=['dXdt:TAS', 'accel_target'],\n                          promotes_outputs=['thrust'])\n\n        teg.linear_solver = om.DirectSolver()\n\n        teg.nonlinear_solver = om.NewtonSolver()\n        teg.nonlinear_solver.options['solve_subsystems'] = True\n        teg.nonlinear_solver.options['max_sub_solves'] = 1\n        teg.nonlinear_solver.options['atol'] = 1e-4\n        teg.nonlinear_solver.options['debug_print'] = True\n\n        prob.setup()\n        prob.set_solver_print(level=0)\n\n        stdout = sys.stdout\n        strout = StringIO()\n        sys.stdout = strout\n\n        with self.assertRaises(RuntimeError) as cm:\n            prob.run_model()\n\n        sys.stdout = stdout\n\n        output = strout.getvalue()\n        target = \"'thrust_equilibrium_group.thrust_bal.thrust'\"\n        self.assertTrue(target in output, msg=target + \"NOT FOUND IN\" + output)\n\n        # Make sure exception is unchanged.\n        expected_msg = \"Singular entry found in Group (thrust_equilibrium_group) for row associated with state/residual 'thrust' ('thrust_equilibrium_group.thrust_bal.thrust') index 0.\"\n        self.assertEqual(expected_msg, str(cm.exception))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\n\n**Explanation:**\n\n1. **Setup and Cleanup:**\n   - The `TestNonlinearSolvers` class sets up a temporary directory and creates a problem object (`p`).\n   - It adds sub-systems and sets up the nonlinear",
     "after": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.assert_utils import SkipParameterized as parameterized\n\nnonlinear_solvers = [\n    om.NonlinearBlockGS,\n    om.NonlinearBlockJac,\n    om.NewtonSolver,\n    om.BroydenSolver\n]\n\n\nclass TestNonlinearSolvers(unittest.TestCase):\n    def setUp(self):\n        import re\n        import os\n        from tempfile import mkdtemp\n\n        # perform test in temporary directory\n        self.startdir = os.getcwd()\n        self.tempdir = mkdtemp(prefix='test_solver')\n        os.chdir(self.tempdir)\n\n        # iteration coordinate, file name and variable data are common for all tests\n        coord = 'rank0:root._solve_nonlinear|0|NLRunOnce|0|circuit._solve_nonlinear|0'\n        self.filename = 'solver_errors.0.out'\n\n        self.expected_data = '\\n'.join([\n            \"\",\n            \"# Inputs and outputs at start of iteration '%s':\" % coord,\n            \"\",\n            \"# nonlinear inputs\",\n            \"{'circuit.D1.V_in': array([ 1.]),\",\n            \" 'circuit.D1.V_out': array([ 0.]),\",\n            \" 'circuit.R1.V_in': array([ 1.]),\",\n            \" 'circuit.R1.V_out': array([ 0.]),\",\n            \" 'circuit.R2.V_in': array([ 1.]),\",\n            \" 'circuit.R2.V_out': array([ 1.]),\",\n            \" 'circuit.n1.I_in:0': array([ 0.1]),\",\n            \" 'circuit.n1.I_out:0': array([ 1.]),\",\n            \" 'circuit.n1.I_out:1': array([ 1.]),\",\n            \" 'circuit.n2.I_in:0': array([ 1.]),\",\n            \" 'circuit.n2.I_out:0': array([ 1.])}\",\n            \"\",\n            \"# nonlinear outputs\",\n            \"{'circuit.D1.I': array([ 1.]),\",\n            \" 'circuit.R1.I': array([ 1.]),\",\n            \" 'circuit.R2.I': array([ 1.]),\",\n            \" 'circuit.n1.V': array([ 10.]),\",\n            \" 'circuit.n2.V': array([ 0.001])}\",\n            \"\"\n        ])\n\n    def tearDown(self):\n        import os\n        from shutil import rmtree\n\n        # clean up the temporary directory\n        os.chdir(self.startdir)\n        try:\n            rmtree(self.tempdir)\n        except OSError:\n            pass\n\n    @parameterized.expand([\n        [solver.__name__, solver] for solver in nonlinear_solvers\n    ])\n    def test_solver_debug_print(self, name, solver):\n        p = om.Problem()\n        model = p.model\n\n        model.add_subsystem('ground', om.IndepVarComp('V', 0., units='V'))\n        model.add_subsystem('source', om.IndepVarComp('I', 0.1, units='A'))\n        model.add_subsystem('circuit', Circuit())\n\n        model.connect('source.I', 'circuit.I_in')\n        model.connect('ground.V', 'circuit.Vg')\n\n        p.setup()\n        nl = model.circuit.nonlinear_solver = solver()\n\n        nl.options['debug_print'] = True\n        nl.options['err_on_non_converge'] = True\n\n        if name == 'NonlinearBlockGS':\n            nl.options['use_apply_nonlinear'] = True\n\n        if name == 'NewtonSolver':\n            nl.options['solve_subsystems'] = True\n\n        # suppress solver output for test\n        nl.options['iprint'] = model.circuit.linear_solver.options['iprint'] = -1\n\n        # For Broydensolver, don't calc Jacobian\n        try:\n            nl.options['compute_jacobian'] = False\n        except KeyError:\n            pass\n\n        # set some poor initial guesses so that we don't converge\n        p['circuit.n1.V'] = 10.\n        p['circuit.n2.V'] = 1e-3\n\n        opts = {}\n        # formatting has changed in numpy 1.14 and beyond.\n        if LooseVersion(np.__version__) >= LooseVersion(\"1.14\"):\n            opts[\"legacy\"] = '1.13'\n\n        with printoptions(**opts):\n            # run the model and check for expected output file\n            output = run_model(p, ignore_exception=True)\n\n        expected_output = '\\n'.join([\n            self.expected_data,\n            \"Inputs and outputs at start of iteration \"\n            \"have been saved to '%s'.\\n\" % self.filename\n        ])\n\n        self.assertEqual(output, expected_output)\n\n        with open(self.filename, 'r') as f:\n            self.assertEqual(f.read(), self.expected_data)\n\n        # setup & run again to make sure there is no error due to existing file\n        p.setup()\n        with printoptions(**opts):\n            run_model(p, ignore_exception=False)\n\n    def test_solver_debug_print_feature(self):\n        from distutils.version import LooseVersion\n        import numpy as np\n\n        import openmdao.api as om\n        from openmdao.test_suite.scripts.circuit_analysis import Circuit\n        from openmdao.utils.general_utils import printoptions\n\n        p = om.Problem()\n        model = p.model\n\n        model.add_subsystem('circuit', Circuit())\n\n        p.setup()\n\n        nl = model.circuit.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)\n\n        nl.options['iprint'] = 2\n        nl.options['debug_print'] = True\n        nl.options['err_on_non_converge'] = True\n\n        # set some poor initial guesses so that we don't converge\n        p.set_val('circuit.I_in', 0.1, units='A')\n        p.set_val('circuit.Vg', 0.0, units='V')\n        p.set_val('circuit.n1.V', 10.)\n        p.set_val('circuit.n2.V', 1e-3)\n\n        opts = {}\n        # formatting has changed in numpy 1.14 and beyond.\n        if LooseVersion(np.__version__) >= LooseVersion(\"1.14\"):\n            opts[\"legacy\"] = '1.13'\n\n        with printoptions(**opts):\n            # run the model\n            try:\n                p.run_model()\n            except om.AnalysisError:\n                pass\n\n        with open(self.filename, 'r') as f:\n            self.assertEqual(f.read(), self.expected_data)\n\n\nclass TestNonlinearSolversIsolated(unittest.TestCase):\n    \"\"\"\n    This test needs to run isolated to preclude interactions in the underlying\n    `warnings` module that is used to raise the singular entry error.\n    \"\"\"\n    ISOLATED = True\n\n    def setUp(self):\n        # perform test in temporary directory\n        self.startdir = os.getcwd()\n        self.tempdir = tempfile.mkdtemp(prefix='test_solver')\n        os.chdir(self.tempdir)\n\n    def tearDown(self):\n        # clean up the temporary directory\n        os.chdir(self.startdir)\n        try:\n            shutil.rmtree(self.tempdir)\n        except OSError:\n            pass\n\n    def test_debug_after_raised_error(self):\n        prob = om.Problem()\n        model = prob.model\n\n        comp = om.IndepVarComp()\n        comp.add_output('dXdt:TAS', val=1.0)\n        comp.add_output('accel_target', val=2.0)\n        model.add_subsystem('des_vars', comp, promotes=['*'])\n\n        teg = model.add_subsystem('thrust_equilibrium_group', subsys=om.Group())\n        teg.add_subsystem('dynamics', om.ExecComp('z = 2.0*thrust'), promotes=['*'])\n\n        thrust_bal = om.BalanceComp()\n        thrust_bal.add_balance(name='thrust', val=1207.1, lhs_name='dXdt:TAS',\n                               rhs_name='accel_target', eq_units='m/s**2', lower=-10.0, upper=10000.0)\n\n        teg.add_subsystem(name='thrust_bal', subsys=thrust_bal,\n                          promotes_inputs=['dXdt:TAS', 'accel_target'],\n                          promotes_outputs=['thrust'])\n\n        teg.linear_solver = om.DirectSolver()\n\n        teg.nonlinear_solver = om.NewtonSolver()\n        teg.nonlinear_solver.options['solve_subsystems'] = True\n        teg.nonlinear_solver.options['max_sub_solves'] = 1\n        teg.nonlinear_solver.options['atol'] = 1e-4\n        teg.nonlinear_solver.options['debug_print'] = True\n\n        prob.setup()\n        prob.set_solver_print(level=0)\n\n        stdout = sys.stdout\n        strout = StringIO()\n        sys.stdout = strout\n\n        with self.assertRaises(RuntimeError) as cm:\n            prob.run_model()\n\n        sys.stdout = stdout\n\n        output = strout.getvalue()\n        target = \"'thrust_equilibrium_group.thrust_bal.thrust'\"\n        self.assertTrue(target in output, msg=target + \"NOT FOUND IN\" + output)\n\n        # Make sure exception is unchanged.\n        expected_msg = \"Singular entry found in Group (thrust_equilibrium_group) for row associated with state/residual 'thrust' ('thrust_equilibrium_group.thrust_bal.thrust') index 0.\"\n        self.assertEqual(expected_msg, str(cm.exception))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\n```python\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\nimport unittest\n\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nfrom openmdao.api import (\n    Control,\n"
@@ -82,7 +83,7 @@
       1959
     ],
     "f_before": [
-      93.96017456054688,
+      172.54563903808594,
       0.0,
       0.0,
       0.0,
@@ -95,7 +96,7 @@
       0.0
     ],
     "f_after": [
-      93.96017456054688,
+      318.70367431640625,
       0.0,
       0.0,
       0.0,
@@ -109,29 +110,29 @@
     ],
     "g_before": [
       0.0,
-      54.52534484863281,
-      10.749336242675781,
-      9.734468460083008,
-      9.263223648071289,
-      8.88123607635498,
-      9.212522506713867,
-      8.782917022705078,
       0.0,
-      8.688933372497559,
-      8.696526527404785
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "g_after": [
       0.0,
-      54.52534484863281,
-      10.749336242675781,
-      9.734468460083008,
-      9.263223648071289,
-      8.88123607635498,
-      9.212522506713867,
-      8.782917022705078,
       0.0,
-      8.688933372497559,
-      8.696526527404785
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-135637/feature_std_layer_12.html",
     "mean_std": 1.6594011783599854,
     "max_std": 59.914852142333984
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          644,
+          6124,
+          6425,
+          4800,
+          1596,
+          4791,
+          8335,
+          6620,
+          1959
+        ],
+        "f_before": [
+          172.54563903808594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          318.70367431640625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 172.54563903808594,
+            "f_after": 318.70367431640625,
+            "delta_f": 146.1580352783203
+          },
+          {
+            "index": 8464,
+            "f_before": 19.87206268310547,
+            "f_after": 37.67919921875,
+            "delta_f": 17.80713653564453
+          },
+          {
+            "index": 4903,
+            "f_before": 160.1712188720703,
+            "f_after": 172.5885467529297,
+            "delta_f": 12.417327880859375
+          },
+          {
+            "index": 2778,
+            "f_before": 0.0,
+            "f_after": 8.612356185913086,
+            "delta_f": 8.612356185913086
+          },
+          {
+            "index": 3674,
+            "f_before": 0.0,
+            "f_after": 8.521747589111328,
+            "delta_f": 8.521747589111328
+          },
+          {
+            "index": 417,
+            "f_before": 0.0,
+            "f_after": 8.29997730255127,
+            "delta_f": 8.29997730255127
+          },
+          {
+            "index": 8581,
+            "f_before": 0.0,
+            "f_after": 8.203442573547363,
+            "delta_f": 8.203442573547363
+          },
+          {
+            "index": 7892,
+            "f_before": 0.0,
+            "f_after": 8.013801574707031,
+            "delta_f": 8.013801574707031
+          },
+          {
+            "index": 5857,
+            "f_before": 0.0,
+            "f_after": 7.678729057312012,
+            "delta_f": 7.678729057312012
+          },
+          {
+            "index": 5086,
+            "f_before": 0.0,
+            "f_after": 7.171503067016602,
+            "delta_f": 7.171503067016602
+          },
+          {
+            "index": 6274,
+            "f_before": 0.0,
+            "f_after": 7.133800506591797,
+            "delta_f": 7.133800506591797
+          },
+          {
+            "index": 548,
+            "f_before": 0.0,
+            "f_after": 7.07435417175293,
+            "delta_f": 7.07435417175293
+          },
+          {
+            "index": 1100,
+            "f_before": 0.0,
+            "f_after": 7.027557849884033,
+            "delta_f": 7.027557849884033
+          },
+          {
+            "index": 1,
+            "f_before": 19.12407684326172,
+            "f_after": 12.296363830566406,
+            "delta_f": -6.8277130126953125
+          },
+          {
+            "index": 2375,
+            "f_before": 0.0,
+            "f_after": 6.824726581573486,
+            "delta_f": 6.824726581573486
+          },
+          {
+            "index": 4526,
+            "f_before": 0.0,
+            "f_after": 6.452111721038818,
+            "delta_f": 6.452111721038818
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.general_utils import parameterized\n\nfrom openmdao.drivers.solvers.linear_solver import LinearSolver\nfrom openmdao.drivers.solvers.nonlinear_solver import NonlinearSolver\nfrom openmdao.drivers.solvers",
+        "after": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.general_utils import parameterized\n\nfrom numpy.testing import assert_equal\n\nfrom pyomo.core import Model\n\nfrom scipy.optimize import minimize\n\nfrom openmdao.utils.general_utils import get_logger\n\nfrom pyomo.core"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          0,
+          2,
+          644,
+          6124,
+          6425,
+          4800,
+          1596,
+          4791,
+          8335,
+          6620,
+          1959
+        ],
+        "f_before": [
+          172.54563903808594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          172.54563903808594,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 19.12407684326172,
+            "f_after": 19.12407684326172,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 172.54563903808594,
+            "f_after": 172.54563903808594,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.parameterized import parameterized\n\n# Ensure we're running on a system with a proper Python interpreter\nif sys.version_info < (3, 7):\n    raise RuntimeError(\"This test requires Python 3.7 or later\")\n\n",
+        "after": "\"\"\"Tests the `debug_print` option for Nonlinear solvers.\"\"\"\n\nimport os\nimport re\nimport sys\nimport shutil\nimport tempfile\n\nimport unittest\nfrom distutils.version import LooseVersion\nfrom io import StringIO\n\nimport numpy as np\n\nimport openmdao.api as om\nfrom openmdao.test_suite.scripts.circuit_analysis import Circuit\n\nfrom openmdao.utils.general_utils import run_model\nfrom openmdao.utils.general_utils import printoptions\n\ntry:\n    from parameterized import parameterized\nexcept ImportError:\n    from openmdao.utils.general_utils import skip_if_not_defined\n\nfrom openmdao.utils.debug_print import debug_print\nfrom openmdao.utils.debug_print import debug_print_with_options\nfrom openmdao"
+      }
+    }
   }
 }

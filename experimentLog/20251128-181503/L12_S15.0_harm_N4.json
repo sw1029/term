@@ -60,9 +60,10 @@
   "steering": {
     "label": "harm",
     "feature_idx": 1,
-    "strength": 15.0
+    "strength": 15.0,
+    "hook_layer_idx": 11
   },
-  "prompt": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\nИнгредиенты:\\n 1) Мука\\n' + \\\n               '2) Яйцо куриное\\n3) Изюм\\n\\n<a href=\"http://recipe\">Булочки с изюмом</a>'\n        self.assertEqual(form_answer(rec1), ans1)\n        rec2 = {\"name\": \"Омлет\",\n                \"ingrs\": [\"Яйцо куриное\", \"Соль\", \"Молоко\"],\n                \"link\": \"http://recipe\"}\n        ans2 = '<b>Омлет</b>\\nИнгредиенты:\\n 1) Яйцо куриное\\n2) Соль\\n' + \\\n               '3) Молоко\\n\\n<a href=\"http://recipe\">Омлет</a>'\n        self.assertEqual(form_answer(rec2), ans2)\n        with self.assertRaises(KeyError):\n            form_answer(dict())\n\n    # def test_empty_delete_reminders(self):\n    #     self.assertEqual(delete_table_data(\"reminders\"), 0)\n\n    def test_parsing_horoscope(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(obj.url, \"https://1001goroskop.ru\")\n\n    def test_parsing_horoscope_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(type(obj.get_signs()), type([1, 2]))\n\n    def test_parsing_news(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.count, None)\n\n    def test_parsing_news_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        obj.count = 5\n        obj.make_zero()\n        self.assertEqual(obj.count, 0)\n\n    def test_parsing_news_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url, \"https://lenta.ru/parts/news\")\n\n    def test_parsing_news_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url_part, \"https://lenta.ru\")\n\n    def test_parsing_news_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(type(obj.parse()), type([1, 2]))\n\n    def test_parsing_weather(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.extra_data), type({}))\n\n    def test_parsing_weather_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(obj.url, \"https://www.gismeteo.ru\")\n\n    def test_parsing_weather_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.main_data), type({}))\n\n    def test_parsing_afisha(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        self.assertEqual(obj.cinema_count, None)\n\n    def test_parsing_afisha_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n\n    def test_parsing_afisha_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_5(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_6(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_total(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n",
+  "prompt": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с из",
   "output": {
     "before": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\nИнгредиенты:\\n 1) Мука\\n' + \\\n               '2) Яйцо куриное\\n3) Изюм\\n\\n<a href=\"http://recipe\">Булочки с изюмом</a>'\n        self.assertEqual(form_answer(rec1), ans1)\n        rec2 = {\"name\": \"Омлет\",\n                \"ingrs\": [\"Яйцо куриное\", \"Соль\", \"Молоко\"],\n                \"link\": \"http://recipe\"}\n        ans2 = '<b>Омлет</b>\\nИнгредиенты:\\n 1) Яйцо куриное\\n2) Соль\\n' + \\\n               '3) Молоко\\n\\n<a href=\"http://recipe\">Омлет</a>'\n        self.assertEqual(form_answer(rec2), ans2)\n        with self.assertRaises(KeyError):\n            form_answer(dict())\n\n    # def test_empty_delete_reminders(self):\n    #     self.assertEqual(delete_table_data(\"reminders\"), 0)\n\n    def test_parsing_horoscope(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(obj.url, \"https://1001goroskop.ru\")\n\n    def test_parsing_horoscope_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(type(obj.get_signs()), type([1, 2]))\n\n    def test_parsing_news(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.count, None)\n\n    def test_parsing_news_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        obj.count = 5\n        obj.make_zero()\n        self.assertEqual(obj.count, 0)\n\n    def test_parsing_news_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url, \"https://lenta.ru/parts/news\")\n\n    def test_parsing_news_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url_part, \"https://lenta.ru\")\n\n    def test_parsing_news_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(type(obj.parse()), type([1, 2]))\n\n    def test_parsing_weather(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.extra_data), type({}))\n\n    def test_parsing_weather_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(obj.url, \"https://www.gismeteo.ru\")\n\n    def test_parsing_weather_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.main_data), type({}))\n\n    def test_parsing_afisha(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        self.assertEqual(obj.cinema_count, None)\n\n    def test_parsing_afisha_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n\n    def test_parsing_afisha_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_5(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_6(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_total(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n        \nif __name__ == '__main__':\n    unittest.main()\n```\n\n**Explanation of the test cases:**\n\n* **`test_form_answer`:** This test checks if the `form_answer` function correctly formats",
     "after": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\nИнгредиенты:\\n 1) Мука\\n' + \\\n               '2) Яйцо куриное\\n3) Изюм\\n\\n<a href=\"http://recipe\">Булочки с изюмом</a>'\n        self.assertEqual(form_answer(rec1), ans1)\n        rec2 = {\"name\": \"Омлет\",\n                \"ingrs\": [\"Яйцо куриное\", \"Соль\", \"Молоко\"],\n                \"link\": \"http://recipe\"}\n        ans2 = '<b>Омлет</b>\\nИнгредиенты:\\n 1) Яйцо куриное\\n2) Соль\\n' + \\\n               '3) Молоко\\n\\n<a href=\"http://recipe\">Омлет</a>'\n        self.assertEqual(form_answer(rec2), ans2)\n        with self.assertRaises(KeyError):\n            form_answer(dict())\n\n    # def test_empty_delete_reminders(self):\n    #     self.assertEqual(delete_table_data(\"reminders\"), 0)\n\n    def test_parsing_horoscope(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(obj.url, \"https://1001goroskop.ru\")\n\n    def test_parsing_horoscope_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = HOROSCOPE()\n        self.assertEqual(type(obj.get_signs()), type([1, 2]))\n\n    def test_parsing_news(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.count, None)\n\n    def test_parsing_news_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        obj.count = 5\n        obj.make_zero()\n        self.assertEqual(obj.count, 0)\n\n    def test_parsing_news_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url, \"https://lenta.ru/parts/news\")\n\n    def test_parsing_news_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(obj.url_part, \"https://lenta.ru\")\n\n    def test_parsing_news_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = NEWS()\n        self.assertEqual(type(obj.parse()), type([1, 2]))\n\n    def test_parsing_weather(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.extra_data), type({}))\n\n    def test_parsing_weather_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(obj.url, \"https://www.gismeteo.ru\")\n\n    def test_parsing_weather_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = WEATHER()\n        self.assertEqual(type(obj.main_data), type({}))\n\n    def test_parsing_afisha(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        self.assertEqual(obj.cinema_count, None)\n\n    def test_parsing_afisha_1(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n\n    def test_parsing_afisha_2(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_3(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_4(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n\n    def test_parsing_afisha_5(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_6(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n\n    def test_parsing_afisha_total(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.cinema_count = 1\n        obj.theatre_count = 2\n        obj.concert_count = 3\n        obj.make_zero()\n        self.assertEqual(obj.cinema_count, 0)\n        self.assertEqual(obj.theatre_count, 0)\n        self.assertEqual(obj.concert_count, 0)\n        self.assertEqual(obj.make_zero(), 0)\n\n    def test_parsing_afisha_total_again(self):\n        \"\"\"Тест.\"\"\"\n        obj = AFISHA()\n        obj.make_zero"
@@ -82,8 +83,8 @@
       8089
     ],
     "f_before": [
-      18.28398895263672,
-      3.625379800796509,
+      21.062864303588867,
+      15.315032005310059,
       0.0,
       0.0,
       0.0,
@@ -95,8 +96,21 @@
       0.0
     ],
     "f_after": [
-      18.28398895263672,
-      3.625379800796509,
+      26.66923713684082,
+      66.4632797241211,
+      0.0,
+      0.0,
+      0.0,
+      0.5837731957435608,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.846555471420288
+    ],
+    "g_before": [
+      0.0,
+      0.0,
       0.0,
       0.0,
       0.0,
@@ -107,31 +121,18 @@
       0.0,
       0.0
     ],
-    "g_before": [
-      0.3945436179637909,
-      1.929345726966858,
-      1.8539880514144897,
-      1.79481041431427,
-      1.9134681224822998,
-      1.8126615285873413,
-      1.7638248205184937,
-      1.718102216720581,
-      0.0,
-      0.0,
-      0.00037453940603882074
-    ],
     "g_after": [
-      0.3945436179637909,
-      1.929345726966858,
-      1.8539880514144897,
-      1.79481041431427,
-      1.9134681224822998,
-      1.8126615285873413,
-      1.7638248205184937,
-      1.718102216720581,
       0.0,
       0.0,
-      0.00037453940603882074
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
     ],
     "num_batches_for_stats": 10
   },
@@ -146,5 +147,357 @@
     "plot_path": "outputs/plots/20251128-181503/feature_std_layer_12.html",
     "mean_std": 1.673189401626587,
     "max_std": 71.08536529541016
+  },
+  "hook_comparison": {
+    "hook_layer_idx_minus1": {
+      "hook_layer_idx": 11,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          21.062864303588867,
+          15.315032005310059,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          26.66923713684082,
+          66.4632797241211,
+          0.0,
+          0.0,
+          0.0,
+          0.5837731957435608,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.846555471420288
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 0,
+            "f_before": 103.74723052978516,
+            "f_after": 43.10143280029297,
+            "delta_f": -60.64579772949219
+          },
+          {
+            "index": 2242,
+            "f_before": 15.315032005310059,
+            "f_after": 66.4632797241211,
+            "delta_f": 51.148247718811035
+          },
+          {
+            "index": 2291,
+            "f_before": 0.5878363251686096,
+            "f_after": 36.86974334716797,
+            "delta_f": 36.28190702199936
+          },
+          {
+            "index": 3569,
+            "f_before": 139.37657165527344,
+            "f_after": 169.88687133789062,
+            "delta_f": 30.510299682617188
+          },
+          {
+            "index": 995,
+            "f_before": 20.498329162597656,
+            "f_after": 34.27436065673828,
+            "delta_f": 13.776031494140625
+          },
+          {
+            "index": 1,
+            "f_before": 21.062864303588867,
+            "f_after": 26.66923713684082,
+            "delta_f": 5.606372833251953
+          },
+          {
+            "index": 5609,
+            "f_before": 0.0,
+            "f_after": 4.274470806121826,
+            "delta_f": 4.274470806121826
+          },
+          {
+            "index": 1404,
+            "f_before": 0.0,
+            "f_after": 3.5375239849090576,
+            "delta_f": 3.5375239849090576
+          },
+          {
+            "index": 1334,
+            "f_before": 0.0,
+            "f_after": 3.5032076835632324,
+            "delta_f": 3.5032076835632324
+          },
+          {
+            "index": 3225,
+            "f_before": 0.0,
+            "f_after": 3.487628698348999,
+            "delta_f": 3.487628698348999
+          },
+          {
+            "index": 7817,
+            "f_before": 0.0,
+            "f_after": 3.4253971576690674,
+            "delta_f": 3.4253971576690674
+          },
+          {
+            "index": 6038,
+            "f_before": 0.0,
+            "f_after": 3.389115810394287,
+            "delta_f": 3.389115810394287
+          },
+          {
+            "index": 1667,
+            "f_before": 0.0,
+            "f_after": 3.334174394607544,
+            "delta_f": 3.334174394607544
+          },
+          {
+            "index": 8213,
+            "f_before": 0.0,
+            "f_after": 3.2988905906677246,
+            "delta_f": 3.2988905906677246
+          },
+          {
+            "index": 302,
+            "f_before": 0.0,
+            "f_after": 3.229044198989868,
+            "delta_f": 3.229044198989868
+          },
+          {
+            "index": 2314,
+            "f_before": 0.0,
+            "f_after": 3.1837384700775146,
+            "delta_f": 3.1837384700775146
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\n' \\\n               'Ингредиенты:\\n' \\\n               'Мука,\\n' \\\n               'Яйцо куриное,\\n' \\\n               'Изюм\\n' \\\n               'Ссылка",
+        "after": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>'\n        self.assertEqual(form_answer(rec1), ans1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n```\n\nIt seems like you are trying to make a program that analyzes"
+      }
+    },
+    "hook_layer_idx_same": {
+      "hook_layer_idx": 12,
+      "feature_stats": {
+        "indices": [
+          1,
+          2242,
+          1201,
+          5731,
+          1829,
+          820,
+          1563,
+          6301,
+          4446,
+          3117,
+          8089
+        ],
+        "f_before": [
+          21.062864303588867,
+          15.315032005310059,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "f_after": [
+          21.062864303588867,
+          15.315032005310059,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_before": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "g_after": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "top_activated_features": {
+        "features": [
+          {
+            "index": 8,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 10,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 4,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 15,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 12,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 3,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 9,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 1,
+            "f_before": 21.062864303588867,
+            "f_after": 21.062864303588867,
+            "delta_f": 0.0
+          },
+          {
+            "index": 11,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 5,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 7,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 13,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 0,
+            "f_before": 103.74723052978516,
+            "f_after": 103.74723052978516,
+            "delta_f": 0.0
+          },
+          {
+            "index": 2,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 6,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          },
+          {
+            "index": 14,
+            "f_before": 0.0,
+            "f_after": 0.0,
+            "delta_f": 0.0
+          }
+        ],
+        "k": 16
+      },
+      "output": {
+        "before": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>\\n' \\\n               'Изюм: 100 г\\n' \\\n               'Мука: 250 г\\n' \\\n               'Яйцо куриное: 1 шт",
+        "after": "\"\"\"Тест.\"\"\"\nimport unittest\nfrom recipes import form_answer\nfrom database import delete_table_data\nfrom parsing import NEWS, AFISHA, HOROSCOPE, WEATHER\n\n\nclass TestBot(unittest.TestCase):\n    \"\"\"Тест.\"\"\"\n\n    def test_form_answer(self):\n        \"\"\"Тест.\"\"\"\n        rec1 = {\"name\": \"Булочки с изюмом\",\n                \"ingrs\": [\"Мука\", \"Яйцо куриное\", \"Изюм\"],\n                \"link\": \"http://recipe\"}\n        ans1 = '<b>Булочки с изюмом</b>'\n        self.assertAnswer(form_answer, \"You are a bot\")\n\n\n    def test_delete_table_data(self):\n        \"\"\"Тест.\"\"\"\n        self.assertAnswer(delete_table"
+      }
+    }
   }
 }
